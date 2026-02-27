@@ -4,7 +4,7 @@
 
 **Goal:** Reescrever o pacote nfse-nacional com namespace `Pulsar\NfseNacional`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
-**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Infra toda nova; código legado coexiste via dual autoload até Task 18 (limpeza).
+**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `Pulsar\NfseNacional`); código legado coexiste em `src/` (namespace `Hadder\NfseNacional`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
 
 > **Nota standalone:** Em modo standalone (sem Laravel bootado), os Laravel Events (`NfseEmitted`, `NfseFailed`, etc.) **não são disparados** — o `dispatchEvent()` silencia a ausência do dispatcher. Todas as demais funcionalidades (emitir, cancelar, consultar) operam normalmente.
 
@@ -61,7 +61,7 @@
   "autoload": {
     "psr-4": {
       "Hadder\\NfseNacional\\": "src/",
-      "Pulsar\\NfseNacional\\": "src/"
+      "Pulsar\\NfseNacional\\": "src-new/"
     }
   },
   "autoload-dev": {
@@ -107,7 +107,7 @@
 **Step 3: Criar estrutura de diretórios**
 
 ```bash
-mkdir -p src/{Enums,Http,Certificates,Xml/Builders,Signing,Services,Consulta,Events,DTOs,Exceptions,Facades}
+mkdir -p src-new/{Enums,Http,Certificates,Xml/Builders,Signing,Services,Consulta,Events,DTOs,Exceptions,Facades}
 mkdir -p tests/{Unit/{Xml,Signing,Certificates,Services},Feature,fixtures/{certs,responses}}
 mkdir -p config
 ```
@@ -240,8 +240,8 @@ git commit -m "chore: bootstrap reescrita — deps, estrutura de dirs e cert de 
 ## Task 2: Enums — NfseAmbiente e MotivoCancelamento
 
 **Files:**
-- Create: `src/Enums/NfseAmbiente.php`
-- Create: `src/Enums/MotivoCancelamento.php`
+- Create: `src-new/Enums/NfseAmbiente.php`
+- Create: `src-new/Enums/MotivoCancelamento.php`
 - Create: `tests/Unit/Enums/NfseAmbienteTest.php`
 - Create: `tests/Unit/Enums/MotivoCancelamentoTest.php`
 
@@ -306,7 +306,7 @@ Expected: FAIL — `Pulsar\NfseNacional\Enums\NfseAmbiente not found`
 
 **Step 3: Implementar os enums**
 
-`src/Enums/NfseAmbiente.php`:
+`src-new/Enums/NfseAmbiente.php`:
 ```php
 <?php
 
@@ -334,7 +334,7 @@ enum NfseAmbiente: int
 }
 ```
 
-`src/Enums/MotivoCancelamento.php`:
+`src-new/Enums/MotivoCancelamento.php`:
 ```php
 <?php
 
@@ -357,7 +357,7 @@ Expected: PASS (8 testes)
 **Step 5: Commit**
 
 ```bash
-git add src/Enums/ tests/Unit/Enums/
+git add src-new/Enums/ tests/Unit/Enums/
 git commit -m "feat: add NfseAmbiente and MotivoCancelamento enums"
 ```
 
@@ -366,9 +366,9 @@ git commit -m "feat: add NfseAmbiente and MotivoCancelamento enums"
 ## Task 3: Exceptions
 
 **Files:**
-- Create: `src/Exceptions/NfseException.php`
-- Create: `src/Exceptions/CertificateExpiredException.php`
-- Create: `src/Exceptions/HttpException.php`
+- Create: `src-new/Exceptions/NfseException.php`
+- Create: `src-new/Exceptions/CertificateExpiredException.php`
+- Create: `src-new/Exceptions/HttpException.php`
 - Create: `tests/Unit/Exceptions/ExceptionsTest.php`
 
 **Step 1: Escrever testes**
@@ -408,7 +408,7 @@ Expected: FAIL
 
 **Step 3: Implementar**
 
-`src/Exceptions/NfseException.php`:
+`src-new/Exceptions/NfseException.php`:
 ```php
 <?php
 
@@ -417,7 +417,7 @@ namespace Pulsar\NfseNacional\Exceptions;
 class NfseException extends \RuntimeException {}
 ```
 
-`src/Exceptions/CertificateExpiredException.php`:
+`src-new/Exceptions/CertificateExpiredException.php`:
 ```php
 <?php
 
@@ -426,7 +426,7 @@ namespace Pulsar\NfseNacional\Exceptions;
 class CertificateExpiredException extends NfseException {}
 ```
 
-`src/Exceptions/HttpException.php`:
+`src-new/Exceptions/HttpException.php`:
 ```php
 <?php
 
@@ -445,7 +445,7 @@ Expected: PASS (3 testes)
 **Step 5: Commit**
 
 ```bash
-git add src/Exceptions/ tests/Unit/Exceptions/
+git add src-new/Exceptions/ tests/Unit/Exceptions/
 git commit -m "feat: add NfseException, CertificateExpiredException, HttpException"
 ```
 
@@ -454,10 +454,10 @@ git commit -m "feat: add NfseException, CertificateExpiredException, HttpExcepti
 ## Task 4: DTOs — NfseResponse, DpsData, DanfseResponse, EventosResponse
 
 **Files:**
-- Create: `src/DTOs/NfseResponse.php`
-- Create: `src/DTOs/DpsData.php`
-- Create: `src/DTOs/DanfseResponse.php`
-- Create: `src/DTOs/EventosResponse.php`
+- Create: `src-new/DTOs/NfseResponse.php`
+- Create: `src-new/DTOs/DpsData.php`
+- Create: `src-new/DTOs/DanfseResponse.php`
+- Create: `src-new/DTOs/EventosResponse.php`
 - Create: `tests/Unit/DTOs/NfseResponseTest.php`
 - Create: `tests/Unit/DTOs/DpsDataTest.php`
 - Create: `tests/Unit/DTOs/DanfseResponseTest.php`
@@ -522,7 +522,7 @@ Expected: FAIL
 
 **Step 3: Implementar**
 
-`src/DTOs/NfseResponse.php`:
+`src-new/DTOs/NfseResponse.php`:
 ```php
 <?php
 
@@ -539,7 +539,7 @@ readonly class NfseResponse
 }
 ```
 
-`src/DTOs/DpsData.php`:
+`src-new/DTOs/DpsData.php`:
 ```php
 <?php
 
@@ -561,7 +561,7 @@ readonly class DpsData
 
 **Step 4: Implementar DanfseResponse e EventosResponse**
 
-`src/DTOs/DanfseResponse.php`:
+`src-new/DTOs/DanfseResponse.php`:
 ```php
 <?php
 
@@ -577,7 +577,7 @@ readonly class DanfseResponse
 }
 ```
 
-`src/DTOs/EventosResponse.php`:
+`src-new/DTOs/EventosResponse.php`:
 ```php
 <?php
 
@@ -650,7 +650,7 @@ Expected: PASS (7 testes)
 **Step 7: Commit**
 
 ```bash
-git add src/DTOs/ tests/Unit/DTOs/
+git add src-new/DTOs/ tests/Unit/DTOs/
 git commit -m "feat: add NfseResponse, DpsData, DanfseResponse, EventosResponse DTOs"
 ```
 
@@ -659,7 +659,7 @@ git commit -m "feat: add NfseResponse, DpsData, DanfseResponse, EventosResponse 
 ## Task 5: CertificateManager
 
 **Files:**
-- Create: `src/Certificates/CertificateManager.php`
+- Create: `src-new/Certificates/CertificateManager.php`
 - Create: `tests/Unit/Certificates/CertificateManagerTest.php`
 
 **Context:**
@@ -703,7 +703,7 @@ Expected: FAIL — class not found
 
 **Step 3: Implementar**
 
-`src/Certificates/CertificateManager.php`:
+`src-new/Certificates/CertificateManager.php`:
 ```php
 <?php
 
@@ -742,7 +742,7 @@ Expected: PASS (2 testes)
 **Step 5: Commit**
 
 ```bash
-git add src/Certificates/ tests/Unit/Certificates/
+git add src-new/Certificates/ tests/Unit/Certificates/
 git commit -m "feat: add CertificateManager — loads PFX from string, validates expiry"
 ```
 
@@ -751,7 +751,7 @@ git commit -m "feat: add CertificateManager — loads PFX from string, validates
 ## Task 6: PrefeituraResolver
 
 **Files:**
-- Create: `src/Services/PrefeituraResolver.php`
+- Create: `src-new/Services/PrefeituraResolver.php`
 - Create: `tests/Unit/Services/PrefeituraResolverTest.php`
 
 **Context:**
@@ -844,7 +844,7 @@ Expected: FAIL
 
 **Step 3: Implementar**
 
-`src/Services/PrefeituraResolver.php`:
+`src-new/Services/PrefeituraResolver.php`:
 ```php
 <?php
 
@@ -932,7 +932,7 @@ Expected: PASS (5 testes)
 **Step 5: Commit**
 
 ```bash
-git add src/Services/ tests/Unit/Services/
+git add src-new/Services/ tests/Unit/Services/
 git commit -m "feat: add PrefeituraResolver — merge de URLs/operations com prefeituras.json"
 ```
 
@@ -941,7 +941,7 @@ git commit -m "feat: add PrefeituraResolver — merge de URLs/operations com pre
 ## Task 7: XmlSigner
 
 **Files:**
-- Create: `src/Signing/XmlSigner.php`
+- Create: `src-new/Signing/XmlSigner.php`
 - Create: `tests/Unit/Signing/XmlSignerTest.php`
 
 **Context:**
@@ -1002,7 +1002,7 @@ Expected: FAIL
 
 **Step 3: Implementar**
 
-`src/Signing/XmlSigner.php`:
+`src-new/Signing/XmlSigner.php`:
 ```php
 <?php
 
@@ -1050,7 +1050,7 @@ Expected: PASS (2 testes)
 **Step 5: Commit**
 
 ```bash
-git add src/Signing/ tests/Unit/Signing/
+git add src-new/Signing/ tests/Unit/Signing/
 git commit -m "feat: add XmlSigner — wraps NFePHP Signer com configuração de algoritmo"
 ```
 
@@ -1059,8 +1059,8 @@ git commit -m "feat: add XmlSigner — wraps NFePHP Signer com configuração de
 ## Task 8: DpsBuilder — cabeçalho infDPS + PrestadorBuilder
 
 **Files:**
-- Create: `src/Xml/Builders/PrestadorBuilder.php`
-- Create: `src/Xml/DpsBuilder.php` (parcial — só header + prest)
+- Create: `src-new/Xml/Builders/PrestadorBuilder.php`
+- Create: `src-new/Xml/DpsBuilder.php` (parcial — só header + prest)
 - Create: `tests/Unit/Xml/PrestadorBuilderTest.php`
 - Create: `tests/Unit/Xml/DpsBuilderHeaderTest.php`
 - Create: `tests/Pest.php` (bootstrap mínimo — será expandido na Task 12)
@@ -1248,7 +1248,7 @@ Expected: FAIL
 
 **Step 4: Implementar PrestadorBuilder**
 
-`src/Xml/Builders/PrestadorBuilder.php`:
+`src-new/Xml/Builders/PrestadorBuilder.php`:
 ```php
 <?php
 
@@ -1335,7 +1335,7 @@ class PrestadorBuilder
 
 **Step 5: Implementar DpsBuilder (parcial — cabeçalho + prest)**
 
-`src/Xml/DpsBuilder.php`:
+`src-new/Xml/DpsBuilder.php`:
 ```php
 <?php
 
@@ -1428,7 +1428,7 @@ Expected: PASS (5 testes)
 **Step 7: Commit**
 
 ```bash
-git add src/Xml/ tests/Unit/Xml/ tests/Pest.php tests/datasets.php tests/helpers.php
+git add src-new/Xml/ tests/Unit/Xml/ tests/Pest.php tests/datasets.php tests/helpers.php
 git commit -m "feat: add PrestadorBuilder and DpsBuilder (header + prest); bootstrap Pest + datasets + helpers"
 ```
 
@@ -1437,10 +1437,10 @@ git commit -m "feat: add PrestadorBuilder and DpsBuilder (header + prest); boots
 ## Task 9: TomadorBuilder + ServicoBuilder + ValoresBuilder
 
 **Files:**
-- Create: `src/Xml/Builders/TomadorBuilder.php`
-- Create: `src/Xml/Builders/ServicoBuilder.php`
-- Create: `src/Xml/Builders/ValoresBuilder.php`
-- Modify: `src/Xml/DpsBuilder.php` (integrar os três builders)
+- Create: `src-new/Xml/Builders/TomadorBuilder.php`
+- Create: `src-new/Xml/Builders/ServicoBuilder.php`
+- Create: `src-new/Xml/Builders/ValoresBuilder.php`
+- Modify: `src-new/Xml/DpsBuilder.php` (integrar os três builders)
 - Create: `tests/Unit/Xml/TomadorBuilderTest.php`
 - Create: `tests/Unit/Xml/ServicoBuilderTest.php`
 - Create: `tests/Unit/Xml/ValoresBuilderTest.php`
@@ -1532,7 +1532,7 @@ Expected: FAIL
 
 **Step 3: Implementar TomadorBuilder**
 
-`src/Xml/Builders/TomadorBuilder.php`:
+`src-new/Xml/Builders/TomadorBuilder.php`:
 ```php
 <?php
 
@@ -1591,7 +1591,7 @@ class TomadorBuilder
 
 **Step 4: Implementar ServicoBuilder**
 
-`src/Xml/Builders/ServicoBuilder.php`:
+`src-new/Xml/Builders/ServicoBuilder.php`:
 ```php
 <?php
 
@@ -1672,7 +1672,7 @@ class ServicoBuilder
 
 **Step 5: Implementar ValoresBuilder**
 
-`src/Xml/Builders/ValoresBuilder.php`:
+`src-new/Xml/Builders/ValoresBuilder.php`:
 ```php
 <?php
 
@@ -1754,7 +1754,7 @@ class ValoresBuilder
 
 **Step 6: Integrar builders no DpsBuilder**
 
-Modificar `src/Xml/DpsBuilder.php` — substituir os comentários `// toma / serv / valores` pela chamada real:
+Modificar `src-new/Xml/DpsBuilder.php` — substituir os comentários `// toma / serv / valores` pela chamada real:
 
 ```php
 // Após o bloco de prest, antes de $dps->appendChild($infDps):
@@ -1783,7 +1783,7 @@ Expected: PASS (todos)
 **Step 8: Commit**
 
 ```bash
-git add src/Xml/ tests/Unit/Xml/
+git add src-new/Xml/ tests/Unit/Xml/
 git commit -m "feat: add TomadorBuilder, ServicoBuilder, ValoresBuilder — DpsBuilder completo"
 ```
 
@@ -1792,7 +1792,7 @@ git commit -m "feat: add TomadorBuilder, ServicoBuilder, ValoresBuilder — DpsB
 ## Task 10: DpsBuilder — validação XSD + teste de operação vazia
 
 **Files:**
-- Modify: `src/Xml/DpsBuilder.php` (adicionar `buildAndValidate()` separado)
+- Modify: `src-new/Xml/DpsBuilder.php` (adicionar `buildAndValidate()` separado)
 - Create: `tests/Unit/Xml/DpsBuilderXsdTest.php`
 - Modify: `tests/Unit/Services/PrefeituraResolverTest.php` (adicionar teste de operação vazia)
 
@@ -1854,7 +1854,7 @@ Expected: FAIL (método `buildAndValidate` não existe)
 
 **Step 4: Adicionar `buildAndValidate()` no DpsBuilder**
 
-Em `src/Xml/DpsBuilder.php`, adicionar método público que chama `build()` + validação:
+Em `src-new/Xml/DpsBuilder.php`, adicionar método público que chama `build()` + validação:
 
 ```php
 public function buildAndValidate(DpsData $data): string
@@ -1903,7 +1903,7 @@ Expected: PASS
 **Step 7: Commit**
 
 ```bash
-git add src/Xml/ tests/Unit/Xml/ tests/Unit/Services/
+git add src-new/Xml/ tests/Unit/Xml/ tests/Unit/Services/
 git commit -m "feat: DpsBuilder::buildAndValidate() valida XML contra DPS_v1.01.xsd; teste de op vazia"
 ```
 
@@ -1912,7 +1912,7 @@ git commit -m "feat: DpsBuilder::buildAndValidate() valida XML contra DPS_v1.01.
 ## Task 11: EventoBuilder
 
 **Files:**
-- Create: `src/Xml/Builders/EventoBuilder.php`
+- Create: `src-new/Xml/Builders/EventoBuilder.php`
 - Create: `tests/Unit/Xml/EventoBuilderTest.php`
 
 **Context:**
@@ -1994,7 +1994,7 @@ Expected: FAIL
 
 **Step 3: Implementar**
 
-`src/Xml/Builders/EventoBuilder.php`:
+`src-new/Xml/Builders/EventoBuilder.php`:
 ```php
 <?php
 
@@ -2077,7 +2077,7 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add src/Xml/Builders/EventoBuilder.php tests/Unit/Xml/EventoBuilderTest.php
+git add src-new/Xml/Builders/EventoBuilder.php tests/Unit/Xml/EventoBuilderTest.php
 git commit -m "feat: add EventoBuilder — XML de cancelamento pedRegEvento"
 ```
 
@@ -2086,8 +2086,8 @@ git commit -m "feat: add EventoBuilder — XML de cancelamento pedRegEvento"
 ## Task 12: NfseHttpClient
 
 **Files:**
-- Create: `src/Http/NfseHttpClient.php`
-- Create: `src/NfseNacionalServiceProvider.php` (stub mínimo — expandido na Task 16)
+- Create: `src-new/Http/NfseHttpClient.php`
+- Create: `src-new/NfseNacionalServiceProvider.php` (stub mínimo — expandido na Task 16)
 - Create: `tests/Unit/Http/NfseHttpClientTest.php`
 - Create: `tests/TestCase.php`
 - Modify: `tests/Pest.php` (adicionar `uses()`)
@@ -2101,7 +2101,7 @@ git commit -m "feat: add EventoBuilder — XML de cancelamento pedRegEvento"
 
 **Step 1: Criar stub do ServiceProvider**
 
-`src/NfseNacionalServiceProvider.php` (stub mínimo — necessário para o TestCase do Testbench; expandido com bindings reais na Task 16):
+`src-new/NfseNacionalServiceProvider.php` (stub mínimo — necessário para o TestCase do Testbench; expandido com bindings reais na Task 16):
 ```php
 <?php
 
@@ -2227,7 +2227,7 @@ Expected: FAIL (classe não existe)
 
 **Step 5: Implementar**
 
-`src/Http/NfseHttpClient.php`:
+`src-new/Http/NfseHttpClient.php`:
 ```php
 <?php
 
@@ -2306,7 +2306,7 @@ Expected: PASS
 **Step 7: Commit**
 
 ```bash
-git add src/Http/ src/NfseNacionalServiceProvider.php tests/Unit/Http/ tests/TestCase.php tests/Pest.php
+git add src-new/Http/ src-new/NfseNacionalServiceProvider.php tests/Unit/Http/ tests/TestCase.php tests/Pest.php
 git commit -m "feat: add NfseHttpClient — mTLS via tmpfile, Laravel Http client; stub ServiceProvider"
 ```
 
@@ -2315,8 +2315,8 @@ git commit -m "feat: add NfseHttpClient — mTLS via tmpfile, Laravel Http clien
 ## Task 13: ConsultaBuilder
 
 **Files:**
-- Create: `src/Contracts/NfseClientContract.php`
-- Create: `src/Consulta/ConsultaBuilder.php`
+- Create: `src-new/Contracts/NfseClientContract.php`
+- Create: `src-new/Consulta/ConsultaBuilder.php`
 - Create: `tests/Unit/Consulta/ConsultaBuilderTest.php`
 
 **Context:**
@@ -2324,7 +2324,7 @@ git commit -m "feat: add NfseHttpClient — mTLS via tmpfile, Laravel Http clien
 
 **Step 1: Criar NfseClientContract**
 
-`src/Contracts/NfseClientContract.php`:
+`src-new/Contracts/NfseClientContract.php`:
 ```php
 <?php
 
@@ -2406,7 +2406,7 @@ Expected: FAIL
 
 **Step 4: Implementar ConsultaBuilder**
 
-`src/Consulta/ConsultaBuilder.php`:
+`src-new/Consulta/ConsultaBuilder.php`:
 ```php
 <?php
 
@@ -2493,7 +2493,7 @@ Expected: PASS
 **Step 6: Commit**
 
 ```bash
-git add src/Contracts/ src/Consulta/ tests/Unit/Consulta/
+git add src-new/Contracts/ src-new/Consulta/ tests/Unit/Consulta/
 git commit -m "feat: add NfseClientContract + ConsultaBuilder — fluent nfse/dps/danfse/eventos"
 ```
 
@@ -2502,12 +2502,12 @@ git commit -m "feat: add NfseClientContract + ConsultaBuilder — fluent nfse/dp
 ## Task 14: Events
 
 **Files:**
-- Create: `src/Events/NfseRequested.php`
-- Create: `src/Events/NfseEmitted.php`
-- Create: `src/Events/NfseCancelled.php`
-- Create: `src/Events/NfseQueried.php`
-- Create: `src/Events/NfseFailed.php`
-- Create: `src/Events/NfseRejected.php`
+- Create: `src-new/Events/NfseRequested.php`
+- Create: `src-new/Events/NfseEmitted.php`
+- Create: `src-new/Events/NfseCancelled.php`
+- Create: `src-new/Events/NfseQueried.php`
+- Create: `src-new/Events/NfseFailed.php`
+- Create: `src-new/Events/NfseRejected.php`
 - Create: `tests/Unit/Events/EventsTest.php`
 
 **Step 1: Escrever teste**
@@ -2563,7 +2563,7 @@ Expected: FAIL
 
 **Step 3: Implementar**
 
-`src/Events/NfseRequested.php`:
+`src-new/Events/NfseRequested.php`:
 ```php
 <?php
 
@@ -2578,7 +2578,7 @@ class NfseRequested
 }
 ```
 
-`src/Events/NfseEmitted.php`:
+`src-new/Events/NfseEmitted.php`:
 ```php
 <?php
 
@@ -2592,7 +2592,7 @@ class NfseEmitted
 }
 ```
 
-`src/Events/NfseCancelled.php`:
+`src-new/Events/NfseCancelled.php`:
 ```php
 <?php
 
@@ -2606,7 +2606,7 @@ class NfseCancelled
 }
 ```
 
-`src/Events/NfseQueried.php`:
+`src-new/Events/NfseQueried.php`:
 ```php
 <?php
 
@@ -2620,7 +2620,7 @@ class NfseQueried
 }
 ```
 
-`src/Events/NfseFailed.php`:
+`src-new/Events/NfseFailed.php`:
 ```php
 <?php
 
@@ -2635,7 +2635,7 @@ class NfseFailed
 }
 ```
 
-`src/Events/NfseRejected.php`:
+`src-new/Events/NfseRejected.php`:
 ```php
 <?php
 
@@ -2660,7 +2660,7 @@ Expected: PASS
 **Step 5: Commit**
 
 ```bash
-git add src/Events/ tests/Unit/Events/
+git add src-new/Events/ tests/Unit/Events/
 git commit -m "feat: add NfseRequested, NfseEmitted, NfseCancelled, NfseQueried, NfseFailed, NfseRejected events"
 ```
 
@@ -2677,7 +2677,7 @@ Ir para a seção "ServiceProvider, Facade e Config" abaixo (originalmente Task 
 ## ~~Task 15 (original)~~ Task 16: NfseClient — emitir e consultar
 
 **Files:**
-- Create: `src/NfseClient.php`
+- Create: `src-new/NfseClient.php`
 - Create: `tests/fixtures/responses/emitir_sucesso.json`
 - Create: `tests/fixtures/responses/emitir_rejeicao.json`
 - Create: `tests/fixtures/responses/consultar_nfse.json`
@@ -2838,7 +2838,7 @@ Expected: FAIL
 
 > **Nota multi-tenant:** `NfseClient::for()` sempre sobrescreve a configuração do container com os parâmetros passados. Isso é intencional para suportar multi-tenant (cada tenant com seu cert/prefeitura). Para single-tenant usando cert/prefeitura do `config/nfse-nacional.php`, usar `app(NfseClient::class)` direto sem `for()`.
 
-`src/NfseClient.php`:
+`src-new/NfseClient.php`:
 ```php
 <?php
 
@@ -3128,7 +3128,7 @@ Expected: PASS (6 testes)
 **Step 6: Commit**
 
 ```bash
-git add src/NfseClient.php tests/Feature/ tests/fixtures/responses/
+git add src-new/NfseClient.php tests/Feature/ tests/fixtures/responses/
 git commit -m "feat: add NfseClient — emitir, cancelar, consultar com events"
 ```
 
@@ -3139,8 +3139,8 @@ git commit -m "feat: add NfseClient — emitir, cancelar, consultar com events"
 > **Executar ANTES da Task 16 (NfseClient).** O ServiceProvider precisa existir para que os feature tests usem o path via container.
 
 **Files:**
-- Create: `src/NfseNacionalServiceProvider.php`
-- Create: `src/Facades/NfseNacional.php`
+- Create: `src-new/NfseNacionalServiceProvider.php`
+- Create: `src-new/Facades/NfseNacional.php`
 - Create: `config/nfse-nacional.php`
 - Create: `tests/Feature/ServiceProviderTest.php`
 
@@ -3197,7 +3197,7 @@ return [
 
 **Step 4: Expandir ServiceProvider** (substitui o stub criado na Task 12)
 
-`src/NfseNacionalServiceProvider.php`:
+`src-new/NfseNacionalServiceProvider.php`:
 ```php
 <?php
 
@@ -3254,7 +3254,7 @@ class NfseNacionalServiceProvider extends ServiceProvider
 
 **Step 5: Criar Facade**
 
-`src/Facades/NfseNacional.php`:
+`src-new/Facades/NfseNacional.php`:
 ```php
 <?php
 
@@ -3292,7 +3292,7 @@ Expected: PASS (todos os testes)
 **Step 8: Commit**
 
 ```bash
-git add src/NfseNacionalServiceProvider.php src/Facades/ config/
+git add src-new/NfseNacionalServiceProvider.php src-new/Facades/ config/
 git commit -m "feat: add ServiceProvider, Facade e config — NfseClient ligado ao container Laravel"
 ```
 
@@ -3516,13 +3516,26 @@ git commit -m "test: feature tests para cancelar e dispatch de events"
 
 **Files:**
 - Create: `CHANGELOG.md`
-- Modify: `composer.json` (remover autoload `Hadder\NfseNacional`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`)
+- Modify: `composer.json` (remover autoload `Hadder\NfseNacional`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`, apontar `Pulsar` para `src/`)
 - Delete: `Helpers.php` (guard `function_exists` adicionado na Task 1 — agora remover completamente)
+- Rename: `src/` → `src-old/` (código legado `Hadder\NfseNacional` preservado para referência)
+- Rename: `src-new/` → `src/` (código novo `Pulsar\NfseNacional` assume o diretório principal)
 - Modify: `storage/prefeituras.json` (remover chaves por nome legado, manter só IBGE)
 
-**Step 1: Remover autoload legado do composer.json**
+**Step 1: Renomear diretórios — src/ → src-old/, src-new/ → src/**
 
-Remover a entrada `Hadder\NfseNacional` do PSR-4, mantendo apenas `Pulsar\NfseNacional`:
+Mover a implementação legada (`Hadder\NfseNacional`) para `src-old/` e promover a implementação nova (`Pulsar\NfseNacional`) para `src/`:
+
+```bash
+mv src/ src-old/
+mv src-new/ src/
+```
+
+> **Nota:** Após este passo, o namespace `Pulsar\NfseNacional` passa a viver em `src/` — layout padrão de pacote. O código legado fica em `src-old/` para referência e pode ser removido quando não for mais necessário.
+
+**Step 2: Atualizar autoload no composer.json**
+
+Remover a entrada `Hadder\NfseNacional` do PSR-4 e apontar `Pulsar\NfseNacional` para `src/` (agora que o rename foi feito):
 
 ```json
 "autoload": {
@@ -3532,16 +3545,16 @@ Remover a entrada `Hadder\NfseNacional` do PSR-4, mantendo apenas `Pulsar\NfseNa
 }
 ```
 
-**Step 2: Remover dependências legadas do composer.json**
+**Step 3: Remover dependências legadas do composer.json**
 
-Remover `tecnickcom/tcpdf` e `symfony/var-dumper` do `require`. Verificar antes que nenhum arquivo em `src/` com namespace `Pulsar\NfseNacional` as importa:
+Remover `tecnickcom/tcpdf` e `symfony/var-dumper` do `require`. Verificar antes que nenhum arquivo em `src/` (já renomeado) com namespace `Pulsar\NfseNacional` as importa:
 
 ```bash
 grep -r "use TCPDF\|use Symfony\\Component\\VarDumper\|use Symfony\\Component\\Debug" src/ --include="*.php"
 ```
 Expected: nenhum resultado.
 
-**Step 3: Remover Helpers.php**
+**Step 4: Remover Helpers.php**
 
 Deletar o arquivo `Helpers.php` da raiz do projeto (o `now()` do `illuminate/support` o substitui):
 
@@ -3549,11 +3562,11 @@ Deletar o arquivo `Helpers.php` da raiz do projeto (o `now()` do `illuminate/sup
 rm Helpers.php
 ```
 
-**Step 4: Limpar chaves por nome no prefeituras.json**
+**Step 5: Limpar chaves por nome no prefeituras.json**
 
 Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas as chaves numéricas IBGE (7 dígitos). Verificar que cada prefeitura tem apenas a entrada IBGE.
 
-**Step 5: Criar CHANGELOG.md**
+**Step 6: Criar CHANGELOG.md**
 
 ```markdown
 # Changelog
@@ -3584,25 +3597,25 @@ Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas
 - Chaves duplicadas por nome no `prefeituras.json` (mantido apenas IBGE 7 dígitos)
 ```
 
-**Step 6: Rodar `composer update` para limpar deps removidas**
+**Step 7: Rodar `composer update` para limpar deps removidas**
 
 ```bash
 composer update --no-dev
 composer install
 ```
 
-**Step 7: Rodar suite completa uma última vez**
+**Step 8: Rodar suite completa uma última vez**
 
 ```bash
 ./vendor/bin/pest --no-coverage
 ```
 Expected: PASS (todos os testes)
 
-**Step 8: Commit final**
+**Step 9: Commit final**
 
 ```bash
-git add CHANGELOG.md composer.json composer.lock storage/prefeituras.json
-git commit -m "chore: CHANGELOG, remoção de autoload/deps legadas, Helpers.php e limpeza de prefeituras.json"
+git add -A
+git commit -m "chore: CHANGELOG, rename src-new→src, remoção de autoload/deps legadas, Helpers.php e limpeza de prefeituras.json"
 ```
 
 ---
@@ -3636,4 +3649,4 @@ O código legado possui URLs `nfse_homologacao`/`nfse_producao` (apontando para 
 | 15 | NfseClient (emitir + consultar) | for() com fallback standalone, forStandalone(), eventos tipados |
 | 16 | ServiceProvider + Facade + Config | Auto-config via config, guard contra uso sem configure() |
 | 17 | Feature tests cancelar + consultar + events | cancelar rejeição, danfse, eventos, dispatch events |
-| 18 | CHANGELOG + limpeza | Remover autoload Hadder, deps legadas, Helpers.php, chaves por nome no JSON |
+| 18 | CHANGELOG + limpeza | Rename src→src-old + src-new→src, remover autoload Hadder, deps legadas, Helpers.php, chaves por nome no JSON |

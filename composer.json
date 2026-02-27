@@ -1,40 +1,48 @@
 {
-  "name": "hadder/nfse-nacional",
-  "description": "Pacote para geração de NFSe Nacional usando componentes NFePHP (https://github.com/nfephp-org)",
-  "keywords": [
-    "nfse-nacional",
-    "nfse",
-    "mei"
-  ],
+  "name": "pulsar/nfse-nacional",
+  "description": "Pacote Laravel para emissão de NFSe Nacional",
   "license": "MIT",
-  "autoload": {
-    "psr-4": {
-      "Hadder\\NfseNacional\\": "src/"
-    },
-    "files": [
-      "Helpers.php"
-    ]
-  },
-  "authors": [
-    {
-      "name": "Fernando Friedrich",
-      "email": "fernando@hadder.com.br"
-    }
-  ],
-  "minimum-stability": "dev",
   "require": {
-    "php": "^8.1",
-    "symfony/var-dumper": "^7.1|^6.4",
-    "tecnickcom/tcpdf": "^6.7",
+    "php": "^8.2",
     "nfephp-org/sped-common": "^5.1",
-    "ext-dom": "*",
+    "illuminate/http": "^11.0|^12.0",
+    "illuminate/support": "^11.0|^12.0",
+    "illuminate/contracts": "^11.0|^12.0",
+    "tecnickcom/tcpdf": "^6.7",
+    "symfony/var-dumper": "^7.1|^6.4",
     "ext-curl": "*",
+    "ext-dom": "*",
     "ext-zlib": "*",
     "ext-openssl": "*",
     "ext-mbstring": "*"
   },
-  "config": {
-    "optimize-autoloader": true
+  "require-dev": {
+    "pestphp/pest": "^3.0",
+    "pestphp/pest-plugin-laravel": "^3.0",
+    "orchestra/testbench": "^9.0"
   },
-  "prefer-stable": true
+  "autoload": {
+    "psr-4": {
+      "Hadder\\NfseNacional\\": "src/",
+      "Pulsar\\NfseNacional\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Pulsar\\NfseNacional\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "extra": {
+    "laravel": {
+      "providers": ["Pulsar\\NfseNacional\\NfseNacionalServiceProvider"]
+    }
+  }
 }
