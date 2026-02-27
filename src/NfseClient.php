@@ -14,7 +14,9 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 class NfseClient implements NfseClientContract
 {
     private ?Certificates\CertificateManager $certManager = null;
+
     private ?string $prefeitura = null;
+
     private ?Http\NfseHttpClient $httpClient = null;
 
     public function __construct(
@@ -118,9 +120,9 @@ class NfseClient implements NfseClientContract
             $chave = $result['chNFSe'] ?? null;
             $this->dispatchEvent(new Events\NfseEmitted($chave ?? ''));
             return new NfseResponse(true, $chave, null, null);
-        } catch (Exceptions\HttpException $e) {
-            $this->dispatchEvent(new Events\NfseFailed($operacao, $e->getMessage()));
-            throw $e;
+        } catch (Exceptions\HttpException $httpException) {
+            $this->dispatchEvent(new Events\NfseFailed($operacao, $httpException->getMessage()));
+            throw $httpException;
         }
     }
 
@@ -167,9 +169,9 @@ class NfseClient implements NfseClientContract
 
             $this->dispatchEvent(new Events\NfseCancelled($chave));
             return new NfseResponse(true, $chave, null, null);
-        } catch (Exceptions\HttpException $e) {
-            $this->dispatchEvent(new Events\NfseFailed($operacao, $e->getMessage()));
-            throw $e;
+        } catch (Exceptions\HttpException $httpException) {
+            $this->dispatchEvent(new Events\NfseFailed($operacao, $httpException->getMessage()));
+            throw $httpException;
         }
     }
 
@@ -207,9 +209,9 @@ class NfseClient implements NfseClientContract
 
             $this->dispatchEvent(new Events\NfseQueried('nfse'));
             return new NfseResponse(true, null, $xml, null);
-        } catch (Exceptions\HttpException $e) {
-            $this->dispatchEvent(new Events\NfseFailed($operacao, $e->getMessage()));
-            throw $e;
+        } catch (Exceptions\HttpException $httpException) {
+            $this->dispatchEvent(new Events\NfseFailed($operacao, $httpException->getMessage()));
+            throw $httpException;
         }
     }
 
@@ -230,9 +232,9 @@ class NfseClient implements NfseClientContract
 
             $this->dispatchEvent(new Events\NfseQueried($operacao));
             return $result;
-        } catch (Exceptions\HttpException $e) {
-            $this->dispatchEvent(new Events\NfseFailed($operacao, $e->getMessage()));
-            throw $e;
+        } catch (Exceptions\HttpException $httpException) {
+            $this->dispatchEvent(new Events\NfseFailed($operacao, $httpException->getMessage()));
+            throw $httpException;
         }
     }
 }

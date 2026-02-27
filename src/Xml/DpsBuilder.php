@@ -12,6 +12,7 @@ use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 class DpsBuilder
 {
     private const VERSION = '1.01';
+
     private const XMLNS   = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function __construct(private readonly string $schemesPath)
@@ -49,9 +50,11 @@ class DpsBuilder
         if (isset($d->cmotivoemisti)) {
             $infDps->appendChild($doc->createElement('cMotivoEmisTI', $d->cmotivoemisti));
         }
+
         if (isset($d->chnfserej)) {
             $infDps->appendChild($doc->createElement('chNFSeRej', $d->chnfserej));
         }
+
         $infDps->appendChild($doc->createElement('cLocEmi', $d->clocemi));
 
         if ((array) $data->prestador !== []) {
@@ -83,6 +86,7 @@ class DpsBuilder
         if (!file_exists($xsdPath)) {
             return;
         }
+
         $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;
         $doc = new DOMDocument();
         $doc->loadXML($xmlWithDecl);

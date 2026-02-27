@@ -68,6 +68,7 @@ final readonly class ConsultaBuilder
         if ($path === '') {
             return $baseUrl;
         }
+
         return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
     }
 }

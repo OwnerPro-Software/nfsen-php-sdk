@@ -15,18 +15,23 @@ class TomadorBuilder
         if (isset($toma->cnpj)) {
             $el->appendChild($doc->createElement('CNPJ', $toma->cnpj));
         }
+
         if (isset($toma->cpf)) {
             $el->appendChild($doc->createElement('CPF', $toma->cpf));
         }
+
         if (isset($toma->nif)) {
             $el->appendChild($doc->createElement('NIF', $toma->nif));
         }
+
         if (isset($toma->cnaonif)) {
             $el->appendChild($doc->createElement('cNaoNIF', $toma->cnaonif));
         }
+
         if (isset($toma->caepf)) {
             $el->appendChild($doc->createElement('CAEPF', $toma->caepf));
         }
+
         if (isset($toma->im)) {
             $el->appendChild($doc->createElement('IM', $toma->im));
         }
@@ -48,17 +53,21 @@ class TomadorBuilder
                 $endExt->appendChild($doc->createElement('xEstProvReg', $toma->end->endext->xestprovreg));
                 $endEl->appendChild($endExt);
             }
+
             $endEl->appendChild($doc->createElement('xLgr', $toma->end->xlgr));
             $endEl->appendChild($doc->createElement('nro', $toma->end->nro));
             if (isset($toma->end->xcpl)) {
                 $endEl->appendChild($doc->createElement('xCpl', $toma->end->xcpl));
             }
+
             $endEl->appendChild($doc->createElement('xBairro', $toma->end->xbairro));
             $el->appendChild($endEl);
         }
+
         if (isset($toma->fone)) {
             $el->appendChild($doc->createElement('fone', $toma->fone));
         }
+
         if (isset($toma->email)) {
             $el->appendChild($doc->createElement('email', $toma->email));
         }

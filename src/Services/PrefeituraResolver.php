@@ -68,7 +68,7 @@ class PrefeituraResolver
     private function validateIbge(string $code): void
     {
         if (!preg_match('/^\d{7}$/', $code)) {
-            throw new \InvalidArgumentException("Código IBGE inválido: '$code'. Esperado: 7 dígitos numéricos.");
+            throw new \InvalidArgumentException(sprintf("Código IBGE inválido: '%s'. Esperado: 7 dígitos numéricos.", $code));
         }
     }
 }

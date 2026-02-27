@@ -8,6 +8,7 @@ use Pulsar\NfseNacional\Enums\MotivoCancelamento;
 class EventoBuilder
 {
     private const VERSION = '1.01';
+
     private const XMLNS   = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function build(
@@ -52,6 +53,7 @@ class EventoBuilder
         $motivoEl->appendChild($doc->createElement('xDesc', $xDesc));
         $motivoEl->appendChild($doc->createElement('cMotivo', $motivo->value));
         $motivoEl->appendChild($doc->createElement('xMotivo', $descricao));
+
         $infPedReg->appendChild($motivoEl);
 
         $root->appendChild($infPedReg);

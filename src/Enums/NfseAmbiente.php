@@ -17,7 +17,7 @@ enum NfseAmbiente: int
             'producao', 'production'     => self::PRODUCAO,
             'homologacao', 'homologation' => self::HOMOLOGACAO,
             default => throw new \InvalidArgumentException(
-                "Ambiente NFSe inválido: '$v'. Valores aceitos: 1, 2, 'producao', 'homologacao'."
+                sprintf("Ambiente NFSe inválido: '%s'. Valores aceitos: 1, 2, 'producao', 'homologacao'.", $v)
             ),
         };
     }
