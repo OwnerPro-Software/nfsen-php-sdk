@@ -44,7 +44,7 @@ class NfseClient implements NfseClientContract
         private readonly DpsBuilder $dpsBuilder,
     ) {}
 
-    public static function for(string $pfxContent, string $senha, string $prefeitura): static
+    public static function for(string $pfxContent, string $senha, string $prefeitura): self
     {
         if (class_exists(Container::class)
             && Container::getInstance()->bound(static::class)
@@ -65,11 +65,11 @@ class NfseClient implements NfseClientContract
         bool $sslVerify = true,
         ?string $prefeiturasJsonPath = null,
         ?string $schemesPath = null,
-    ): static {
+    ): self {
         $jsonPath    = $prefeiturasJsonPath ?? __DIR__ . '/../storage/prefeituras.json';
         $schemasPath = $schemesPath ?? __DIR__ . '/../storage/schemes';
 
-        $instance = new static(
+        $instance = new self(
             ambiente:           $ambiente,
             timeout:            $timeout,
             signingAlgorithm:   $signingAlgorithm,
@@ -81,7 +81,7 @@ class NfseClient implements NfseClientContract
         return $instance->configure($pfxContent, $senha, $prefeitura);
     }
 
-    public function configure(string $pfxContent, string $senha, string $prefeitura): static
+    public function configure(string $pfxContent, string $senha, string $prefeitura): self
     {
         $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
         $this->certManager = new CertificateManager($pfxContent, $senha);
