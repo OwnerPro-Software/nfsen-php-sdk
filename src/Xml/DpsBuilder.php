@@ -91,7 +91,7 @@ class DpsBuilder
         $errors = libxml_get_errors();
         libxml_clear_errors();
         if (!$valid) {
-            $messages = array_map(fn ($e) => trim($e->message), $errors);
+            $messages = array_map(fn (\LibXMLError $e) => trim($e->message), $errors);
             throw new \Pulsar\NfseNacional\Exceptions\NfseException(
                 'XML inválido: ' . implode('; ', $messages)
             );
