@@ -45,8 +45,12 @@ class ServicoBuilder
             $comExt->appendChild($doc->createElement('mecAFComexP', $serv->comext->mecafcomexp));
             $comExt->appendChild($doc->createElement('mecAFComexT', $serv->comext->mecafcomext));
             $comExt->appendChild($doc->createElement('movTempBens', $serv->comext->movtempbens));
-            if (isset($serv->comext->ndi)) $comExt->appendChild($doc->createElement('nDI', $serv->comext->ndi));
-            if (isset($serv->comext->nre)) $comExt->appendChild($doc->createElement('nRE', $serv->comext->nre));
+            if (isset($serv->comext->ndi)) {
+                $comExt->appendChild($doc->createElement('nDI', $serv->comext->ndi));
+            }
+            if (isset($serv->comext->nre)) {
+                $comExt->appendChild($doc->createElement('nRE', $serv->comext->nre));
+            }
             $comExt->appendChild($doc->createElement('mdic', $serv->comext->mdic));
             $el->appendChild($comExt);
         }
@@ -54,17 +58,35 @@ class ServicoBuilder
         // obra (opcional)
         if (isset($serv->obra)) {
             $obra = $doc->createElement('obra');
-            if (isset($serv->obra->inscimobfisc)) $obra->appendChild($doc->createElement('inscImobFisc', $serv->obra->inscimobfisc));
-            if (isset($serv->obra->cobra)) $obra->appendChild($doc->createElement('cObra', $serv->obra->cobra));
-            if (isset($serv->obra->ccib)) $obra->appendChild($doc->createElement('cCIB', $serv->obra->ccib));
+            if (isset($serv->obra->inscimobfisc)) {
+                $obra->appendChild($doc->createElement('inscImobFisc', $serv->obra->inscimobfisc));
+            }
+            if (isset($serv->obra->cobra)) {
+                $obra->appendChild($doc->createElement('cObra', $serv->obra->cobra));
+            }
+            if (isset($serv->obra->ccib)) {
+                $obra->appendChild($doc->createElement('cCIB', $serv->obra->ccib));
+            }
             if (isset($serv->obra->end)) {
                 $endObra = $doc->createElement('end');
-                if (isset($serv->obra->end->cep)) $endObra->appendChild($doc->createElement('CEP', $serv->obra->end->cep));
-                if (isset($serv->obra->end->cmun)) $endObra->appendChild($doc->createElement('cMun', $serv->obra->end->cmun));
-                if (isset($serv->obra->end->xlgr)) $endObra->appendChild($doc->createElement('xLgr', $serv->obra->end->xlgr));
-                if (isset($serv->obra->end->nro)) $endObra->appendChild($doc->createElement('nro', $serv->obra->end->nro));
-                if (isset($serv->obra->end->xcpl)) $endObra->appendChild($doc->createElement('xCpl', $serv->obra->end->xcpl));
-                if (isset($serv->obra->end->xbairro)) $endObra->appendChild($doc->createElement('xBairro', $serv->obra->end->xbairro));
+                if (isset($serv->obra->end->cep)) {
+                    $endObra->appendChild($doc->createElement('CEP', $serv->obra->end->cep));
+                }
+                if (isset($serv->obra->end->cmun)) {
+                    $endObra->appendChild($doc->createElement('cMun', $serv->obra->end->cmun));
+                }
+                if (isset($serv->obra->end->xlgr)) {
+                    $endObra->appendChild($doc->createElement('xLgr', $serv->obra->end->xlgr));
+                }
+                if (isset($serv->obra->end->nro)) {
+                    $endObra->appendChild($doc->createElement('nro', $serv->obra->end->nro));
+                }
+                if (isset($serv->obra->end->xcpl)) {
+                    $endObra->appendChild($doc->createElement('xCpl', $serv->obra->end->xcpl));
+                }
+                if (isset($serv->obra->end->xbairro)) {
+                    $endObra->appendChild($doc->createElement('xBairro', $serv->obra->end->xbairro));
+                }
                 $obra->appendChild($endObra);
             }
             $el->appendChild($obra);

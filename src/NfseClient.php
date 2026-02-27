@@ -74,7 +74,7 @@ class NfseClient implements NfseClientContract
 
     private function ensureConfigured(): void
     {
-        if ($this->certManager === null || $this->prefeitura === null || $this->httpClient === null) {
+        if (!$this->certManager instanceof \Pulsar\NfseNacional\Certificates\CertificateManager || $this->prefeitura === null || !$this->httpClient instanceof \Pulsar\NfseNacional\Http\NfseHttpClient) {
             throw new Exceptions\NfseException(
                 'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
             );
@@ -104,7 +104,7 @@ class NfseClient implements NfseClientContract
 
             $seFinUrl   = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
             $opPath     = $this->prefeituraResolver->resolveOperation($this->prefeitura, 'emitir_nfse');
-            $url        = rtrim($seFinUrl, '/') . ($opPath ? '/' . ltrim($opPath, '/') : '');
+            $url        = rtrim($seFinUrl, '/') . ($opPath !== '' && $opPath !== '0' ? '/' . ltrim($opPath, '/') : '');
 
             $result = $this->httpClient->post($url, $payload);
 
@@ -128,7 +128,7 @@ class NfseClient implements NfseClientContract
     {
         $this->ensureConfigured();
         $operacao = 'cancelar';
-        $this->dispatchEvent(new Events\NfseRequested($operacao, compact('chave')));
+        $this->dispatchEvent(new Events\NfseRequested($operacao, ['chave' => $chave]));
 
         try {
             $cert = $this->certManager->getCertificate();
@@ -154,7 +154,7 @@ class NfseClient implements NfseClientContract
             $opPath    = $this->prefeituraResolver->resolveOperation(
                 $this->prefeitura, 'cancelar_nfse', ['chave' => $chave]
             );
-            $url = rtrim($seFinUrl, '/') . ($opPath ? '/' . ltrim($opPath, '/') : '');
+            $url = rtrim($seFinUrl, '/') . ($opPath !== '' && $opPath !== '0' ? '/' . ltrim($opPath, '/') : '');
 
             $result = $this->httpClient->post($url, $payload);
 
@@ -188,7 +188,7 @@ class NfseClient implements NfseClientContract
     {
         $this->ensureConfigured();
         $operacao = 'consultar';
-        $this->dispatchEvent(new Events\NfseRequested($operacao, compact('url')));
+        $this->dispatchEvent(new Events\NfseRequested($operacao, ['url' => $url]));
 
         try {
             $result = $this->httpClient->get($url);
@@ -217,7 +217,7 @@ class NfseClient implements NfseClientContract
     {
         $this->ensureConfigured();
         $operacao = 'consultar';
-        $this->dispatchEvent(new Events\NfseRequested($operacao, compact('url')));
+        $this->dispatchEvent(new Events\NfseRequested($operacao, ['url' => $url]));
 
         try {
             $result = $this->httpClient->get($url);

@@ -54,12 +54,12 @@ class DpsBuilder
         }
         $infDps->appendChild($doc->createElement('cLocEmi', $d->clocemi));
 
-        if (!empty((array) $data->prestador)) {
+        if ((array) $data->prestador !== []) {
             $infDps->appendChild((new PrestadorBuilder())->build($doc, $data->prestador));
         }
 
         // toma (optional)
-        if (!empty((array) $data->tomador)) {
+        if ((array) $data->tomador !== []) {
             $infDps->appendChild((new TomadorBuilder())->build($doc, $data->tomador));
         }
 
@@ -67,7 +67,7 @@ class DpsBuilder
         $infDps->appendChild((new ServicoBuilder())->build($doc, $data->servico));
 
         // valores (obrigatório quando houver dados)
-        if (!empty((array) $data->valores)) {
+        if ((array) $data->valores !== []) {
             $infDps->appendChild((new ValoresBuilder())->build($doc, $data->valores));
         }
 

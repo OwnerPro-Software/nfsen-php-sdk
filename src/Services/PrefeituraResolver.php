@@ -29,13 +29,13 @@ class PrefeituraResolver
 
     public function __construct(string $jsonPath)
     {
-        $this->data = static::$cache[$jsonPath]
+        $this->data = self::$cache[$jsonPath]
             ??= json_decode(file_get_contents($jsonPath) ?: '{}', true) ?? [];
     }
 
     public static function clearCache(): void
     {
-        static::$cache = [];
+        self::$cache = [];
     }
 
     public function resolveSeFinUrl(string $codigoIbge, NfseAmbiente $ambiente): string
