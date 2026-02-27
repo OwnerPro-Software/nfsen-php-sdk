@@ -45,6 +45,11 @@ src/
 │   └── XmlSigner.php
 ├── Services/
 │   └── PrefeituraResolver.php
+├── Events/
+│   ├── NfseRequested.php
+│   ├── NfseEmitted.php
+│   ├── NfseFailed.php
+│   └── NfseRejected.php
 ├── DTOs/
 │   ├── DpsData.php
 │   └── NfseResponse.php
@@ -90,6 +95,7 @@ NfseNacional::for($pfxContent, $senha, '3501608')->consultarNfse($chave);
 NfseNacional::for($pfxContent, $senha, '3501608')->consultarDps($chave);
 NfseNacional::for($pfxContent, $senha, '3501608')->consultarDanfse($chave);
 NfseNacional::for($pfxContent, $senha, '3501608')->cancelar($chave, $motivo, $descricao);
+NfseNacional::for($pfxContent, $senha, '3501608')->eventos($chave);
 ```
 
 ### Configuração estática (config/nfse-nacional.php)
@@ -107,6 +113,27 @@ return [
 ];
 ```
 
+## Service Provider e Facade
+
+`NfseNacionalServiceProvider` registra `NfseClient` no container como **transient** (não singleton) para evitar vazamento de estado entre tenants:
+
+```php
+$this->app->bind(NfseClient::class, fn () => new NfseClient());
+```
+
+A Facade `NfseNacional` resolve via `NfseClient::for()`, que instancia um novo `NfseClient` configurado com o certificado e a prefeitura do tenant:
+
+```php
+// Facade::getFacadeAccessor() retorna NfseClient::class
+// NfseClient::for() é um named constructor estático que devolve $this
+public static function for(string $pfxContent, string $senha, string $prefeitura): static
+{
+    return (new static())->configure($pfxContent, $senha, $prefeitura);
+}
+```
+
+Cada chamada a `NfseNacional::for(...)` produz uma instância isolada — sem estado compartilhado entre requests.
+
 ## Fluxo interno do emitir()
 
 ```
@@ -123,7 +150,7 @@ DpsData (DTO tipado)
 
 - `CertificateManager` é stateless — instanciado por request
 - `sped-common` (`\NFePHP\Common\Certificate`) constrói o objeto diretamente a partir da string do PFX, sem escrita em disco
-- Para mTLS via Guzzle, os PEMs são gravados via `tmpfile()` — arquivo temporário anônimo sem nome previsível, descartado no `finally` imediatamente após a request
+- Para mTLS via Guzzle, os PEMs são gravados via `tmpfile()` — arquivo temporário anônimo sem nome previsível; o recurso é fechado explicitamente com `fclose()` no `finally` imediatamente após a request (necessário para não vazar file descriptors em workers long-lived como Laravel Octane)
 - Nenhum arquivo com CNPJ/CPF em disco; nenhuma persistência entre requests
 - SSL habilitado corretamente: `CURLOPT_SSL_VERIFYHOST=2`, `CURLOPT_SSL_VERIFYPEER=1`
 
@@ -150,7 +177,7 @@ readonly class NfseResponse {
     public function __construct(
         public bool    $sucesso,
         public ?string $chave,
-        public ?string $xml,    // XML da nota decodificado (gzip+base64)
+        public ?string $xml,    // XML da nota — verificar se a resposta da API já vem em texto plano ou requer gunzip+base64decode (investigar na implementação)
         public ?string $erro,
     ) {}
 }
@@ -194,6 +221,8 @@ Padrão: `NfseAmbiente::HOMOLOGACAO`.
 `storage/prefeituras.json` mantém o mesmo formato do projeto atual.
 `Services/PrefeituraResolver` carrega o arquivo e faz merge com as URLs padrão.
 Identificação exclusivamente por **código IBGE** (suporte a nome legado removido).
+
+> **Breaking change**: consumidores que identificavam prefeituras por nome devem migrar para código IBGE. Registrar no CHANGELOG na release.
 
 ## Testes
 
