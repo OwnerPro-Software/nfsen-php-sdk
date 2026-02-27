@@ -8,9 +8,9 @@ dataset('dpsData', [
         $infDps->tpamb    = 2;
         $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
         $infDps->veraplic = '1.0';
-        $infDps->serie    = 'E';
+        $infDps->serie    = '1';
         $infDps->ndps     = 1;
-        $infDps->dcompet  = '2026-02';
+        $infDps->dcompet  = '2026-02-27';
         $infDps->tpemit   = 1;
         $infDps->clocemi  = '3501608';
 
@@ -30,11 +30,21 @@ dataset('dpsData', [
         $servico->locprest           = $locPrest;
 
         $cServ               = new stdClass();
-        $cServ->ctribnac     = '01.01.01.000';
+        $cServ->ctribnac     = '010101';
         $cServ->xdescserv    = 'Serviço de Teste';
+        $cServ->cnbs         = '123456789';
         $servico->cserv      = $cServ;
 
-        $valores = new stdClass();
+        $valores              = new stdClass();
+        $valores->vservprest  = new stdClass();
+        $valores->vservprest->vserv = '100.00';
+
+        $valores->trib              = new stdClass();
+        $valores->trib->tribmun     = new stdClass();
+        $valores->trib->tribmun->tribissqn  = '1';
+        $valores->trib->tribmun->tpretissqn = '1';
+        $valores->trib->totaltrib            = new stdClass();
+        $valores->trib->totaltrib->indtottrib = '0';
 
         return new DpsData($infDps, $prestador, $tomador, $servico, $valores);
     },

@@ -46,6 +46,15 @@ it('resolves custom operation for known prefeitura', function () use ($jsonPath)
     expect($path)->toContain('ABC');
 });
 
+it('returns empty string for empty operation override', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    // Americana (3501608) tem emitir_nfse: "" — URL já é completa
+    $path = $resolver->resolveOperation('3501608', 'emitir_nfse');
+
+    expect($path)->toBe('');
+});
+
 it('throws InvalidArgumentException for non-7-digit ibge code', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 

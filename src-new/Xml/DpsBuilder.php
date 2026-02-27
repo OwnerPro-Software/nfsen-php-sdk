@@ -18,6 +18,13 @@ class DpsBuilder
     {
     }
 
+    public function buildAndValidate(DpsData $data): string
+    {
+        $xml = $this->build($data);
+        $this->validateXsd($xml);
+        return $xml;
+    }
+
     public function build(DpsData $data): string
     {
         $doc = new DOMDocument('1.0', 'UTF-8');
@@ -68,6 +75,27 @@ class DpsBuilder
         $doc->appendChild($dps);
 
         return $doc->saveXML($doc->documentElement);
+    }
+
+    private function validateXsd(string $xmlFragment): void
+    {
+        $xsdPath = $this->schemesPath . '/DPS_v1.01.xsd';
+        if (!file_exists($xsdPath)) {
+            return;
+        }
+        $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;
+        $doc = new DOMDocument();
+        $doc->loadXML($xmlWithDecl);
+        libxml_use_internal_errors(true);
+        $valid  = $doc->schemaValidate($xsdPath);
+        $errors = libxml_get_errors();
+        libxml_clear_errors();
+        if (!$valid) {
+            $messages = array_map(fn ($e) => trim($e->message), $errors);
+            throw new \Pulsar\NfseNacional\Exceptions\NfseException(
+                'XML inválido: ' . implode('; ', $messages)
+            );
+        }
     }
 
     private function generateId(DpsData $data): string

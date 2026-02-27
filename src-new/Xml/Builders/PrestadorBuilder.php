@@ -44,11 +44,11 @@ class PrestadorBuilder
         }
 
         $regTrib = $doc->createElement('regTrib');
-        $regTrib->appendChild($doc->createElement('opSimpNac', $prest->regtrib->opsimpnac));
+        $regTrib->appendChild($doc->createElement('opSimpNac', (string) $prest->regtrib->opsimpnac));
         if (isset($prest->regtrib->regaptribsn)) {
-            $regTrib->appendChild($doc->createElement('regApTribSN', $prest->regtrib->regaptribsn));
+            $regTrib->appendChild($doc->createElement('regApTribSN', (string) $prest->regtrib->regaptribsn));
         }
-        $regTrib->appendChild($doc->createElement('regEspTrib', $prest->regtrib->regesptrib));
+        $regTrib->appendChild($doc->createElement('regEspTrib', (string) $prest->regtrib->regesptrib));
         $el->appendChild($regTrib);
 
         return $el;
