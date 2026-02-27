@@ -5,7 +5,7 @@
 Sempre rodar antes de considerar o trabalho concluído:
 
 ```bash
-./vendor/bin/pest # runs the complete suite test
+./vendor/bin/pest --coverage --min=100 # runs the complete suite test
 
 # quality checks
 
@@ -14,7 +14,7 @@ Sempre rodar antes de considerar o trabalho concluído:
 ./vendor/bin/phpstan analyse # run static analysis check
 
 # if any quality checks changed any file, full suite need to be run again!
-./vendor/bin/pest # runs the complete suite test
+./vendor/bin/pest --coverage --min=100 # runs the complete suite test
 ```
 
 O type coverage deve permanecer em 100%. Qualquer código novo ou alterado deve incluir type hints completos.
