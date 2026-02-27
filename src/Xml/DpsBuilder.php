@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Xml;
 
+use LibXMLError;
+use Pulsar\NfseNacional\Exceptions\NfseException;
 use DOMDocument;
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
@@ -97,8 +99,8 @@ class DpsBuilder
         $errors = libxml_get_errors();
         libxml_clear_errors();
         if (!$valid) {
-            $messages = array_map(fn (\LibXMLError $e): string => trim($e->message), $errors);
-            throw new \Pulsar\NfseNacional\Exceptions\NfseException(
+            $messages = array_map(fn (LibXMLError $e): string => trim($e->message), $errors);
+            throw new NfseException(
                 'XML inválido: ' . implode('; ', $messages)
             );
         }

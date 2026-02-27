@@ -20,4 +20,5 @@ return RectorConfig::configure()
         earlyReturn: true,
         rectorPreset: true,
     )
-    ->withPhpSets(php82: true);
+    ->withPhpSets(php82: true)
+    ->withImportNames(removeUnusedImports: true);

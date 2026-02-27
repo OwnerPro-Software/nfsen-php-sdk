@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Services;
 
+use InvalidArgumentException;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 class PrefeituraResolver
@@ -70,7 +71,7 @@ class PrefeituraResolver
     private function validateIbge(string $code): void
     {
         if (!preg_match('/^\d{7}$/', $code)) {
-            throw new \InvalidArgumentException(sprintf("Código IBGE inválido: '%s'. Esperado: 7 dígitos numéricos.", $code));
+            throw new InvalidArgumentException(sprintf("Código IBGE inválido: '%s'. Esperado: 7 dígitos numéricos.", $code));
         }
     }
 }
