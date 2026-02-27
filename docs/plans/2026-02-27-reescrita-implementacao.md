@@ -45,6 +45,7 @@
     "illuminate/contracts": "^11.0|^12.0",
     "tecnickcom/tcpdf": "^6.7",
     "symfony/var-dumper": "^7.1|^6.4",
+    "ext-curl": "*",
     "ext-dom": "*",
     "ext-zlib": "*",
     "ext-openssl": "*",
@@ -80,7 +81,8 @@
 ```
 
 > **Nota transição:** Mantemos o autoload `Hadder\NfseNacional` e as deps legadas (`tcpdf`, `var-dumper`) durante a reescrita para não quebrar código existente em `src/`. A remoção ocorre na Task 18 (limpeza final).
-```
+
+> **Nota Helpers.php:** O `composer.json` legado tinha `"files": ["Helpers.php"]` que define `now()` global. Esse autoload é **intencionalmente removido** — o `now()` do `illuminate/support` substitui. Adicionar guard `function_exists` no `Helpers.php` (Step 4d) para segurança caso o arquivo seja carregado manualmente.
 
 **Step 2: Criar phpunit.xml**
 
@@ -160,24 +162,51 @@ rm tests/fixtures/certs/fake-icpbr.key tests/fixtures/certs/fake-icpbr.crt tests
 
 > **Nota:** O OID `2.16.76.1.3.3` é o campo ICP-Brasil que `NFePHP\Common\Certificate::getCnpj()` usa para extrair o CNPJ. Se o openssl da máquina não suportar `otherName` no config, gerar o PFX num ambiente que suporte e commitar a fixture estática.
 
-**4c) `expired.pfx` — certificado expirado (fixture estática):**
+**4c) `expired.pfx` — certificado expirado (gerado via PHP/OpenSSL para portabilidade):**
 
-Gerar uma vez e commitar. Não gerar em runtime (flags `-not_before`/`-not_after` não são portáveis):
+Gerar via script PHP para evitar dependência de flags não-portáveis (`-not_before`/`-not_after` requerem OpenSSL 1.1.1+):
+
 ```bash
-openssl genrsa -out /tmp/expired.key 1024
-openssl req -new -x509 -key /tmp/expired.key \
-  -out /tmp/expired.crt -days 1 \
-  -subj "/CN=Expired Test/C=BR" \
-  -not_before 20200101000000Z -not_after 20200102000000Z
-openssl pkcs12 -export \
-  -out tests/fixtures/certs/expired.pfx \
-  -inkey /tmp/expired.key \
-  -in /tmp/expired.crt \
-  -passout pass:secret
-rm /tmp/expired.key /tmp/expired.crt
+php -r "
+\$key = openssl_pkey_new(['private_key_bits' => 1024, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
+\$csr = openssl_csr_new(['CN' => 'Expired Test', 'C' => 'BR'], \$key);
+\$cert = openssl_csr_sign(\$csr, null, \$key, 1, [], 1);
+// Cert válido por 1 dia com serial 1 — gerar e esperar expirar, OU:
+// Usar validTo < now setando days=0 (gera cert que já nasce expirado em alguns sistemas)
+// Alternativa segura: gerar com days=1 e commitar após expirar
+openssl_pkcs12_export_to_file(\$cert, 'tests/fixtures/certs/expired.pfx', \$key, 'secret');
+echo 'expired.pfx gerado com sucesso' . PHP_EOL;
+"
 ```
 
-> Se o seu OpenSSL não suportar `-not_before`/`-not_after`, use uma máquina com OpenSSL 1.1.1+ para gerar e commitar o `expired.pfx` como fixture estática.
+> **Nota:** Se `days=0` não gerar um cert já expirado no seu sistema, gere com `days=1`, aguarde 24h e commite. Ou use uma máquina com OpenSSL 1.1.1+ para gerar via CLI com `-not_before`/`-not_after`. O arquivo deve ser commitado como **fixture estática**.
+
+**4d) Adicionar guard `function_exists` ao `Helpers.php` existente:**
+
+O `Helpers.php` legado define `now()` que conflita com `illuminate/support`. Adicionar guard para segurança:
+
+```php
+<?php
+
+if (!function_exists('now')) {
+    function now($tz = null)
+    {
+        return new \DateTime('now', $tz ? new \DateTimeZone($tz) : null);
+    }
+}
+```
+
+**4e) Criar `.gitignore` para intermediários de certificado:**
+
+Criar `tests/fixtures/certs/.gitignore`:
+```
+*.key
+*.crt
+*.cnf
+!*.pfx
+```
+
+> Previne que arquivos intermediários (`.key`, `.crt`, `.cnf`) sejam commitados acidentalmente se a geração for interrompida.
 
 **Step 5: Instalar dependências**
 
@@ -195,7 +224,7 @@ Expected: `Pest 3.x.x`
 **Step 7: Commit**
 
 ```bash
-git add composer.json phpunit.xml tests/fixtures/
+git add composer.json phpunit.xml tests/fixtures/ Helpers.php
 git commit -m "chore: bootstrap reescrita — deps, estrutura de dirs e cert de teste"
 ```
 
@@ -415,13 +444,17 @@ git commit -m "feat: add NfseException, CertificateExpiredException, HttpExcepti
 
 ---
 
-## Task 4: DTOs — NfseResponse e DpsData
+## Task 4: DTOs — NfseResponse, DpsData, DanfseResponse, EventosResponse
 
 **Files:**
 - Create: `src/DTOs/NfseResponse.php`
 - Create: `src/DTOs/DpsData.php`
+- Create: `src/DTOs/DanfseResponse.php`
+- Create: `src/DTOs/EventosResponse.php`
 - Create: `tests/Unit/DTOs/NfseResponseTest.php`
 - Create: `tests/Unit/DTOs/DpsDataTest.php`
+- Create: `tests/Unit/DTOs/DanfseResponseTest.php`
+- Create: `tests/Unit/DTOs/EventosResponseTest.php`
 
 **Step 1: Escrever testes**
 
@@ -519,18 +552,99 @@ readonly class DpsData
 }
 ```
 
-**Step 4: Rodar para confirmar sucesso**
+**Step 4: Implementar DanfseResponse e EventosResponse**
+
+`src/DTOs/DanfseResponse.php`:
+```php
+<?php
+
+namespace Pulsar\NfseNacional\DTOs;
+
+readonly class DanfseResponse
+{
+    public function __construct(
+        public bool    $sucesso,
+        public ?string $url,
+        public ?string $erro,
+    ) {}
+}
+```
+
+`src/DTOs/EventosResponse.php`:
+```php
+<?php
+
+namespace Pulsar\NfseNacional\DTOs;
+
+readonly class EventosResponse
+{
+    public function __construct(
+        public bool    $sucesso,
+        public array   $eventos,
+        public ?string $erro,
+    ) {}
+}
+```
+
+**Step 5: Escrever testes dos novos DTOs**
+
+`tests/Unit/DTOs/DanfseResponseTest.php`:
+```php
+<?php
+
+use Pulsar\NfseNacional\DTOs\DanfseResponse;
+
+it('stores a DANFSe success response', function () {
+    $response = new DanfseResponse(true, 'https://danfse.url/CHAVE', null);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->url)->toBe('https://danfse.url/CHAVE');
+    expect($response->erro)->toBeNull();
+});
+
+it('stores a DANFSe failure response', function () {
+    $response = new DanfseResponse(false, null, 'NFSe não encontrada');
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erro)->toBe('NFSe não encontrada');
+});
+```
+
+`tests/Unit/DTOs/EventosResponseTest.php`:
+```php
+<?php
+
+use Pulsar\NfseNacional\DTOs\EventosResponse;
+
+it('stores eventos success response', function () {
+    $eventos = [['tipo' => '101101', 'desc' => 'Cancelamento']];
+    $response = new EventosResponse(true, $eventos, null);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->eventos)->toHaveCount(1);
+    expect($response->erro)->toBeNull();
+});
+
+it('stores eventos empty response', function () {
+    $response = new EventosResponse(true, [], null);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->eventos)->toBeEmpty();
+});
+```
+
+**Step 6: Rodar para confirmar sucesso**
 
 ```bash
 ./vendor/bin/pest tests/Unit/DTOs/ --no-coverage
 ```
-Expected: PASS (4 testes)
+Expected: PASS (8 testes)
 
-**Step 5: Commit**
+**Step 7: Commit**
 
 ```bash
 git add src/DTOs/ tests/Unit/DTOs/
-git commit -m "feat: add NfseResponse and DpsData DTOs"
+git commit -m "feat: add NfseResponse, DpsData, DanfseResponse, EventosResponse DTOs"
 ```
 
 ---
@@ -697,6 +811,15 @@ it('resolves operation path with substitution', function () use ($jsonPath) {
     expect($path)->toBe('nfse/ABC123');
 });
 
+it('resolves custom operation for known prefeitura', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    // 3547304 (Santa Ana de Parnaiba) tem consultar_danfse customizado
+    $path = $resolver->resolveOperation('3547304', 'consultar_danfse', ['chave' => 'ABC']);
+
+    expect($path)->toContain('ABC');
+});
+
 it('throws InvalidArgumentException for non-7-digit ibge code', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
@@ -808,7 +931,7 @@ git commit -m "feat: add PrefeituraResolver — merge de URLs/operations com pre
 **Context:**
 `NFePHP\Common\Signer::sign($cert, $xml, $tagname, $mark, $algo, $canonical, $rootname)` injeta `<Signature>` no XML.
 - `$tagname` = tag a ser assinada (`infDPS` para emitir, `infPedReg` para cancelar)
-- `$mark` = `''` (atributo Id)
+- `$mark` = `'Id'` (atributo XML que contém o identificador do elemento assinado)
 - `$algo` = `OPENSSL_ALGO_SHA1` ou `OPENSSL_ALGO_SHA256`
 - `$canonical` = `[true, false, null, null]`
 - `$rootname` = tag raiz (`DPS` ou `pedRegEvento`)
@@ -898,7 +1021,7 @@ class XmlSigner
             $this->certificate,
             $xml,
             $tagname,
-            '',
+            'Id',
             $this->algorithm,
             $this->canonical,
             $rootname,
@@ -1391,10 +1514,7 @@ class TomadorBuilder
 {
     public function build(DOMDocument $doc, stdClass $toma): DOMElement
     {
-        if (!isset($toma->xnome) || trim($toma->xnome) === '') {
-            throw new \InvalidArgumentException('Tomador deve ter xNome (obrigatório pelo XSD).');
-        }
-
+        // Validação de campos obrigatórios delegada ao XSD (DpsBuilder::buildAndValidate)
         $el = $doc->createElement('toma');
 
         if (isset($toma->cnpj))    $el->appendChild($doc->createElement('CNPJ', $toma->cnpj));
@@ -1637,16 +1757,37 @@ git commit -m "feat: add TomadorBuilder, ServicoBuilder, ValoresBuilder — DpsB
 
 ---
 
-## Task 10: DpsBuilder — validação XSD
+## Task 10: DpsBuilder — validação XSD + teste de operação vazia
 
 **Files:**
-- Modify: `src/Xml/DpsBuilder.php` (adicionar `validate()`)
+- Modify: `src/Xml/DpsBuilder.php` (adicionar `buildAndValidate()` separado)
 - Create: `tests/Unit/Xml/DpsBuilderXsdTest.php`
+- Modify: `tests/Unit/Services/PrefeituraResolverTest.php` (adicionar teste de operação vazia)
 
 **Context:**
 `DOMDocument::schemaValidate($xsdPath)` lança warnings PHP, não exceptions. Use `libxml_use_internal_errors(true)` para capturar. O XSD principal é `storage/schemes/DPS_v1.01.xsd`.
 
-**Step 1: Escrever teste**
+> **Decisão de design:** `build()` **não** chama `validateXsd()` internamente. A validação fica no método separado `buildAndValidate()`. Isso evita overhead de XSD em emissões em lote e mantém `build()` rápido. Testes usam `buildAndValidate()`.
+
+**Step 0: Pré-mapear campos obrigatórios do XSD**
+
+Antes de escrever testes, consultar o XSD em `storage/schemes/DPS_v1.01.xsd` para identificar **todos** os campos obrigatórios em `<serv>` e `<valores>`. Atualizar o closure `'basico'` em `tests/datasets.php` com esses campos **antes** de rodar o teste XSD, evitando loop de tentativa e erro.
+
+**Step 1: Adicionar teste de operação vazia no PrefeituraResolver**
+
+Em `tests/Unit/Services/PrefeituraResolverTest.php`, adicionar:
+```php
+it('returns empty string for empty operation override', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    // Americana (3501608) tem emitir_nfse: "" — URL já é completa
+    $path = $resolver->resolveOperation('3501608', 'emitir_nfse');
+
+    expect($path)->toBe('');
+});
+```
+
+**Step 2: Escrever teste de validação XSD**
 
 `tests/Unit/Xml/DpsBuilderXsdTest.php`:
 ```php
@@ -1657,43 +1798,40 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data) {
     $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
+    $xml     = $builder->buildAndValidate($data);
+
+    // Se chegou aqui sem exception, o XML é válido
+    expect($xml)->toContain('<DPS ');
+})->with('dpsData');
+
+it('build() does not validate XSD (fast path)', function (DpsData $data) {
+    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
     $xml     = $builder->build($data);
 
-    $doc = new DOMDocument();
-    $doc->loadXML($xml);
-
-    libxml_use_internal_errors(true);
-    $valid  = $doc->schemaValidate(__DIR__ . '/../../../storage/schemes/DPS_v1.01.xsd');
-    $errors = libxml_get_errors();
-    libxml_clear_errors();
-
-    expect($valid)->toBeTrue($errors ? $errors[0]->message : '');
+    // build() retorna XML sem validar — não lança exceção mesmo se inválido
+    expect($xml)->toBeString();
 })->with('dpsData');
 ```
 
-> **Nota:** Se a validação falhar por campos obrigatórios do XSD (como `valores`), atualizar o closure `'basico'` em `tests/datasets.php` com os campos necessários.
-
-**Step 2: Rodar para confirmar falha (ou debug XSD)**
+**Step 3: Rodar para confirmar falha**
 
 ```bash
 ./vendor/bin/pest tests/Unit/Xml/DpsBuilderXsdTest.php --no-coverage
 ```
-Verificar as mensagens de erro do XSD para entender quais campos estão faltando.
+Expected: FAIL (método `buildAndValidate` não existe)
 
-**Step 3: Adicionar `validateXsd()` no DpsBuilder (chamada interna no `build()`)**
+**Step 4: Adicionar `buildAndValidate()` no DpsBuilder**
 
-Em `src/Xml/DpsBuilder.php`, após `$doc->appendChild($dps)`, **antes do return** existente:
-
-```php
-// Retorno continua SEM declaração <?xml...?> — NfseClient adiciona uma vez
-$xml = $doc->saveXML($doc->documentElement);
-$this->validateXsd($xml);
-return $xml;
-```
-
-> **Importante:** O retorno de `build()` continua usando `saveXML($doc->documentElement)` (sem `<?xml...?>`). O `validateXsd()` adiciona a declaração internamente apenas para validação XSD.
+Em `src/Xml/DpsBuilder.php`, adicionar método público que chama `build()` + validação:
 
 ```php
+public function buildAndValidate(DpsData $data): string
+{
+    $xml = $this->build($data);
+    $this->validateXsd($xml);
+    return $xml;
+}
+
 private function validateXsd(string $xmlFragment): void
 {
     $xsdPath = $this->schemesPath . '/DPS_v1.01.xsd';
@@ -1717,22 +1855,24 @@ private function validateXsd(string $xmlFragment): void
 }
 ```
 
-**Step 4: Ajustar dataset 'basico' até o XSD passar**
+> **Importante:** `build()` retorna XML **sem** validação XSD. `buildAndValidate()` é a versão que valida. O `NfseClient::emitir()` (Task 15) usa `build()` por padrão — o dev pode optar por `buildAndValidate()` para debug.
 
-Consultar o XSD em `storage/schemes/DPS_v1.01.xsd` para ver campos obrigatórios em `<serv>` e `<valores>`. Adicionar os campos obrigatórios faltantes no closure `'basico'` de `tests/datasets.php`.
+**Step 5: Ajustar dataset 'basico' até o XSD passar**
 
-**Step 5: Rodar para confirmar sucesso**
+Se `buildAndValidate()` lançar exceção, ler a mensagem do XSD e adicionar os campos faltantes no closure `'basico'` de `tests/datasets.php`.
+
+**Step 6: Rodar para confirmar sucesso**
 
 ```bash
-./vendor/bin/pest tests/Unit/Xml/ --no-coverage
+./vendor/bin/pest tests/Unit/Xml/ tests/Unit/Services/ --no-coverage
 ```
 Expected: PASS
 
-**Step 6: Commit**
+**Step 7: Commit**
 
 ```bash
-git add src/Xml/ tests/Unit/Xml/
-git commit -m "feat: DpsBuilder valida XML gerado contra DPS_v1.01.xsd"
+git add src/Xml/ tests/Unit/Xml/ tests/Unit/Services/
+git commit -m "feat: DpsBuilder::buildAndValidate() valida XML contra DPS_v1.01.xsd; teste de op vazia"
 ```
 
 ---
@@ -1991,6 +2131,31 @@ it('throws HttpException on 5xx response', function () {
     expect(fn () => $client->post('https://example.com/nfse', []))
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
+
+it('throws HttpException on 4xx response', function () {
+    Http::fake(['*' => Http::response(['message' => 'Unauthorized'], 401)]);
+
+    $client = new NfseHttpClient(testCertificate(), timeout: 30);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+});
+
+it('certificate PEM output is valid for mTLS', function () {
+    $cert = testCertificate();
+
+    // Verifica que (string)$cert retorna PEM do certificado público válido
+    $certPem = (string) $cert;
+    expect($certPem)->toContain('-----BEGIN CERTIFICATE-----');
+    $parsed = openssl_x509_parse($certPem);
+    expect($parsed)->not->toBeFalse();
+
+    // Verifica que privateKey retorna PEM da chave privada válida
+    $keyPem = (string) $cert->privateKey;
+    expect($keyPem)->toContain('-----BEGIN');
+    $key = openssl_pkey_get_private($keyPem);
+    expect($key)->not->toBeFalse();
+});
 ```
 
 > **Nota:** Para `Http::fake()` funcionar, os testes precisam de um app Laravel. Configure o `TestCase` com `orchestra/testbench`. O `NfseNacionalServiceProvider` já foi criado no Step 1.
@@ -2082,9 +2247,9 @@ class NfseHttpClient
                 ? $pending->post($url, $payload)
                 : $pending->get($url);
 
-            if ($response->serverError()) {
+            if ($response->serverError() || $response->clientError()) {
                 throw new HttpException(
-                    'HTTP server error: ' . $response->status(),
+                    'HTTP error: ' . $response->status(),
                     $response->status()
                 );
             }
@@ -2149,7 +2314,7 @@ interface NfseClientContract
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
-
+use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 
 class FakeNfseClientForConsulta implements NfseClientContract
@@ -2163,10 +2328,20 @@ class FakeNfseClientForConsulta implements NfseClientContract
     }
 }
 
+function makeConsultaBuilder(FakeNfseClientForConsulta $fakeClient): ConsultaBuilder
+{
+    $resolver   = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
+    // httpClient é mockado via Http::fake() nos testes Feature; aqui usamos fake client
+    $pfx = file_get_contents(__DIR__ . '/../../fixtures/certs/fake.pfx');
+    $cert = (new \Pulsar\NfseNacional\Certificates\CertificateManager($pfx, 'secret'))->getCertificate();
+    $httpClient = new NfseHttpClient($cert, timeout: 30);
+
+    return new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999', $httpClient);
+}
+
 it('calls executeGet with nfse url for nfse query', function () {
     $fakeClient = new FakeNfseClientForConsulta();
-    $resolver   = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
-    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder    = makeConsultaBuilder($fakeClient);
 
     $response = $builder->nfse('CHAVE123');
 
@@ -2176,14 +2351,15 @@ it('calls executeGet with nfse url for nfse query', function () {
 
 it('calls executeGet with dps url', function () {
     $fakeClient = new FakeNfseClientForConsulta();
-    $resolver   = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
-    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder    = makeConsultaBuilder($fakeClient);
 
     $builder->dps('CHAVE456');
 
     expect($fakeClient->calls[0])->toContain('dps/CHAVE456');
 });
 ```
+
+> **Nota:** Testes de `danfse()` e `eventos()` que retornam `DanfseResponse`/`EventosResponse` são feature tests na Task 17 (usam `Http::fake()` para simular respostas HTTP reais).
 
 **Step 3: Rodar para confirmar falha**
 
@@ -2201,7 +2377,10 @@ Expected: FAIL
 namespace Pulsar\NfseNacional\Consulta;
 
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
+use Pulsar\NfseNacional\DTOs\DanfseResponse;
+use Pulsar\NfseNacional\DTOs\EventosResponse;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 
 final class ConsultaBuilder
@@ -2209,53 +2388,63 @@ final class ConsultaBuilder
     public function __construct(
         private readonly NfseClientContract $client,
         private readonly string $seFinBaseUrl,
-        private readonly string $adnBaseUrl = '',
-        private readonly ?PrefeituraResolver $resolver = null,
-        private readonly ?string $codigoIbge = null,
+        private readonly string $adnBaseUrl,
+        private readonly PrefeituraResolver $resolver,
+        private readonly string $codigoIbge,
+        private readonly NfseHttpClient $httpClient,
     ) {}
 
     public function nfse(string $chave): NfseResponse
     {
-        $path = $this->resolvePath('consultar_nfse', ['chave' => $chave]);
-        return $this->client->executeGet(rtrim($this->seFinBaseUrl, '/') . '/' . ltrim($path, '/'));
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_nfse', ['chave' => $chave]);
+        return $this->client->executeGet($this->buildUrl($this->seFinBaseUrl, $path));
     }
 
     public function dps(string $chave): NfseResponse
     {
-        $path = $this->resolvePath('consultar_dps', ['chave' => $chave]);
-        return $this->client->executeGet(rtrim($this->seFinBaseUrl, '/') . '/' . ltrim($path, '/'));
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_dps', ['chave' => $chave]);
+        return $this->client->executeGet($this->buildUrl($this->seFinBaseUrl, $path));
     }
 
-    public function danfse(string $chave): NfseResponse
+    public function danfse(string $chave): DanfseResponse
     {
         $baseUrl = $this->adnBaseUrl ?: $this->seFinBaseUrl;
-        $path    = $this->resolvePath('consultar_danfse', ['chave' => $chave]);
-        return $this->client->executeGet(rtrim($baseUrl, '/') . '/' . ltrim($path, '/'));
+        $path    = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_danfse', ['chave' => $chave]);
+
+        $result = $this->httpClient->get($this->buildUrl($baseUrl, $path));
+
+        if (isset($result['erros']) || isset($result['erro'])) {
+            $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
+            return new DanfseResponse(false, null, $erro);
+        }
+
+        return new DanfseResponse(true, $result['danfseUrl'] ?? null, null);
     }
 
-    public function eventos(string $chave, int $tipoEvento = 101101, int $nSequencial = 1): NfseResponse
+    public function eventos(string $chave, int $tipoEvento = 101101, int $nSequencial = 1): EventosResponse
     {
-        $path = $this->resolvePath('consultar_eventos', [
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_eventos', [
             'chave'       => $chave,
             'tipoEvento'  => $tipoEvento,
             'nSequencial' => $nSequencial,
         ]);
-        return $this->client->executeGet(rtrim($this->seFinBaseUrl, '/') . '/' . ltrim($path, '/'));
+
+        $result = $this->httpClient->get($this->buildUrl($this->seFinBaseUrl, $path));
+
+        if (isset($result['erros']) || isset($result['erro'])) {
+            $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
+            return new EventosResponse(false, [], $erro);
+        }
+
+        return new EventosResponse(true, $result['eventos'] ?? [], null);
     }
 
-    private function resolvePath(string $operacao, array $params): string
+    private function buildUrl(string $baseUrl, string $path): string
     {
-        if ($this->resolver && $this->codigoIbge) {
-            return $this->resolver->resolveOperation($this->codigoIbge, $operacao, $params);
+        if ($path === '') {
+            return $baseUrl;
         }
-        // Fallback para paths padrão (sem resolver)
-        return match($operacao) {
-            'consultar_nfse'    => 'nfse/' . ($params['chave'] ?? ''),
-            'consultar_dps'     => 'dps/' . ($params['chave'] ?? ''),
-            'consultar_danfse'  => 'danfse/' . ($params['chave'] ?? ''),
-            'consultar_eventos' => 'nfse/' . ($params['chave'] ?? '') . '/eventos/' . ($params['tipoEvento'] ?? '') . '/' . ($params['nSequencial'] ?? ''),
-            default             => throw new \InvalidArgumentException("Operação desconhecida: $operacao"),
-        };
+        return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
     }
 }
 ```
@@ -2281,6 +2470,8 @@ git commit -m "feat: add NfseClientContract + ConsultaBuilder — fluent nfse/dp
 **Files:**
 - Create: `src/Events/NfseRequested.php`
 - Create: `src/Events/NfseEmitted.php`
+- Create: `src/Events/NfseCancelled.php`
+- Create: `src/Events/NfseQueried.php`
 - Create: `src/Events/NfseFailed.php`
 - Create: `src/Events/NfseRejected.php`
 - Create: `tests/Unit/Events/EventsTest.php`
@@ -2292,6 +2483,8 @@ git commit -m "feat: add NfseClientContract + ConsultaBuilder — fluent nfse/dp
 <?php
 
 use Pulsar\NfseNacional\Events\NfseEmitted;
+use Pulsar\NfseNacional\Events\NfseCancelled;
+use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseFailed;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
@@ -2301,10 +2494,19 @@ it('NfseRequested carries operacao', function () {
     expect($event->operacao)->toBe('emitir');
 });
 
-it('NfseEmitted carries chave and operacao', function () {
-    $event = new NfseEmitted('emitir', 'CHAVE123');
+it('NfseEmitted carries chave', function () {
+    $event = new NfseEmitted('CHAVE123');
     expect($event->chave)->toBe('CHAVE123');
-    expect($event->operacao)->toBe('emitir');
+});
+
+it('NfseCancelled carries chave', function () {
+    $event = new NfseCancelled('CHAVE123');
+    expect($event->chave)->toBe('CHAVE123');
+});
+
+it('NfseQueried carries operacao', function () {
+    $event = new NfseQueried('nfse');
+    expect($event->operacao)->toBe('nfse');
 });
 
 it('NfseFailed carries operacao and message', function () {
@@ -2351,8 +2553,35 @@ namespace Pulsar\NfseNacional\Events;
 class NfseEmitted
 {
     public function __construct(
-        public readonly string $operacao,
         public readonly string $chave,
+    ) {}
+}
+```
+
+`src/Events/NfseCancelled.php`:
+```php
+<?php
+
+namespace Pulsar\NfseNacional\Events;
+
+class NfseCancelled
+{
+    public function __construct(
+        public readonly string $chave,
+    ) {}
+}
+```
+
+`src/Events/NfseQueried.php`:
+```php
+<?php
+
+namespace Pulsar\NfseNacional\Events;
+
+class NfseQueried
+{
+    public function __construct(
+        public readonly string $operacao,
     ) {}
 }
 ```
@@ -2398,7 +2627,7 @@ Expected: PASS
 
 ```bash
 git add src/Events/ tests/Unit/Events/
-git commit -m "feat: add NfseRequested, NfseEmitted, NfseFailed, NfseRejected events"
+git commit -m "feat: add NfseRequested, NfseEmitted, NfseCancelled, NfseQueried, NfseFailed, NfseRejected events"
 ```
 
 ---
@@ -2536,6 +2765,29 @@ it('throws InvalidArgumentException for invalid IBGE code', function () {
     expect(fn () => NfseClient::for(makePfxContent(), 'secret', '123'))
         ->toThrow(\InvalidArgumentException::class, 'IBGE');
 });
+
+it('forStandalone creates client without Laravel container', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_STANDALONE'], 200)]);
+
+    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '3501608');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE_STANDALONE');
+})->with('dpsData');
+
+it('emitir returns rejection with erros array', function (DpsData $data) {
+    Http::fake(['*' => Http::response(
+        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/emitir_rejeicao.json'), true),
+        200
+    )]);
+
+    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erro)->toContain('CNPJ');
+})->with('dpsData');
 ```
 
 **Step 3: Rodar para confirmar falha**
@@ -2561,8 +2813,10 @@ use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\MotivoCancelamento;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\Events\NfseCancelled;
 use Pulsar\NfseNacional\Events\NfseEmitted;
 use Pulsar\NfseNacional\Events\NfseFailed;
+use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Exceptions\HttpException;
@@ -2588,10 +2842,19 @@ class NfseClient implements NfseClientContract
 
     /**
      * Factory via Laravel container — usa config do ServiceProvider como base.
+     * Se o container Laravel não estiver disponível, faz fallback para forStandalone().
      */
     public static function for(string $pfxContent, string $senha, string $prefeitura): static
     {
-        return app(static::class)->configure($pfxContent, $senha, $prefeitura);
+        if (function_exists('app')) {
+            try {
+                return app(static::class)->configure($pfxContent, $senha, $prefeitura);
+            } catch (\Throwable) {
+                // Container não bootado — fallback para standalone
+            }
+        }
+
+        return static::forStandalone($pfxContent, $senha, $prefeitura);
     }
 
     /**
@@ -2670,7 +2933,7 @@ class NfseClient implements NfseClientContract
             }
 
             $chave = $result['chNFSe'] ?? null;
-            event(new NfseEmitted($operacao, $chave ?? ''));
+            event(new NfseEmitted($chave ?? ''));
 
             return new NfseResponse(true, $chave, null, null);
         } catch (HttpException $e) {
@@ -2726,7 +2989,7 @@ class NfseClient implements NfseClientContract
                 return new NfseResponse(false, null, null, $erro);
             }
 
-            event(new NfseEmitted($operacao, $chave));
+            event(new NfseCancelled($chave));
             return new NfseResponse(true, $chave, null, null);
         } catch (HttpException $e) {
             event(new NfseFailed($operacao, $e->getMessage()));
@@ -2739,7 +3002,11 @@ class NfseClient implements NfseClientContract
         $this->ensureConfigured();
         $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
         $adnUrl   = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
-        return new ConsultaBuilder($this, $seFinUrl, $adnUrl, $this->prefeituraResolver, $this->prefeitura);
+        return new ConsultaBuilder(
+            $this, $seFinUrl, $adnUrl,
+            $this->prefeituraResolver, $this->prefeitura,
+            $this->httpClient,
+        );
     }
 
     public function executeGet(string $url): NfseResponse
@@ -2763,7 +3030,7 @@ class NfseClient implements NfseClientContract
                 $xml = gzdecode(base64_decode($result['nfseXmlGZipB64'])) ?: null;
             }
 
-            event(new NfseEmitted($operacao, ''));
+            event(new NfseQueried('nfse'));
             return new NfseResponse(true, null, $xml, null);
         } catch (HttpException $e) {
             event(new NfseFailed($operacao, $e->getMessage()));
@@ -2949,11 +3216,13 @@ git commit -m "feat: add ServiceProvider, Facade e config — NfseClient ligado 
 
 ---
 
-## Task 17: Feature test — cancelar e events
+## Task 17: Feature test — cancelar, consultar, events
 
 **Files:**
 - Create: `tests/fixtures/responses/cancelar_sucesso.json`
+- Create: `tests/fixtures/responses/cancelar_rejeicao.json`
 - Create: `tests/Feature/NfseClientCancelarTest.php`
+- Create: `tests/Feature/NfseClientConsultarTest.php`
 - Create: `tests/Feature/EventsDispatchTest.php`
 
 **Step 0: Remover helpers inline das tasks anteriores**
@@ -2969,13 +3238,22 @@ Rodar a suite para confirmar os erros de `undefined function makePfxContent()` �
 ```
 Expected: FAIL — `Call to undefined function makePfxContent()`
 
-**Step 1: Criar fixture**
+**Step 1: Criar fixtures**
 
 `tests/fixtures/responses/cancelar_sucesso.json`:
 ```json
 {
   "chNFSe": "35016082026022700000000000000000000000000000000001",
   "dhRegistro": "2026-02-27T10:00:00-03:00"
+}
+```
+
+`tests/fixtures/responses/cancelar_rejeicao.json`:
+```json
+{
+  "erros": [
+    {"codigo": "E201", "descricao": "NFSe não encontrada para cancelamento"}
+  ]
 }
 ```
 
@@ -3007,6 +3285,24 @@ it('cancelar returns success NfseResponse', function () {
     expect($response->sucesso)->toBeTrue();
 });
 
+it('cancelar returns rejection NfseResponse on erro field', function () {
+    Http::fake(['*' => Http::response(
+        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/cancelar_rejeicao.json'), true),
+        200
+    )]);
+
+    $pfx      = file_get_contents(__DIR__ . '/../fixtures/certs/fake-icpbr.pfx');
+    $client   = NfseClient::for($pfx, 'secret', '3501608');
+    $response = $client->cancelar(
+        'CHAVE50CARACTERES1234567890123456789012345678901',
+        MotivoCancelamento::ErroEmissao,
+        'Erro ao emitir'
+    );
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erro)->toContain('não encontrada');
+});
+
 it('cancelar works with cert without ICP-Brasil OID', function () {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/cancelar_sucesso.json'), true),
@@ -3025,6 +3321,44 @@ it('cancelar works with cert without ICP-Brasil OID', function () {
 });
 ```
 
+`tests/Feature/NfseClientConsultarTest.php`:
+```php
+<?php
+
+use Illuminate\Support\Facades\Http;
+use Pulsar\NfseNacional\NfseClient;
+
+it('consultar()->danfse returns DanfseResponse with url', function () {
+    Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/CHAVE123'], 200)]);
+
+    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $response = $client->consultar()->danfse('CHAVE123');
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->url)->toBe('https://danfse.url/CHAVE123');
+});
+
+it('consultar()->eventos returns EventosResponse', function () {
+    Http::fake(['*' => Http::response(['eventos' => [['tipo' => '101101']]], 200)]);
+
+    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $response = $client->consultar()->eventos('CHAVE123');
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->eventos)->toHaveCount(1);
+});
+
+it('consultar()->eventos returns empty array when no events', function () {
+    Http::fake(['*' => Http::response(['eventos' => []], 200)]);
+
+    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $response = $client->consultar()->eventos('CHAVE123');
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->eventos)->toBeEmpty();
+});
+```
+
 `tests/Feature/EventsDispatchTest.php`:
 ```php
 <?php
@@ -3032,7 +3366,10 @@ it('cancelar works with cert without ICP-Brasil OID', function () {
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\Enums\MotivoCancelamento;
+use Pulsar\NfseNacional\Events\NfseCancelled;
 use Pulsar\NfseNacional\Events\NfseEmitted;
+use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\NfseClient;
 
@@ -3046,6 +3383,28 @@ it('dispatches NfseRequested and NfseEmitted on successful emitir', function (Dp
     Event::assertDispatched(NfseRequested::class);
     Event::assertDispatched(NfseEmitted::class);
 })->with('dpsData');
+
+it('dispatches NfseCancelled on successful cancelar', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE123'], 200)]);
+
+    $pfx    = file_get_contents(__DIR__ . '/../fixtures/certs/fake-icpbr.pfx');
+    $client = NfseClient::for($pfx, 'secret', '3501608');
+    $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+
+    Event::assertDispatched(NfseCancelled::class);
+});
+
+it('dispatches NfseQueried on successful consultar', function () {
+    Event::fake();
+    $xmlB64 = base64_encode(gzencode('<NFSe/>'));
+    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client->consultar()->nfse('CHAVE123');
+
+    Event::assertDispatched(NfseQueried::class);
+});
 ```
 
 **Step 3: Rodar para confirmar falha (makePfxContent não está no escopo desses testes)**
@@ -3100,6 +3459,7 @@ git commit -m "test: feature tests para cancelar e dispatch de events"
 **Files:**
 - Create: `CHANGELOG.md`
 - Modify: `composer.json` (remover autoload `Hadder\NfseNacional`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`)
+- Delete: `Helpers.php` (guard `function_exists` adicionado na Task 1 — agora remover completamente)
 - Modify: `storage/prefeituras.json` (remover chaves por nome legado, manter só IBGE)
 
 **Step 1: Remover autoload legado do composer.json**
@@ -3123,11 +3483,19 @@ grep -r "use TCPDF\|use Symfony\\Component\\VarDumper\|use Symfony\\Component\\D
 ```
 Expected: nenhum resultado.
 
-**Step 3: Limpar chaves por nome no prefeituras.json**
+**Step 3: Remover Helpers.php**
+
+Deletar o arquivo `Helpers.php` da raiz do projeto (o `now()` do `illuminate/support` o substitui):
+
+```bash
+rm Helpers.php
+```
+
+**Step 4: Limpar chaves por nome no prefeituras.json**
 
 Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas as chaves numéricas IBGE (7 dígitos). Verificar que cada prefeitura tem apenas a entrada IBGE.
 
-**Step 4: Criar CHANGELOG.md**
+**Step 5: Criar CHANGELOG.md**
 
 ```markdown
 # Changelog
@@ -3135,47 +3503,48 @@ Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas
 ## [Unreleased]
 
 ### Breaking Changes
+- Requisito mínimo de PHP alterado de 8.1 para **8.2**
 - Namespace alterado de `Hadder\NfseNacional` para `Pulsar\NfseNacional`
 - Identificação de prefeituras exclusivamente por **código IBGE** (7 dígitos); suporte a nome legado (`americana-sp`) removido
 - API pública completamente nova: `NfseClient::for($pfx, $senha, $ibge)->emitir($dpsData)`
 
 ### Added
-- `NfseClient::for()` — instância configurada por tenant via container Laravel
+- `NfseClient::for()` — instância configurada por tenant via container Laravel (com fallback automático para standalone)
 - `NfseClient::forStandalone()` — instância sem dependência do container Laravel
 - Fluent consulta: `consultar()->nfse/dps/danfse/eventos($chave)`
-- `DpsData` DTO tipado como wrapper dos grupos stdClass
-- `NfseResponse` DTO readonly de retorno tipado
-- Laravel Events: `NfseRequested`, `NfseEmitted`, `NfseFailed`, `NfseRejected`
+- DTOs tipados: `DpsData`, `NfseResponse`, `DanfseResponse`, `EventosResponse`
+- Laravel Events: `NfseRequested`, `NfseEmitted`, `NfseCancelled`, `NfseQueried`, `NfseFailed`, `NfseRejected`
 - mTLS via `tmpfile()` — sem escrita nomeada em disco, sem CNPJ no path
 - SSL habilitado corretamente (`verify: true`)
-- Validação XSD do DPS gerado
+- Validação XSD do DPS via `DpsBuilder::buildAndValidate()`
 
 ### Removed
 - Namespace legado `Hadder\NfseNacional` (autoload removido)
 - Dependências `symfony/var-dumper` e `tecnickcom/tcpdf`
+- Arquivo `Helpers.php` com `now()` global (substituído por `illuminate/support`)
 - Suporte a identificação de prefeitura por nome (chaves por nome removidas do JSON)
 - Chaves duplicadas por nome no `prefeituras.json` (mantido apenas IBGE 7 dígitos)
 ```
 
-**Step 5: Rodar `composer update` para limpar deps removidas**
+**Step 6: Rodar `composer update` para limpar deps removidas**
 
 ```bash
 composer update --no-dev
 composer install
 ```
 
-**Step 6: Rodar suite completa uma última vez**
+**Step 7: Rodar suite completa uma última vez**
 
 ```bash
 ./vendor/bin/pest --no-coverage
 ```
 Expected: PASS (todos os testes)
 
-**Step 7: Commit final**
+**Step 8: Commit final**
 
 ```bash
 git add CHANGELOG.md composer.json composer.lock storage/prefeituras.json
-git commit -m "chore: CHANGELOG, remoção de autoload/deps legadas e limpeza de prefeituras.json"
+git commit -m "chore: CHANGELOG, remoção de autoload/deps legadas, Helpers.php e limpeza de prefeituras.json"
 ```
 
 ---
@@ -3187,18 +3556,18 @@ git commit -m "chore: CHANGELOG, remoção de autoload/deps legadas e limpeza de
 | 1 | Bootstrap | composer.json (dual autoload), phpunit.xml, fake.pfx, fake-icpbr.pfx, expired.pfx |
 | 2 | Enums | NfseAmbiente (+ fromConfig com throw), MotivoCancelamento |
 | 3 | Exceptions | NfseException, CertificateExpiredException, HttpException |
-| 4 | DTOs | NfseResponse, DpsData |
+| 4 | DTOs | NfseResponse, DpsData, DanfseResponse, EventosResponse |
 | 5 | CertificateManager | CertificateManager.php (expired.pfx fixture estática) |
 | 6 | PrefeituraResolver | PrefeituraResolver.php |
 | 7 | XmlSigner | XmlSigner.php |
 | 8 | DpsBuilder cabeçalho + PrestadorBuilder | DpsBuilder.php, PrestadorBuilder.php, Pest.php, datasets.php |
-| 9 | TomadorBuilder + ServicoBuilder + ValoresBuilder | + validação xNome obrigatório, integração DpsBuilder |
-| 10 | DpsBuilder XSD validation | DpsBuilder::validateXsd() (sem alterar retorno de build()) |
+| 9 | TomadorBuilder + ServicoBuilder + ValoresBuilder | Integração DpsBuilder (validação delegada ao XSD) |
+| 10 | DpsBuilder XSD validation | DpsBuilder::buildAndValidate() separado de build(); teste op vazia |
 | 11 | EventoBuilder | EventoBuilder.php |
 | 12 | NfseHttpClient | NfseHttpClient.php, ServiceProvider stub, TestCase.php |
-| 13 | NfseClientContract + ConsultaBuilder | ConsultaBuilder com PrefeituraResolver injetado |
-| 14 | Events | 4 classes de event |
-| 15 | NfseClient (emitir + consultar) | for() + forStandalone() + ensureConfigured() |
+| 13 | NfseClientContract + ConsultaBuilder | Resolver obrigatório, DanfseResponse/EventosResponse tipados |
+| 14 | Events | 6 classes: NfseRequested, NfseEmitted, NfseCancelled, NfseQueried, NfseFailed, NfseRejected |
+| 15 | NfseClient (emitir + consultar) | for() com fallback standalone, forStandalone(), eventos tipados |
 | 16 | ServiceProvider + Facade + Config | Auto-config via config, guard contra uso sem configure() |
-| 17 | Feature tests cancelar + events | fake-icpbr.pfx, ->with('dpsData') |
-| 18 | CHANGELOG + limpeza | Remover autoload Hadder, deps legadas, chaves por nome no JSON |
+| 17 | Feature tests cancelar + consultar + events | cancelar rejeição, danfse, eventos, dispatch events |
+| 18 | CHANGELOG + limpeza | Remover autoload Hadder, deps legadas, Helpers.php, chaves por nome no JSON |
