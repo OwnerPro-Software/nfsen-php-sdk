@@ -13,7 +13,7 @@ class NfseNacionalServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/nfse-nacional.php', 'nfse-nacional');
 
-        $this->app->bind(NfseClient::class, function (\Illuminate\Foundation\Application $app) {
+        $this->app->bind(NfseClient::class, function (\Illuminate\Foundation\Application $app): \Pulsar\NfseNacional\NfseClient {
             $config   = $app['config']['nfse-nacional'];
             $jsonPath = __DIR__ . '/../storage/prefeituras.json';
 
