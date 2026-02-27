@@ -9,6 +9,9 @@ class XmlSigner
 {
     private readonly int $algorithm;
 
+    /**
+     * @var bool[]|null[]
+     */
     private array $canonical = [true, false, null, null];
 
     public function __construct(
