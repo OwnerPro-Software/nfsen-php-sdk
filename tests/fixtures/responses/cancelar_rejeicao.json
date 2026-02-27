@@ -1,0 +1,5 @@
+{
+  "erros": [
+    {"codigo": "E201", "descricao": "NFSe não encontrada para cancelamento"}
+  ]
+}
