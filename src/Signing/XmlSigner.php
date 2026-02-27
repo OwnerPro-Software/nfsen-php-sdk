@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pulsar\NfseNacional\Signing;
 
 use NFePHP\Common\Certificate;

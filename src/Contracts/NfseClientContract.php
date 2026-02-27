@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Pulsar\NfseNacional\Contracts;
 
 use Pulsar\NfseNacional\DTOs\NfseResponse;
