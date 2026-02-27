@@ -231,6 +231,7 @@ class NfseClient implements NfseClientContract
         }
     }
 
+    /** @return array<string, mixed> */
     public function executeGetRaw(string $url): array
     {
         $this->ensureConfigured();

@@ -16,16 +16,25 @@ class NfseHttpClient
         private readonly bool $sslVerify = true,
     ) {}
 
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
     public function post(string $url, array $payload): array
     {
         return $this->request('post', $url, $payload);
     }
 
+    /** @return array<string, mixed> */
     public function get(string $url): array
     {
         return $this->request('get', $url, []);
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
     private function request(string $method, string $url, array $payload): array
     {
         $certHandle = tmpfile();

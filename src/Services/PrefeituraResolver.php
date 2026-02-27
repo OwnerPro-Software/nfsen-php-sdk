@@ -9,7 +9,7 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 class PrefeituraResolver
 {
-    /** @var array<string, array> Cache estático por path — evita re-leitura em lote */
+    /** @var array<string, array<string, mixed>> Cache estático por path — evita re-leitura em lote */
     private static array $cache = [];
 
     private const DEFAULT_URLS = [
@@ -28,6 +28,7 @@ class PrefeituraResolver
         'cancelar_nfse'     => 'nfse/{chave}/eventos',
     ];
 
+    /** @var array<string, mixed> */
     private array $data;
 
     public function __construct(string $jsonPath)
@@ -55,6 +56,7 @@ class PrefeituraResolver
         return $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
     }
 
+    /** @param array<string, int|string> $params */
     public function resolveOperation(string $codigoIbge, string $operacao, array $params = []): string
     {
         $this->validateIbge($codigoIbge);

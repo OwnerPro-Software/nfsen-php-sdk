@@ -10,6 +10,6 @@ interface NfseClientContract
 {
     public function executeGet(string $url): NfseResponse;
 
-    /** Retorna JSON cru da API */
+    /** @return array<string, mixed> Retorna JSON cru da API */
     public function executeGetRaw(string $url): array;
 }
