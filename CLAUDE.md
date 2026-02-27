@@ -10,7 +10,7 @@ Sempre rodar antes de considerar o trabalho concluído:
 # quality checks
 
 ./vendor/bin/pest --type-coverage --min=100 # runs type coverage tests
-./vendor/bin/rector process --dry-run # runs rector quality checks
+./vendor/bin/rector --dry-run # runs rector quality checks
 
 # if any quality checks changed any file, full suite need to be run again!
 ./vendor/bin/pest # runs the complete suite test
