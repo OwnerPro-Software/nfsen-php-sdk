@@ -1,0 +1,5 @@
+{
+  "erros": [
+    {"codigo": "E001", "descricao": "CNPJ do prestador inválido"}
+  ]
+}
