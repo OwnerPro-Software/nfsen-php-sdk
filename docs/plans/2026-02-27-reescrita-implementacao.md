@@ -3515,27 +3515,25 @@ git commit -m "test: feature tests para cancelar e dispatch de events"
 ## Task 18: CHANGELOG e limpeza final
 
 **Files:**
-- Create: `CHANGELOG.md`
-- Modify: `composer.json` (remover autoload `Hadder\NfseNacional`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`, apontar `Pulsar` para `src/`)
-- Delete: `Helpers.php` (guard `function_exists` adicionado na Task 1 — agora remover completamente)
-- Rename: `src/` → `src-old/` (código legado `Hadder\NfseNacional` preservado para referência)
-- Rename: `src-new/` → `src/` (código novo `Pulsar\NfseNacional` assume o diretório principal)
-- Modify: `storage/prefeituras.json` (remover chaves por nome legado, manter só IBGE)
+- Create: `CHANGELOG.md` ✅ (já criado)
+- Delete: `Helpers.php` ✅ (já deletado)
+- Modify: `storage/prefeituras.json` ✅ (já limpo)
+- Rename: `src/` → `src-old/`, `src-new/` → `src/`
+- Modify: `composer.json` (remover autoload `Hadder\NfseNacional`, apontar `Pulsar` para `src/`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`)
+- Update: `CHANGELOG.md` (adicionar itens de remoção de namespace legado e deps)
 
 **Step 1: Renomear diretórios — src/ → src-old/, src-new/ → src/**
-
-Mover a implementação legada (`Hadder\NfseNacional`) para `src-old/` e promover a implementação nova (`Pulsar\NfseNacional`) para `src/`:
 
 ```bash
 mv src/ src-old/
 mv src-new/ src/
 ```
 
-> **Nota:** Após este passo, o namespace `Pulsar\NfseNacional` passa a viver em `src/` — layout padrão de pacote. O código legado fica em `src-old/` para referência e pode ser removido quando não for mais necessário.
+> O namespace `Pulsar\NfseNacional` passa a viver em `src/` — layout padrão de pacote. O código legado fica em `src-old/` para referência.
 
 **Step 2: Atualizar autoload no composer.json**
 
-Remover a entrada `Hadder\NfseNacional` do PSR-4 e apontar `Pulsar\NfseNacional` para `src/` (agora que o rename foi feito):
+Remover `Hadder\NfseNacional` do PSR-4 e apontar `Pulsar\NfseNacional` para `src/`:
 
 ```json
 "autoload": {
@@ -3547,26 +3545,35 @@ Remover a entrada `Hadder\NfseNacional` do PSR-4 e apontar `Pulsar\NfseNacional`
 
 **Step 3: Remover dependências legadas do composer.json**
 
-Remover `tecnickcom/tcpdf` e `symfony/var-dumper` do `require`. Verificar antes que nenhum arquivo em `src/` (já renomeado) com namespace `Pulsar\NfseNacional` as importa:
+Remover `tecnickcom/tcpdf` e `symfony/var-dumper` do `require`.
+
+**Step 4: Atualizar CHANGELOG.md**
+
+Adicionar na seção `### Removed`:
+- Namespace legado `Hadder\NfseNacional` (autoload removido)
+- Dependências `symfony/var-dumper` e `tecnickcom/tcpdf`
+
+**Step 5: Rodar `composer update` e suite completa**
 
 ```bash
-grep -r "use TCPDF\|use Symfony\\Component\\VarDumper\|use Symfony\\Component\\Debug" src/ --include="*.php"
+composer update
+./vendor/bin/pest --no-coverage
 ```
-Expected: nenhum resultado.
 
-**Step 4: Remover Helpers.php**
-
-Deletar o arquivo `Helpers.php` da raiz do projeto (o `now()` do `illuminate/support` o substitui):
+**Step 6: Commit**
 
 ```bash
-rm Helpers.php
+git add -A
+git commit -m "chore: rename src-new→src, remoção de autoload/deps legadas"
 ```
 
-**Step 5: Limpar chaves por nome no prefeituras.json**
+---
 
-Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas as chaves numéricas IBGE (7 dígitos). Verificar que cada prefeitura tem apenas a entrada IBGE.
+### Steps já executados (commit `08efe56`):
 
-**Step 6: Criar CHANGELOG.md**
+- ~~Remover Helpers.php~~ ✅
+- ~~Limpar chaves por nome no prefeituras.json~~ ✅
+- ~~Criar CHANGELOG.md~~ ✅
 
 ```markdown
 # Changelog
@@ -3649,4 +3656,4 @@ O código legado possui URLs `nfse_homologacao`/`nfse_producao` (apontando para 
 | 15 | NfseClient (emitir + consultar) | for() com fallback standalone, forStandalone(), eventos tipados |
 | 16 | ServiceProvider + Facade + Config | Auto-config via config, guard contra uso sem configure() |
 | 17 | Feature tests cancelar + consultar + events | cancelar rejeição, danfse, eventos, dispatch events |
-| 18 | CHANGELOG + limpeza | Rename src→src-old + src-new→src, remover autoload Hadder, deps legadas, Helpers.php, chaves por nome no JSON |
+| 18 | CHANGELOG + limpeza | CHANGELOG, Helpers.php, prefeituras.json, rename src-new→src, remover autoload Hadder + deps legadas |

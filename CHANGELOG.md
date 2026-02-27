@@ -22,3 +22,5 @@
 - Arquivo `Helpers.php` com `now()` global (substituído por `illuminate/support`)
 - Suporte a identificação de prefeitura por nome (chaves por nome removidas do JSON)
 - Chaves duplicadas por nome no `prefeituras.json` (mantido apenas IBGE 7 dígitos)
+- Namespace legado Hadder\NfseNacional (autoload removido)
+- Dependências symfony/var-dumper e tecnickcom/tcpdf

@@ -8,8 +8,6 @@
     "illuminate/http": "^11.0|^12.0",
     "illuminate/support": "^11.0|^12.0",
     "illuminate/contracts": "^11.0|^12.0",
-    "tecnickcom/tcpdf": "^6.7",
-    "symfony/var-dumper": "^7.1|^6.4",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-zlib": "*",
@@ -23,8 +21,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Hadder\\NfseNacional\\": "src/",
-      "Pulsar\\NfseNacional\\": "src-new/"
+      "Pulsar\\NfseNacional\\": "src/"
     }
   },
   "autoload-dev": {
