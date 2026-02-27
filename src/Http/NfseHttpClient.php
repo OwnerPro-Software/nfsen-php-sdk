@@ -66,7 +66,9 @@ class NfseHttpClient
                 );
             }
 
-            return $response->json() ?? [];
+            /** @var array<string, mixed> $json */
+            $json = (array) ($response->json() ?? []);
+            return $json;
         } finally {
             fclose($certHandle);
             fclose($keyHandle);

@@ -133,6 +133,7 @@ class NfseClient implements NfseClientContract
             $opPath     = $this->prefeituraResolver->resolveOperation($prefeitura, 'emitir_nfse');
             $url        = rtrim($seFinUrl, '/') . ($opPath !== '' && $opPath !== '0' ? '/' . ltrim($opPath, '/') : '');
 
+            /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, chNFSe?: string} $result */
             $result = $httpClient->post($url, $payload);
 
             if (isset($result['erros']) || isset($result['erro'])) {
@@ -186,6 +187,7 @@ class NfseClient implements NfseClientContract
             );
             $url = rtrim($seFinUrl, '/') . ($opPath !== '' && $opPath !== '0' ? '/' . ltrim($opPath, '/') : '');
 
+            /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string} $result */
             $result = $httpClient->post($url, $payload);
 
             if (isset($result['erros']) || isset($result['erro'])) {
@@ -223,6 +225,7 @@ class NfseClient implements NfseClientContract
         $this->dispatchEvent(new NfseRequested($operacao, ['url' => $url]));
 
         try {
+            /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, nfseXmlGZipB64?: string, dpsXmlGZipB64?: string} $result */
             $result = $httpClient->get($url);
 
             if (isset($result['erros']) || isset($result['erro'])) {
@@ -234,7 +237,7 @@ class NfseClient implements NfseClientContract
             $xml = null;
             $gzipB64 = $result['nfseXmlGZipB64'] ?? $result['dpsXmlGZipB64'] ?? null;
             if ($gzipB64) {
-                $xml = gzdecode(base64_decode((string) $gzipB64)) ?: null;
+                $xml = gzdecode(base64_decode($gzipB64)) ?: null;
             }
 
             $this->dispatchEvent(new NfseQueried('nfse'));
@@ -245,7 +248,14 @@ class NfseClient implements NfseClientContract
         }
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array{
+     *     erros?: list<array{descricao?: string, codigo?: string}>,
+     *     erro?: string,
+     *     danfseUrl?: string,
+     *     eventos?: array<int, array<string, mixed>>,
+     * }
+     */
     public function executeGetRaw(string $url): array
     {
         $this->ensureConfigured();
@@ -255,6 +265,7 @@ class NfseClient implements NfseClientContract
         $this->dispatchEvent(new NfseRequested($operacao, ['url' => $url]));
 
         try {
+            /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, danfseUrl?: string, eventos?: array<int, array<string, mixed>>} $result */
             $result = $httpClient->get($url);
 
             if (isset($result['erros']) || isset($result['erro'])) {
