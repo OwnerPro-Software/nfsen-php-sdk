@@ -61,7 +61,7 @@ class EventoBuilder
         $root->appendChild($infPedReg);
         $doc->appendChild($root);
 
-        return $doc->saveXML($doc->documentElement);
+        return (string) $doc->saveXML($doc->documentElement);
     }
 
     private function generateId(string $chNFSe, MotivoCancelamento $motivo): string

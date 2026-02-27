@@ -34,7 +34,7 @@ class NfseNacionalServiceProvider extends ServiceProvider
             $prefeitura  = $config['prefeitura'] ?? null;
 
             if ($certPath && $certSenha && $prefeitura && file_exists($certPath)) {
-                $client->configure(file_get_contents($certPath), $certSenha, $prefeitura);
+                $client->configure((string) file_get_contents($certPath), $certSenha, $prefeitura);
             }
 
             return $client;

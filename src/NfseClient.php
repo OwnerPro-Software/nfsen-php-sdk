@@ -118,7 +118,7 @@ class NfseClient implements NfseClientContract
             $xml     = $this->dpsBuilder->build($data);
             $signer  = new XmlSigner($this->certManager->getCertificate(), $this->signingAlgorithm);
             $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infDPS', 'DPS');
-            $payload = ['dpsXmlGZipB64' => base64_encode(gzencode($signed))];
+            $payload = ['dpsXmlGZipB64' => base64_encode((string) gzencode($signed))];
 
             $seFinUrl   = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
             $opPath     = $this->prefeituraResolver->resolveOperation($this->prefeitura, 'emitir_nfse');
@@ -166,7 +166,7 @@ class NfseClient implements NfseClientContract
 
             $signer  = new XmlSigner($cert, $this->signingAlgorithm);
             $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infPedReg', 'pedRegEvento');
-            $payload = ['pedidoRegistroEventoXmlGZipB64' => base64_encode(gzencode($signed))];
+            $payload = ['pedidoRegistroEventoXmlGZipB64' => base64_encode((string) gzencode($signed))];
 
             $seFinUrl  = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
             $opPath    = $this->prefeituraResolver->resolveOperation(

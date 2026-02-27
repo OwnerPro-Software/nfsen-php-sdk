@@ -81,7 +81,7 @@ class DpsBuilder
         $dps->appendChild($infDps);
         $doc->appendChild($dps);
 
-        return $doc->saveXML($doc->documentElement);
+        return (string) $doc->saveXML($doc->documentElement);
     }
 
     private function validateXsd(string $xmlFragment): void
