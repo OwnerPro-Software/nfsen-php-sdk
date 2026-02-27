@@ -8,14 +8,14 @@ use Pulsar\NfseNacional\DTOs\EventosResponse;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 
-final class ConsultaBuilder
+final readonly class ConsultaBuilder
 {
     public function __construct(
-        private readonly NfseClientContract $client,
-        private readonly string $seFinBaseUrl,
-        private readonly string $adnBaseUrl,
-        private readonly PrefeituraResolver $resolver,
-        private readonly string $codigoIbge,
+        private NfseClientContract $client,
+        private string $seFinBaseUrl,
+        private string $adnBaseUrl,
+        private PrefeituraResolver $resolver,
+        private string $codigoIbge,
     ) {}
 
     public function nfse(string $chave): NfseResponse

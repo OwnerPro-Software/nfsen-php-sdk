@@ -103,7 +103,7 @@ class DpsBuilder
         $d = $data->infDps;
         $p = $data->prestador;
         $id = 'DPS';
-        $id .= substr($d->clocemi, 0, 7);
+        $id .= substr((string) $d->clocemi, 0, 7);
         $id .= isset($p->cnpj) ? '2' : '1';
         $inscricao = $p->cnpj ?? $p->cpf ?? '';
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);

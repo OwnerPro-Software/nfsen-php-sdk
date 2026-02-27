@@ -7,7 +7,7 @@ use NFePHP\Common\Signer;
 
 class XmlSigner
 {
-    private int $algorithm;
+    private readonly int $algorithm;
     private array $canonical = [true, false, null, null];
 
     public function __construct(

@@ -202,7 +202,7 @@ class NfseClient implements NfseClientContract
             $xml = null;
             $gzipB64 = $result['nfseXmlGZipB64'] ?? $result['dpsXmlGZipB64'] ?? null;
             if ($gzipB64) {
-                $xml = gzdecode(base64_decode($gzipB64)) ?: null;
+                $xml = gzdecode(base64_decode((string) $gzipB64)) ?: null;
             }
 
             $this->dispatchEvent(new Events\NfseQueried('nfse'));

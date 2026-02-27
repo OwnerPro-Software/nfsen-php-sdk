@@ -18,5 +18,5 @@ return RectorConfig::configure()
 //        naming: true,
 //        instanceOf: true,
 //        earlyReturn: true,
-    );
-//    ->withPhpSets(php82: true);
+    )
+    ->withPhpSets(php82: true);

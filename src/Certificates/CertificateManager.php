@@ -7,7 +7,7 @@ use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
 
 class CertificateManager
 {
-    private Certificate $certificate;
+    private readonly Certificate $certificate;
 
     public function __construct(string $pfxContent, string $password)
     {
