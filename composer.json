@@ -30,7 +30,10 @@
   "autoload-dev": {
     "psr-4": {
       "Pulsar\\NfseNacional\\Tests\\": "tests/"
-    }
+    },
+    "files": [
+      "tests/helpers.php"
+    ]
   },
   "config": {
     "optimize-autoloader": true,
