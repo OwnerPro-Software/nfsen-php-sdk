@@ -1,0 +1,24 @@
+<?php
+
+namespace Pulsar\NfseNacional\Enums;
+
+enum NfseAmbiente: int
+{
+    case PRODUCAO    = 1;
+    case HOMOLOGACAO = 2;
+
+    public static function fromConfig(int|string $v): self
+    {
+        if (is_int($v) || ctype_digit((string) $v)) {
+            return self::from((int) $v);
+        }
+
+        return match(strtolower((string) $v)) {
+            'producao', 'production'     => self::PRODUCAO,
+            'homologacao', 'homologation' => self::HOMOLOGACAO,
+            default => throw new \InvalidArgumentException(
+                "Ambiente NFSe inválido: '$v'. Valores aceitos: 1, 2, 'producao', 'homologacao'."
+            ),
+        };
+    }
+}
