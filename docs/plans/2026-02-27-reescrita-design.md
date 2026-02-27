@@ -28,7 +28,8 @@ src/
 │   └── NfseNacional.php
 ├── NfseClient.php
 ├── Enums/
-│   └── NfseAmbiente.php
+│   ├── NfseAmbiente.php
+│   └── MotivoCancelamento.php
 ├── Http/
 │   └── NfseHttpClient.php
 ├── Certificates/
@@ -72,6 +73,9 @@ tests/
             emitir_sucesso.json
             emitir_rejeicao.json
             consultar_nfse.json
+            consultar_dps.json
+            consultar_danfse.json
+            consultar_eventos.json
             cancelar_sucesso.json
     Unit/
         Xml/
@@ -93,7 +97,19 @@ $resposta = $client->consultar()->danfse($chave);
 $resposta = $client->consultar()->eventos($chave);
 ```
 
-`consultar()` retorna um `ConsultaBuilder` que recebe o `NfseClient` configurado e expõe os quatro métodos de consulta. Cada chamada a `consultar()` cria uma nova instância de `ConsultaBuilder`.
+`consultar()` retorna um `ConsultaBuilder` que recebe o `NfseClient` configurado. Cada chamada a `consultar()` cria uma nova instância:
+
+```php
+final class ConsultaBuilder
+{
+    public function __construct(private readonly NfseClient $client) {}
+
+    public function nfse(string $chave): NfseResponse { ... }
+    public function dps(string $chave): NfseResponse { ... }
+    public function danfse(string $chave): NfseResponse { ... }
+    public function eventos(string $chave): NfseResponse { ... }
+}
+```
 
 ### Via Facade
 
@@ -123,24 +139,27 @@ return [
 
 ## Service Provider e Facade
 
-`NfseNacionalServiceProvider` registra `NfseClient` no container como **transient** (não singleton) para evitar vazamento de estado entre tenants:
+`NfseNacionalServiceProvider` registra `NfseClient` no container como **transient**, injetando a configuração estática (ambiente, timeout, algoritmo de assinatura):
 
 ```php
-$this->app->bind(NfseClient::class, fn () => new NfseClient());
+$this->app->bind(NfseClient::class, fn ($app) => new NfseClient(
+    NfseAmbiente::from($app['config']['nfse-nacional.ambiente']),
+    $app['config']['nfse-nacional.timeout'],
+    $app['config']['nfse-nacional.signing_algorithm'],
+));
 ```
 
-A Facade `NfseNacional` resolve via `NfseClient::for()`, que instancia um novo `NfseClient` configurado com o certificado e a prefeitura do tenant:
+`NfseClient::for()` resolve uma instância do container e aplica a configuração do tenant (certificado + prefeitura):
 
 ```php
-// Facade::getFacadeAccessor() retorna NfseClient::class
-// NfseClient::for() é um named constructor estático que devolve $this
 public static function for(string $pfxContent, string $senha, string $prefeitura): static
 {
-    return (new static())->configure($pfxContent, $senha, $prefeitura);
+    // configure() é método privado — não faz parte da API pública
+    return app(static::class)->configure($pfxContent, $senha, $prefeitura);
 }
 ```
 
-Cada chamada a `NfseNacional::for(...)` produz uma instância isolada — sem estado compartilhado entre requests.
+Separação: **container fornece config estática** (ambiente, timeout); **`for()` fornece config do tenant** (certificado, prefeitura). Cada chamada produz uma instância isolada.
 
 ## Fluxo interno do emitir()
 
@@ -156,6 +175,7 @@ DpsData (DTO tipado)
 
 ## Gerenciamento de certificado (multitenancy)
 
+- `NfseClient` valida o código IBGE no `configure()`: lança `InvalidArgumentException` se não for 7 dígitos numéricos — falha rápida antes de qualquer requisição
 - `CertificateManager` é stateless — instanciado por request
 - `sped-common` (`\NFePHP\Common\Certificate`) constrói o objeto diretamente a partir da string do PFX, sem escrita em disco
 - Para mTLS via Guzzle, os PEMs são gravados via `tmpfile()` — arquivo temporário anônimo sem nome previsível; o recurso é fechado explicitamente com `fclose()` no `finally` imediatamente após a request (necessário para não vazar file descriptors em workers long-lived como Laravel Octane)
@@ -202,16 +222,16 @@ Erros de negócio da Receita (rejeições) retornam no `NfseResponse`.
 
 ## Eventos Laravel
 
-O pacote dispara eventos que a aplicação consumidora pode escutar via `Event::listen()`:
+O pacote dispara eventos para **todas as operações** (emitir, cancelar e consultas). A aplicação consumidora pode escutar via `Event::listen()`:
 
 | Evento | Disparado em |
 |---|---|
-| `NfseRequested` | Antes do POST |
+| `NfseRequested` | Antes do POST — todas as operações |
 | `NfseEmitted` | Emissão com sucesso |
-| `NfseFailed` | Erro de infraestrutura (exceção) |
+| `NfseFailed` | Erro de infraestrutura — todas as operações |
 | `NfseRejected` | Rejeição de negócio pela Receita |
 
-Cada evento carrega a operação e metadados relevantes (chave, código de erro). A aplicação decide se loga, monitora ou ignora.
+Cada evento carrega o campo `operacao` ('emitir', 'cancelar', 'consultar.nfse', etc.) e os metadados relevantes (chave, código de erro). A aplicação filtra o que quer ouvir.
 
 ## Ambiente
 
@@ -223,6 +243,17 @@ enum NfseAmbiente: int {
 ```
 
 Padrão: `NfseAmbiente::HOMOLOGACAO`.
+
+## Cancelamento
+
+```php
+enum MotivoCancelamento: string {
+    case ErroEmissao = 'e101101';
+    case Outros      = 'e105102';
+}
+```
+
+Assinatura: `cancelar(string $chave, MotivoCancelamento $motivo, string $descricao): NfseResponse`
 
 ## Prefeituras
 
