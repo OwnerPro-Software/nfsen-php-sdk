@@ -9,7 +9,14 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 class PrefeituraResolver
 {
-    /** @var array<string, array<string, mixed>> Cache estático por path — evita re-leitura em lote */
+    /**
+     * Cache estático por path — evita re-leitura em lote.
+     *
+     * @var array<string, array<string, array{
+     *     urls?: array<string, string>,
+     *     operations?: array<string, string>,
+     * }>>
+     */
     private static array $cache = [];
 
     private const DEFAULT_URLS = [
@@ -28,13 +35,14 @@ class PrefeituraResolver
         'cancelar_nfse'     => 'nfse/{chave}/eventos',
     ];
 
-    /** @var array<string, mixed> */
+    /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> */
     private array $data;
 
     public function __construct(string $jsonPath)
     {
-        $this->data = self::$cache[$jsonPath]
-            ??= json_decode(file_get_contents($jsonPath) ?: '{}', true) ?? [];
+        /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> $decoded */
+        $decoded = json_decode(file_get_contents($jsonPath) ?: '{}', true) ?? [];
+        $this->data = self::$cache[$jsonPath] ??= $decoded;
     }
 
     public static function clearCache(): void

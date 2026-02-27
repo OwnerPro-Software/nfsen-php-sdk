@@ -17,24 +17,37 @@ class NfseNacionalServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../config/nfse-nacional.php', 'nfse-nacional');
 
         $this->app->bind(NfseClient::class, function (Application $app): NfseClient {
+            /**
+             * @var array{
+             *     ambiente: int|string,
+             *     prefeitura: string|null,
+             *     certificado: array{
+             *         path: string|null,
+             *         senha: string|null,
+             *     },
+             *     timeout: int,
+             *     signing_algorithm: string,
+             *     ssl_verify: bool,
+             * } $config
+             */
             $config   = $app['config']['nfse-nacional'];
             $jsonPath = __DIR__ . '/../storage/prefeituras.json';
 
             $client = new NfseClient(
                 ambiente:           NfseAmbiente::fromConfig($config['ambiente']),
-                timeout:            (int) $config['timeout'],
+                timeout:            $config['timeout'],
                 signingAlgorithm:   $config['signing_algorithm'],
-                sslVerify:          (bool) $config['ssl_verify'],
+                sslVerify:          $config['ssl_verify'],
                 prefeituraResolver: new PrefeituraResolver($jsonPath),
                 dpsBuilder:         new DpsBuilder(__DIR__ . '/../storage/schemes'),
             );
 
-            $certPath    = $config['certificado']['path'] ?? null;
-            $certSenha   = $config['certificado']['senha'] ?? null;
-            $prefeitura  = $config['prefeitura'] ?? null;
+            $certPath    = $config['certificado']['path'];
+            $certSenha   = $config['certificado']['senha'];
+            $prefeitura  = $config['prefeitura'];
 
             if ($certPath && $certSenha && $prefeitura && file_exists($certPath)) {
-                $client->configure((string) file_get_contents($certPath), $certSenha, $prefeitura);
+                $client->configure((string) file_get_contents($certPath), (string) $certSenha, (string) $prefeitura);
             }
 
             return $client;
