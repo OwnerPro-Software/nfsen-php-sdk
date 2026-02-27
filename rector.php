@@ -14,9 +14,9 @@ return RectorConfig::configure()
         codingStyle: true,
         typeDeclarations: true,
         typeDeclarationDocblocks: true,
-//        privatization: true,
+        privatization: true,
 //        naming: true,
-//        instanceOf: true,
-//        earlyReturn: true,
+        instanceOf: true,
+        earlyReturn: true,
     )
     ->withPhpSets(php82: true);
