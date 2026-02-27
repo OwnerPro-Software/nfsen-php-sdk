@@ -5,6 +5,9 @@ namespace Pulsar\NfseNacional\Xml;
 use DOMDocument;
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
+use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
+use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 
 class DpsBuilder
 {
@@ -46,6 +49,19 @@ class DpsBuilder
 
         if (!empty((array) $data->prestador)) {
             $infDps->appendChild((new PrestadorBuilder())->build($doc, $data->prestador));
+        }
+
+        // toma (optional)
+        if (!empty((array) $data->tomador)) {
+            $infDps->appendChild((new TomadorBuilder())->build($doc, $data->tomador));
+        }
+
+        // serv (obrigatório)
+        $infDps->appendChild((new ServicoBuilder())->build($doc, $data->servico));
+
+        // valores (obrigatório quando houver dados)
+        if (!empty((array) $data->valores)) {
+            $infDps->appendChild((new ValoresBuilder())->build($doc, $data->valores));
         }
 
         $dps->appendChild($infDps);
