@@ -4,4 +4,4 @@ includes:
 parameters:
     paths:
         - src
-    level: 7
+    level: 8
