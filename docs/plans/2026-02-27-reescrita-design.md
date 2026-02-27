@@ -45,6 +45,8 @@ src/
 │   └── XmlSigner.php
 ├── Services/
 │   └── PrefeituraResolver.php
+├── Consulta/
+│   └── ConsultaBuilder.php
 ├── Events/
 │   ├── NfseRequested.php
 │   ├── NfseEmitted.php
@@ -84,18 +86,24 @@ tests/
 
 ```php
 $client = NfseClient::for($pfxContent, $senha, $prefeitura);
-$resposta = $client->emitir($dpsData); // DpsData DTO
+$resposta = $client->emitir($dpsData);       // DpsData DTO
+$resposta = $client->consultar()->nfse($chave);
+$resposta = $client->consultar()->dps($chave);
+$resposta = $client->consultar()->danfse($chave);
+$resposta = $client->consultar()->eventos($chave);
 ```
+
+`consultar()` retorna um `ConsultaBuilder` que recebe o `NfseClient` configurado e expõe os quatro métodos de consulta. Cada chamada a `consultar()` cria uma nova instância de `ConsultaBuilder`.
 
 ### Via Facade
 
 ```php
 NfseNacional::for($pfxContent, $senha, '3501608')->emitir($dpsData);
-NfseNacional::for($pfxContent, $senha, '3501608')->consultarNfse($chave);
-NfseNacional::for($pfxContent, $senha, '3501608')->consultarDps($chave);
-NfseNacional::for($pfxContent, $senha, '3501608')->consultarDanfse($chave);
 NfseNacional::for($pfxContent, $senha, '3501608')->cancelar($chave, $motivo, $descricao);
-NfseNacional::for($pfxContent, $senha, '3501608')->eventos($chave);
+NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->nfse($chave);
+NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->dps($chave);
+NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->danfse($chave);
+NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->eventos($chave);
 ```
 
 ### Configuração estática (config/nfse-nacional.php)
