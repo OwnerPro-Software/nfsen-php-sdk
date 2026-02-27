@@ -54,3 +54,15 @@ it('cancelar works with cert without ICP-Brasil OID', function () {
 
     expect($response->sucesso)->toBeTrue();
 });
+
+it('cancelar throws HttpException on server error', function () {
+    Http::fake(['*' => Http::response('Server Error', 500)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+
+    expect(fn () => $client->cancelar(
+        'CHAVE50CARACTERES1234567890123456789012345678901',
+        MotivoCancelamento::ErroEmissao,
+        'Erro ao emitir'
+    ))->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+});

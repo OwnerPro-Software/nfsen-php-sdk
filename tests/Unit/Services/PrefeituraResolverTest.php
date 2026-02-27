@@ -61,3 +61,18 @@ it('throws InvalidArgumentException for non-7-digit ibge code', function () use 
     expect(fn () => $resolver->resolveSeFinUrl('123', NfseAmbiente::HOMOLOGACAO))
         ->toThrow(\InvalidArgumentException::class, 'IBGE');
 });
+
+it('clearCache resets the static cache', function () use ($jsonPath) {
+    // Load data into cache
+    $resolver = new PrefeituraResolver($jsonPath);
+    $resolver->resolveSeFinUrl('9999999', NfseAmbiente::HOMOLOGACAO);
+
+    // Clear cache
+    PrefeituraResolver::clearCache();
+
+    // Should still work after clearing cache (re-reads file)
+    $resolver2 = new PrefeituraResolver($jsonPath);
+    $url = $resolver2->resolveSeFinUrl('9999999', NfseAmbiente::HOMOLOGACAO);
+
+    expect($url)->toBe('https://sefin.producaorestrita.nfse.gov.br/SefinNacional');
+});
