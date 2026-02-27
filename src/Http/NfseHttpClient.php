@@ -44,8 +44,8 @@ class NfseHttpClient
             fwrite($certHandle, (string) $this->certificate);
             fwrite($keyHandle, (string) $this->certificate->privateKey);
 
-            $certPath = stream_get_meta_data($certHandle)['uri']; // @phpstan-ignore offsetAccess.notFound
-            $keyPath  = stream_get_meta_data($keyHandle)['uri']; // @phpstan-ignore offsetAccess.notFound
+            $certPath = stream_get_meta_data($certHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
+            $keyPath  = stream_get_meta_data($keyHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
 
             $pending = Http::timeout($this->timeout)
                 ->acceptJson()
