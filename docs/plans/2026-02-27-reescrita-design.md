@@ -27,23 +27,26 @@ src/
 ├── Facades/
 │   └── NfseNacional.php
 ├── NfseClient.php
+├── Enums/
+│   └── NfseAmbiente.php
 ├── Http/
 │   └── NfseHttpClient.php
 ├── Certificates/
 │   └── CertificateManager.php
 ├── Xml/
 │   ├── DpsBuilder.php
-│   ├── Builders/
-│   │   ├── PrestadorBuilder.php
-│   │   ├── TomadorBuilder.php
-│   │   ├── ServicoBuilder.php
-│   │   └── ValoresBuilder.php
-│   └── EventoBuilder.php
+│   └── Builders/
+│       ├── PrestadorBuilder.php
+│       ├── TomadorBuilder.php
+│       ├── ServicoBuilder.php
+│       ├── ValoresBuilder.php
+│       └── EventoBuilder.php
 ├── Signing/
 │   └── XmlSigner.php
-├── Config/
+├── Services/
 │   └── PrefeituraResolver.php
 ├── DTOs/
+│   ├── DpsData.php
 │   └── NfseResponse.php
 └── Exceptions/
     ├── NfseException.php
@@ -76,7 +79,7 @@ tests/
 
 ```php
 $client = NfseClient::for($pfxContent, $senha, $prefeitura);
-$resposta = $client->emitir($dpsData);
+$resposta = $client->emitir($dpsData); // DpsData DTO
 ```
 
 ### Via Facade
@@ -93,52 +96,103 @@ NfseNacional::for($pfxContent, $senha, '3501608')->cancelar($chave, $motivo, $de
 
 ```php
 return [
-    'ambiente'    => env('NFSE_AMBIENTE', 2), // 1=produção, 2=homologação
-    'prefeitura'  => env('NFSE_PREFEITURA', null),
+    'ambiente'           => env('NFSE_AMBIENTE', NfseAmbiente::HOMOLOGACAO->value),
+    'prefeitura'         => env('NFSE_PREFEITURA', null),
     'certificado' => [
         'path'  => env('NFSE_CERT_PATH'),
         'senha' => env('NFSE_CERT_SENHA'),
     ],
-    'timeout'     => env('NFSE_TIMEOUT', 30),
+    'timeout'            => env('NFSE_TIMEOUT', 30),
+    'signing_algorithm'  => env('NFSE_SIGNING_ALGORITHM', 'sha1'),
 ];
 ```
 
 ## Fluxo interno do emitir()
 
 ```
-$dpsData (array/stdClass)
+DpsData (DTO tipado)
     → DpsBuilder::build()        — constrói XML via DOM, valida contra XSD
     → XmlSigner::sign()          — injeta <Signature> XMLDSig (sped-common)
     → gzencode() + base64        — comprime e codifica
     → NfseHttpClient::post()     — POST com mTLS via Laravel Http::
-    → NfseResponse               — DTO tipado com chave, xml, sucesso, erro
+    → event(NfseEmitted)         — dispara evento Laravel
+    → NfseResponse               — DTO readonly tipado com chave, xml, sucesso, erro
 ```
 
 ## Gerenciamento de certificado (multitenancy)
 
 - `CertificateManager` é stateless — instanciado por request
-- Arquivos `.pem` salvos em `/tmp/nfse/{cnpj_ou_cpf}/` — escopado por tenant, sem colisão
-- Limpeza via `__destruct()` na instância — não depende de timeout arbitrário
+- `sped-common` (`\NFePHP\Common\Certificate`) constrói o objeto diretamente a partir da string do PFX, sem escrita em disco
+- Para mTLS via Guzzle, os PEMs são gravados via `tmpfile()` — arquivo temporário anônimo sem nome previsível, descartado no `finally` imediatamente após a request
+- Nenhum arquivo com CNPJ/CPF em disco; nenhuma persistência entre requests
 - SSL habilitado corretamente: `CURLOPT_SSL_VERIFYHOST=2`, `CURLOPT_SSL_VERIFYPEER=1`
+
+## DTO de entrada
+
+```php
+readonly class DpsData {
+    public function __construct(
+        public stdClass $prestador,
+        public stdClass $tomador,
+        public stdClass $servico,
+        public stdClass $valores,
+        // demais grupos obrigatórios
+    ) {}
+}
+```
+
+Os grupos internos permanecem como `stdClass` por compatibilidade com o formato existente. O wrapper `DpsData` garante que todos os grupos obrigatórios estejam presentes antes de chegar ao `DpsBuilder`.
 
 ## Retorno tipado
 
 ```php
-class NfseResponse {
-    public bool    $sucesso;
-    public ?string $chave;
-    public ?string $xml;    // XML da nota decodificado (gzip+base64)
-    public ?string $erro;
+readonly class NfseResponse {
+    public function __construct(
+        public bool    $sucesso,
+        public ?string $chave,
+        public ?string $xml,    // XML da nota decodificado (gzip+base64)
+        public ?string $erro,
+    ) {}
 }
 ```
 
 Exceções para erros de infraestrutura (certificado expirado, timeout, HTTP 5xx).
 Erros de negócio da Receita (rejeições) retornam no `NfseResponse`.
 
+## Assinatura XMLDSig
+
+- Algoritmo padrão: **SHA1** (obrigatório pela especificação atual da Receita Federal / ABRASF)
+- Configurável via `signing_algorithm` no config — permite migração sem mudança de código caso a Receita passe a aceitar SHA256
+- **Investigar antes da implementação**: verificar a especificação ABRASF vigente para confirmar se SHA256 já é aceito em algum ambiente
+
+## Eventos Laravel
+
+O pacote dispara eventos que a aplicação consumidora pode escutar via `Event::listen()`:
+
+| Evento | Disparado em |
+|---|---|
+| `NfseRequested` | Antes do POST |
+| `NfseEmitted` | Emissão com sucesso |
+| `NfseFailed` | Erro de infraestrutura (exceção) |
+| `NfseRejected` | Rejeição de negócio pela Receita |
+
+Cada evento carrega a operação e metadados relevantes (chave, código de erro). A aplicação decide se loga, monitora ou ignora.
+
+## Ambiente
+
+```php
+enum NfseAmbiente: int {
+    case PRODUCAO    = 1;
+    case HOMOLOGACAO = 2;
+}
+```
+
+Padrão: `NfseAmbiente::HOMOLOGACAO`.
+
 ## Prefeituras
 
 `storage/prefeituras.json` mantém o mesmo formato do projeto atual.
-`PrefeituraResolver` carrega o arquivo e faz merge com as URLs padrão.
+`Services/PrefeituraResolver` carrega o arquivo e faz merge com as URLs padrão.
 Identificação exclusivamente por **código IBGE** (suporte a nome legado removido).
 
 ## Testes
