@@ -38,18 +38,18 @@ Substituir o conteúdo por:
 
 ```json
 {
-  "name": "hadder/nfse-nacional",
+  "name": "pulsar/nfse-nacional",
   "description": "Pacote Laravel para geração de NFSe Nacional (padrão Receita Federal)",
   "license": "MIT",
   "type": "library",
   "autoload": {
     "psr-4": {
-      "Hadder\\NfseNacional\\": "src/"
+      "Pulsar\\NfseNacional\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Hadder\\NfseNacional\\Tests\\": "tests/"
+      "Pulsar\\NfseNacional\\Tests\\": "tests/"
     }
   },
   "authors": [
@@ -75,10 +75,10 @@ Substituir o conteúdo por:
   "extra": {
     "laravel": {
       "providers": [
-        "Hadder\\NfseNacional\\NfseNacionalServiceProvider"
+        "Pulsar\\NfseNacional\\NfseNacionalServiceProvider"
       ],
       "aliases": {
-        "NfseNacional": "Hadder\\NfseNacional\\Facades\\NfseNacional"
+        "NfseNacional": "Pulsar\\NfseNacional\\Facades\\NfseNacional"
       }
     }
   },
@@ -103,7 +103,7 @@ Expected: sem erros, `vendor/` criado.
 ```php
 <?php
 // src/NfseNacionalServiceProvider.php
-namespace Hadder\NfseNacional;
+namespace Pulsar\NfseNacional;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -134,18 +134,18 @@ class NfseNacionalServiceProvider extends ServiceProvider
 ```php
 <?php
 // src/Facades/NfseNacional.php
-namespace Hadder\NfseNacional\Facades;
+namespace Pulsar\NfseNacional\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Hadder\NfseNacional\NfseClient for(string $pfxContent, string $senha, string $prefeitura, int $ambiente = 2)
+ * @method static \Pulsar\NfseNacional\NfseClient for(string $pfxContent, string $senha, string $prefeitura, int $ambiente = 2)
  */
 class NfseNacional extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \Hadder\NfseNacional\NfseClient::class;
+        return \Pulsar\NfseNacional\NfseClient::class;
     }
 }
 ```
@@ -171,7 +171,7 @@ return [
 ```php
 <?php
 // tests/Pest.php
-uses(Hadder\NfseNacional\Tests\TestCase::class)->in('Feature', 'Unit');
+uses(Pulsar\NfseNacional\Tests\TestCase::class)->in('Feature', 'Unit');
 ```
 
 **Step 7: Criar TestCase base**
@@ -179,9 +179,9 @@ uses(Hadder\NfseNacional\Tests\TestCase::class)->in('Feature', 'Unit');
 ```php
 <?php
 // tests/TestCase.php
-namespace Hadder\NfseNacional\Tests;
+namespace Pulsar\NfseNacional\Tests;
 
-use Hadder\NfseNacional\NfseNacionalServiceProvider;
+use Pulsar\NfseNacional\NfseNacionalServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -292,7 +292,7 @@ Expected: arquivo `tests/fixtures/certs/fake.pfx` criado.
 ```php
 <?php
 // tests/Helpers.php
-namespace Hadder\NfseNacional\Tests;
+namespace Pulsar\NfseNacional\Tests;
 
 use stdClass;
 
@@ -375,7 +375,7 @@ git commit -m "test: adiciona fixtures e helpers de teste"
 ```php
 <?php
 // src/Exceptions/NfseException.php
-namespace Hadder\NfseNacional\Exceptions;
+namespace Pulsar\NfseNacional\Exceptions;
 
 use RuntimeException;
 
@@ -385,7 +385,7 @@ class NfseException extends RuntimeException {}
 ```php
 <?php
 // src/Exceptions/CertificateExpiredException.php
-namespace Hadder\NfseNacional\Exceptions;
+namespace Pulsar\NfseNacional\Exceptions;
 
 class CertificateExpiredException extends NfseException
 {
@@ -399,7 +399,7 @@ class CertificateExpiredException extends NfseException
 ```php
 <?php
 // src/Exceptions/HttpException.php
-namespace Hadder\NfseNacional\Exceptions;
+namespace Pulsar\NfseNacional\Exceptions;
 
 class HttpException extends NfseException
 {
@@ -430,7 +430,7 @@ git commit -m "feat: adiciona hierarquia de exceções"
 ```php
 <?php
 // tests/Unit/DTOs/NfseResponseTest.php
-use Hadder\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\DTOs\NfseResponse;
 
 it('cria response de sucesso', function () {
     $response = NfseResponse::sucesso('chave123', '<xml>...</xml>');
@@ -464,7 +464,7 @@ Expected: FAIL — `NfseResponse not found`
 ```php
 <?php
 // src/DTOs/NfseResponse.php
-namespace Hadder\NfseNacional\DTOs;
+namespace Pulsar\NfseNacional\DTOs;
 
 final class NfseResponse
 {
@@ -534,7 +534,7 @@ git commit -m "feat: adiciona NfseResponse DTO"
 ```php
 <?php
 // tests/Unit/Config/PrefeituraResolverTest.php
-use Hadder\NfseNacional\Config\PrefeituraResolver;
+use Pulsar\NfseNacional\Config\PrefeituraResolver;
 
 it('retorna URLs padrão quando prefeitura não existe no JSON', function () {
     $resolver = new PrefeituraResolver('9999999', 1);
@@ -576,7 +576,7 @@ Expected: FAIL
 ```php
 <?php
 // src/Config/PrefeituraResolver.php
-namespace Hadder\NfseNacional\Config;
+namespace Pulsar\NfseNacional\Config;
 
 use RuntimeException;
 
@@ -679,9 +679,9 @@ git commit -m "feat: adiciona PrefeituraResolver com suporte a override por muni
 ```php
 <?php
 // tests/Unit/Certificates/CertificateManagerTest.php
-use Hadder\NfseNacional\Certificates\CertificateManager;
-use Hadder\NfseNacional\Exceptions\CertificateExpiredException;
-use function Hadder\NfseNacional\Tests\fakePfxContent;
+use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
+use function Pulsar\NfseNacional\Tests\fakePfxContent;
 
 require_once __DIR__.'/../../Helpers.php';
 
@@ -723,9 +723,9 @@ Expected: FAIL
 ```php
 <?php
 // src/Certificates/CertificateManager.php
-namespace Hadder\NfseNacional\Certificates;
+namespace Pulsar\NfseNacional\Certificates;
 
-use Hadder\NfseNacional\Exceptions\CertificateExpiredException;
+use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
 use NFePHP\Common\Certificate;
 
 final class CertificateManager
@@ -838,9 +838,9 @@ git commit -m "feat: adiciona CertificateManager com limpeza via __destruct"
 ```php
 <?php
 // tests/Unit/Signing/XmlSignerTest.php
-use Hadder\NfseNacional\Certificates\CertificateManager;
-use Hadder\NfseNacional\Signing\XmlSigner;
-use function Hadder\NfseNacional\Tests\fakePfxContent;
+use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Signing\XmlSigner;
+use function Pulsar\NfseNacional\Tests\fakePfxContent;
 
 require_once __DIR__.'/../../Helpers.php';
 
@@ -882,7 +882,7 @@ Expected: FAIL
 ```php
 <?php
 // src/Signing/XmlSigner.php
-namespace Hadder\NfseNacional\Signing;
+namespace Pulsar\NfseNacional\Signing;
 
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Signer;
@@ -947,7 +947,7 @@ O trait `BuildsEndereco` evita duplicação entre PrestadorBuilder e TomadorBuil
 ```php
 <?php
 // src/Xml/Concerns/BuildsEndereco.php
-namespace Hadder\NfseNacional\Xml\Concerns;
+namespace Pulsar\NfseNacional\Xml\Concerns;
 
 use DOMElement;
 use NFePHP\Common\DOMImproved as Dom;
@@ -991,13 +991,13 @@ trait BuildsEndereco
 ```php
 <?php
 // src/Xml/DpsBuilder.php
-namespace Hadder\NfseNacional\Xml;
+namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
-use Hadder\NfseNacional\Xml\Builders\PrestadorBuilder;
-use Hadder\NfseNacional\Xml\Builders\TomadorBuilder;
-use Hadder\NfseNacional\Xml\Builders\ServicoBuilder;
-use Hadder\NfseNacional\Xml\Builders\ValoresBuilder;
+use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
+use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
+use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1118,7 +1118,7 @@ git commit -m "feat: adiciona DpsBuilder (esqueleto) e trait BuildsEndereco"
 ```php
 <?php
 // tests/Unit/Xml/PrestadorBuilderTest.php
-use Hadder\NfseNacional\Xml\Builders\PrestadorBuilder;
+use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1173,10 +1173,10 @@ Expected: FAIL
 ```php
 <?php
 // src/Xml/Builders/PrestadorBuilder.php
-namespace Hadder\NfseNacional\Xml\Builders;
+namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMElement;
-use Hadder\NfseNacional\Xml\Concerns\BuildsEndereco;
+use Pulsar\NfseNacional\Xml\Concerns\BuildsEndereco;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1270,7 +1270,7 @@ git commit -m "feat: adiciona PrestadorBuilder"
 ```php
 <?php
 // tests/Unit/Xml/TomadorBuilderTest.php
-use Hadder\NfseNacional\Xml\Builders\TomadorBuilder;
+use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1303,10 +1303,10 @@ it('adiciona tomador com CPF ao XML', function () {
 ```php
 <?php
 // src/Xml/Builders/TomadorBuilder.php
-namespace Hadder\NfseNacional\Xml\Builders;
+namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMElement;
-use Hadder\NfseNacional\Xml\Concerns\BuildsEndereco;
+use Pulsar\NfseNacional\Xml\Concerns\BuildsEndereco;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1382,7 +1382,7 @@ git commit -m "feat: adiciona TomadorBuilder"
 ```php
 <?php
 // tests/Unit/Xml/ServicoBuilderTest.php
-use Hadder\NfseNacional\Xml\Builders\ServicoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1438,10 +1438,10 @@ it('adiciona grupo obra quando presente', function () {
 ```php
 <?php
 // src/Xml/Builders/ServicoBuilder.php
-namespace Hadder\NfseNacional\Xml\Builders;
+namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMElement;
-use Hadder\NfseNacional\Xml\Concerns\BuildsEndereco;
+use Pulsar\NfseNacional\Xml\Concerns\BuildsEndereco;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1634,7 +1634,7 @@ git commit -m "feat: adiciona ServicoBuilder com suporte a obra, comExt e atvEve
 ```php
 <?php
 // tests/Unit/Xml/ValoresBuilderTest.php
-use Hadder\NfseNacional\Xml\Builders\ValoresBuilder;
+use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
@@ -1694,7 +1694,7 @@ it('não adiciona vDescCondIncond quando zerado', function () {
 ```php
 <?php
 // src/Xml/Builders/ValoresBuilder.php
-namespace Hadder\NfseNacional\Xml\Builders;
+namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMElement;
 use NFePHP\Common\DOMImproved as Dom;
@@ -1853,8 +1853,8 @@ git commit -m "feat: adiciona ValoresBuilder com tribMun, tribFed e descontos"
 ```php
 <?php
 // tests/Unit/Xml/DpsBuilderTest.php
-use Hadder\NfseNacional\Xml\DpsBuilder;
-use function Hadder\NfseNacional\Tests\makeDpsData;
+use Pulsar\NfseNacional\Xml\DpsBuilder;
+use function Pulsar\NfseNacional\Tests\makeDpsData;
 
 require_once __DIR__.'/../../Helpers.php';
 
@@ -1934,7 +1934,7 @@ git commit -m "feat: DpsBuilder completo com validação XSD"
 ```php
 <?php
 // tests/Unit/Xml/EventoBuilderTest.php
-use Hadder\NfseNacional\Xml\EventoBuilder;
+use Pulsar\NfseNacional\Xml\EventoBuilder;
 use stdClass;
 
 it('gera XML de pedRegEvento com evento e101101', function () {
@@ -1982,7 +1982,7 @@ it('gera Id no formato PRE + chave(50) + codigo(6)', function () {
 ```php
 <?php
 // src/Xml/EventoBuilder.php
-namespace Hadder\NfseNacional\Xml;
+namespace Pulsar\NfseNacional\Xml;
 
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
@@ -2081,12 +2081,12 @@ git commit -m "feat: adiciona EventoBuilder para cancelamento (e101101/e105102)"
 ```php
 <?php
 // tests/Feature/Http/NfseHttpClientTest.php
-use Hadder\NfseNacional\Certificates\CertificateManager;
-use Hadder\NfseNacional\Config\PrefeituraResolver;
-use Hadder\NfseNacional\Http\NfseHttpClient;
+use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Config\PrefeituraResolver;
+use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Illuminate\Support\Facades\Http;
-use function Hadder\NfseNacional\Tests\fakePfxContent;
-use function Hadder\NfseNacional\Tests\fixture;
+use function Pulsar\NfseNacional\Tests\fakePfxContent;
+use function Pulsar\NfseNacional\Tests\fixture;
 
 require_once __DIR__.'/../../Helpers.php';
 
@@ -2130,7 +2130,7 @@ it('lança HttpException em erro 500', function () {
     $client   = new NfseHttpClient($resolver, $cert, 30);
 
     expect(fn () => $client->get('nfse/chave'))
-        ->toThrow(\Hadder\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 ```
 
@@ -2145,11 +2145,11 @@ it('lança HttpException em erro 500', function () {
 ```php
 <?php
 // src/Http/NfseHttpClient.php
-namespace Hadder\NfseNacional\Http;
+namespace Pulsar\NfseNacional\Http;
 
-use Hadder\NfseNacional\Certificates\CertificateManager;
-use Hadder\NfseNacional\Config\PrefeituraResolver;
-use Hadder\NfseNacional\Exceptions\HttpException;
+use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Config\PrefeituraResolver;
+use Pulsar\NfseNacional\Exceptions\HttpException;
 use Illuminate\Support\Facades\Http;
 
 final class NfseHttpClient
@@ -2245,12 +2245,12 @@ git commit -m "feat: adiciona NfseHttpClient com mTLS via Laravel Http"
 ```php
 <?php
 // tests/Feature/NfseClientTest.php
-use Hadder\NfseNacional\DTOs\NfseResponse;
-use Hadder\NfseNacional\NfseClient;
+use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\NfseClient;
 use Illuminate\Support\Facades\Http;
-use function Hadder\NfseNacional\Tests\fakePfxContent;
-use function Hadder\NfseNacional\Tests\fixture;
-use function Hadder\NfseNacional\Tests\makeDpsData;
+use function Pulsar\NfseNacional\Tests\fakePfxContent;
+use function Pulsar\NfseNacional\Tests\fixture;
+use function Pulsar\NfseNacional\Tests\makeDpsData;
 
 require_once __DIR__.'/../Helpers.php';
 
@@ -2322,15 +2322,15 @@ it('cancela NFSe', function () {
 ```php
 <?php
 // src/NfseClient.php
-namespace Hadder\NfseNacional;
+namespace Pulsar\NfseNacional;
 
-use Hadder\NfseNacional\Certificates\CertificateManager;
-use Hadder\NfseNacional\Config\PrefeituraResolver;
-use Hadder\NfseNacional\DTOs\NfseResponse;
-use Hadder\NfseNacional\Http\NfseHttpClient;
-use Hadder\NfseNacional\Signing\XmlSigner;
-use Hadder\NfseNacional\Xml\DpsBuilder;
-use Hadder\NfseNacional\Xml\EventoBuilder;
+use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Config\PrefeituraResolver;
+use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Http\NfseHttpClient;
+use Pulsar\NfseNacional\Signing\XmlSigner;
+use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Xml\EventoBuilder;
 use stdClass;
 
 final class NfseClient
