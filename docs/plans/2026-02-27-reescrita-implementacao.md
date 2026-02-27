@@ -4,7 +4,7 @@
 
 **Goal:** Reescrever o pacote nfse-nacional com namespace `Pulsar\NfseNacional`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
-**Architecture:** Pacote Laravel standalone. `NfseClient::for()` recebe cert PFX + prefeitura e retorna instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Infra toda nova; código legado mantido em `src/` até deprecação.
+**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Infra toda nova; código legado coexiste via dual autoload até Task 18 (limpeza).
 
 **Tech Stack:** PHP 8.2+, Laravel 11/12 (illuminate/http, illuminate/support), nfephp-org/sped-common, Pest 3 + orchestra/testbench 9.
 
@@ -14,7 +14,9 @@
 
 - Namespace: `Pulsar\NfseNacional`
 - Testes rodam com: `./vendor/bin/pest`
-- Fixtures de cert: `tests/fixtures/certs/fake.pfx` (senha: `secret`)
+- Fixtures de cert: `tests/fixtures/certs/fake.pfx` (senha: `secret`) — sem OID ICP-Brasil
+- Fixtures de cert: `tests/fixtures/certs/fake-icpbr.pfx` (senha: `secret`) — com OID ICP-Brasil (CNPJ extraível via `Certificate::getCnpj()`)
+- Fixtures de cert: `tests/fixtures/certs/expired.pfx` (senha: `secret`) — certificado expirado (fixture estática)
 - Fixtures de resposta: `tests/fixtures/responses/*.json`
 - Todos os `stdClass` internos de DpsData mantêm propriedades em **minúsculas** (padrão atual via `propertiesToLower`)
 
@@ -41,6 +43,8 @@
     "illuminate/http": "^11.0|^12.0",
     "illuminate/support": "^11.0|^12.0",
     "illuminate/contracts": "^11.0|^12.0",
+    "tecnickcom/tcpdf": "^6.7",
+    "symfony/var-dumper": "^7.1|^6.4",
     "ext-dom": "*",
     "ext-zlib": "*",
     "ext-openssl": "*",
@@ -53,6 +57,7 @@
   },
   "autoload": {
     "psr-4": {
+      "Hadder\\NfseNacional\\": "src/",
       "Pulsar\\NfseNacional\\": "src/"
     }
   },
@@ -72,6 +77,9 @@
     }
   }
 }
+```
+
+> **Nota transição:** Mantemos o autoload `Hadder\NfseNacional` e as deps legadas (`tcpdf`, `var-dumper`) durante a reescrita para não quebrar código existente em `src/`. A remoção ocorre na Task 18 (limpeza final).
 ```
 
 **Step 2: Criar phpunit.xml**
@@ -98,13 +106,16 @@ mkdir -p tests/{Unit/{Xml,Signing,Certificates,Services},Feature,fixtures/{certs
 mkdir -p config
 ```
 
-**Step 4: Gerar certificado de teste**
+**Step 4: Gerar certificados de teste**
 
+Gerar 3 fixtures de certificado:
+
+**4a) `fake.pfx` — certificado simples sem OID ICP-Brasil:**
 ```bash
 openssl genrsa -out tests/fixtures/certs/fake.key 2048
 openssl req -new -x509 -key tests/fixtures/certs/fake.key \
   -out tests/fixtures/certs/fake.crt -days 3650 \
-  -subj "/CN=Fake Test/O=Pulsar/C=BR/CNPJ=12345678000195"
+  -subj "/CN=Fake Test/O=Pulsar/C=BR"
 openssl pkcs12 -export \
   -out tests/fixtures/certs/fake.pfx \
   -inkey tests/fixtures/certs/fake.key \
@@ -112,6 +123,61 @@ openssl pkcs12 -export \
   -passout pass:secret
 rm tests/fixtures/certs/fake.key tests/fixtures/certs/fake.crt
 ```
+
+**4b) `fake-icpbr.pfx` — certificado com OID ICP-Brasil (CNPJ extraível):**
+
+Criar `tests/fixtures/certs/icpbr.cnf`:
+```ini
+[req]
+distinguished_name = req_dn
+x509_extensions = v3_req
+prompt = no
+
+[req_dn]
+CN = Fake ICP-BR Test
+O = Pulsar
+C = BR
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+otherName.1 = 2.16.76.1.3.3;FORMAT:UTF8,UTF8:12345678000195
+```
+
+```bash
+openssl genrsa -out tests/fixtures/certs/fake-icpbr.key 2048
+openssl req -new -x509 -key tests/fixtures/certs/fake-icpbr.key \
+  -out tests/fixtures/certs/fake-icpbr.crt -days 3650 \
+  -config tests/fixtures/certs/icpbr.cnf
+openssl pkcs12 -export \
+  -out tests/fixtures/certs/fake-icpbr.pfx \
+  -inkey tests/fixtures/certs/fake-icpbr.key \
+  -in tests/fixtures/certs/fake-icpbr.crt \
+  -passout pass:secret
+rm tests/fixtures/certs/fake-icpbr.key tests/fixtures/certs/fake-icpbr.crt tests/fixtures/certs/icpbr.cnf
+```
+
+> **Nota:** O OID `2.16.76.1.3.3` é o campo ICP-Brasil que `NFePHP\Common\Certificate::getCnpj()` usa para extrair o CNPJ. Se o openssl da máquina não suportar `otherName` no config, gerar o PFX num ambiente que suporte e commitar a fixture estática.
+
+**4c) `expired.pfx` — certificado expirado (fixture estática):**
+
+Gerar uma vez e commitar. Não gerar em runtime (flags `-not_before`/`-not_after` não são portáveis):
+```bash
+openssl genrsa -out /tmp/expired.key 1024
+openssl req -new -x509 -key /tmp/expired.key \
+  -out /tmp/expired.crt -days 1 \
+  -subj "/CN=Expired Test/C=BR" \
+  -not_before 20200101000000Z -not_after 20200102000000Z
+openssl pkcs12 -export \
+  -out tests/fixtures/certs/expired.pfx \
+  -inkey /tmp/expired.key \
+  -in /tmp/expired.crt \
+  -passout pass:secret
+rm /tmp/expired.key /tmp/expired.crt
+```
+
+> Se o seu OpenSSL não suportar `-not_before`/`-not_after`, use uma máquina com OpenSSL 1.1.1+ para gerar e commitar o `expired.pfx` como fixture estática.
 
 **Step 5: Instalar dependências**
 
@@ -172,7 +238,11 @@ it('fromConfig accepts integer values', function () {
 it('fromConfig accepts string values', function () {
     expect(NfseAmbiente::fromConfig('producao'))->toBe(NfseAmbiente::PRODUCAO);
     expect(NfseAmbiente::fromConfig('homologacao'))->toBe(NfseAmbiente::HOMOLOGACAO);
-    expect(NfseAmbiente::fromConfig('unknown'))->toBe(NfseAmbiente::HOMOLOGACAO);
+});
+
+it('fromConfig throws on unknown string value', function () {
+    expect(fn () => NfseAmbiente::fromConfig('unknown'))
+        ->toThrow(\InvalidArgumentException::class);
 });
 ```
 
@@ -218,8 +288,11 @@ enum NfseAmbiente: int
         }
 
         return match(strtolower((string) $v)) {
-            'producao', 'production' => self::PRODUCAO,
-            default                  => self::HOMOLOGACAO,
+            'producao', 'production'     => self::PRODUCAO,
+            'homologacao', 'homologation' => self::HOMOLOGACAO,
+            default => throw new \InvalidArgumentException(
+                "Ambiente NFSe inválido: '$v'. Valores aceitos: 1, 2, 'producao', 'homologacao'."
+            ),
         };
     }
 }
@@ -492,25 +565,11 @@ it('loads certificate from pfx content', function () {
 });
 
 it('throws CertificateExpiredException for an expired cert', function () {
-    // Gera PFX expirado (-1 day)
-    $tmpKey  = tempnam(sys_get_temp_dir(), 'key');
-    $tmpCert = tempnam(sys_get_temp_dir(), 'crt');
-    $tmpPfx  = tempnam(sys_get_temp_dir(), 'pfx');
+    // Usa fixture estática gerada na Task 1 (Step 4c)
+    $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/expired.pfx');
 
-    exec("openssl genrsa -out $tmpKey 1024 2>/dev/null");
-    exec("openssl req -new -x509 -key $tmpKey -out $tmpCert -days 1 "
-        . "-subj '/CN=Expired/C=BR' "
-        . "-not_before 20200101000000Z -not_after 20200102000000Z 2>/dev/null");
-    exec("openssl pkcs12 -export -out $tmpPfx -inkey $tmpKey -in $tmpCert -passout pass:test 2>/dev/null");
-
-    $pfxContent = file_get_contents($tmpPfx);
-
-    expect(fn () => new CertificateManager($pfxContent, 'test'))
+    expect(fn () => new CertificateManager($pfxContent, 'secret'))
         ->toThrow(CertificateExpiredException::class);
-
-    @unlink($tmpKey);
-    @unlink($tmpCert);
-    @unlink($tmpPfx);
 });
 ```
 
@@ -1332,6 +1391,10 @@ class TomadorBuilder
 {
     public function build(DOMDocument $doc, stdClass $toma): DOMElement
     {
+        if (!isset($toma->xnome) || trim($toma->xnome) === '') {
+            throw new \InvalidArgumentException('Tomador deve ter xNome (obrigatório pelo XSD).');
+        }
+
         $el = $doc->createElement('toma');
 
         if (isset($toma->cnpj))    $el->appendChild($doc->createElement('CNPJ', $toma->cnpj));
@@ -1617,25 +1680,30 @@ it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data)
 ```
 Verificar as mensagens de erro do XSD para entender quais campos estão faltando.
 
-**Step 3: Adicionar `validate()` no DpsBuilder (chamada interna no `build()`)**
+**Step 3: Adicionar `validateXsd()` no DpsBuilder (chamada interna no `build()`)**
 
-Em `src/Xml/DpsBuilder.php`, após `$doc->appendChild($dps)`:
+Em `src/Xml/DpsBuilder.php`, após `$doc->appendChild($dps)`, **antes do return** existente:
 
 ```php
-$xml = $doc->saveXML();
+// Retorno continua SEM declaração <?xml...?> — NfseClient adiciona uma vez
+$xml = $doc->saveXML($doc->documentElement);
 $this->validateXsd($xml);
 return $xml;
+```
 
-// ...
+> **Importante:** O retorno de `build()` continua usando `saveXML($doc->documentElement)` (sem `<?xml...?>`). O `validateXsd()` adiciona a declaração internamente apenas para validação XSD.
 
-private function validateXsd(string $xml): void
+```php
+private function validateXsd(string $xmlFragment): void
 {
     $xsdPath = $this->schemesPath . '/DPS_v1.01.xsd';
     if (!file_exists($xsdPath)) {
         return;
     }
+    // Adiciona declaração XML temporariamente para validação XSD
+    $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;
     $doc = new DOMDocument();
-    $doc->loadXML($xml);
+    $doc->loadXML($xmlWithDecl);
     libxml_use_internal_errors(true);
     $valid  = $doc->schemaValidate($xsdPath);
     $errors = libxml_get_errors();
@@ -1649,9 +1717,9 @@ private function validateXsd(string $xml): void
 }
 ```
 
-**Step 4: Ajustar makeDpsData() até o XSD passar**
+**Step 4: Ajustar dataset 'basico' até o XSD passar**
 
-Consultar o XSD em `storage/schemes/DPS_v1.01.xsd` para ver campos obrigatórios em `<serv>` e `<valores>`. Adicionar os campos obrigatórios faltantes em `makeDpsData()`.
+Consultar o XSD em `storage/schemes/DPS_v1.01.xsd` para ver campos obrigatórios em `<serv>` e `<valores>`. Adicionar os campos obrigatórios faltantes no closure `'basico'` de `tests/datasets.php`.
 
 **Step 5: Rodar para confirmar sucesso**
 
@@ -2054,7 +2122,7 @@ git commit -m "feat: add NfseHttpClient — mTLS via tmpfile, Laravel Http clien
 - Create: `tests/Unit/Consulta/ConsultaBuilderTest.php`
 
 **Context:**
-`ConsultaBuilder` recebe um `NfseClient` configurado (ambiente, prefeitura, http client) e expõe `nfse()`, `dps()`, `danfse()`, `eventos()`. O ConsultaBuilder é tipado via `NfseClientContract` para desacoplar da implementação concreta.
+`ConsultaBuilder` recebe um `NfseClient` configurado (ambiente, prefeitura, http client) e expõe `nfse()`, `dps()`, `danfse()`, `eventos()`. O ConsultaBuilder é tipado via `NfseClientContract` para desacoplar da implementação concreta. Recebe também `PrefeituraResolver` + código IBGE para resolver paths customizados por prefeitura (consistente com `emitir`/`cancelar`).
 
 **Step 1: Criar NfseClientContract**
 
@@ -2082,6 +2150,8 @@ use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 
+use Pulsar\NfseNacional\Services\PrefeituraResolver;
+
 class FakeNfseClientForConsulta implements NfseClientContract
 {
     public array $calls = [];
@@ -2095,7 +2165,8 @@ class FakeNfseClientForConsulta implements NfseClientContract
 
 it('calls executeGet with nfse url for nfse query', function () {
     $fakeClient = new FakeNfseClientForConsulta();
-    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base');
+    $resolver   = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
+    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
 
     $response = $builder->nfse('CHAVE123');
 
@@ -2105,7 +2176,8 @@ it('calls executeGet with nfse url for nfse query', function () {
 
 it('calls executeGet with dps url', function () {
     $fakeClient = new FakeNfseClientForConsulta();
-    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base');
+    $resolver   = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
+    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
 
     $builder->dps('CHAVE456');
 
@@ -2130,6 +2202,7 @@ namespace Pulsar\NfseNacional\Consulta;
 
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Services\PrefeituraResolver;
 
 final class ConsultaBuilder
 {
@@ -2137,27 +2210,52 @@ final class ConsultaBuilder
         private readonly NfseClientContract $client,
         private readonly string $seFinBaseUrl,
         private readonly string $adnBaseUrl = '',
+        private readonly ?PrefeituraResolver $resolver = null,
+        private readonly ?string $codigoIbge = null,
     ) {}
 
     public function nfse(string $chave): NfseResponse
     {
-        return $this->client->executeGet($this->seFinBaseUrl . '/nfse/' . $chave);
+        $path = $this->resolvePath('consultar_nfse', ['chave' => $chave]);
+        return $this->client->executeGet(rtrim($this->seFinBaseUrl, '/') . '/' . ltrim($path, '/'));
     }
 
     public function dps(string $chave): NfseResponse
     {
-        return $this->client->executeGet($this->seFinBaseUrl . '/dps/' . $chave);
+        $path = $this->resolvePath('consultar_dps', ['chave' => $chave]);
+        return $this->client->executeGet(rtrim($this->seFinBaseUrl, '/') . '/' . ltrim($path, '/'));
     }
 
     public function danfse(string $chave): NfseResponse
     {
         $baseUrl = $this->adnBaseUrl ?: $this->seFinBaseUrl;
-        return $this->client->executeGet($baseUrl . '/danfse/' . $chave);
+        $path    = $this->resolvePath('consultar_danfse', ['chave' => $chave]);
+        return $this->client->executeGet(rtrim($baseUrl, '/') . '/' . ltrim($path, '/'));
     }
 
-    public function eventos(string $chave): NfseResponse
+    public function eventos(string $chave, int $tipoEvento = 101101, int $nSequencial = 1): NfseResponse
     {
-        return $this->client->executeGet($this->seFinBaseUrl . '/nfse/' . $chave . '/eventos');
+        $path = $this->resolvePath('consultar_eventos', [
+            'chave'       => $chave,
+            'tipoEvento'  => $tipoEvento,
+            'nSequencial' => $nSequencial,
+        ]);
+        return $this->client->executeGet(rtrim($this->seFinBaseUrl, '/') . '/' . ltrim($path, '/'));
+    }
+
+    private function resolvePath(string $operacao, array $params): string
+    {
+        if ($this->resolver && $this->codigoIbge) {
+            return $this->resolver->resolveOperation($this->codigoIbge, $operacao, $params);
+        }
+        // Fallback para paths padrão (sem resolver)
+        return match($operacao) {
+            'consultar_nfse'    => 'nfse/' . ($params['chave'] ?? ''),
+            'consultar_dps'     => 'dps/' . ($params['chave'] ?? ''),
+            'consultar_danfse'  => 'danfse/' . ($params['chave'] ?? ''),
+            'consultar_eventos' => 'nfse/' . ($params['chave'] ?? '') . '/eventos/' . ($params['tipoEvento'] ?? '') . '/' . ($params['nSequencial'] ?? ''),
+            default             => throw new \InvalidArgumentException("Operação desconhecida: $operacao"),
+        };
     }
 }
 ```
@@ -2488,12 +2586,42 @@ class NfseClient implements NfseClientContract
         private readonly DpsBuilder $dpsBuilder,
     ) {}
 
+    /**
+     * Factory via Laravel container — usa config do ServiceProvider como base.
+     */
     public static function for(string $pfxContent, string $senha, string $prefeitura): static
     {
         return app(static::class)->configure($pfxContent, $senha, $prefeitura);
     }
 
-    private function configure(string $pfxContent, string $senha, string $prefeitura): static
+    /**
+     * Factory standalone — não depende do container Laravel.
+     */
+    public static function forStandalone(
+        string $pfxContent,
+        string $senha,
+        string $prefeitura,
+        NfseAmbiente $ambiente = NfseAmbiente::HOMOLOGACAO,
+        int $timeout = 30,
+        string $signingAlgorithm = 'sha1',
+        ?string $prefeiturasJsonPath = null,
+        ?string $schemesPath = null,
+    ): static {
+        $jsonPath    = $prefeiturasJsonPath ?? __DIR__ . '/../storage/prefeituras.json';
+        $schemasPath = $schemesPath ?? __DIR__ . '/../storage/schemes';
+
+        $instance = new static(
+            ambiente:           $ambiente,
+            timeout:            $timeout,
+            signingAlgorithm:   $signingAlgorithm,
+            prefeituraResolver: new PrefeituraResolver($jsonPath),
+            dpsBuilder:         new DpsBuilder($schemasPath),
+        );
+
+        return $instance->configure($pfxContent, $senha, $prefeitura);
+    }
+
+    public function configure(string $pfxContent, string $senha, string $prefeitura): static
     {
         // Validate IBGE early
         $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
@@ -2505,8 +2633,18 @@ class NfseClient implements NfseClientContract
         return $this;
     }
 
+    private function ensureConfigured(): void
+    {
+        if ($this->certManager === null || $this->prefeitura === null || $this->httpClient === null) {
+            throw new \Pulsar\NfseNacional\Exceptions\NfseException(
+                'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
+            );
+        }
+    }
+
     public function emitir(DpsData $data): NfseResponse
     {
+        $this->ensureConfigured();
         $operacao = 'emitir';
         event(new NfseRequested($operacao, []));
 
@@ -2541,8 +2679,14 @@ class NfseClient implements NfseClientContract
         }
     }
 
+    /**
+     * Cancelar NFSe. O CNPJ/CPF do autor é extraído do certificado via OID ICP-Brasil.
+     * Para certs sem OID ICP-Brasil, getCnpj()/getCpf() retornam string vazia.
+     * Testes de cancelar devem usar fake-icpbr.pfx (com OID) para validar extração.
+     */
     public function cancelar(string $chave, MotivoCancelamento $motivo, string $descricao): NfseResponse
     {
+        $this->ensureConfigured();
         $operacao = 'cancelar';
         event(new NfseRequested($operacao, compact('chave')));
 
@@ -2592,13 +2736,15 @@ class NfseClient implements NfseClientContract
 
     public function consultar(): ConsultaBuilder
     {
+        $this->ensureConfigured();
         $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
         $adnUrl   = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
-        return new ConsultaBuilder($this, $seFinUrl, $adnUrl);
+        return new ConsultaBuilder($this, $seFinUrl, $adnUrl, $this->prefeituraResolver, $this->prefeitura);
     }
 
     public function executeGet(string $url): NfseResponse
     {
+        $this->ensureConfigured();
         $operacao = 'consultar';
         event(new NfseRequested($operacao, compact('url')));
 
@@ -2724,7 +2870,7 @@ class NfseNacionalServiceProvider extends ServiceProvider
             $config   = $app['config']['nfse-nacional'];
             $jsonPath = __DIR__ . '/../storage/prefeituras.json';
 
-            return new NfseClient(
+            $client = new NfseClient(
                 // fromConfig() aceita int|string: '1', '2', 'producao', 'homologacao'
                 ambiente:           NfseAmbiente::fromConfig($config['ambiente']),
                 timeout:            (int) $config['timeout'],
@@ -2732,6 +2878,17 @@ class NfseNacionalServiceProvider extends ServiceProvider
                 prefeituraResolver: new PrefeituraResolver($jsonPath),
                 dpsBuilder:         new DpsBuilder(__DIR__ . '/../storage/schemes'),
             );
+
+            // Auto-configurar se cert + prefeitura estão no config
+            $certPath    = $config['certificado']['path'] ?? null;
+            $certSenha   = $config['certificado']['senha'] ?? null;
+            $prefeitura  = $config['prefeitura'] ?? null;
+
+            if ($certPath && $certSenha && $prefeitura && file_exists($certPath)) {
+                $client->configure(file_get_contents($certPath), $certSenha, $prefeitura);
+            }
+
+            return $client;
         });
     }
 
@@ -2838,6 +2995,25 @@ it('cancelar returns success NfseResponse', function () {
         200
     )]);
 
+    // Usa fake-icpbr.pfx para que getCnpj() extraia o CNPJ via OID ICP-Brasil
+    $pfx      = file_get_contents(__DIR__ . '/../fixtures/certs/fake-icpbr.pfx');
+    $client   = NfseClient::for($pfx, 'secret', '3501608');
+    $response = $client->cancelar(
+        'CHAVE50CARACTERES1234567890123456789012345678901',
+        MotivoCancelamento::ErroEmissao,
+        'Erro ao emitir'
+    );
+
+    expect($response->sucesso)->toBeTrue();
+});
+
+it('cancelar works with cert without ICP-Brasil OID', function () {
+    Http::fake(['*' => Http::response(
+        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/cancelar_sucesso.json'), true),
+        200
+    )]);
+
+    // Usa fake.pfx (sem OID) — getCnpj() retorna vazio, XML terá CNPJAutor/CPFAutor ausentes
     $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
     $response = $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
@@ -2855,23 +3031,24 @@ it('cancelar returns success NfseResponse', function () {
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Events\NfseEmitted;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\NfseClient;
 
-it('dispatches NfseRequested and NfseEmitted on successful emitir', function () {
+it('dispatches NfseRequested and NfseEmitted on successful emitir', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE123'], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
-    $client->emitir(makeDpsData());
+    $client->emitir($data);
 
     Event::assertDispatched(NfseRequested::class);
     Event::assertDispatched(NfseEmitted::class);
-});
+})->with('dpsData');
 ```
 
-**Step 3: Rodar para confirmar falha (makePfxContent e makeDpsData não estão no escopo desses testes)**
+**Step 3: Rodar para confirmar falha (makePfxContent não está no escopo desses testes)**
 
 Criar `tests/helpers.php` com `makePfxContent()` (função simples reutilizada em todos os feature tests), e adicionar ao `Pest.php`:
 
@@ -2922,9 +3099,35 @@ git commit -m "test: feature tests para cancelar e dispatch de events"
 
 **Files:**
 - Create: `CHANGELOG.md`
-- Modify: `composer.json` (remover `symfony/var-dumper` e `tecnickcom/tcpdf` se existirem no require)
+- Modify: `composer.json` (remover autoload `Hadder\NfseNacional`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`)
+- Modify: `storage/prefeituras.json` (remover chaves por nome legado, manter só IBGE)
 
-**Step 1: Criar CHANGELOG.md**
+**Step 1: Remover autoload legado do composer.json**
+
+Remover a entrada `Hadder\NfseNacional` do PSR-4, mantendo apenas `Pulsar\NfseNacional`:
+
+```json
+"autoload": {
+  "psr-4": {
+    "Pulsar\\NfseNacional\\": "src/"
+  }
+}
+```
+
+**Step 2: Remover dependências legadas do composer.json**
+
+Remover `tecnickcom/tcpdf` e `symfony/var-dumper` do `require`. Verificar antes que nenhum arquivo em `src/` com namespace `Pulsar\NfseNacional` as importa:
+
+```bash
+grep -r "use TCPDF\|use Symfony\\Component\\VarDumper\|use Symfony\\Component\\Debug" src/ --include="*.php"
+```
+Expected: nenhum resultado.
+
+**Step 3: Limpar chaves por nome no prefeituras.json**
+
+Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas as chaves numéricas IBGE (7 dígitos). Verificar que cada prefeitura tem apenas a entrada IBGE.
+
+**Step 4: Criar CHANGELOG.md**
 
 ```markdown
 # Changelog
@@ -2937,7 +3140,8 @@ git commit -m "test: feature tests para cancelar e dispatch de events"
 - API pública completamente nova: `NfseClient::for($pfx, $senha, $ibge)->emitir($dpsData)`
 
 ### Added
-- `NfseClient::for()` — instância configurada por tenant (certificado + prefeitura)
+- `NfseClient::for()` — instância configurada por tenant via container Laravel
+- `NfseClient::forStandalone()` — instância sem dependência do container Laravel
 - Fluent consulta: `consultar()->nfse/dps/danfse/eventos($chave)`
 - `DpsData` DTO tipado como wrapper dos grupos stdClass
 - `NfseResponse` DTO readonly de retorno tipado
@@ -2947,26 +3151,31 @@ git commit -m "test: feature tests para cancelar e dispatch de events"
 - Validação XSD do DPS gerado
 
 ### Removed
+- Namespace legado `Hadder\NfseNacional` (autoload removido)
 - Dependências `symfony/var-dumper` e `tecnickcom/tcpdf`
-- Suporte a identificação de prefeitura por nome
+- Suporte a identificação de prefeitura por nome (chaves por nome removidas do JSON)
+- Chaves duplicadas por nome no `prefeituras.json` (mantido apenas IBGE 7 dígitos)
 ```
 
-**Step 2: Verificar composer.json — remover deps desnecessárias**
+**Step 5: Rodar `composer update` para limpar deps removidas**
 
-O `composer.json` atualizado na Task 1 já não inclui `symfony/var-dumper` nem `tecnickcom/tcpdf`. Confirmar que estão ausentes.
+```bash
+composer update --no-dev
+composer install
+```
 
-**Step 3: Rodar suite completa uma última vez**
+**Step 6: Rodar suite completa uma última vez**
 
 ```bash
 ./vendor/bin/pest --no-coverage
 ```
 Expected: PASS (todos os testes)
 
-**Step 4: Commit final**
+**Step 7: Commit final**
 
 ```bash
-git add CHANGELOG.md composer.json
-git commit -m "chore: CHANGELOG com breaking changes e remoção de deps desnecessárias"
+git add CHANGELOG.md composer.json composer.lock storage/prefeituras.json
+git commit -m "chore: CHANGELOG, remoção de autoload/deps legadas e limpeza de prefeituras.json"
 ```
 
 ---
@@ -2975,21 +3184,21 @@ git commit -m "chore: CHANGELOG com breaking changes e remoção de deps desnece
 
 | # | Tarefa | Arquivos-chave |
 |---|--------|----------------|
-| 1 | Bootstrap | composer.json, phpunit.xml, fake.pfx |
-| 2 | Enums | NfseAmbiente (+ fromConfig), MotivoCancelamento |
+| 1 | Bootstrap | composer.json (dual autoload), phpunit.xml, fake.pfx, fake-icpbr.pfx, expired.pfx |
+| 2 | Enums | NfseAmbiente (+ fromConfig com throw), MotivoCancelamento |
 | 3 | Exceptions | NfseException, CertificateExpiredException, HttpException |
 | 4 | DTOs | NfseResponse, DpsData |
-| 5 | CertificateManager | CertificateManager.php |
+| 5 | CertificateManager | CertificateManager.php (expired.pfx fixture estática) |
 | 6 | PrefeituraResolver | PrefeituraResolver.php |
 | 7 | XmlSigner | XmlSigner.php |
 | 8 | DpsBuilder cabeçalho + PrestadorBuilder | DpsBuilder.php, PrestadorBuilder.php, Pest.php, datasets.php |
-| 9 | TomadorBuilder + ServicoBuilder + ValoresBuilder | + integração DpsBuilder |
-| 10 | DpsBuilder XSD validation | DpsBuilder::validateXsd() |
+| 9 | TomadorBuilder + ServicoBuilder + ValoresBuilder | + validação xNome obrigatório, integração DpsBuilder |
+| 10 | DpsBuilder XSD validation | DpsBuilder::validateXsd() (sem alterar retorno de build()) |
 | 11 | EventoBuilder | EventoBuilder.php |
 | 12 | NfseHttpClient | NfseHttpClient.php, ServiceProvider stub, TestCase.php |
-| 13 | NfseClientContract + ConsultaBuilder | NfseClientContract.php, ConsultaBuilder.php |
+| 13 | NfseClientContract + ConsultaBuilder | ConsultaBuilder com PrefeituraResolver injetado |
 | 14 | Events | 4 classes de event |
-| 15 | NfseClient (emitir + consultar) | NfseClient.php + feature tests |
-| 16 | ServiceProvider + Facade + Config | NfseNacionalServiceProvider.php (completo) |
-| 17 | Feature tests cancelar + events | + helpers.php (makePfxContent) |
-| 18 | CHANGELOG + limpeza | CHANGELOG.md |
+| 15 | NfseClient (emitir + consultar) | for() + forStandalone() + ensureConfigured() |
+| 16 | ServiceProvider + Facade + Config | Auto-config via config, guard contra uso sem configure() |
+| 17 | Feature tests cancelar + events | fake-icpbr.pfx, ->with('dpsData') |
+| 18 | CHANGELOG + limpeza | Remover autoload Hadder, deps legadas, chaves por nome no JSON |
