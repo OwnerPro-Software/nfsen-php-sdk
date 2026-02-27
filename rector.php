@@ -9,7 +9,7 @@ return RectorConfig::configure()
         __DIR__.'/src',
     ])
     ->withPreparedSets(
-//        deadCode: true,
+        deadCode: true,
 //        codeQuality: true,
 //        codingStyle: true,
 //        typeDeclarations: true,

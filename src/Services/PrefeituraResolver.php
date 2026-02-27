@@ -27,7 +27,7 @@ class PrefeituraResolver
 
     private array $data;
 
-    public function __construct(private readonly string $jsonPath)
+    public function __construct(string $jsonPath)
     {
         $this->data = static::$cache[$jsonPath]
             ??= json_decode(file_get_contents($jsonPath) ?: '{}', true) ?? [];

@@ -108,7 +108,6 @@ class DpsBuilder
         $inscricao = $p->cnpj ?? $p->cpf ?? '';
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
         $id .= str_pad((string) $d->serie, 5, '0', STR_PAD_LEFT);
-        $id .= str_pad((string) $d->ndps, 15, '0', STR_PAD_LEFT);
-        return $id;
+        return $id . str_pad((string) $d->ndps, 15, '0', STR_PAD_LEFT);
     }
 }

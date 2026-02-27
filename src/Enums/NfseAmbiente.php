@@ -9,11 +9,11 @@ enum NfseAmbiente: int
 
     public static function fromConfig(int|string $v): self
     {
-        if (is_int($v) || ctype_digit((string) $v)) {
+        if (is_int($v) || ctype_digit($v)) {
             return self::from((int) $v);
         }
 
-        return match(strtolower((string) $v)) {
+        return match(strtolower($v)) {
             'producao', 'production'     => self::PRODUCAO,
             'homologacao', 'homologation' => self::HOMOLOGACAO,
             default => throw new \InvalidArgumentException(

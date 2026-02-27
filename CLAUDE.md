@@ -5,6 +5,7 @@
 Sempre rodar antes de considerar o trabalho concluído:
 
 ```bash
+./vendor/bin/pest
 ./vendor/bin/pest --type-coverage --min=100
 ```
 
