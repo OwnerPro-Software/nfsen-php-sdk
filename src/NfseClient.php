@@ -268,13 +268,8 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, danfseUrl?: string, eventos?: array<int, array<string, mixed>>} $result */
             $result = $httpClient->get($url);
 
-            if (isset($result['erros']) || isset($result['erro'])) {
-                $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
-                $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? 'UNKNOWN'));
-                throw new NfseException($erro);
-            }
-
             $this->dispatchEvent(new NfseQueried($operacao));
+
             return $result;
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));

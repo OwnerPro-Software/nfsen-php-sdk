@@ -52,25 +52,24 @@ it('consultar()->nfse throws HttpException on server error', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
-it('consultar()->danfse throws NfseException on erros response', function () {
+it('consultar()->danfse returns failure on erros response', function () {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => '404']]], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $response = $client->consultar()->danfse('CHAVE_INVALIDA');
 
-    expect(fn () => $client->consultar()->danfse('CHAVE_INVALIDA'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'DANFSe não encontrada');
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erro)->toBe('DANFSe não encontrada');
 });
 
-it('executeGetRaw throws NfseException on erros response', function () {
+it('executeGetRaw returns raw array including error keys', function () {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Erro na consulta', 'codigo' => '500']]], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $result = $client->executeGetRaw('https://fake.url/test');
 
-    // executeGetRaw is called internally by consultar()->eventos through ConsultaBuilder
-    // But ConsultaBuilder catches errors before executeGetRaw's error handling
-    // We need to call executeGetRaw directly
-    expect(fn () => $client->executeGetRaw('https://fake.url/test'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'Erro na consulta');
+    expect($result)->toHaveKey('erros');
+    expect($result['erros'][0]['descricao'])->toBe('Erro na consulta');
 });
 
 it('executeGetRaw throws HttpException on server error', function () {
