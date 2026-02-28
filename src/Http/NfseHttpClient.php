@@ -43,9 +43,15 @@ class NfseHttpClient
 
         // @codeCoverageIgnoreStart
         if ($certHandle === false || $keyHandle === false) {
+            if ($certHandle !== false) {
+                fclose($certHandle);
+            }
+            if ($keyHandle !== false) {
+                fclose($keyHandle);
+            }
+
             throw new NfseException('Falha ao criar arquivos temporários para o certificado.');
         }
-
         // @codeCoverageIgnoreEnd
 
         try {
