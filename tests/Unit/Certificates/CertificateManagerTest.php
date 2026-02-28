@@ -6,7 +6,7 @@ use Pulsar\NfseNacional\Certificates\CertificateManager;
 use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
 
 it('loads certificate from pfx content and exposes it via getter', function () {
-    $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/fake.pfx');
+    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
 
     $manager = new CertificateManager($pfxContent, 'secret');
 
@@ -16,14 +16,14 @@ it('loads certificate from pfx content and exposes it via getter', function () {
 });
 
 it('throws CertificateExpiredException for an expired cert', function () {
-    $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/expired.pfx');
+    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/expired.pfx');
 
     expect(fn () => new CertificateManager($pfxContent, 'secret'))
         ->toThrow(CertificateExpiredException::class, 'expired');
 });
 
 it('throws CertificateException for wrong password', function () {
-    $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/fake.pfx');
+    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
 
     expect(fn () => new CertificateManager($pfxContent, 'wrong-password'))
         ->toThrow(CertificateException::class);

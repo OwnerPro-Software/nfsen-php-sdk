@@ -16,11 +16,11 @@ class NfseHttpClient
         private readonly Certificate $certificate,
         private readonly int $timeout = 30,
         private readonly bool $sslVerify = true,
-        private readonly TempFileFactory $tempFileFactory = new TempFileFactory(),
+        private readonly TempFileFactory $tempFileFactory = new TempFileFactory,
     ) {}
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     public function post(string $url, array $payload): array
@@ -35,13 +35,13 @@ class NfseHttpClient
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     private function request(string $method, string $url, array $payload): array
     {
         $certHandle = ($this->tempFileFactory)();
-        $keyHandle  = ($this->tempFileFactory)();
+        $keyHandle = ($this->tempFileFactory)();
 
         if ($certHandle === false || $keyHandle === false) {
             if ($certHandle !== false) {
@@ -63,13 +63,13 @@ class NfseHttpClient
             }
 
             $certPath = stream_get_meta_data($certHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
-            $keyPath  = stream_get_meta_data($keyHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
+            $keyPath = stream_get_meta_data($keyHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
 
             $pending = Http::timeout($this->timeout)
                 ->acceptJson()
                 ->withOptions([
-                    'verify'  => $this->sslVerify,
-                    'cert'    => $certPath,
+                    'verify' => $this->sslVerify,
+                    'cert' => $certPath,
                     'ssl_key' => $keyPath,
                 ]);
 
@@ -79,13 +79,14 @@ class NfseHttpClient
 
             if ($response->serverError() || $response->clientError()) {
                 throw new HttpException(
-                    'HTTP error: ' . $response->status(),
+                    'HTTP error: '.$response->status(),
                     $response->status()
                 );
             }
 
             /** @var array<string, mixed> $json */
             $json = (array) ($response->json() ?? []);
+
             return $json;
         } finally {
             fclose($certHandle);

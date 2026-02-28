@@ -90,6 +90,7 @@ class PrestadorBuilder
         }
 
         $el->appendChild($this->text($doc, 'xBairro', $end->xbairro));
+
         return $el;
     }
 

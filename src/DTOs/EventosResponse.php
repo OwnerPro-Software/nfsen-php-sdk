@@ -8,8 +8,8 @@ readonly class EventosResponse
 {
     /** @param array<int, array<string, mixed>> $eventos */
     public function __construct(
-        public bool    $sucesso,
-        public array   $eventos,
+        public bool $sucesso,
+        public array $eventos,
         public ?string $erro,
     ) {}
 }

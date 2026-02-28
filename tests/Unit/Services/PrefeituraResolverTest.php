@@ -4,7 +4,7 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 use Pulsar\NfseNacional\Support\FileReader;
 
-$jsonPath = __DIR__ . '/../../../storage/prefeituras.json';
+$jsonPath = __DIR__.'/../../../storage/prefeituras.json';
 
 afterEach(fn () => PrefeituraResolver::clearCache());
 

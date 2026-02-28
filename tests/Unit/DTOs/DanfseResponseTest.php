@@ -23,14 +23,14 @@ it('failure response carries erro and no url', function () {
 it('maps from real fixture response shape', function () {
     /** @var array{danfseUrl?: string, erros?: list<array{descricao?: string}>} $fixture */
     $fixture = json_decode(
-        file_get_contents(__DIR__ . '/../../fixtures/responses/consultar_danfse.json'),
+        file_get_contents(__DIR__.'/../../fixtures/responses/consultar_danfse.json'),
         true,
     );
 
     $response = new DanfseResponse(
         sucesso: isset($fixture['danfseUrl']),
-        url:     $fixture['danfseUrl'] ?? null,
-        erro:    null,
+        url: $fixture['danfseUrl'] ?? null,
+        erro: null,
     );
 
     expect($response->sucesso)->toBeTrue();

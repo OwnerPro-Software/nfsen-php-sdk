@@ -3,11 +3,11 @@
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 
 it('builds toma element with CNPJ', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass();
-    $toma->cnpj  = '98765432000111';
+    $toma = new stdClass;
+    $toma->cnpj = '98765432000111';
     $toma->xnome = 'Tomador Ltda';
 
     $element = $builder->build($doc, $toma);
@@ -17,11 +17,11 @@ it('builds toma element with CNPJ', function () {
 });
 
 it('builds toma element with CPF', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma        = new stdClass();
-    $toma->cpf   = '12345678901';
+    $toma = new stdClass;
+    $toma->cpf = '12345678901';
     $toma->xnome = 'Pessoa Física';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
@@ -32,13 +32,13 @@ it('builds toma element with CPF', function () {
 });
 
 it('includes NIF and cNaoNIF when set', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma          = new stdClass();
-    $toma->nif     = 'NIF12345';
+    $toma = new stdClass;
+    $toma->nif = 'NIF12345';
     $toma->cnaonif = '1';
-    $toma->xnome   = 'Estrangeiro';
+    $toma->xnome = 'Estrangeiro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -48,13 +48,13 @@ it('includes NIF and cNaoNIF when set', function () {
 });
 
 it('includes CAEPF and IM when set', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma        = new stdClass();
-    $toma->cpf   = '12345678901';
+    $toma = new stdClass;
+    $toma->cpf = '12345678901';
     $toma->caepf = '12345678901234';
-    $toma->im    = '1234567';
+    $toma->im = '1234567';
     $toma->xnome = 'Pessoa';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
@@ -65,20 +65,20 @@ it('includes CAEPF and IM when set', function () {
 });
 
 it('builds endNac address block', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma        = new stdClass();
-    $toma->cnpj  = '98765432000111';
+    $toma = new stdClass;
+    $toma->cnpj = '98765432000111';
     $toma->xnome = 'Tomador';
 
-    $toma->end            = new stdClass();
-    $toma->end->endnac    = new stdClass();
+    $toma->end = new stdClass;
+    $toma->end->endnac = new stdClass;
     $toma->end->endnac->cmun = '3501608';
-    $toma->end->endnac->cep  = '01001000';
-    $toma->end->xlgr      = 'Rua Teste';
-    $toma->end->nro        = '100';
-    $toma->end->xbairro    = 'Centro';
+    $toma->end->endnac->cep = '01001000';
+    $toma->end->xlgr = 'Rua Teste';
+    $toma->end->nro = '100';
+    $toma->end->xbairro = 'Centro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -93,22 +93,22 @@ it('builds endNac address block', function () {
 });
 
 it('builds endExt address block', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma        = new stdClass();
-    $toma->cnpj  = '98765432000111';
+    $toma = new stdClass;
+    $toma->cnpj = '98765432000111';
     $toma->xnome = 'Tomador';
 
-    $toma->end                       = new stdClass();
-    $toma->end->endext               = new stdClass();
-    $toma->end->endext->cpais        = '01058';
-    $toma->end->endext->cendpost     = '10001';
-    $toma->end->endext->xcidade      = 'New York';
-    $toma->end->endext->xestprovreg  = 'NY';
-    $toma->end->xlgr                 = '5th Avenue';
-    $toma->end->nro                  = '200';
-    $toma->end->xbairro              = 'Manhattan';
+    $toma->end = new stdClass;
+    $toma->end->endext = new stdClass;
+    $toma->end->endext->cpais = '01058';
+    $toma->end->endext->cendpost = '10001';
+    $toma->end->endext->xcidade = 'New York';
+    $toma->end->endext->xestprovreg = 'NY';
+    $toma->end->xlgr = '5th Avenue';
+    $toma->end->nro = '200';
+    $toma->end->xbairro = 'Manhattan';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -122,21 +122,21 @@ it('builds endExt address block', function () {
 });
 
 it('includes xCpl in address when set', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma        = new stdClass();
-    $toma->cnpj  = '98765432000111';
+    $toma = new stdClass;
+    $toma->cnpj = '98765432000111';
     $toma->xnome = 'Tomador';
 
-    $toma->end             = new stdClass();
-    $toma->end->endnac     = new stdClass();
+    $toma->end = new stdClass;
+    $toma->end->endnac = new stdClass;
     $toma->end->endnac->cmun = '3501608';
-    $toma->end->endnac->cep  = '01001000';
-    $toma->end->xlgr       = 'Rua Teste';
-    $toma->end->nro         = '100';
-    $toma->end->xcpl        = 'Sala 5';
-    $toma->end->xbairro     = 'Centro';
+    $toma->end->endnac->cep = '01001000';
+    $toma->end->xlgr = 'Rua Teste';
+    $toma->end->nro = '100';
+    $toma->end->xcpl = 'Sala 5';
+    $toma->end->xbairro = 'Centro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -144,13 +144,13 @@ it('includes xCpl in address when set', function () {
 });
 
 it('includes fone and email when set', function () {
-    $builder = new TomadorBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma        = new stdClass();
-    $toma->cnpj  = '98765432000111';
+    $toma = new stdClass;
+    $toma->cnpj = '98765432000111';
     $toma->xnome = 'Tomador';
-    $toma->fone  = '11999998888';
+    $toma->fone = '11999998888';
     $toma->email = 'tomador@test.com';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));

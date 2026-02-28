@@ -4,11 +4,11 @@ use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('exposes all five groups as readonly properties', function () {
-    $infDps    = new stdClass();
-    $prestador = new stdClass();
-    $tomador   = new stdClass();
-    $servico   = new stdClass();
-    $valores   = new stdClass();
+    $infDps = new stdClass;
+    $prestador = new stdClass;
+    $tomador = new stdClass;
+    $servico = new stdClass;
+    $valores = new stdClass;
 
     $data = new DpsData($infDps, $prestador, $tomador, $servico, $valores);
 
@@ -21,10 +21,10 @@ it('exposes all five groups as readonly properties', function () {
 });
 
 it('produces valid XML when passed to DpsBuilder', function (DpsData $data) {
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+    $builder = new DpsBuilder(__DIR__.'/../../../storage/schemes');
+    $xml = $builder->build($data);
 
-    $doc = new DOMDocument();
+    $doc = new DOMDocument;
     $doc->loadXML($xml);
 
     expect($doc->getElementsByTagName('DPS')->length)->toBe(1);

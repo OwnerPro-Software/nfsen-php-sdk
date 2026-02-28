@@ -11,25 +11,26 @@ use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
-use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 
 class DpsBuilder
 {
     private const VERSION = '1.01';
 
-    private const XMLNS   = 'http://www.sped.fazenda.gov.br/nfse';
+    private const XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function __construct(
         private readonly string $schemesPath,
-        private readonly XmlDocumentLoader $xmlDocumentLoader = new XmlDocumentLoader(),
+        private readonly XmlDocumentLoader $xmlDocumentLoader = new XmlDocumentLoader,
     ) {}
 
     public function buildAndValidate(DpsData $data): string
     {
         $xml = $this->build($data);
         $this->validateXsd($xml);
+
         return $xml;
     }
 
@@ -37,7 +38,7 @@ class DpsBuilder
     {
         $doc = new DOMDocument('1.0', 'UTF-8');
         $doc->preserveWhiteSpace = false;
-        $doc->formatOutput       = false;
+        $doc->formatOutput = false;
 
         $dps = $doc->createElement('DPS');
         $dps->setAttribute('versao', self::VERSION);
@@ -47,13 +48,13 @@ class DpsBuilder
         $infDps->setAttribute('Id', $this->generateId($data));
 
         $d = $data->infDps;
-        $infDps->appendChild($this->text($doc, 'tpAmb',    (string) $d->tpamb));
-        $infDps->appendChild($this->text($doc, 'dhEmi',    $d->dhemi));
+        $infDps->appendChild($this->text($doc, 'tpAmb', (string) $d->tpamb));
+        $infDps->appendChild($this->text($doc, 'dhEmi', $d->dhemi));
         $infDps->appendChild($this->text($doc, 'verAplic', $d->veraplic));
-        $infDps->appendChild($this->text($doc, 'serie',    $d->serie));
-        $infDps->appendChild($this->text($doc, 'nDPS',     (string) $d->ndps));
-        $infDps->appendChild($this->text($doc, 'dCompet',  $d->dcompet));
-        $infDps->appendChild($this->text($doc, 'tpEmit',   (string) $d->tpemit));
+        $infDps->appendChild($this->text($doc, 'serie', $d->serie));
+        $infDps->appendChild($this->text($doc, 'nDPS', (string) $d->ndps));
+        $infDps->appendChild($this->text($doc, 'dCompet', $d->dcompet));
+        $infDps->appendChild($this->text($doc, 'tpEmit', (string) $d->tpemit));
         if (isset($d->cmotivoemisti)) {
             $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cmotivoemisti));
         }
@@ -65,20 +66,20 @@ class DpsBuilder
         $infDps->appendChild($this->text($doc, 'cLocEmi', $d->clocemi));
 
         if ((array) $data->prestador !== []) {
-            $infDps->appendChild((new PrestadorBuilder())->build($doc, $data->prestador));
+            $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prestador));
         }
 
         // toma (optional)
         if ((array) $data->tomador !== []) {
-            $infDps->appendChild((new TomadorBuilder())->build($doc, $data->tomador));
+            $infDps->appendChild((new TomadorBuilder)->build($doc, $data->tomador));
         }
 
         // serv (obrigatório)
-        $infDps->appendChild((new ServicoBuilder())->build($doc, $data->servico));
+        $infDps->appendChild((new ServicoBuilder)->build($doc, $data->servico));
 
         // valores (obrigatório quando houver dados)
         if ((array) $data->valores !== []) {
-            $infDps->appendChild((new ValoresBuilder())->build($doc, $data->valores));
+            $infDps->appendChild((new ValoresBuilder)->build($doc, $data->valores));
         }
 
         $dps->appendChild($infDps);
@@ -89,12 +90,12 @@ class DpsBuilder
 
     private function validateXsd(string $xmlFragment): void
     {
-        $xsdPath = $this->schemesPath . '/DPS_v1.01.xsd';
-        if (!file_exists($xsdPath)) {
-            throw new NfseException('Schema XSD não encontrado: ' . $xsdPath);
+        $xsdPath = $this->schemesPath.'/DPS_v1.01.xsd';
+        if (! file_exists($xsdPath)) {
+            throw new NfseException('Schema XSD não encontrado: '.$xsdPath);
         }
 
-        $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;
+        $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>'.$xmlFragment;
         $doc = ($this->xmlDocumentLoader)($xmlWithDecl);
 
         if ($doc === false) {
@@ -104,17 +105,17 @@ class DpsBuilder
         $prev = libxml_use_internal_errors(true);
 
         try {
-            $valid  = $doc->schemaValidate($xsdPath);
+            $valid = $doc->schemaValidate($xsdPath);
             $errors = libxml_get_errors();
             libxml_clear_errors();
         } finally {
             libxml_use_internal_errors($prev);
         }
 
-        if (!$valid) {
+        if (! $valid) {
             $messages = array_map(fn (LibXMLError $e): string => trim($e->message), $errors);
             throw new NfseException(
-                'XML inválido: ' . implode('; ', $messages)
+                'XML inválido: '.implode('; ', $messages)
             );
         }
     }
@@ -129,7 +130,8 @@ class DpsBuilder
         $inscricao = $p->cnpj ?? $p->cpf ?? '';
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
         $id .= str_pad((string) $d->serie, 5, '0', STR_PAD_LEFT);
-        return $id . str_pad((string) $d->ndps, 15, '0', STR_PAD_LEFT);
+
+        return $id.str_pad((string) $d->ndps, 15, '0', STR_PAD_LEFT);
     }
 
     private function text(DOMDocument $doc, string $name, string $value): DOMElement

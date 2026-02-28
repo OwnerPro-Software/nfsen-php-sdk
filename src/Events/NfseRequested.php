@@ -9,6 +9,6 @@ class NfseRequested
     /** @param array<string, mixed> $metadata */
     public function __construct(
         public readonly string $operacao,
-        public readonly array  $metadata = [],
+        public readonly array $metadata = [],
     ) {}
 }

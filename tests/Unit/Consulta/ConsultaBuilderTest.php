@@ -2,8 +2,6 @@
 
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
-use Pulsar\NfseNacional\DTOs\DanfseResponse;
-use Pulsar\NfseNacional\DTOs\EventosResponse;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 
@@ -14,25 +12,28 @@ class FakeNfseClientForConsulta implements NfseClientContract
     public function executeGet(string $url): NfseResponse
     {
         $this->calls[] = $url;
+
         return new NfseResponse(true, 'chave123', '<xml/>', null);
     }
 
     public function executeGetRaw(string $url): array
     {
         $this->calls[] = $url;
+
         return ['sucesso' => true];
     }
 }
 
 function makeConsultaBuilder(FakeNfseClientForConsulta $fakeClient): ConsultaBuilder
 {
-    $resolver = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+
     return new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
 }
 
 it('calls executeGet with nfse url for nfse query', function () {
-    $fakeClient = new FakeNfseClientForConsulta();
-    $builder    = makeConsultaBuilder($fakeClient);
+    $fakeClient = new FakeNfseClientForConsulta;
+    $builder = makeConsultaBuilder($fakeClient);
 
     $response = $builder->nfse('CHAVE123');
 
@@ -41,8 +42,8 @@ it('calls executeGet with nfse url for nfse query', function () {
 });
 
 it('calls executeGet with dps url', function () {
-    $fakeClient = new FakeNfseClientForConsulta();
-    $builder    = makeConsultaBuilder($fakeClient);
+    $fakeClient = new FakeNfseClientForConsulta;
+    $builder = makeConsultaBuilder($fakeClient);
 
     $builder->dps('CHAVE456');
 
@@ -50,7 +51,8 @@ it('calls executeGet with dps url', function () {
 });
 
 it('danfse returns failure when erros key present', function () {
-    $fakeClient = new class implements NfseClientContract {
+    $fakeClient = new class implements NfseClientContract
+    {
         public function executeGet(string $url): NfseResponse
         {
             return new NfseResponse(true, null, null, null);
@@ -63,8 +65,8 @@ it('danfse returns failure when erros key present', function () {
         }
     };
 
-    $resolver = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
-    $builder  = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
 
     $response = $builder->danfse('CHAVE123');
 
@@ -73,7 +75,8 @@ it('danfse returns failure when erros key present', function () {
 });
 
 it('danfse returns success with danfseUrl', function () {
-    $fakeClient = new class implements NfseClientContract {
+    $fakeClient = new class implements NfseClientContract
+    {
         public function executeGet(string $url): NfseResponse
         {
             return new NfseResponse(true, null, null, null);
@@ -86,8 +89,8 @@ it('danfse returns success with danfseUrl', function () {
         }
     };
 
-    $resolver = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
-    $builder  = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
 
     $response = $builder->danfse('CHAVE123');
 
@@ -96,7 +99,8 @@ it('danfse returns success with danfseUrl', function () {
 });
 
 it('eventos returns failure when erro key present', function () {
-    $fakeClient = new class implements NfseClientContract {
+    $fakeClient = new class implements NfseClientContract
+    {
         public function executeGet(string $url): NfseResponse
         {
             return new NfseResponse(true, null, null, null);
@@ -109,8 +113,8 @@ it('eventos returns failure when erro key present', function () {
         }
     };
 
-    $resolver = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
-    $builder  = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
 
     $response = $builder->eventos('CHAVE123');
 
@@ -119,7 +123,8 @@ it('eventos returns failure when erro key present', function () {
 });
 
 it('eventos returns success with events list', function () {
-    $fakeClient = new class implements NfseClientContract {
+    $fakeClient = new class implements NfseClientContract
+    {
         public function executeGet(string $url): NfseResponse
         {
             return new NfseResponse(true, null, null, null);
@@ -132,8 +137,8 @@ it('eventos returns success with events list', function () {
         }
     };
 
-    $resolver = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
-    $builder  = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
 
     $response = $builder->eventos('CHAVE123');
 
@@ -147,12 +152,14 @@ it('buildUrl returns baseUrl when path is empty', function () {
         '9999998' => ['operations' => ['consultar_nfse' => '']],
     ]));
 
-    $innerClient = new class implements NfseClientContract {
+    $innerClient = new class implements NfseClientContract
+    {
         public string $lastUrl = '';
 
         public function executeGet(string $url): NfseResponse
         {
             $this->lastUrl = $url;
+
             return new NfseResponse(true, null, null, null);
         }
 
@@ -164,7 +171,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
     };
 
     $resolver = new PrefeituraResolver($tmpJson);
-    $builder  = new ConsultaBuilder($innerClient, 'https://sefin.base', '', $resolver, '9999998');
+    $builder = new ConsultaBuilder($innerClient, 'https://sefin.base', '', $resolver, '9999998');
     $builder->nfse('CHAVE123');
 
     expect($innerClient->lastUrl)->toBe('https://sefin.base');
@@ -173,8 +180,8 @@ it('buildUrl returns baseUrl when path is empty', function () {
 });
 
 it('passes custom tipoEvento and nSequencial to eventos URL', function () {
-    $fakeClient = new FakeNfseClientForConsulta();
-    $builder    = makeConsultaBuilder($fakeClient);
+    $fakeClient = new FakeNfseClientForConsulta;
+    $builder = makeConsultaBuilder($fakeClient);
 
     $builder->eventos('CHAVE123', 105102, 2);
 
@@ -182,9 +189,9 @@ it('passes custom tipoEvento and nSequencial to eventos URL', function () {
 });
 
 it('danfse uses adnBaseUrl when populated', function () {
-    $fakeClient = new FakeNfseClientForConsulta();
-    $resolver   = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
-    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base', 'https://adn.base', $resolver, '9999999');
+    $fakeClient = new FakeNfseClientForConsulta;
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', 'https://adn.base', $resolver, '9999999');
 
     $builder->danfse('CHAVE123');
 
@@ -192,8 +199,8 @@ it('danfse uses adnBaseUrl when populated', function () {
 });
 
 it('danfse falls back to seFinBaseUrl when adnBaseUrl is empty', function () {
-    $fakeClient = new FakeNfseClientForConsulta();
-    $builder    = makeConsultaBuilder($fakeClient);
+    $fakeClient = new FakeNfseClientForConsulta;
+    $builder = makeConsultaBuilder($fakeClient);
 
     $builder->danfse('CHAVE123');
 

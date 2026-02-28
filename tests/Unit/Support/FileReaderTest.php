@@ -3,8 +3,8 @@
 use Pulsar\NfseNacional\Support\FileReader;
 
 it('reads file contents via invocation', function () {
-    $reader = new FileReader();
-    $path   = __DIR__ . '/../../../storage/prefeituras.json';
+    $reader = new FileReader;
+    $path = __DIR__.'/../../../storage/prefeituras.json';
 
     $contents = $reader($path);
 
@@ -12,7 +12,7 @@ it('reads file contents via invocation', function () {
 });
 
 it('returns false for non-existent file', function () {
-    $reader = new FileReader();
+    $reader = new FileReader;
 
     $result = @$reader('/non/existent/file.json');
 

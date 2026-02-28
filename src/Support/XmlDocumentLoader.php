@@ -13,7 +13,7 @@ class XmlDocumentLoader
         $prev = libxml_use_internal_errors(true);
 
         try {
-            $doc = new DOMDocument();
+            $doc = new DOMDocument;
             $result = $doc->loadXML($xml, LIBXML_NONET);
             libxml_clear_errors();
 

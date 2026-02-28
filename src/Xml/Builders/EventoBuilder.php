@@ -12,7 +12,7 @@ class EventoBuilder
 {
     private const VERSION = '1.01';
 
-    private const XMLNS   = 'http://www.sped.fazenda.gov.br/nfse';
+    private const XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function build(
         int $tpAmb,
@@ -26,7 +26,7 @@ class EventoBuilder
     ): string {
         $doc = new DOMDocument('1.0', 'UTF-8');
         $doc->preserveWhiteSpace = false;
-        $doc->formatOutput       = false;
+        $doc->formatOutput = false;
 
         $root = $doc->createElement('pedRegEvento');
         $root->setAttribute('versao', self::VERSION);
@@ -49,7 +49,7 @@ class EventoBuilder
 
         $xDesc = match ($motivo) {
             MotivoCancelamento::ErroEmissao => 'Cancelamento de NFS-e',
-            MotivoCancelamento::Outros      => 'Cancelamento de NFS-e por Substituicao',
+            MotivoCancelamento::Outros => 'Cancelamento de NFS-e por Substituicao',
         };
 
         $motivoEl = $doc->createElement($motivo->value);
@@ -68,7 +68,8 @@ class EventoBuilder
     private function generateId(string $chNFSe, MotivoCancelamento $motivo): string
     {
         $codigo = $motivo === MotivoCancelamento::ErroEmissao ? '101101' : '105102';
-        return 'PRE' . $chNFSe . $codigo;
+
+        return 'PRE'.$chNFSe.$codigo;
     }
 
     private function text(DOMDocument $doc, string $name, string $value): DOMElement

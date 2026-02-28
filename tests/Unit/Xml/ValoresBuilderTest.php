@@ -3,22 +3,22 @@
 use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 
 it('builds valores element with vServPrest', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass();
-    $valores->vservprest = new stdClass();
-    $valores->vservprest->vserv  = '100.00';
+    $valores = new stdClass;
+    $valores->vservprest = new stdClass;
+    $valores->vservprest->vserv = '100.00';
 
-    $valores->trib              = new stdClass();
-    $valores->trib->tribmun     = new stdClass();
-    $valores->trib->tribmun->tribissqn  = '1';
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
     $valores->trib->tribmun->tpretissqn = '1';
-    $valores->trib->totaltrib            = new stdClass();
+    $valores->trib->totaltrib = new stdClass;
     $valores->trib->totaltrib->indtottrib = '0';
 
     $element = $builder->build($doc, $valores);
-    $xml     = $doc->saveXML($element);
+    $xml = $doc->saveXML($element);
 
     expect($xml)->toContain('<valores>');
     expect($xml)->toContain('<vServPrest>');
@@ -31,13 +31,13 @@ it('builds valores element with vServPrest', function () {
 });
 
 it('includes vReceb in vServPrest when set', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                        = new stdClass();
-    $valores->vservprest            = new stdClass();
-    $valores->vservprest->vreceb    = '80.00';
-    $valores->vservprest->vserv     = '100.00';
+    $valores = new stdClass;
+    $valores->vservprest = new stdClass;
+    $valores->vservprest->vreceb = '80.00';
+    $valores->vservprest->vserv = '100.00';
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -47,13 +47,13 @@ it('includes vReceb in vServPrest when set', function () {
 });
 
 it('builds vDescCondIncond block', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                                    = new stdClass();
-    $valores->vdesccondincond                   = new stdClass();
-    $valores->vdesccondincond->vdescincond      = '10.00';
-    $valores->vdesccondincond->vdesccond        = '5.00';
+    $valores = new stdClass;
+    $valores->vdesccondincond = new stdClass;
+    $valores->vdesccondincond->vdescincond = '10.00';
+    $valores->vdesccondincond->vdesccond = '5.00';
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -64,17 +64,17 @@ it('builds vDescCondIncond block', function () {
 });
 
 it('includes tribMun optional fields', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                              = new stdClass();
-    $valores->trib                        = new stdClass();
-    $valores->trib->tribmun              = new stdClass();
-    $valores->trib->tribmun->tribissqn   = '1';
+    $valores = new stdClass;
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
     $valores->trib->tribmun->cpaisresult = '01058';
     $valores->trib->tribmun->tpimunidade = '1';
-    $valores->trib->tribmun->tpretissqn  = '1';
-    $valores->trib->tribmun->paliq       = '5.00';
+    $valores->trib->tribmun->tpretissqn = '1';
+    $valores->trib->tribmun->paliq = '5.00';
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -85,17 +85,17 @@ it('includes tribMun optional fields', function () {
 });
 
 it('builds exigSusp in tribMun', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                                       = new stdClass();
-    $valores->trib                                 = new stdClass();
-    $valores->trib->tribmun                       = new stdClass();
-    $valores->trib->tribmun->tribissqn            = '1';
-    $valores->trib->tribmun->tpretissqn           = '1';
-    $valores->trib->tribmun->exigsusp             = new stdClass();
-    $valores->trib->tribmun->exigsusp->nmotsusp   = '1';
-    $valores->trib->tribmun->exigsusp->nprocesso  = '0001234-56.2026.8.26.0100';
+    $valores = new stdClass;
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
+    $valores->trib->tribmun->tpretissqn = '1';
+    $valores->trib->tribmun->exigsusp = new stdClass;
+    $valores->trib->tribmun->exigsusp->nmotsusp = '1';
+    $valores->trib->tribmun->exigsusp->nprocesso = '0001234-56.2026.8.26.0100';
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -106,18 +106,18 @@ it('builds exigSusp in tribMun', function () {
 });
 
 it('builds BM in tribMun', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                                  = new stdClass();
-    $valores->trib                            = new stdClass();
-    $valores->trib->tribmun                  = new stdClass();
-    $valores->trib->tribmun->tribissqn       = '1';
-    $valores->trib->tribmun->tpretissqn      = '1';
-    $valores->trib->tribmun->bm              = new stdClass();
-    $valores->trib->tribmun->bm->nbm         = '12345';
-    $valores->trib->tribmun->bm->vredbcbm    = '50.00';
-    $valores->trib->tribmun->bm->predbcbm    = '10.00';
+    $valores = new stdClass;
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
+    $valores->trib->tribmun->tpretissqn = '1';
+    $valores->trib->tribmun->bm = new stdClass;
+    $valores->trib->tribmun->bm->nbm = '12345';
+    $valores->trib->tribmun->bm->vredbcbm = '50.00';
+    $valores->trib->tribmun->bm->predbcbm = '10.00';
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -129,23 +129,23 @@ it('builds BM in tribMun', function () {
 });
 
 it('builds tribFed with pisCofins and retencoes', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                                           = new stdClass();
-    $valores->trib                                     = new stdClass();
-    $valores->trib->tribfed                           = new stdClass();
-    $valores->trib->tribfed->piscofins                = new stdClass();
-    $valores->trib->tribfed->piscofins->cst           = '01';
-    $valores->trib->tribfed->piscofins->vbcpiscofins  = '100.00';
-    $valores->trib->tribfed->piscofins->paliqpis      = '0.65';
-    $valores->trib->tribfed->piscofins->paliqcofins   = '3.00';
-    $valores->trib->tribfed->piscofins->vpis          = '0.65';
-    $valores->trib->tribfed->piscofins->vcofins       = '3.00';
+    $valores = new stdClass;
+    $valores->trib = new stdClass;
+    $valores->trib->tribfed = new stdClass;
+    $valores->trib->tribfed->piscofins = new stdClass;
+    $valores->trib->tribfed->piscofins->cst = '01';
+    $valores->trib->tribfed->piscofins->vbcpiscofins = '100.00';
+    $valores->trib->tribfed->piscofins->paliqpis = '0.65';
+    $valores->trib->tribfed->piscofins->paliqcofins = '3.00';
+    $valores->trib->tribfed->piscofins->vpis = '0.65';
+    $valores->trib->tribfed->piscofins->vcofins = '3.00';
     $valores->trib->tribfed->piscofins->tpretpiscofins = '1';
-    $valores->trib->tribfed->vretcp                   = '11.00';
-    $valores->trib->tribfed->vretirrf                 = '1.50';
-    $valores->trib->tribfed->vretcsll                 = '1.00';
+    $valores->trib->tribfed->vretcp = '11.00';
+    $valores->trib->tribfed->vretirrf = '1.50';
+    $valores->trib->tribfed->vretcsll = '1.00';
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -165,13 +165,13 @@ it('builds tribFed with pisCofins and retencoes', function () {
 });
 
 it('builds totTrib with vTotTrib choice', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                                         = new stdClass();
-    $valores->trib                                   = new stdClass();
-    $valores->trib->totaltrib                       = new stdClass();
-    $valores->trib->totaltrib->vtottrib             = new stdClass();
+    $valores = new stdClass;
+    $valores->trib = new stdClass;
+    $valores->trib->totaltrib = new stdClass;
+    $valores->trib->totaltrib->vtottrib = new stdClass;
     $valores->trib->totaltrib->vtottrib->vtottribfed = '10.00';
     $valores->trib->totaltrib->vtottrib->vtottribest = '5.00';
     $valores->trib->totaltrib->vtottrib->vtottribmun = '3.00';
@@ -186,13 +186,13 @@ it('builds totTrib with vTotTrib choice', function () {
 });
 
 it('builds totTrib with pTotTrib choice', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                                         = new stdClass();
-    $valores->trib                                   = new stdClass();
-    $valores->trib->totaltrib                       = new stdClass();
-    $valores->trib->totaltrib->ptottrib             = new stdClass();
+    $valores = new stdClass;
+    $valores->trib = new stdClass;
+    $valores->trib->totaltrib = new stdClass;
+    $valores->trib->totaltrib->ptottrib = new stdClass;
     $valores->trib->totaltrib->ptottrib->ptottribfed = '10.00';
     $valores->trib->totaltrib->ptottrib->ptottribest = '5.00';
     $valores->trib->totaltrib->ptottrib->ptottribmun = '3.00';
@@ -207,13 +207,13 @@ it('builds totTrib with pTotTrib choice', function () {
 });
 
 it('builds totTrib with pTotTribSN choice', function () {
-    $builder = new ValoresBuilder();
-    $doc     = new DOMDocument('1.0', 'UTF-8');
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores                                  = new stdClass();
-    $valores->trib                            = new stdClass();
-    $valores->trib->totaltrib               = new stdClass();
-    $valores->trib->totaltrib->ptottribsn   = '5.00';
+    $valores = new stdClass;
+    $valores->trib = new stdClass;
+    $valores->trib->totaltrib = new stdClass;
+    $valores->trib->totaltrib->ptottribsn = '5.00';
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 

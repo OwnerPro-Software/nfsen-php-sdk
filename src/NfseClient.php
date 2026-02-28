@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional;
 
-use Pulsar\NfseNacional\Certificates\CertificateManager;
-use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Illuminate\Container\Container;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Throwable;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Signing\XmlSigner;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Exceptions\HttpException;
-use Pulsar\NfseNacional\Events\NfseFailed;
-use Pulsar\NfseNacional\Xml\Builders\EventoBuilder;
-use Pulsar\NfseNacional\Events\NfseCancelled;
-use Pulsar\NfseNacional\Events\NfseQueried;
+use Pulsar\NfseNacional\Certificates\CertificateManager;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\MotivoCancelamento;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\Events\NfseCancelled;
+use Pulsar\NfseNacional\Events\NfseEmitted;
+use Pulsar\NfseNacional\Events\NfseFailed;
+use Pulsar\NfseNacional\Events\NfseQueried;
+use Pulsar\NfseNacional\Events\NfseRejected;
+use Pulsar\NfseNacional\Events\NfseRequested;
+use Pulsar\NfseNacional\Exceptions\HttpException;
+use Pulsar\NfseNacional\Exceptions\NfseException;
+use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Signing\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
+use Pulsar\NfseNacional\Xml\Builders\EventoBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Throwable;
 
 class NfseClient implements NfseClientContract
 {
@@ -43,7 +43,7 @@ class NfseClient implements NfseClientContract
         private readonly bool $sslVerify,
         private readonly PrefeituraResolver $prefeituraResolver,
         private readonly DpsBuilder $dpsBuilder,
-        private readonly GzipCompressor $gzipCompressor = new GzipCompressor(),
+        private readonly GzipCompressor $gzipCompressor = new GzipCompressor,
     ) {}
 
     public static function for(string $pfxContent, string $senha, string $prefeitura): self
@@ -68,16 +68,16 @@ class NfseClient implements NfseClientContract
         ?string $prefeiturasJsonPath = null,
         ?string $schemesPath = null,
     ): self {
-        $jsonPath    = $prefeiturasJsonPath ?? __DIR__ . '/../storage/prefeituras.json';
-        $schemasPath = $schemesPath ?? __DIR__ . '/../storage/schemes';
+        $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
+        $schemasPath = $schemesPath ?? __DIR__.'/../storage/schemes';
 
         $instance = new self(
-            ambiente:           $ambiente,
-            timeout:            $timeout,
-            signingAlgorithm:   $signingAlgorithm,
-            sslVerify:          $sslVerify,
+            ambiente: $ambiente,
+            timeout: $timeout,
+            signingAlgorithm: $signingAlgorithm,
+            sslVerify: $sslVerify,
             prefeituraResolver: new PrefeituraResolver($jsonPath),
-            dpsBuilder:         new DpsBuilder($schemasPath),
+            dpsBuilder: new DpsBuilder($schemasPath),
         );
 
         return $instance->configure($pfxContent, $senha, $prefeitura);
@@ -87,8 +87,9 @@ class NfseClient implements NfseClientContract
     {
         $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
         $this->certManager = new CertificateManager($pfxContent, $senha);
-        $this->prefeitura  = $prefeitura;
-        $this->httpClient  = new NfseHttpClient($this->certManager->getCertificate(), $this->timeout, $this->sslVerify);
+        $this->prefeitura = $prefeitura;
+        $this->httpClient = new NfseHttpClient($this->certManager->getCertificate(), $this->timeout, $this->sslVerify);
+
         return $this;
     }
 
@@ -99,7 +100,7 @@ class NfseClient implements NfseClientContract
      */
     private function ensureConfigured(): void
     {
-        if (!$this->certManager instanceof CertificateManager || $this->prefeitura === null || !$this->httpClient instanceof NfseHttpClient) {
+        if (! $this->certManager instanceof CertificateManager || $this->prefeitura === null || ! $this->httpClient instanceof NfseHttpClient) {
             throw new NfseException(
                 'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
             );
@@ -130,9 +131,9 @@ class NfseClient implements NfseClientContract
         $this->dispatchEvent(new NfseRequested($operacao, []));
 
         try {
-            $xml     = $this->dpsBuilder->build($data);
-            $signer  = new XmlSigner($certificate, $this->signingAlgorithm);
-            $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infDPS', 'DPS');
+            $xml = $this->dpsBuilder->build($data);
+            $signer = new XmlSigner($certificate, $this->signingAlgorithm);
+            $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$signer->sign($xml, 'infDPS', 'DPS');
             $compressed = ($this->gzipCompressor)($signed);
             if ($compressed === false) {
                 throw new NfseException('Falha ao comprimir XML.');
@@ -140,17 +141,18 @@ class NfseClient implements NfseClientContract
 
             $payload = ['dpsXmlGZipB64' => base64_encode($compressed)];
 
-            $seFinUrl   = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
-            $opPath     = $this->prefeituraResolver->resolveOperation($prefeitura, 'emitir_nfse');
-            $url        = $opPath !== '' ? rtrim($seFinUrl, '/') . '/' . ltrim($opPath, '/') : $seFinUrl;
+            $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
+            $opPath = $this->prefeituraResolver->resolveOperation($prefeitura, 'emitir_nfse');
+            $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, chNFSe?: string} $result */
             $result = $httpClient->post($url, $payload);
 
-            if (!empty($result['erros']) || isset($result['erro'])) {
+            if (! empty($result['erros']) || isset($result['erro'])) {
                 $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Rejeição sem descrição';
                 $codigo = $result['erros'][0]['codigo'] ?? 'UNKNOWN';
                 $this->dispatchEvent(new NfseRejected($operacao, $codigo));
+
                 return new NfseResponse(false, null, null, $erro);
             }
 
@@ -182,25 +184,25 @@ class NfseClient implements NfseClientContract
 
         try {
             $cnpj = $certificate->getCnpj() ?: null;
-            $cpf  = $certificate->getCpf() ?: null;
+            $cpf = $certificate->getCpf() ?: null;
 
             if ($cnpj === null && $cpf === null) {
                 throw new NfseException('Certificado não contém CNPJ nem CPF. É necessário ao menos um para cancelar a NFS-e.');
             }
 
-            $xml = (new EventoBuilder())->build(
-                tpAmb:     $this->ambiente->value,
-                verAplic:  '1.0',
-                dhEvento:  date('c'),
+            $xml = (new EventoBuilder)->build(
+                tpAmb: $this->ambiente->value,
+                verAplic: '1.0',
+                dhEvento: date('c'),
                 cnpjAutor: $cnpj,
-                cpfAutor:  $cpf,
-                chNFSe:    $chave,
-                motivo:    $motivo,
+                cpfAutor: $cpf,
+                chNFSe: $chave,
+                motivo: $motivo,
                 descricao: $descricao,
             );
 
-            $signer  = new XmlSigner($certificate, $this->signingAlgorithm);
-            $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infPedReg', 'pedRegEvento');
+            $signer = new XmlSigner($certificate, $this->signingAlgorithm);
+            $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$signer->sign($xml, 'infPedReg', 'pedRegEvento');
             $compressed = ($this->gzipCompressor)($signed);
             if ($compressed === false) {
                 throw new NfseException('Falha ao comprimir XML.');
@@ -208,23 +210,25 @@ class NfseClient implements NfseClientContract
 
             $payload = ['pedidoRegistroEventoXmlGZipB64' => base64_encode($compressed)];
 
-            $seFinUrl  = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
-            $opPath    = $this->prefeituraResolver->resolveOperation(
+            $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
+            $opPath = $this->prefeituraResolver->resolveOperation(
                 $prefeitura, 'cancelar_nfse', ['chave' => $chave]
             );
-            $url = $opPath !== '' ? rtrim($seFinUrl, '/') . '/' . ltrim($opPath, '/') : $seFinUrl;
+            $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string} $result */
             $result = $httpClient->post($url, $payload);
 
-            if (!empty($result['erros']) || isset($result['erro'])) {
-                $erro   = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Rejeição';
+            if (! empty($result['erros']) || isset($result['erro'])) {
+                $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Rejeição';
                 $codigo = $result['erros'][0]['codigo'] ?? 'UNKNOWN';
                 $this->dispatchEvent(new NfseRejected($operacao, $codigo));
+
                 return new NfseResponse(false, null, null, $erro);
             }
 
             $this->dispatchEvent(new NfseCancelled($chave));
+
             return new NfseResponse(true, $chave, null, null);
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
@@ -239,7 +243,8 @@ class NfseClient implements NfseClientContract
     {
         $this->ensureConfigured();
         $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
-        $adnUrl   = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
+        $adnUrl = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
+
         return new ConsultaBuilder(
             $this, $seFinUrl, $adnUrl,
             $this->prefeituraResolver, $this->prefeitura,
@@ -258,9 +263,10 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, nfseXmlGZipB64?: string, dpsXmlGZipB64?: string} $result */
             $result = $httpClient->get($url);
 
-            if (!empty($result['erros']) || isset($result['erro'])) {
+            if (! empty($result['erros']) || isset($result['erro'])) {
                 $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
                 $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? 'UNKNOWN'));
+
                 return new NfseResponse(false, null, null, $erro);
             }
 
@@ -286,6 +292,7 @@ class NfseClient implements NfseClientContract
             }
 
             $this->dispatchEvent(new NfseQueried('consultar'));
+
             return new NfseResponse(true, null, $xml, null);
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
@@ -316,7 +323,7 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, danfseUrl?: string, eventos?: array<int, array<string, mixed>>} $result */
             $result = $httpClient->get($url);
 
-            if (!empty($result['erros']) || isset($result['erro'])) {
+            if (! empty($result['erros']) || isset($result['erro'])) {
                 $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? 'UNKNOWN'));
             } else {
                 $this->dispatchEvent(new NfseQueried($operacao));

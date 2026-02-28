@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 enum NfseAmbiente: int
 {
-    case PRODUCAO    = 1;
+    case PRODUCAO = 1;
     case HOMOLOGACAO = 2;
 
     public static function fromConfig(int|string $v): self
@@ -20,8 +20,8 @@ enum NfseAmbiente: int
                 );
         }
 
-        return match(strtolower($v)) {
-            'producao', 'production'     => self::PRODUCAO,
+        return match (strtolower($v)) {
+            'producao', 'production' => self::PRODUCAO,
             'homologacao', 'homologation' => self::HOMOLOGACAO,
             default => throw new InvalidArgumentException(
                 sprintf("Ambiente NFSe inválido: '%s'. Valores aceitos: 1, 2, 'producao', 'homologacao'.", $v)

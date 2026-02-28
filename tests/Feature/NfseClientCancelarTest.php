@@ -12,12 +12,12 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('cancelar returns success NfseResponse', function () {
     Http::fake(['*' => Http::response(
-        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/cancelar_sucesso.json'), true),
+        json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
         200
     )]);
 
-    $pfx      = file_get_contents(__DIR__ . '/../fixtures/certs/fake-icpbr.pfx');
-    $client   = NfseClient::for($pfx, 'secret', '9999999');
+    $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
+    $client = NfseClient::for($pfx, 'secret', '9999999');
     $response = $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
         MotivoCancelamento::ErroEmissao,
@@ -27,8 +27,7 @@ it('cancelar returns success NfseResponse', function () {
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('CHAVE50CARACTERES1234567890123456789012345678901');
 
-    Http::assertSent(fn (Request $req) =>
-        $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
         $req->method() === 'POST' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
@@ -36,12 +35,12 @@ it('cancelar returns success NfseResponse', function () {
 
 it('cancelar returns rejection NfseResponse on erro field', function () {
     Http::fake(['*' => Http::response(
-        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/cancelar_rejeicao.json'), true),
+        json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_rejeicao.json'), true),
         200
     )]);
 
-    $pfx      = file_get_contents(__DIR__ . '/../fixtures/certs/fake-icpbr.pfx');
-    $client   = NfseClient::for($pfx, 'secret', '9999999');
+    $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
+    $client = NfseClient::for($pfx, 'secret', '9999999');
     $response = $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
         MotivoCancelamento::ErroEmissao,
@@ -51,8 +50,7 @@ it('cancelar returns rejection NfseResponse on erro field', function () {
     expect($response->sucesso)->toBeFalse();
     expect($response->erro)->toContain('não encontrada');
 
-    Http::assertSent(fn (Request $req) =>
-        $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
 });
@@ -60,7 +58,7 @@ it('cancelar returns rejection NfseResponse on erro field', function () {
 it('cancelar returns rejection NfseResponse on singular erro field', function () {
     Http::fake(['*' => Http::response(['erro' => 'Operação não permitida'], 200)]);
 
-    $client   = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
         MotivoCancelamento::ErroEmissao,
@@ -97,13 +95,14 @@ it('cancelar throws HttpException on server error', function () {
 
 it('cancelar succeeds and reports error when event listener throws', function () {
     Http::fake(['*' => Http::response(
-        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/cancelar_sucesso.json'), true),
+        json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
         200
     )]);
 
     $reported = [];
     $this->app->bind(\Illuminate\Contracts\Debug\ExceptionHandler::class, function () use (&$reported) {
-        return new class($reported) extends \Illuminate\Foundation\Exceptions\Handler {
+        return new class($reported) extends \Illuminate\Foundation\Exceptions\Handler
+        {
             /** @param list<Throwable> $reported */
             public function __construct(private array &$reported)
             {
@@ -124,7 +123,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
         }
     );
 
-    $client   = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
         MotivoCancelamento::ErroEmissao,
@@ -143,8 +142,7 @@ it('cancelar uses Americana custom URL without operation path', function () {
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
     $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
 
-    Http::assertSent(fn (Request $req) =>
-        $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
 });
@@ -155,8 +153,7 @@ it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', functio
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3547304');
     $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
 
-    Http::assertSent(fn (Request $req) =>
-        $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
 });
@@ -168,13 +165,13 @@ it('cancelar throws NfseException when gzip compression fails', function () {
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
     $client = new NfseClient(
-        ambiente:           NfseAmbiente::HOMOLOGACAO,
-        timeout:            30,
-        signingAlgorithm:   'sha1',
-        sslVerify:          true,
-        prefeituraResolver: new PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json'),
-        dpsBuilder:         new DpsBuilder(__DIR__ . '/../../storage/schemes'),
-        gzipCompressor:     $compressor,
+        ambiente: NfseAmbiente::HOMOLOGACAO,
+        timeout: 30,
+        signingAlgorithm: 'sha1',
+        sslVerify: true,
+        prefeituraResolver: new PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
+        dpsBuilder: new DpsBuilder(__DIR__.'/../../storage/schemes'),
+        gzipCompressor: $compressor,
     );
     $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
 

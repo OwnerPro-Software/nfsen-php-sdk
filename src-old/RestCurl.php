@@ -12,36 +12,51 @@ use RuntimeException;
 class RestCurl extends RestBase
 {
     const DEFAULT_URLS = [
-        "sefin_homologacao" => "https://sefin.producaorestrita.nfse.gov.br/SefinNacional",
-        "sefin_producao" => "https://sefin.nfse.gov.br/sefinnacional",
-        "adn_homologacao" => "https://adn.producaorestrita.nfse.gov.br",
-        "adn_producao" => "https://adn.nfse.gov.br",
-        "nfse_homologacao" => "https://www.producaorestrita.nfse.gov.br/EmissorNacional",
-        "nfse_producao" => "https://www.nfse.gov.br/EmissorNacional"
+        'sefin_homologacao' => 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional',
+        'sefin_producao' => 'https://sefin.nfse.gov.br/sefinnacional',
+        'adn_homologacao' => 'https://adn.producaorestrita.nfse.gov.br',
+        'adn_producao' => 'https://adn.nfse.gov.br',
+        'nfse_homologacao' => 'https://www.producaorestrita.nfse.gov.br/EmissorNacional',
+        'nfse_producao' => 'https://www.nfse.gov.br/EmissorNacional',
     ];
+
     const DEFAULT_OPERATIONS = [
-        "consultar_nfse" => "nfse/{chave}",
-        "consultar_dps" => "dps/{chave}",
-        "consultar_eventos" => "nfse/{chave}/eventos/{tipoEvento}/{nSequencial}",
-        "consultar_danfse" => "danfse/{chave}",
-        "consultar_danfse_nfse_certificado" => "Certificado",
-        "consultar_danfse_nfse_download" => "Notas/Download/DANFSe/{chave}",
-        "emitir_nfse" => "nfse",
-        "cancelar_nfse" => "nfse/{chave}/eventos"
+        'consultar_nfse' => 'nfse/{chave}',
+        'consultar_dps' => 'dps/{chave}',
+        'consultar_eventos' => 'nfse/{chave}/eventos/{tipoEvento}/{nSequencial}',
+        'consultar_danfse' => 'danfse/{chave}',
+        'consultar_danfse_nfse_certificado' => 'Certificado',
+        'consultar_danfse_nfse_download' => 'Notas/Download/DANFSe/{chave}',
+        'emitir_nfse' => 'nfse',
+        'cancelar_nfse' => 'nfse/{chave}/eventos',
     ];
+
     private $urls = [];
+
     private $operations = [];
+
     private mixed $config;
+
     private string $url_api;
+
     private $connection_timeout = 30;
+
     private $timeout = 30;
+
     private $httpver;
+
     public string $soaperror;
+
     public int $soaperror_code;
+
     public array $soapinfo;
+
     public string $responseHead;
+
     public string $responseBody;
+
     private string $requestHead;
+
     private string $cookies = '';
 
     protected $canonical = [true, false, null, null];
@@ -51,16 +66,16 @@ class RestCurl extends RestBase
         parent::__construct($cert);
         $this->config = json_decode($config);
         $this->certificate = $cert;
-        $configFile = __DIR__ . '/../storage/prefeituras.json';
+        $configFile = __DIR__.'/../storage/prefeituras.json';
 
         $this->loadConfigOverrides($configFile, $this->config->prefeitura ?? null);
     }
 
     private function loadConfigOverrides($jsonFile, $context): void
     {
-        $json = json_decode(file_get_contents($jsonFile) ?: "", true);
+        $json = json_decode(file_get_contents($jsonFile) ?: '', true);
 
-        if (!is_array($json)) {
+        if (! is_array($json)) {
             throw new RuntimeException("JSON inválido em $jsonFile");
         }
 
@@ -79,6 +94,7 @@ class RestCurl extends RestBase
                 $defaults[$key] = $value;
             }
         }
+
         return $defaults;
     }
 
@@ -88,9 +104,7 @@ class RestCurl extends RestBase
     }
 
     /**
-     * @param $operacao
-     * @param $data
-     * @param $origem - URL de consulta 1 = Sefin (emissão), 2 = ADN (DANFSe)
+     * @param  $origem  - URL de consulta 1 = Sefin (emissão), 2 = ADN (DANFSe)
      * @return mixed|string
      */
     public function getData($operacao, $data = null, $origem = 1)
@@ -100,13 +114,13 @@ class RestCurl extends RestBase
         try {
             $msgSize = $data ? strlen($data) : 0;
             $parameters = [
-                "Content-Type: application/json;charset=utf-8;",
-                "Content-length: $msgSize"
+                'Content-Type: application/json;charset=utf-8;',
+                "Content-length: $msgSize",
             ];
             $oCurl = curl_init();
             $api_url = $this->url_api;
             if (strlen($operacao) > 0) {
-                $api_url .= '/' . $operacao;
+                $api_url .= '/'.$operacao;
             }
             curl_setopt($oCurl, CURLOPT_URL, $api_url);
             curl_setopt($oCurl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
@@ -116,7 +130,7 @@ class RestCurl extends RestBase
             curl_setopt($oCurl, CURLOPT_HTTP_VERSION, $this->httpver);
             curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, 0);
-            if (!empty($this->security_level)) {
+            if (! empty($this->security_level)) {
                 curl_setopt($oCurl, CURLOPT_SSL_CIPHER_LIST, "{$this->security_level}");
             }
             //            if (!$this->disablesec) {
@@ -128,18 +142,18 @@ class RestCurl extends RestBase
             //                }
             //            }
             curl_setopt($oCurl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
-            curl_setopt($oCurl, CURLOPT_SSLCERT, $this->tempdir . $this->certfile);
-            curl_setopt($oCurl, CURLOPT_SSLKEY, $this->tempdir . $this->prifile);
-            if (!empty($this->temppass)) {
+            curl_setopt($oCurl, CURLOPT_SSLCERT, $this->tempdir.$this->certfile);
+            curl_setopt($oCurl, CURLOPT_SSLKEY, $this->tempdir.$this->prifile);
+            if (! empty($this->temppass)) {
                 curl_setopt($oCurl, CURLOPT_KEYPASSWD, $this->temppass);
             }
             curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
-            if (!empty($data)) {
+            if (! empty($data)) {
                 curl_setopt($oCurl, CURLOPT_POST, 1);
                 curl_setopt($oCurl, CURLOPT_POSTFIELDS, $data);
                 curl_setopt($oCurl, CURLOPT_HTTPHEADER, $parameters);
-            } elseif ($origem === 3 && !empty($this->cookies)) {
-                $parameters[] = 'Cookie: ' . $this->cookies;
+            } elseif ($origem === 3 && ! empty($this->cookies)) {
+                $parameters[] = 'Cookie: '.$this->cookies;
                 curl_setopt($oCurl, CURLOPT_HTTPHEADER, $parameters);
             }
             $response = curl_exec($oCurl);
@@ -155,9 +169,10 @@ class RestCurl extends RestBase
             $contentType = curl_getinfo($oCurl, CURLINFO_CONTENT_TYPE);
             $this->responseHead = trim(substr($response, 0, $headsize));
             $this->responseBody = trim(substr($response, $headsize));
-            //detecta redirect, conseguiu logar com certificado na origem 3 e pega cookies
+            // detecta redirect, conseguiu logar com certificado na origem 3 e pega cookies
             if ($origem == 3 and $httpcode == 302) {
                 $this->captureCookies($this->responseHead, $origem);
+
                 return ['sucesso' => true];
             }
             if ($contentType == 'application/pdf') {
@@ -171,9 +186,7 @@ class RestCurl extends RestBase
     }
 
     /**
-     * @param $operacao
-     * @param $data
-     * @param $origem - URL de consulta 1 = Sefin (emissão), 2 = ADN (DANFSe)
+     * @param  $origem  - URL de consulta 1 = Sefin (emissão), 2 = ADN (DANFSe)
      * @return mixed|string
      */
     public function postData($operacao, $data, $origem = 1)
@@ -186,13 +199,13 @@ class RestCurl extends RestBase
                 //                'Accept: */*; ',
                 'Content-Type: application/json',
                 //                "Content-Type: application/x-www-form-urlencoded;charset=utf-8;",
-                'Content-length: ' . $msgSize,
+                'Content-length: '.$msgSize,
             ];
             //            $this->requestHead = implode("\n", $parameters);
             $oCurl = curl_init();
             $api_url = $this->url_api;
             if (strlen($operacao) > 0) {
-                $api_url .= '/' . $operacao;
+                $api_url .= '/'.$operacao;
             }
             curl_setopt($oCurl, CURLOPT_URL, $api_url);
             curl_setopt($oCurl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
@@ -202,21 +215,21 @@ class RestCurl extends RestBase
             curl_setopt($oCurl, CURLOPT_HTTP_VERSION, $this->httpver);
             curl_setopt($oCurl, CURLOPT_SSL_VERIFYHOST, 0);
             curl_setopt($oCurl, CURLOPT_SSL_VERIFYPEER, 0);
-            if (!empty($this->security_level)) {
+            if (! empty($this->security_level)) {
                 curl_setopt($oCurl, CURLOPT_SSL_CIPHER_LIST, "{$this->security_level}");
             }
 
             curl_setopt($oCurl, CURLOPT_SSLVERSION, CURL_SSLVERSION_DEFAULT);
-            curl_setopt($oCurl, CURLOPT_SSLCERT, $this->tempdir . $this->certfile);
-            curl_setopt($oCurl, CURLOPT_SSLKEY, $this->tempdir . $this->prifile);
-            if (!empty($this->temppass)) {
+            curl_setopt($oCurl, CURLOPT_SSLCERT, $this->tempdir.$this->certfile);
+            curl_setopt($oCurl, CURLOPT_SSLKEY, $this->tempdir.$this->prifile);
+            if (! empty($this->temppass)) {
                 curl_setopt($oCurl, CURLOPT_KEYPASSWD, $this->temppass);
             }
             curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
-            if (!empty($data)) {
+            if (! empty($data)) {
                 curl_setopt($oCurl, CURLOPT_POST, 1);
                 curl_setopt($oCurl, CURLOPT_POSTFIELDS, $data);
-                //curl_setopt($oCurl, CURLOPT_POSTFIELDS, http_build_query($data)); // Dados para enviar no POST
+                // curl_setopt($oCurl, CURLOPT_POSTFIELDS, http_build_query($data)); // Dados para enviar no POST
                 curl_setopt($oCurl, CURLOPT_HTTPHEADER, $parameters);
             }
             $response = curl_exec($oCurl);
@@ -232,6 +245,7 @@ class RestCurl extends RestBase
             curl_close($oCurl);
             $this->responseHead = trim(substr($response, 0, $headsize));
             $this->responseBody = trim(substr($response, $headsize));
+
             return json_decode($this->responseBody, true);
         } catch (Exception $e) {
             throw SoapException::unableToLoadCurl($e->getMessage());
@@ -250,9 +264,7 @@ class RestCurl extends RestBase
 
     /**
      * Sign XML passing in content
-     * @param string $content
-     * @param string $tagname
-     * @param string $mark
+     *
      * @return string XML signed
      */
     public function sign(string $content, string $tagname, ?string $mark, $rootname)
@@ -269,6 +281,7 @@ class RestCurl extends RestBase
             $this->canonical,
             $rootname
         );
+
         return $xml;
     }
 
@@ -302,11 +315,11 @@ class RestCurl extends RestBase
         if ($origem !== 3) {
             return;
         }
-        if (!preg_match_all('/^Set-Cookie:\s*([^;\r\n]*)/mi', $headers, $matches)) {
+        if (! preg_match_all('/^Set-Cookie:\s*([^;\r\n]*)/mi', $headers, $matches)) {
             return;
         }
         $cookies = array_map('trim', $matches[1]);
-        if (!empty($cookies)) {
+        if (! empty($cookies)) {
             $this->cookies = implode('; ', $cookies);
         }
     }

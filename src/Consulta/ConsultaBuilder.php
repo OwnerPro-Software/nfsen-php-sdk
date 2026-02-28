@@ -23,24 +23,27 @@ final readonly class ConsultaBuilder
     public function nfse(string $chave): NfseResponse
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_nfse', ['chave' => $chave]);
+
         return $this->client->executeGet($this->buildUrl($this->seFinBaseUrl, $path));
     }
 
     public function dps(string $chave): NfseResponse
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_dps', ['chave' => $chave]);
+
         return $this->client->executeGet($this->buildUrl($this->seFinBaseUrl, $path));
     }
 
     public function danfse(string $chave): DanfseResponse
     {
         $baseUrl = $this->adnBaseUrl ?: $this->seFinBaseUrl;
-        $path    = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_danfse', ['chave' => $chave]);
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_danfse', ['chave' => $chave]);
 
         $result = $this->client->executeGetRaw($this->buildUrl($baseUrl, $path));
 
-        if (!empty($result['erros']) || isset($result['erro'])) {
+        if (! empty($result['erros']) || isset($result['erro'])) {
             $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
+
             return new DanfseResponse(false, null, $erro);
         }
 
@@ -50,15 +53,16 @@ final readonly class ConsultaBuilder
     public function eventos(string $chave, int $tipoEvento = 101101, int $nSequencial = 1): EventosResponse
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_eventos', [
-            'chave'       => $chave,
-            'tipoEvento'  => $tipoEvento,
+            'chave' => $chave,
+            'tipoEvento' => $tipoEvento,
             'nSequencial' => $nSequencial,
         ]);
 
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
-        if (!empty($result['erros']) || isset($result['erro'])) {
+        if (! empty($result['erros']) || isset($result['erro'])) {
             $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
+
             return new EventosResponse(false, [], $erro);
         }
 
@@ -71,6 +75,6 @@ final readonly class ConsultaBuilder
             return $baseUrl;
         }
 
-        return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+        return rtrim($baseUrl, '/').'/'.ltrim($path, '/');
     }
 }

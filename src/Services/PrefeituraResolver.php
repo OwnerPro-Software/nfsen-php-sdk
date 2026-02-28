@@ -22,18 +22,18 @@ class PrefeituraResolver
 
     private const DEFAULT_URLS = [
         'sefin_homologacao' => 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional',
-        'sefin_producao'    => 'https://sefin.nfse.gov.br/sefinnacional',
-        'adn_homologacao'   => 'https://adn.producaorestrita.nfse.gov.br',
-        'adn_producao'      => 'https://adn.nfse.gov.br',
+        'sefin_producao' => 'https://sefin.nfse.gov.br/sefinnacional',
+        'adn_homologacao' => 'https://adn.producaorestrita.nfse.gov.br',
+        'adn_producao' => 'https://adn.nfse.gov.br',
     ];
 
     private const DEFAULT_OPERATIONS = [
-        'consultar_nfse'    => 'nfse/{chave}',
-        'consultar_dps'     => 'dps/{chave}',
+        'consultar_nfse' => 'nfse/{chave}',
+        'consultar_dps' => 'dps/{chave}',
         'consultar_eventos' => 'nfse/{chave}/eventos/{tipoEvento}/{nSequencial}',
-        'consultar_danfse'  => 'danfse/{chave}',
-        'emitir_nfse'       => 'nfse',
-        'cancelar_nfse'     => 'nfse/{chave}/eventos',
+        'consultar_danfse' => 'danfse/{chave}',
+        'emitir_nfse' => 'nfse',
+        'cancelar_nfse' => 'nfse/{chave}/eventos',
     ];
 
     /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> */
@@ -41,10 +41,10 @@ class PrefeituraResolver
 
     public function __construct(
         string $jsonPath,
-        private readonly FileReader $fileReader = new FileReader(),
+        private readonly FileReader $fileReader = new FileReader,
     ) {
-        if (!isset(self::$cache[$jsonPath])) {
-            if (!file_exists($jsonPath)) {
+        if (! isset(self::$cache[$jsonPath])) {
+            if (! file_exists($jsonPath)) {
                 throw new InvalidArgumentException(sprintf("Arquivo de prefeituras não encontrado: '%s'.", $jsonPath));
             }
 
@@ -54,7 +54,7 @@ class PrefeituraResolver
             }
 
             $decoded = json_decode($contents, true);
-            if (!is_array($decoded)) {
+            if (! is_array($decoded)) {
                 throw new InvalidArgumentException(sprintf("JSON inválido no arquivo de prefeituras: '%s'.", $jsonPath));
             }
 
@@ -74,6 +74,7 @@ class PrefeituraResolver
     {
         $this->validateIbge($codigoIbge);
         $key = $ambiente === NfseAmbiente::PRODUCAO ? 'sefin_producao' : 'sefin_homologacao';
+
         return $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
     }
 
@@ -81,6 +82,7 @@ class PrefeituraResolver
     {
         $this->validateIbge($codigoIbge);
         $key = $ambiente === NfseAmbiente::PRODUCAO ? 'adn_producao' : 'adn_homologacao';
+
         return $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
     }
 
@@ -93,7 +95,7 @@ class PrefeituraResolver
             ?? throw new InvalidArgumentException(sprintf("Operação desconhecida: '%s'.", $operacao));
 
         foreach ($params as $key => $value) {
-            $template = str_replace('{' . $key . '}', (string) $value, $template);
+            $template = str_replace('{'.$key.'}', (string) $value, $template);
         }
 
         return $template;
@@ -101,7 +103,7 @@ class PrefeituraResolver
 
     private function validateIbge(string $code): void
     {
-        if (!preg_match('/^\d{7}$/', $code)) {
+        if (! preg_match('/^\d{7}$/', $code)) {
             throw new InvalidArgumentException(sprintf("Código IBGE inválido: '%s'. Esperado: 7 dígitos numéricos.", $code));
         }
     }

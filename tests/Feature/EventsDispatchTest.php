@@ -27,7 +27,7 @@ it('dispatches NfseCancelled on successful cancelar', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE123'], 200)]);
 
-    $pfx    = file_get_contents(__DIR__ . '/../fixtures/certs/fake-icpbr.pfx');
+    $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
     $client = NfseClient::for($pfx, 'secret', '9999999');
     $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
 
@@ -134,13 +134,13 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
     $client = new NfseClient(
-        ambiente:           \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
-        timeout:            30,
-        signingAlgorithm:   'sha1',
-        sslVerify:          true,
-        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json'),
-        dpsBuilder:         new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__ . '/../../storage/schemes'),
-        gzipCompressor:     $compressor,
+        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
+        timeout: 30,
+        signingAlgorithm: 'sha1',
+        sslVerify: true,
+        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
+        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__.'/../../storage/schemes'),
+        gzipCompressor: $compressor,
     );
     $client->configure(makePfxContent(), 'secret', '9999999');
 
@@ -162,13 +162,13 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
     $client = new NfseClient(
-        ambiente:           \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
-        timeout:            30,
-        signingAlgorithm:   'sha1',
-        sslVerify:          true,
-        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json'),
-        dpsBuilder:         new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__ . '/../../storage/schemes'),
-        gzipCompressor:     $compressor,
+        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
+        timeout: 30,
+        signingAlgorithm: 'sha1',
+        sslVerify: true,
+        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
+        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__.'/../../storage/schemes'),
+        gzipCompressor: $compressor,
     );
     $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
 

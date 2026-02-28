@@ -4,7 +4,6 @@ namespace Hadder\NfseNacional;
 
 /**
  * Class for RPS construction and validation of data
- *
  */
 
 use DOMException;
@@ -12,38 +11,43 @@ use DOMNode;
 use NFePHP\Common\DOMImproved as Dom;
 use stdClass;
 
-
 class Dps implements DpsInterface
 {
     /**
      * @var stdClass
      */
     public $std;
+
     /**
      * @var DOMNode
      */
     protected $dps;
+
     /**
      * @var DOMNode
      */
     protected $evento;
+
     /**
      * @var string
      */
     protected $jsonschema;
+
     /**
      * @var Dom
      */
     protected $dom;
+
     private string $dpsId;
+
     private string $preId;
 
     /**
      * Constructor
-     * @param stdClass|null $std
+     *
      * @throws DOMException
      */
-    public function __construct(stdClass $std = null)
+    public function __construct(?stdClass $std = null)
     {
         $this->init($std);
         $this->dom = new Dom('1.0', 'UTF-8');
@@ -51,24 +55,20 @@ class Dps implements DpsInterface
         $this->dom->formatOutput = false;
     }
 
-    /**
-     *
-     * @param stdClass|null $dps
-     */
-    private function init(stdClass $dps = null)
+    private function init(?stdClass $dps = null)
     {
-        if (!empty($dps)) {
+        if (! empty($dps)) {
             $this->std = $this->propertiesToLower($dps);
             if (empty($this->std->version)) {
                 $this->std->version = '1.01';
             }
-            //$ver = str_replace('.', '_', $this->std->version);
-            //$this->jsonschema = realpath("../storage/jsonSchemes/v$ver/rps.schema");
-            //$this->validInputData();
+            // $ver = str_replace('.', '_', $this->std->version);
+            // $this->jsonschema = realpath("../storage/jsonSchemes/v$ver/rps.schema");
+            // $this->validInputData();
         }
     }
 
-    public function render(stdClass $std = null)
+    public function render(?stdClass $std = null)
     {
         if ($this->dom->hasChildNodes()) {
             $this->dom = new Dom('1.0', 'UTF-8');
@@ -487,11 +487,11 @@ class Dps implements DpsInterface
             }
         }
 
-        //TODO Fazer grupo interm
-        //if (isset($this->std->interm)) {
+        // TODO Fazer grupo interm
+        // if (isset($this->std->interm)) {
         //    $interm_inner = $this->dom->createElement('interm');
         //    $infdps_inner->appendChild($interm_inner);
-        //}
+        // }
 
         $serv_inner = $this->dom->createElement('serv');
         $infdps_inner->appendChild($serv_inner);
@@ -553,7 +553,7 @@ class Dps implements DpsInterface
             );
         }
 
-        //grupo comExt
+        // grupo comExt
         if (isset($this->std->infdps->serv->comext)) {
             $comext_inner = $this->dom->createElement('comExt');
             $serv_inner->appendChild($comext_inner);
@@ -615,7 +615,6 @@ class Dps implements DpsInterface
                     $this->std->infdps->serv->comext->nre
                 );
             }
-
 
             $this->dom->addChild(
                 $comext_inner,
@@ -712,7 +711,7 @@ class Dps implements DpsInterface
             }
         }
 
-        //TODO Fazer grupo lsadppu
+        // TODO Fazer grupo lsadppu
         if (isset($this->std->infdps->serv->atvevento)) {
             $atvEvento_inner = $this->dom->createElement('atvEvento');
             $serv_inner->appendChild($atvEvento_inner);
@@ -789,12 +788,11 @@ class Dps implements DpsInterface
                 }
             }
         }
-        //TODO Fazer grupo explRod
-
+        // TODO Fazer grupo explRod
 
         // Grupo de informações complementares disponível para todos os serviços prestados
         if (isset($this->std->infdps->serv->infocompl->iddoctec)) {
-            if (!isset($infocompl_inner)) {
+            if (! isset($infocompl_inner)) {
                 $infocompl_inner = $this->dom->createElement('infoCompl');
                 $serv_inner->appendChild($infocompl_inner);
             }
@@ -806,7 +804,7 @@ class Dps implements DpsInterface
             );
         }
         if (isset($this->std->infdps->serv->infocompl->docref)) {
-            if (!isset($infocompl_inner)) {
+            if (! isset($infocompl_inner)) {
                 $infocompl_inner = $this->dom->createElement('infoCompl');
                 $serv_inner->appendChild($infocompl_inner);
             }
@@ -818,7 +816,7 @@ class Dps implements DpsInterface
             );
         }
         if (isset($this->std->infdps->serv->infocompl->xped)) {
-            if (!isset($infocompl_inner)) {
+            if (! isset($infocompl_inner)) {
                 $infocompl_inner = $this->dom->createElement('infoCompl');
                 $serv_inner->appendChild($infocompl_inner);
             }
@@ -830,7 +828,7 @@ class Dps implements DpsInterface
             );
         }
         if (isset($this->std->infdps->serv->infocompl->gitemped->xitemped)) {
-            if (!isset($infocompl_inner)) {
+            if (! isset($infocompl_inner)) {
                 $infocompl_inner = $this->dom->createElement('infoCompl');
                 $serv_inner->appendChild($infocompl_inner);
             }
@@ -844,7 +842,7 @@ class Dps implements DpsInterface
             );
         }
         if (isset($this->std->infdps->serv->infocompl->xinfcomp)) {
-            if (!isset($infocompl_inner)) {
+            if (! isset($infocompl_inner)) {
                 $infocompl_inner = $this->dom->createElement('infoCompl');
                 $serv_inner->appendChild($infocompl_inner);
             }
@@ -875,25 +873,24 @@ class Dps implements DpsInterface
             true
         );
 
-        //TODO Fazer grupo vDescCondIncond
-		// Grupo vDescCondIncond (dentro de <valores>)
-		$vDescIncond = $this->std->infdps->valores->vdesccondincond->vdescincond ?? null;
-		$vDescCond   = $this->std->infdps->valores->vdesccondincond->vdesccond   ?? null;
+        // TODO Fazer grupo vDescCondIncond
+        // Grupo vDescCondIncond (dentro de <valores>)
+        $vDescIncond = $this->std->infdps->valores->vdesccondincond->vdescincond ?? null;
+        $vDescCond = $this->std->infdps->valores->vdesccondincond->vdesccond ?? null;
 
-		// regra: considera vazio se null, string vazia, ou "0.00" (ajuste se quiser manter 0.00)
-		$temDescIncond = ($vDescIncond !== null && $vDescIncond !== '' && $vDescIncond !== '0.00');
-		$temDescCond   = ($vDescCond   !== null && $vDescCond   !== '' && $vDescCond   !== '0.00');
+        // regra: considera vazio se null, string vazia, ou "0.00" (ajuste se quiser manter 0.00)
+        $temDescIncond = ($vDescIncond !== null && $vDescIncond !== '' && $vDescIncond !== '0.00');
+        $temDescCond = ($vDescCond !== null && $vDescCond !== '' && $vDescCond !== '0.00');
 
-		if ($temDescIncond || $temDescCond) {
-			$descontos_inner = $this->dom->createElement('vDescCondIncond');
-			$valores_inner->appendChild($descontos_inner);
+        if ($temDescIncond || $temDescCond) {
+            $descontos_inner = $this->dom->createElement('vDescCondIncond');
+            $valores_inner->appendChild($descontos_inner);
 
-			$this->dom->addChild($descontos_inner, 'vDescIncond', $vDescIncond, false);
-			$this->dom->addChild($descontos_inner, 'vDescCond',   $vDescCond,   false);
-		}
+            $this->dom->addChild($descontos_inner, 'vDescIncond', $vDescIncond, false);
+            $this->dom->addChild($descontos_inner, 'vDescCond', $vDescCond, false);
+        }
 
-
-        //TODO Fazer grupo vDedRed
+        // TODO Fazer grupo vDedRed
 
         $trib_inner = $this->dom->createElement('trib');
         $valores_inner->appendChild($trib_inner);
@@ -908,7 +905,7 @@ class Dps implements DpsInterface
             true
         );
 
-        if (isset($this->std->infdps->valores->trib->tribmun->tribissqn) && $this->std->infdps->valores->trib->tribmun->tribissqn == 
+        if (isset($this->std->infdps->valores->trib->tribmun->tribissqn) && $this->std->infdps->valores->trib->tribmun->tribissqn ==
                 2 && isset($this->std->infdps->valores->trib->tribmun->tpimunidade)) {
             $this->dom->addChild(
                 $tribmun_inner,
@@ -918,7 +915,7 @@ class Dps implements DpsInterface
             );
         }
 
-        if(isset($this->std->infdps->valores->trib->tribmun->tribissqn) && $this->std->infdps->valores->trib->tribmun->tribissqn == 3){
+        if (isset($this->std->infdps->valores->trib->tribmun->tribissqn) && $this->std->infdps->valores->trib->tribmun->tribissqn == 3) {
             $this->dom->addChild(
                 $tribmun_inner,
                 'cPaisResult',
@@ -944,7 +941,6 @@ class Dps implements DpsInterface
                 true
             );
         }
-
 
         if (isset($this->std->infdps->valores->trib->tribfed)) {
             $tribfed_inner = $this->dom->createElement('tribFed');
@@ -1095,277 +1091,278 @@ class Dps implements DpsInterface
             );
         }
 
-        //Grupos de IBS/CBS
-//        if (isset($this->std->infdps->ibscbs)) {
-//            $ibscbs_inner = $this->dom->createElement('IBSCBS');
-//            $infdps_inner->appendChild($ibscbs_inner);
-//
-//            $this->dom->addChild(
-//                $ibscbs_inner,
-//                'finNFSe',
-//                $this->std->infdps->ibscbs->finnfse,
-//                true
-//            );
-//            $this->dom->addChild(
-//                $ibscbs_inner,
-//                'indFinal',
-//                $this->std->infdps->ibscbs->indfinal,
-//                true
-//            );
-//            $this->dom->addChild(
-//                $ibscbs_inner,
-//                'cIndOp',
-//                $this->std->infdps->ibscbs->cindop,
-//                true
-//            );
-//            if (isset($this->std->infdps->ibscbs->tpoper)) {
-//                $this->dom->addChild(
-//                    $ibscbs_inner,
-//                    'tpOper',
-//                    $this->std->infdps->ibscbs->tpoper
-//                );
-//            }
-//
-//            //TODO Fazer grupo gRefNFSe
-//
-//            if (isset($this->std->infdps->ibscbs->tpentegov)) {
-//                $this->dom->addChild(
-//                    $ibscbs_inner,
-//                    'tpEnteGov',
-//                    $this->std->infdps->ibscbs->tpentegov
-//                );
-//            }
-//            $this->dom->addChild(
-//                $ibscbs_inner,
-//                'indDest',
-//                $this->std->infdps->ibscbs->inddest,
-//                true
-//            );
-//            if (isset($this->std->infdps->ibscbs->dest)) {
-//                $ibscbs_dest_inner = $this->dom->createElement('dest');
-//                $ibscbs_inner->appendChild($ibscbs_dest_inner);
-//                if (isset($this->std->infdps->ibscbs->dest->cnpj)) {
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_inner,
-//                        'CNPJ',
-//                        $this->std->infdps->ibscbs->dest->cnpj,
-//                        true
-//                    );
-//                }
-//                if (isset($this->std->infdps->ibscbs->dest->cpf)) {
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_inner,
-//                        'CPF',
-//                        $this->std->infdps->ibscbs->dest->cpf,
-//                        true
-//                    );
-//                }
-//                if (isset($this->std->infdps->ibscbs->dest->nif)) {
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_inner,
-//                        'NIF',
-//                        $this->std->infdps->ibscbs->dest->nif,
-//                        true
-//                    );
-//                }
-//                if (isset($this->std->infdps->ibscbs->dest->cnaonif)) {
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_inner,
-//                        'cNaoNIF',
-//                        $this->std->infdps->ibscbs->dest->cnaonif,
-//                        true
-//                    );
-//                }
-//                $this->dom->addChild(
-//                    $ibscbs_dest_inner,
-//                    'xNome',
-//                    $this->std->infdps->ibscbs->dest->xnome,
-//                    true
-//                );
-//                $this->dom->addChild(
-//                    $ibscbs_dest_inner,
-//                    'fone',
-//                    $this->std->infdps->ibscbs->dest->fone
-//                );
-//                $this->dom->addChild(
-//                    $ibscbs_dest_inner,
-//                    'email',
-//                    $this->std->infdps->ibscbs->dest->email
-//                );
-//
-//                if (isset($this->std->infdps->ibscbs->dest->end)) {
-//                    $ibscbs_dest_end_inner = $this->dom->createElement('end');
-//                    $ibscbs_dest_inner->appendChild($ibscbs_dest_end_inner);
-//
-//                    if (isset($this->std->infdps->ibscbs->dest->end->endnac)) {
-//                        $ibscbs_endnac_inner = $this->dom->createElement('endNac');
-//                        $ibscbs_dest_end_inner->appendChild($ibscbs_endnac_inner);
-//                        $this->dom->addChild(
-//                            $ibscbs_endnac_inner,
-//                            'cMun',
-//                            $this->std->infdps->ibscbs->dest->end->endnac->cmun,
-//                            true
-//                        );
-//                        $this->dom->addChild(
-//                            $ibscbs_endnac_inner,
-//                            'CEP',
-//                            $this->std->infdps->ibscbs->dest->end->endnac->cep,
-//                            true
-//                        );
-//                    } elseif (isset($this->std->infdps->ibscbs->dest->end->endext)) {
-//                        $ibscbs_endext_inner = $this->dom->createElement('endExt');
-//                        $ibscbs_dest_end_inner->appendChild($ibscbs_endext_inner);
-//                        $this->dom->addChild(
-//                            $ibscbs_endext_inner,
-//                            'cPais',
-//                            $this->std->infdps->ibscbs->dest->end->endext->cpais,
-//                            true
-//                        );
-//                        $this->dom->addChild(
-//                            $ibscbs_endext_inner,
-//                            'cEndPost',
-//                            $this->std->infdps->ibscbs->dest->end->endext->cendpost,
-//                            true
-//                        );
-//                        $this->dom->addChild(
-//                            $ibscbs_endext_inner,
-//                            'xCidade',
-//                            $this->std->infdps->ibscbs->dest->end->endext->xcidade,
-//                            true
-//                        );
-//                        $this->dom->addChild(
-//                            $ibscbs_endext_inner,
-//                            'xEstProvReg',
-//                            $this->std->infdps->ibscbs->dest->end->endext->xestprovreg,
-//                            true
-//                        );
-//                    }
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_end_inner,
-//                        'xLgr',
-//                        $this->std->infdps->ibscbs->dest->end->xlgr,
-//                        true
-//                    );
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_end_inner,
-//                        'nro',
-//                        $this->std->infdps->ibscbs->dest->end->nro,
-//                        true
-//                    );
-//                    if (isset($this->std->infdps->ibscbs->dest->end->xcpl)) {
-//                        $this->dom->addChild(
-//                            $ibscbs_dest_end_inner,
-//                            'xCpl',
-//                            $this->std->infdps->ibscbs->dest->end->xcpl,
-//                        );
-//                    }
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_end_inner,
-//                        'xBairro',
-//                        $this->std->infdps->ibscbs->dest->end->xbairro,
-//                        true
-//                    );
-//                }
-//                if (isset($this->std->ibscbs->dest->fone)) {
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_inner,
-//                        'fone',
-//                        $this->std->ibscbs->dest->fone
-//                    );
-//                }
-//                if (isset($this->std->ibscbs->dest->email)) {
-//                    $this->dom->addChild(
-//                        $ibscbs_dest_inner,
-//                        'email',
-//                        $this->std->ibscbs->dest->email
-//                    );
-//                }
-//            }
-//
-//            //TODO Fazer grupo imovel
-//
-//            if (isset($this->std->infdps->ibscbs->valores)) {
-//                $ibscbs_valores_inner = $this->dom->createElement('valores');
-//                $ibscbs_inner->appendChild($ibscbs_valores_inner);
-//
-//                $ibscbs_valores_trib_inner = $this->dom->createElement('trib');
-//                $ibscbs_valores_inner->appendChild($ibscbs_valores_trib_inner);
-//
-//                $ibscbs_valores_trib_gibscbs_inner = $this->dom->createElement('gIBSCBS');
-//                $ibscbs_valores_trib_inner->appendChild($ibscbs_valores_trib_gibscbs_inner);
-//                $this->dom->addChild(
-//                    $ibscbs_valores_trib_gibscbs_inner,
-//                    'CST',
-//                    $this->std->infdps->ibscbs->valores->trib->gibscbs->cst,
-//                    true
-//                );
-//                $this->dom->addChild(
-//                    $ibscbs_valores_trib_gibscbs_inner,
-//                    'cClassTrib',
-//                    $this->std->infdps->ibscbs->valores->trib->gibscbs->cclasstrib,
-//                    true
-//                );
-//                if (isset($this->std->infdps->ibscbs->valores->trib->gibscbs->ccredpres)) {
-//                    $this->dom->addChild(
-//                        $ibscbs_valores_trib_gibscbs_inner,
-//                        'cCredPres',
-//                        $this->std->infdps->ibscbs->valores->trib->gibscbs->ccredpres
-//                    );
-//                }
-//
-//                $ibscbs_valores_trib_gtribregular_inner = $this->dom->createElement('gTribRegular');
-//                $ibscbs_valores_trib_inner->appendChild($ibscbs_valores_trib_gtribregular_inner);
-//                $this->dom->addChild(
-//                    $ibscbs_valores_trib_gtribregular_inner,
-//                    'CSTReg',
-//                    $this->std->infdps->ibscbs->valores->trib->gtribregular->cstreg,
-//                    true
-//                );
-//                $this->dom->addChild(
-//                    $ibscbs_valores_trib_gtribregular_inner,
-//                    'cClassTribReg',
-//                    $this->std->infdps->ibscbs->valores->trib->gtribregular->cclasstribreg,
-//                    true
-//                );
-//
-//                $ibscbs_valores_trib_gdif_inner = $this->dom->createElement('gDif');
-//                $ibscbs_valores_trib_inner->appendChild($ibscbs_valores_trib_gdif_inner);
-//                $this->dom->addChild(
-//                    $ibscbs_valores_trib_gdif_inner,
-//                    'pDifUF',
-//                    $this->std->infdps->ibscbs->valores->trib->gdif->pdifuf,
-//                    true
-//                );
-//                $this->dom->addChild(
-//                    $ibscbs_valores_trib_gdif_inner,
-//                    'pDifMun',
-//                    $this->std->infdps->ibscbs->valores->trib->gdif->pdifmun,
-//                    true
-//                );
-//                $this->dom->addChild(
-//                    $ibscbs_valores_trib_gdif_inner,
-//                    'pDifCBS',
-//                    $this->std->infdps->ibscbs->valores->trib->gdif->pdifcbs,
-//                    true
-//                );
-//
-//                //TODO Fazer grupo gReeRepRes
-//
-//
-//            }
-//
-//        }
+        // Grupos de IBS/CBS
+        //        if (isset($this->std->infdps->ibscbs)) {
+        //            $ibscbs_inner = $this->dom->createElement('IBSCBS');
+        //            $infdps_inner->appendChild($ibscbs_inner);
+        //
+        //            $this->dom->addChild(
+        //                $ibscbs_inner,
+        //                'finNFSe',
+        //                $this->std->infdps->ibscbs->finnfse,
+        //                true
+        //            );
+        //            $this->dom->addChild(
+        //                $ibscbs_inner,
+        //                'indFinal',
+        //                $this->std->infdps->ibscbs->indfinal,
+        //                true
+        //            );
+        //            $this->dom->addChild(
+        //                $ibscbs_inner,
+        //                'cIndOp',
+        //                $this->std->infdps->ibscbs->cindop,
+        //                true
+        //            );
+        //            if (isset($this->std->infdps->ibscbs->tpoper)) {
+        //                $this->dom->addChild(
+        //                    $ibscbs_inner,
+        //                    'tpOper',
+        //                    $this->std->infdps->ibscbs->tpoper
+        //                );
+        //            }
+        //
+        //            //TODO Fazer grupo gRefNFSe
+        //
+        //            if (isset($this->std->infdps->ibscbs->tpentegov)) {
+        //                $this->dom->addChild(
+        //                    $ibscbs_inner,
+        //                    'tpEnteGov',
+        //                    $this->std->infdps->ibscbs->tpentegov
+        //                );
+        //            }
+        //            $this->dom->addChild(
+        //                $ibscbs_inner,
+        //                'indDest',
+        //                $this->std->infdps->ibscbs->inddest,
+        //                true
+        //            );
+        //            if (isset($this->std->infdps->ibscbs->dest)) {
+        //                $ibscbs_dest_inner = $this->dom->createElement('dest');
+        //                $ibscbs_inner->appendChild($ibscbs_dest_inner);
+        //                if (isset($this->std->infdps->ibscbs->dest->cnpj)) {
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_inner,
+        //                        'CNPJ',
+        //                        $this->std->infdps->ibscbs->dest->cnpj,
+        //                        true
+        //                    );
+        //                }
+        //                if (isset($this->std->infdps->ibscbs->dest->cpf)) {
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_inner,
+        //                        'CPF',
+        //                        $this->std->infdps->ibscbs->dest->cpf,
+        //                        true
+        //                    );
+        //                }
+        //                if (isset($this->std->infdps->ibscbs->dest->nif)) {
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_inner,
+        //                        'NIF',
+        //                        $this->std->infdps->ibscbs->dest->nif,
+        //                        true
+        //                    );
+        //                }
+        //                if (isset($this->std->infdps->ibscbs->dest->cnaonif)) {
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_inner,
+        //                        'cNaoNIF',
+        //                        $this->std->infdps->ibscbs->dest->cnaonif,
+        //                        true
+        //                    );
+        //                }
+        //                $this->dom->addChild(
+        //                    $ibscbs_dest_inner,
+        //                    'xNome',
+        //                    $this->std->infdps->ibscbs->dest->xnome,
+        //                    true
+        //                );
+        //                $this->dom->addChild(
+        //                    $ibscbs_dest_inner,
+        //                    'fone',
+        //                    $this->std->infdps->ibscbs->dest->fone
+        //                );
+        //                $this->dom->addChild(
+        //                    $ibscbs_dest_inner,
+        //                    'email',
+        //                    $this->std->infdps->ibscbs->dest->email
+        //                );
+        //
+        //                if (isset($this->std->infdps->ibscbs->dest->end)) {
+        //                    $ibscbs_dest_end_inner = $this->dom->createElement('end');
+        //                    $ibscbs_dest_inner->appendChild($ibscbs_dest_end_inner);
+        //
+        //                    if (isset($this->std->infdps->ibscbs->dest->end->endnac)) {
+        //                        $ibscbs_endnac_inner = $this->dom->createElement('endNac');
+        //                        $ibscbs_dest_end_inner->appendChild($ibscbs_endnac_inner);
+        //                        $this->dom->addChild(
+        //                            $ibscbs_endnac_inner,
+        //                            'cMun',
+        //                            $this->std->infdps->ibscbs->dest->end->endnac->cmun,
+        //                            true
+        //                        );
+        //                        $this->dom->addChild(
+        //                            $ibscbs_endnac_inner,
+        //                            'CEP',
+        //                            $this->std->infdps->ibscbs->dest->end->endnac->cep,
+        //                            true
+        //                        );
+        //                    } elseif (isset($this->std->infdps->ibscbs->dest->end->endext)) {
+        //                        $ibscbs_endext_inner = $this->dom->createElement('endExt');
+        //                        $ibscbs_dest_end_inner->appendChild($ibscbs_endext_inner);
+        //                        $this->dom->addChild(
+        //                            $ibscbs_endext_inner,
+        //                            'cPais',
+        //                            $this->std->infdps->ibscbs->dest->end->endext->cpais,
+        //                            true
+        //                        );
+        //                        $this->dom->addChild(
+        //                            $ibscbs_endext_inner,
+        //                            'cEndPost',
+        //                            $this->std->infdps->ibscbs->dest->end->endext->cendpost,
+        //                            true
+        //                        );
+        //                        $this->dom->addChild(
+        //                            $ibscbs_endext_inner,
+        //                            'xCidade',
+        //                            $this->std->infdps->ibscbs->dest->end->endext->xcidade,
+        //                            true
+        //                        );
+        //                        $this->dom->addChild(
+        //                            $ibscbs_endext_inner,
+        //                            'xEstProvReg',
+        //                            $this->std->infdps->ibscbs->dest->end->endext->xestprovreg,
+        //                            true
+        //                        );
+        //                    }
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_end_inner,
+        //                        'xLgr',
+        //                        $this->std->infdps->ibscbs->dest->end->xlgr,
+        //                        true
+        //                    );
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_end_inner,
+        //                        'nro',
+        //                        $this->std->infdps->ibscbs->dest->end->nro,
+        //                        true
+        //                    );
+        //                    if (isset($this->std->infdps->ibscbs->dest->end->xcpl)) {
+        //                        $this->dom->addChild(
+        //                            $ibscbs_dest_end_inner,
+        //                            'xCpl',
+        //                            $this->std->infdps->ibscbs->dest->end->xcpl,
+        //                        );
+        //                    }
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_end_inner,
+        //                        'xBairro',
+        //                        $this->std->infdps->ibscbs->dest->end->xbairro,
+        //                        true
+        //                    );
+        //                }
+        //                if (isset($this->std->ibscbs->dest->fone)) {
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_inner,
+        //                        'fone',
+        //                        $this->std->ibscbs->dest->fone
+        //                    );
+        //                }
+        //                if (isset($this->std->ibscbs->dest->email)) {
+        //                    $this->dom->addChild(
+        //                        $ibscbs_dest_inner,
+        //                        'email',
+        //                        $this->std->ibscbs->dest->email
+        //                    );
+        //                }
+        //            }
+        //
+        //            //TODO Fazer grupo imovel
+        //
+        //            if (isset($this->std->infdps->ibscbs->valores)) {
+        //                $ibscbs_valores_inner = $this->dom->createElement('valores');
+        //                $ibscbs_inner->appendChild($ibscbs_valores_inner);
+        //
+        //                $ibscbs_valores_trib_inner = $this->dom->createElement('trib');
+        //                $ibscbs_valores_inner->appendChild($ibscbs_valores_trib_inner);
+        //
+        //                $ibscbs_valores_trib_gibscbs_inner = $this->dom->createElement('gIBSCBS');
+        //                $ibscbs_valores_trib_inner->appendChild($ibscbs_valores_trib_gibscbs_inner);
+        //                $this->dom->addChild(
+        //                    $ibscbs_valores_trib_gibscbs_inner,
+        //                    'CST',
+        //                    $this->std->infdps->ibscbs->valores->trib->gibscbs->cst,
+        //                    true
+        //                );
+        //                $this->dom->addChild(
+        //                    $ibscbs_valores_trib_gibscbs_inner,
+        //                    'cClassTrib',
+        //                    $this->std->infdps->ibscbs->valores->trib->gibscbs->cclasstrib,
+        //                    true
+        //                );
+        //                if (isset($this->std->infdps->ibscbs->valores->trib->gibscbs->ccredpres)) {
+        //                    $this->dom->addChild(
+        //                        $ibscbs_valores_trib_gibscbs_inner,
+        //                        'cCredPres',
+        //                        $this->std->infdps->ibscbs->valores->trib->gibscbs->ccredpres
+        //                    );
+        //                }
+        //
+        //                $ibscbs_valores_trib_gtribregular_inner = $this->dom->createElement('gTribRegular');
+        //                $ibscbs_valores_trib_inner->appendChild($ibscbs_valores_trib_gtribregular_inner);
+        //                $this->dom->addChild(
+        //                    $ibscbs_valores_trib_gtribregular_inner,
+        //                    'CSTReg',
+        //                    $this->std->infdps->ibscbs->valores->trib->gtribregular->cstreg,
+        //                    true
+        //                );
+        //                $this->dom->addChild(
+        //                    $ibscbs_valores_trib_gtribregular_inner,
+        //                    'cClassTribReg',
+        //                    $this->std->infdps->ibscbs->valores->trib->gtribregular->cclasstribreg,
+        //                    true
+        //                );
+        //
+        //                $ibscbs_valores_trib_gdif_inner = $this->dom->createElement('gDif');
+        //                $ibscbs_valores_trib_inner->appendChild($ibscbs_valores_trib_gdif_inner);
+        //                $this->dom->addChild(
+        //                    $ibscbs_valores_trib_gdif_inner,
+        //                    'pDifUF',
+        //                    $this->std->infdps->ibscbs->valores->trib->gdif->pdifuf,
+        //                    true
+        //                );
+        //                $this->dom->addChild(
+        //                    $ibscbs_valores_trib_gdif_inner,
+        //                    'pDifMun',
+        //                    $this->std->infdps->ibscbs->valores->trib->gdif->pdifmun,
+        //                    true
+        //                );
+        //                $this->dom->addChild(
+        //                    $ibscbs_valores_trib_gdif_inner,
+        //                    'pDifCBS',
+        //                    $this->std->infdps->ibscbs->valores->trib->gdif->pdifcbs,
+        //                    true
+        //                );
+        //
+        //                //TODO Fazer grupo gReeRepRes
+        //
+        //
+        //            }
+        //
+        //        }
 
         $dps = $this->dom->createElement('DPS');
         $dps->setAttribute('versao', $this->std->version);
         $dps->setAttribute('xmlns', 'http://www.sped.fazenda.gov.br/nfse');
         $this->dps->appendChild($infdps_inner);
         $this->dom->appendChild($this->dps);
-        /*        return str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $this->dom->saveXML());*/
+
+        /*        return str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $this->dom->saveXML()); */
         return $this->dom->saveXML();
     }
 
-    public function renderEvento(stdClass $std = null)
+    public function renderEvento(?stdClass $std = null)
     {
         if ($this->dom->hasChildNodes()) {
             $this->dom = new Dom('1.0', 'UTF-8');
@@ -1422,7 +1419,6 @@ class Dps implements DpsInterface
             true
         );
 
-
         if (isset($this->std->infpedreg->e101101)) {
             $e101101_inner = $this->dom->createElement('e101101');
             $infpedreg_inner->appendChild($e101101_inner);
@@ -1451,7 +1447,8 @@ class Dps implements DpsInterface
         $dps->setAttribute('xmlns', 'http://www.sped.fazenda.gov.br/nfse');
         $this->evento->appendChild($infpedreg_inner);
         $this->dom->appendChild($this->evento);
-        /*        return str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $this->dom->saveXML());*/
+
+        /*        return str_replace('<?xml version="1.0" encoding="UTF-8"?>', '', $this->dom->saveXML()); */
         return $this->dom->saveXML();
     }
 
@@ -1467,13 +1464,13 @@ class Dps implements DpsInterface
 
     /**
      * Mudar todas proprioedades da stdClass para minúsculas
-     * @param stdClass $data
+     *
      * @return stdClass
      */
     public static function propertiesToLower(stdClass $data)
     {
         $properties = get_object_vars($data);
-        $clone = new stdClass();
+        $clone = new stdClass;
         foreach ($properties as $key => $value) {
             if ($value instanceof stdClass) {
                 $value = self::propertiesToLower($value);
@@ -1481,6 +1478,7 @@ class Dps implements DpsInterface
             $newkey = strtolower($key);
             $clone->{$newkey} = $value;
         }
+
         return $clone;
     }
 
@@ -1520,26 +1518,28 @@ class Dps implements DpsInterface
     private function generateId()
     {
         $string = 'DPS';
-        $string .= substr($this->std->infdps->clocemi, 0, 7); //Cód.Mun. (7) +
-        $string .= isset($this->std->infdps->prest->cnpj) ? 2 : 1; //Tipo de Inscrição Federal (1) +
+        $string .= substr($this->std->infdps->clocemi, 0, 7); // Cód.Mun. (7) +
+        $string .= isset($this->std->infdps->prest->cnpj) ? 2 : 1; // Tipo de Inscrição Federal (1) +
         if (isset($this->std->infdps->prest->cnpj)) {
             $inscricao = $this->std->infdps->prest->cnpj;
         } else {
             $inscricao = $this->std->infdps->prest->cpf;
         }
-        $string .= str_pad($inscricao, 14, 0, STR_PAD_LEFT); //Inscrição Federal (14 - CPF completar com 000 à esquerda) +
-        $string .= str_pad($this->std->infdps->serie, 5, 0, STR_PAD_LEFT); //Série DPS (5) +
-        $string .= str_pad($this->std->infdps->ndps, 15, 0, STR_PAD_LEFT); //Série DPS (5) +
+        $string .= str_pad($inscricao, 14, 0, STR_PAD_LEFT); // Inscrição Federal (14 - CPF completar com 000 à esquerda) +
+        $string .= str_pad($this->std->infdps->serie, 5, 0, STR_PAD_LEFT); // Série DPS (5) +
+        $string .= str_pad($this->std->infdps->ndps, 15, 0, STR_PAD_LEFT); // Série DPS (5) +
         $this->dpsId = $string;
+
         return $string;
     }
 
     private function generatePre()
     {
         $string = 'PRE';
-        $string .= $this->std->infpedreg->chnfse; //Chave de acesso da NFS-e (50) +
-        $string .= $this->codigoEvento(); //Código do evento (6)
+        $string .= $this->std->infpedreg->chnfse; // Chave de acesso da NFS-e (50) +
+        $string .= $this->codigoEvento(); // Código do evento (6)
         $this->preId = $string;
+
         return $string;
     }
 
@@ -1557,5 +1557,4 @@ class Dps implements DpsInterface
 
         return $codigo;
     }
-
 }

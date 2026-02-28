@@ -13,8 +13,7 @@ it('posts json payload to given url', function () {
 
     $response = $client->post('https://example.com/nfse', ['key' => 'value']);
 
-    Http::assertSent(fn (Request $req) =>
-        $req->url() === 'https://example.com/nfse' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://example.com/nfse' &&
         $req->isJson()
     );
 
@@ -58,8 +57,7 @@ it('passes mTLS options and payload to HTTP client', function () {
     // Laravel HTTP fake exposes url, method, headers, and body.
     // Guzzle-level options (cert, ssl_key, verify) cannot be asserted
     // through Http::assertSent -- mTLS is validated by integration tests.
-    Http::assertSent(fn (Request $req) =>
-        $req->url() === 'https://example.com/nfse' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://example.com/nfse' &&
         $req->method() === 'POST' &&
         $req->isJson() &&
         $req['dps'] === 'xml'
@@ -83,6 +81,7 @@ it('throws NfseException and closes first handle when second tmpfile fails', fun
     $factory = Mockery::mock(TempFileFactory::class);
     $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$callCount, $realHandle) {
         $callCount++;
+
         return $callCount === 1 ? $realHandle : false;
     });
 
@@ -99,6 +98,7 @@ it('throws NfseException and closes second handle when first tmpfile fails', fun
     $factory = Mockery::mock(TempFileFactory::class);
     $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$callCount, $realHandle) {
         $callCount++;
+
         return $callCount === 1 ? false : $realHandle;
     });
 

@@ -23,8 +23,8 @@ class XmlSigner
     ) {
         $this->algorithm = match ($signingAlgorithm) {
             'sha256' => OPENSSL_ALGO_SHA256,
-            'sha1'   => OPENSSL_ALGO_SHA1,
-            default  => throw new InvalidArgumentException(sprintf("Algoritmo de assinatura não suportado: %s. Use 'sha1' ou 'sha256'.", $signingAlgorithm)),
+            'sha1' => OPENSSL_ALGO_SHA1,
+            default => throw new InvalidArgumentException(sprintf("Algoritmo de assinatura não suportado: %s. Use 'sha1' ou 'sha256'.", $signingAlgorithm)),
         };
     }
 

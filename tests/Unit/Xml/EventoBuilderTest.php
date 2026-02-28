@@ -5,15 +5,16 @@ use Pulsar\NfseNacional\Xml\Builders\EventoBuilder;
 
 function parseEventoXml(string $xml): DOMXPath
 {
-    $doc = new DOMDocument();
+    $doc = new DOMDocument;
     $doc->loadXML($xml);
     $xpath = new DOMXPath($doc);
     $xpath->registerNamespace('n', 'http://www.sped.fazenda.gov.br/nfse');
+
     return $xpath;
 }
 
 it('builds evento xml for e101101 with all required elements', function () {
-    $builder = new EventoBuilder();
+    $builder = new EventoBuilder;
 
     $xml = $builder->build(
         tpAmb: 2,
@@ -54,7 +55,7 @@ it('builds evento xml for e101101 with all required elements', function () {
 });
 
 it('builds evento xml for e105102 with CPF autor', function () {
-    $builder = new EventoBuilder();
+    $builder = new EventoBuilder;
 
     $xml = $builder->build(
         tpAmb: 2,
