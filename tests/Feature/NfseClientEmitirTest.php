@@ -119,10 +119,25 @@ it('for() falls back to forStandalone when container has no binding', function (
     expect($response->chave)->toBe('STANDALONE_CHAVE');
 })->with('dpsData');
 
-it('emitir succeeds even when event listener throws', function (DpsData $data) {
+it('emitir succeeds and reports error when event listener throws', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_OK'], 200)]);
 
-    // Register a listener that throws
+    $reported = [];
+    $this->app->bind(\Illuminate\Contracts\Debug\ExceptionHandler::class, function () use (&$reported) {
+        return new class($reported) extends \Illuminate\Foundation\Exceptions\Handler {
+            /** @param list<Throwable> $reported */
+            public function __construct(private array &$reported)
+            {
+                parent::__construct(app());
+            }
+
+            public function report(Throwable $e): void
+            {
+                $this->reported[] = $e;
+            }
+        };
+    });
+
     \Illuminate\Support\Facades\Event::listen(
         \Pulsar\NfseNacional\Events\NfseRequested::class,
         function (): never {
@@ -134,4 +149,7 @@ it('emitir succeeds even when event listener throws', function (DpsData $data) {
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
+    expect($reported)->toHaveCount(1);
+    expect($reported[0])->toBeInstanceOf(\RuntimeException::class);
+    expect($reported[0]->getMessage())->toBe('Listener exploded');
 })->with('dpsData');

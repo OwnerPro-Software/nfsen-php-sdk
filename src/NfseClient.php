@@ -109,7 +109,11 @@ class NfseClient implements NfseClientContract
         if (function_exists('event')) {
             try {
                 event($event);
-            } catch (Throwable) {}
+            } catch (Throwable $e) {
+                if (function_exists('report')) {
+                    report($e);
+                }
+            }
         }
     }
 
