@@ -2,18 +2,36 @@
 
 use Pulsar\NfseNacional\DTOs\EventosResponse;
 
-it('stores eventos success response', function () {
-    $eventos = [['tipo' => '101101', 'desc' => 'Cancelamento']];
+it('success response carries eventos array and no erro', function () {
+    $eventos = [
+        ['tpEvento' => '101101', 'descEvento' => 'Cancelamento por Erro', 'dhEvento' => '2026-02-27T10:00:00-03:00'],
+        ['tpEvento' => '105102', 'descEvento' => 'Cancelamento por Substituição', 'dhEvento' => '2026-02-27T11:00:00-03:00'],
+    ];
+
     $response = new EventosResponse(true, $eventos, null);
 
-    expect($response->sucesso)->toBeTrue();
-    expect($response->eventos)->toHaveCount(1);
-    expect($response->erro)->toBeNull();
+    expect($response)
+        ->sucesso->toBeTrue()
+        ->eventos->toHaveCount(2)
+        ->erro->toBeNull();
+    expect($response->eventos[0]['tpEvento'])->toBe('101101');
+    expect($response->eventos[1]['tpEvento'])->toBe('105102');
 });
 
-it('stores eventos empty response', function () {
+it('success response with empty eventos', function () {
     $response = new EventosResponse(true, [], null);
 
-    expect($response->sucesso)->toBeTrue();
-    expect($response->eventos)->toBeEmpty();
+    expect($response)
+        ->sucesso->toBeTrue()
+        ->eventos->toBeEmpty()
+        ->erro->toBeNull();
+});
+
+it('failure response carries erro and empty eventos', function () {
+    $response = new EventosResponse(false, [], 'NFSe não encontrada');
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->eventos->toBeEmpty()
+        ->erro->toBe('NFSe não encontrada');
 });

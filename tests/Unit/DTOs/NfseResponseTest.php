@@ -2,20 +2,41 @@
 
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 
-it('stores a success response', function () {
-    $response = new NfseResponse(true, 'chave123', '<xml/>', null);
+it('success response carries chave and no erro', function () {
+    $response = new NfseResponse(true, 'chave123', '<NFSe/>', null);
 
-    expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe('chave123');
-    expect($response->xml)->toBe('<xml/>');
-    expect($response->erro)->toBeNull();
+    expect($response)
+        ->sucesso->toBeTrue()
+        ->chave->toBe('chave123')
+        ->xml->toBe('<NFSe/>')
+        ->erro->toBeNull();
 });
 
-it('stores a failure response', function () {
+it('failure response carries erro and no chave', function () {
     $response = new NfseResponse(false, null, null, 'E001 - Erro');
 
-    expect($response->sucesso)->toBeFalse();
-    expect($response->chave)->toBeNull();
-    expect($response->xml)->toBeNull();
-    expect($response->erro)->toBe('E001 - Erro');
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->chave->toBeNull()
+        ->xml->toBeNull()
+        ->erro->toBe('E001 - Erro');
+});
+
+it('success response can carry xml with decoded gzip content', function () {
+    $originalXml = '<NFSe xmlns="http://www.sped.fazenda.gov.br/nfse"><infNFSe/></NFSe>';
+    $decoded = gzdecode(base64_decode(base64_encode((string) gzencode($originalXml)))) ?: null;
+
+    $response = new NfseResponse(true, null, $decoded, null);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->xml)->toBe($originalXml);
+});
+
+it('success response without xml has null xml', function () {
+    $response = new NfseResponse(true, 'CHAVE50', null, null);
+
+    expect($response)
+        ->sucesso->toBeTrue()
+        ->chave->toBe('CHAVE50')
+        ->xml->toBeNull();
 });

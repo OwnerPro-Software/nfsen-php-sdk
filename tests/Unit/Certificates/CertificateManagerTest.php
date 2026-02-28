@@ -1,21 +1,40 @@
 <?php
 
 use NFePHP\Common\Certificate;
+use NFePHP\Common\Exception\CertificateException;
 use Pulsar\NfseNacional\Certificates\CertificateManager;
 use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
 
-it('loads certificate from pfx content', function () {
+it('loads certificate from pfx content and exposes it via getter', function () {
     $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/fake.pfx');
 
     $manager = new CertificateManager($pfxContent, 'secret');
 
-    expect($manager->getCertificate())->toBeInstanceOf(Certificate::class);
+    $cert = $manager->getCertificate();
+    expect($cert)->toBeInstanceOf(Certificate::class);
+    expect($cert->isExpired())->toBeFalse();
 });
 
 it('throws CertificateExpiredException for an expired cert', function () {
-    // Usa fixture estática gerada na Task 1 (Step 4c)
     $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/expired.pfx');
 
     expect(fn () => new CertificateManager($pfxContent, 'secret'))
-        ->toThrow(CertificateExpiredException::class);
+        ->toThrow(CertificateExpiredException::class, 'expired');
+});
+
+it('throws CertificateException for wrong password', function () {
+    $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/fake.pfx');
+
+    expect(fn () => new CertificateManager($pfxContent, 'wrong-password'))
+        ->toThrow(CertificateException::class);
+});
+
+it('throws CertificateException for invalid pfx content', function () {
+    expect(fn () => new CertificateManager('not-a-valid-pfx', 'secret'))
+        ->toThrow(CertificateException::class);
+});
+
+it('throws CertificateException for empty pfx content', function () {
+    expect(fn () => new CertificateManager('', 'secret'))
+        ->toThrow(CertificateException::class);
 });

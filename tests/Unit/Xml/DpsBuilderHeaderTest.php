@@ -180,6 +180,7 @@ it('generates correct Id for CNPJ prestador', function (DpsData $data) {
     $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
     $xml     = $builder->build($data);
 
+    // DPS + clocemi(7) + tipo=2(CNPJ) + cnpj(14) + serie(5 padded) + ndps(15 padded)
     expect($xml)->toContain('Id="DPS350160821234567800019500001000000000000001"');
 })->with('dpsData');
 
@@ -214,5 +215,108 @@ it('generates correct Id for CPF prestador', function () {
     $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
     $xml     = $builder->build($data);
 
+    // tipo=1(CPF) + CPF left-padded to 14 digits
     expect($xml)->toContain('Id="DPS350160810001234567890100001000000000000001"');
+});
+
+it('generates Id with max serie and large ndps padding', function () {
+    $infDps           = new stdClass();
+    $infDps->tpamb    = 2;
+    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
+    $infDps->veraplic = '1.0';
+    $infDps->serie    = '99999';
+    $infDps->ndps     = 999999999999999;
+    $infDps->dcompet  = '2026-02-27';
+    $infDps->tpemit   = 1;
+    $infDps->clocemi  = '3501608';
+
+    $prestador        = new stdClass();
+    $prestador->cnpj  = '12345678000195';
+    $regTrib             = new stdClass();
+    $regTrib->opsimpnac  = 1;
+    $regTrib->regesptrib = 0;
+    $prestador->regtrib  = $regTrib;
+
+    $servico                          = new stdClass();
+    $servico->locprest                = new stdClass();
+    $servico->locprest->clocprestacao = '3501608';
+    $servico->cserv                   = new stdClass();
+    $servico->cserv->ctribnac         = '010101';
+    $servico->cserv->xdescserv        = 'Serviço';
+
+    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
+
+    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
+    $xml     = $builder->build($data);
+
+    // serie=99999 (no padding needed), ndps=999999999999999 (no padding needed)
+    expect($xml)->toContain('Id="DPS350160821234567800019599999999999999999999"');
+});
+
+it('generates Id with single-digit serie and ndps left-padded', function () {
+    $infDps           = new stdClass();
+    $infDps->tpamb    = 2;
+    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
+    $infDps->veraplic = '1.0';
+    $infDps->serie    = '1';
+    $infDps->ndps     = 42;
+    $infDps->dcompet  = '2026-02-27';
+    $infDps->tpemit   = 1;
+    $infDps->clocemi  = '3501608';
+
+    $prestador        = new stdClass();
+    $prestador->cnpj  = '12345678000195';
+    $regTrib             = new stdClass();
+    $regTrib->opsimpnac  = 1;
+    $regTrib->regesptrib = 0;
+    $prestador->regtrib  = $regTrib;
+
+    $servico                          = new stdClass();
+    $servico->locprest                = new stdClass();
+    $servico->locprest->clocprestacao = '3501608';
+    $servico->cserv                   = new stdClass();
+    $servico->cserv->ctribnac         = '010101';
+    $servico->cserv->xdescserv        = 'Serviço';
+
+    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
+
+    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
+    $xml     = $builder->build($data);
+
+    // serie padded to 5 → 00001, ndps padded to 15 → 000000000000042
+    expect($xml)->toContain('Id="DPS350160821234567800019500001000000000000042"');
+});
+
+it('generates Id truncating clocemi to 7 chars', function () {
+    $infDps           = new stdClass();
+    $infDps->tpamb    = 2;
+    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
+    $infDps->veraplic = '1.0';
+    $infDps->serie    = '1';
+    $infDps->ndps     = 1;
+    $infDps->dcompet  = '2026-02-27';
+    $infDps->tpemit   = 1;
+    $infDps->clocemi  = '35016089999';
+
+    $prestador        = new stdClass();
+    $prestador->cnpj  = '12345678000195';
+    $regTrib             = new stdClass();
+    $regTrib->opsimpnac  = 1;
+    $regTrib->regesptrib = 0;
+    $prestador->regtrib  = $regTrib;
+
+    $servico                          = new stdClass();
+    $servico->locprest                = new stdClass();
+    $servico->locprest->clocprestacao = '3501608';
+    $servico->cserv                   = new stdClass();
+    $servico->cserv->ctribnac         = '010101';
+    $servico->cserv->xdescserv        = 'Serviço';
+
+    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
+
+    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
+    $xml     = $builder->build($data);
+
+    // Only first 7 chars of clocemi used
+    expect($xml)->toContain('Id="DPS350160821234567800019500001000000000000001"');
 });

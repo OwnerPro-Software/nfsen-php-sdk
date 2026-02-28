@@ -1,8 +1,9 @@
 <?php
 
 use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\Xml\DpsBuilder;
 
-it('stores all groups', function () {
+it('exposes all five groups as readonly properties', function () {
     $infDps    = new stdClass();
     $prestador = new stdClass();
     $tomador   = new stdClass();
@@ -11,9 +12,23 @@ it('stores all groups', function () {
 
     $data = new DpsData($infDps, $prestador, $tomador, $servico, $valores);
 
-    expect($data->infDps)->toBe($infDps);
-    expect($data->prestador)->toBe($prestador);
-    expect($data->tomador)->toBe($tomador);
-    expect($data->servico)->toBe($servico);
-    expect($data->valores)->toBe($valores);
+    expect($data)
+        ->infDps->toBe($infDps)
+        ->prestador->toBe($prestador)
+        ->tomador->toBe($tomador)
+        ->servico->toBe($servico)
+        ->valores->toBe($valores);
 });
+
+it('produces valid XML when passed to DpsBuilder', function (DpsData $data) {
+    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
+    $xml     = $builder->build($data);
+
+    $doc = new DOMDocument();
+    $doc->loadXML($xml);
+
+    expect($doc->getElementsByTagName('DPS')->length)->toBe(1);
+    expect($doc->getElementsByTagName('infDPS')->length)->toBe(1);
+    expect($doc->getElementsByTagName('tpAmb')->item(0)->textContent)->toBe('2');
+    expect($doc->getElementsByTagName('serie')->item(0)->textContent)->toBe('1');
+})->with('dpsData');
