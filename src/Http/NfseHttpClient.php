@@ -7,6 +7,7 @@ namespace Pulsar\NfseNacional\Http;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Exceptions\HttpException;
+use Pulsar\NfseNacional\Exceptions\NfseException;
 
 class NfseHttpClient
 {
@@ -39,6 +40,13 @@ class NfseHttpClient
     {
         $certHandle = tmpfile();
         $keyHandle  = tmpfile();
+
+        // @codeCoverageIgnoreStart
+        if ($certHandle === false || $keyHandle === false) {
+            throw new NfseException('Falha ao criar arquivos temporários para o certificado.');
+        }
+
+        // @codeCoverageIgnoreEnd
 
         try {
             fwrite($certHandle, (string) $this->certificate);

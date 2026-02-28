@@ -94,10 +94,17 @@ class DpsBuilder
         $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;
         $doc = new DOMDocument();
         $doc->loadXML($xmlWithDecl);
-        libxml_use_internal_errors(true);
-        $valid  = $doc->schemaValidate($xsdPath);
-        $errors = libxml_get_errors();
-        libxml_clear_errors();
+
+        $prev = libxml_use_internal_errors(true);
+
+        try {
+            $valid  = $doc->schemaValidate($xsdPath);
+            $errors = libxml_get_errors();
+            libxml_clear_errors();
+        } finally {
+            libxml_use_internal_errors($prev);
+        }
+
         if (!$valid) {
             $messages = array_map(fn (LibXMLError $e): string => trim($e->message), $errors);
             throw new NfseException(

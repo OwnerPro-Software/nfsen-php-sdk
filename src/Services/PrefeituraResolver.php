@@ -40,9 +40,13 @@ class PrefeituraResolver
 
     public function __construct(string $jsonPath)
     {
-        /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> $decoded */
-        $decoded = json_decode(file_get_contents($jsonPath) ?: '{}', true) ?? [];
-        $this->data = self::$cache[$jsonPath] ??= $decoded;
+        if (!isset(self::$cache[$jsonPath])) {
+            /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> $decoded */
+            $decoded = json_decode(file_get_contents($jsonPath) ?: '{}', true) ?? [];
+            self::$cache[$jsonPath] = $decoded;
+        }
+
+        $this->data = self::$cache[$jsonPath];
     }
 
     public static function clearCache(): void
