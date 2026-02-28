@@ -93,6 +93,39 @@ it('dispatches NfseFailed on consultar HttpException', function () {
     Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
 });
 
+it('dispatches NfseRejected on consultar danfse rejection', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => 'E404']]], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client->consultar()->danfse('CHAVE123');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
+    Event::assertNotDispatched(NfseQueried::class);
+});
+
+it('dispatches NfseRejected on consultar eventos rejection', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Eventos não encontrados', 'codigo' => 'E404']]], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client->consultar()->eventos('CHAVE123');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
+    Event::assertNotDispatched(NfseQueried::class);
+});
+
+it('dispatches NfseRejected on executeGetRaw with singular erro field', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['erro' => 'Erro genérico'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client->executeGetRaw('https://fake.url/test');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'UNKNOWN');
+    Event::assertNotDispatched(NfseQueried::class);
+});
+
 it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);

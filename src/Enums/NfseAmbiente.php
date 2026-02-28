@@ -14,7 +14,10 @@ enum NfseAmbiente: int
     public static function fromConfig(int|string $v): self
     {
         if (is_int($v) || ctype_digit($v)) {
-            return self::from((int) $v);
+            return self::tryFrom((int) $v)
+                ?? throw new InvalidArgumentException(
+                    sprintf("Ambiente NFSe inválido: '%s'. Valores aceitos: 1, 2, 'producao', 'homologacao'.", $v)
+                );
         }
 
         return match(strtolower($v)) {

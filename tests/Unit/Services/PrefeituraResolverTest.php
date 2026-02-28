@@ -87,6 +87,23 @@ it('throws InvalidArgumentException for unknown operation', function () use ($js
         ->toThrow(\InvalidArgumentException::class, 'Operação desconhecida');
 });
 
+it('throws InvalidArgumentException for missing json file', function () {
+    expect(fn () => new PrefeituraResolver('/non/existent/path.json'))
+        ->toThrow(\InvalidArgumentException::class, 'não encontrado');
+});
+
+it('throws InvalidArgumentException for invalid json content', function () {
+    $tmpFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
+    file_put_contents($tmpFile, '{ invalid json }');
+
+    try {
+        expect(fn () => new PrefeituraResolver($tmpFile))
+            ->toThrow(\InvalidArgumentException::class, 'JSON inválido');
+    } finally {
+        unlink($tmpFile);
+    }
+});
+
 it('clearCache resets the static cache', function () use ($jsonPath) {
     // Load data into cache
     $resolver = new PrefeituraResolver($jsonPath);

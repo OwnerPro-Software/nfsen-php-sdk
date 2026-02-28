@@ -273,7 +273,7 @@ class NfseClient implements NfseClientContract
                 $xml = $decompressed;
             }
 
-            $this->dispatchEvent(new NfseQueried('nfse'));
+            $this->dispatchEvent(new NfseQueried('consultar'));
             return new NfseResponse(true, null, $xml, null);
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
@@ -301,7 +301,11 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, danfseUrl?: string, eventos?: array<int, array<string, mixed>>} $result */
             $result = $httpClient->get($url);
 
-            $this->dispatchEvent(new NfseQueried($operacao));
+            if (isset($result['erros']) || isset($result['erro'])) {
+                $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? 'UNKNOWN'));
+            } else {
+                $this->dispatchEvent(new NfseQueried($operacao));
+            }
 
             return $result;
         } catch (HttpException $httpException) {

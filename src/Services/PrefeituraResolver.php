@@ -41,8 +41,24 @@ class PrefeituraResolver
     public function __construct(string $jsonPath)
     {
         if (!isset(self::$cache[$jsonPath])) {
+            if (!file_exists($jsonPath)) {
+                throw new InvalidArgumentException(sprintf("Arquivo de prefeituras não encontrado: '%s'.", $jsonPath));
+            }
+
+            $contents = file_get_contents($jsonPath);
+            // @codeCoverageIgnoreStart
+            if ($contents === false) {
+                throw new InvalidArgumentException(sprintf("Falha ao ler arquivo de prefeituras: '%s'.", $jsonPath));
+            }
+
+            // @codeCoverageIgnoreEnd
+
+            $decoded = json_decode($contents, true);
+            if (!is_array($decoded)) {
+                throw new InvalidArgumentException(sprintf("JSON inválido no arquivo de prefeituras: '%s'.", $jsonPath));
+            }
+
             /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> $decoded */
-            $decoded = json_decode(file_get_contents($jsonPath) ?: '{}', true) ?? [];
             self::$cache[$jsonPath] = $decoded;
         }
 
