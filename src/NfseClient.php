@@ -131,7 +131,14 @@ class NfseClient implements NfseClientContract
             $xml     = $this->dpsBuilder->build($data);
             $signer  = new XmlSigner($certificate, $this->signingAlgorithm);
             $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infDPS', 'DPS');
-            $payload = ['dpsXmlGZipB64' => base64_encode((string) gzencode($signed))];
+            $compressed = gzencode($signed);
+            // @codeCoverageIgnoreStart
+            if ($compressed === false) {
+                throw new NfseException('Falha ao comprimir XML.');
+            }
+
+            // @codeCoverageIgnoreEnd
+            $payload = ['dpsXmlGZipB64' => base64_encode($compressed)];
 
             $seFinUrl   = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
             $opPath     = $this->prefeituraResolver->resolveOperation($prefeitura, 'emitir_nfse');
@@ -183,7 +190,14 @@ class NfseClient implements NfseClientContract
 
             $signer  = new XmlSigner($certificate, $this->signingAlgorithm);
             $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infPedReg', 'pedRegEvento');
-            $payload = ['pedidoRegistroEventoXmlGZipB64' => base64_encode((string) gzencode($signed))];
+            $compressed = gzencode($signed);
+            // @codeCoverageIgnoreStart
+            if ($compressed === false) {
+                throw new NfseException('Falha ao comprimir XML.');
+            }
+
+            // @codeCoverageIgnoreEnd
+            $payload = ['pedidoRegistroEventoXmlGZipB64' => base64_encode($compressed)];
 
             $seFinUrl  = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
             $opPath    = $this->prefeituraResolver->resolveOperation(
@@ -241,7 +255,22 @@ class NfseClient implements NfseClientContract
             $xml = null;
             $gzipB64 = $result['nfseXmlGZipB64'] ?? $result['dpsXmlGZipB64'] ?? null;
             if ($gzipB64) {
-                $xml = gzdecode(base64_decode($gzipB64)) ?: null;
+                $decoded = base64_decode($gzipB64, true);
+                if ($decoded === false) {
+                    throw new NfseException('Falha ao decodificar base64 do XML.');
+                }
+
+                try {
+                    $decompressed = gzdecode($decoded);
+                } catch (Throwable) {
+                    $decompressed = false;
+                }
+
+                if ($decompressed === false) {
+                    throw new NfseException('Falha ao descomprimir XML.');
+                }
+
+                $xml = $decompressed;
             }
 
             $this->dispatchEvent(new NfseQueried('nfse'));

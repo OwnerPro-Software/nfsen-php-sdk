@@ -123,6 +123,24 @@ it('consultar throws NfseException when client is not configured', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'não configurado');
 });
 
+it('consultar()->nfse throws NfseException on invalid base64 response', function () {
+    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => '!!!invalid-base64!!!'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->nfse('CHAVE123'))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'base64');
+});
+
+it('consultar()->nfse throws NfseException on invalid gzip response', function () {
+    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => base64_encode('not-gzip-data')], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->nfse('CHAVE123'))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'descomprimir');
+});
+
 it('consultar()->danfse uses Santa Ana de Parnaiba custom operation path', function () {
     Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/PDF'], 200)]);
 
