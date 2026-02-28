@@ -19,6 +19,7 @@ it('cancelar returns success NfseResponse', function () {
     );
 
     expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE50CARACTERES1234567890123456789012345678901');
 });
 
 it('cancelar returns rejection NfseResponse on erro field', function () {

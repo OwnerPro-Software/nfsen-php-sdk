@@ -37,7 +37,7 @@ it('calls executeGet with nfse url for nfse query', function () {
     $response = $builder->nfse('CHAVE123');
 
     expect($response->sucesso)->toBeTrue();
-    expect($fakeClient->calls[0])->toContain('nfse/CHAVE123');
+    expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/CHAVE123');
 });
 
 it('calls executeGet with dps url', function () {
@@ -46,7 +46,7 @@ it('calls executeGet with dps url', function () {
 
     $builder->dps('CHAVE456');
 
-    expect($fakeClient->calls[0])->toContain('dps/CHAVE456');
+    expect($fakeClient->calls[0])->toBe('https://sefin.base/dps/CHAVE456');
 });
 
 it('danfse returns failure when erros key present', function () {
