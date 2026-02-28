@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use stdClass;
 
-class TomadorBuilder
+final class TomadorBuilder
 {
     public function build(DOMDocument $doc, stdClass $toma): DOMElement
     {

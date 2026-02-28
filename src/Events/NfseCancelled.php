@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Events;
 
-class NfseCancelled
+final readonly class NfseCancelled
 {
     public function __construct(
-        public readonly string $chave,
+        public string $chave,
     ) {}
 }

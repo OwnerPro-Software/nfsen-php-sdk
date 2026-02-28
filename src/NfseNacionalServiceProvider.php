@@ -11,7 +11,7 @@ use Pulsar\NfseNacional\Services\PrefeituraResolver;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 use RuntimeException;
 
-class NfseNacionalServiceProvider extends ServiceProvider
+final class NfseNacionalServiceProvider extends ServiceProvider
 {
     public function register(): void
     {

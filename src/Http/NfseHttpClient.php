@@ -10,13 +10,13 @@ use Pulsar\NfseNacional\Exceptions\HttpException;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\TempFileFactory;
 
-class NfseHttpClient
+final readonly class NfseHttpClient
 {
     public function __construct(
-        private readonly Certificate $certificate,
-        private readonly int $timeout = 30,
-        private readonly bool $sslVerify = true,
-        private readonly TempFileFactory $tempFileFactory = new TempFileFactory,
+        private Certificate $certificate,
+        private int $timeout = 30,
+        private bool $sslVerify = true,
+        private TempFileFactory $tempFileFactory = new TempFileFactory,
     ) {}
 
     /**

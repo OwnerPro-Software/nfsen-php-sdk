@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Events;
 
-class NfseRejected
+final readonly class NfseRejected
 {
     public function __construct(
-        public readonly string $operacao,
-        public readonly string $codigoErro,
+        public string $operacao,
+        public string $codigoErro,
     ) {}
 }

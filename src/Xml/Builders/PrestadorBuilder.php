@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use stdClass;
 
-class PrestadorBuilder
+final class PrestadorBuilder
 {
     public function build(DOMDocument $doc, stdClass $prest): DOMElement
     {

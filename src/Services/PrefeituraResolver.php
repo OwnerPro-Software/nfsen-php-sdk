@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Support\FileReader;
 
-class PrefeituraResolver
+final class PrefeituraResolver
 {
     /**
      * Cache estático por path — evita re-leitura em lote.

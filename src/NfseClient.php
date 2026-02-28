@@ -28,7 +28,7 @@ use Pulsar\NfseNacional\Xml\Builders\EventoBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 use Throwable;
 
-class NfseClient implements NfseClientContract
+final class NfseClient implements NfseClientContract
 {
     private ?CertificateManager $certManager = null;
 
@@ -49,12 +49,12 @@ class NfseClient implements NfseClientContract
     public static function for(string $pfxContent, string $senha, string $prefeitura): self
     {
         if (class_exists(Container::class)
-            && Container::getInstance()->bound(static::class)
+            && Container::getInstance()->bound(self::class)
         ) {
-            return app(static::class)->configure($pfxContent, $senha, $prefeitura);
+            return app(self::class)->configure($pfxContent, $senha, $prefeitura);
         }
 
-        return static::forStandalone($pfxContent, $senha, $prefeitura);
+        return self::forStandalone($pfxContent, $senha, $prefeitura);
     }
 
     public static function forStandalone(

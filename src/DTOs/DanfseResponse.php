@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\DTOs;
 
-readonly class DanfseResponse
+final readonly class DanfseResponse
 {
     public function __construct(
         public bool $sucesso,

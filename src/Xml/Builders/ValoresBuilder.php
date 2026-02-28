@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use stdClass;
 
-class ValoresBuilder
+final class ValoresBuilder
 {
     public function build(DOMDocument $doc, stdClass $valores): DOMElement
     {

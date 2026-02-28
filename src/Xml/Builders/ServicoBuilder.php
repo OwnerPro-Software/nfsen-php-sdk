@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use stdClass;
 
-class ServicoBuilder
+final class ServicoBuilder
 {
     public function build(DOMDocument $doc, stdClass $serv): DOMElement
     {

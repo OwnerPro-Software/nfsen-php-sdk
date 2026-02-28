@@ -15,15 +15,15 @@ use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 
-class DpsBuilder
+final readonly class DpsBuilder
 {
     private const VERSION = '1.01';
 
     private const XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function __construct(
-        private readonly string $schemesPath,
-        private readonly XmlDocumentLoader $xmlDocumentLoader = new XmlDocumentLoader,
+        private string $schemesPath,
+        private XmlDocumentLoader $xmlDocumentLoader = new XmlDocumentLoader,
     ) {}
 
     public function buildAndValidate(DpsData $data): string

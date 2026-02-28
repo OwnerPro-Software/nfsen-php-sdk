@@ -7,9 +7,9 @@ namespace Pulsar\NfseNacional\Certificates;
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
 
-class CertificateManager
+final readonly class CertificateManager
 {
-    private readonly Certificate $certificate;
+    private Certificate $certificate;
 
     public function __construct(string $pfxContent, string $password)
     {

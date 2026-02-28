@@ -8,7 +8,7 @@ use InvalidArgumentException;
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Signer;
 
-class XmlSigner
+final class XmlSigner
 {
     private readonly int $algorithm;
 

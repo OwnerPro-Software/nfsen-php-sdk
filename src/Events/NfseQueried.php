@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Events;
 
-class NfseQueried
+final readonly class NfseQueried
 {
     public function __construct(
-        public readonly string $operacao,
+        public string $operacao,
     ) {}
 }

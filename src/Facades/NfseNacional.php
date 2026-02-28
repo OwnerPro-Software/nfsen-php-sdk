@@ -10,7 +10,7 @@ use Pulsar\NfseNacional\NfseClient;
 /**
  * @method static NfseClient for(string $pfxContent, string $senha, string $prefeitura)
  */
-class NfseNacional extends Facade
+final class NfseNacional extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

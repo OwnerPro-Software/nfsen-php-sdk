@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\DTOs;
 
 use stdClass;
 
-readonly class DpsData
+final readonly class DpsData
 {
     public function __construct(
         public stdClass $infDps,

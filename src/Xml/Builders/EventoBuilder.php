@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use Pulsar\NfseNacional\Enums\MotivoCancelamento;
 
-class EventoBuilder
+final class EventoBuilder
 {
     private const VERSION = '1.01';
 
