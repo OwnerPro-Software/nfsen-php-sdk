@@ -39,7 +39,7 @@ final readonly class ConsultaBuilder
 
         $result = $this->client->executeGetRaw($this->buildUrl($baseUrl, $path));
 
-        if (isset($result['erros']) || isset($result['erro'])) {
+        if (!empty($result['erros']) || isset($result['erro'])) {
             $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
             return new DanfseResponse(false, null, $erro);
         }
@@ -57,7 +57,7 @@ final readonly class ConsultaBuilder
 
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
-        if (isset($result['erros']) || isset($result['erro'])) {
+        if (!empty($result['erros']) || isset($result['erro'])) {
             $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
             return new EventosResponse(false, [], $erro);
         }

@@ -147,7 +147,7 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, chNFSe?: string} $result */
             $result = $httpClient->post($url, $payload);
 
-            if (isset($result['erros']) || isset($result['erro'])) {
+            if (!empty($result['erros']) || isset($result['erro'])) {
                 $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Rejeição sem descrição';
                 $codigo = $result['erros'][0]['codigo'] ?? 'UNKNOWN';
                 $this->dispatchEvent(new NfseRejected($operacao, $codigo));
@@ -206,7 +206,7 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string} $result */
             $result = $httpClient->post($url, $payload);
 
-            if (isset($result['erros']) || isset($result['erro'])) {
+            if (!empty($result['erros']) || isset($result['erro'])) {
                 $erro   = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Rejeição';
                 $codigo = $result['erros'][0]['codigo'] ?? 'UNKNOWN';
                 $this->dispatchEvent(new NfseRejected($operacao, $codigo));
@@ -244,7 +244,7 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, nfseXmlGZipB64?: string, dpsXmlGZipB64?: string} $result */
             $result = $httpClient->get($url);
 
-            if (isset($result['erros']) || isset($result['erro'])) {
+            if (!empty($result['erros']) || isset($result['erro'])) {
                 $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
                 $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? 'UNKNOWN'));
                 return new NfseResponse(false, null, null, $erro);
@@ -299,7 +299,7 @@ class NfseClient implements NfseClientContract
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, danfseUrl?: string, eventos?: array<int, array<string, mixed>>} $result */
             $result = $httpClient->get($url);
 
-            if (isset($result['erros']) || isset($result['erro'])) {
+            if (!empty($result['erros']) || isset($result['erro'])) {
                 $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? 'UNKNOWN'));
             } else {
                 $this->dispatchEvent(new NfseQueried($operacao));
