@@ -97,6 +97,15 @@ it('executeGetRaw throws HttpException on server error', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
+it('consultar()->eventos throws HttpException on server error', function () {
+    Http::fake(['*' => Http::response('Server Error', 500)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->eventos('CHAVE123'))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+});
+
 it('consultar throws NfseException when client is not configured', function () {
     $resolver   = new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json');
     $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__ . '/../../storage/schemes');

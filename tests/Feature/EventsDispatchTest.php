@@ -66,6 +66,33 @@ it('dispatches NfseRejected on cancelar rejection', function () {
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
 });
 
+it('dispatches NfseRequested and NfseQueried on consultar danfse', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/CHAVE123'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client->consultar()->danfse('CHAVE123');
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
+    Event::assertDispatched(NfseQueried::class);
+});
+
+it('dispatches NfseFailed on consultar HttpException', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response('Server Error', 500)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->consultar()->nfse('CHAVE123');
+    } catch (\Pulsar\NfseNacional\Exceptions\HttpException) {
+        // expected
+    }
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
+});
+
 it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);

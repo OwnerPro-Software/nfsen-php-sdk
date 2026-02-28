@@ -199,6 +199,16 @@ it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function 
     );
 })->with('dpsData');
 
+it('emitir returns rejection with singular erro field', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['erro' => 'Erro genérico na emissão'], 200)]);
+
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erro)->toBe('Erro genérico na emissão');
+})->with('dpsData');
+
 it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_PROD'], 200)]);
 
