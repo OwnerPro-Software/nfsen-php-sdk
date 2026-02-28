@@ -15,31 +15,31 @@ class PrestadorBuilder
         $el = $doc->createElement('prest');
 
         if (isset($prest->cnpj)) {
-            $el->appendChild($doc->createElement('CNPJ', $prest->cnpj));
+            $el->appendChild($this->text($doc, 'CNPJ', $prest->cnpj));
         }
 
         if (isset($prest->cpf)) {
-            $el->appendChild($doc->createElement('CPF', $prest->cpf));
+            $el->appendChild($this->text($doc, 'CPF', $prest->cpf));
         }
 
         if (isset($prest->nif)) {
-            $el->appendChild($doc->createElement('NIF', $prest->nif));
+            $el->appendChild($this->text($doc, 'NIF', $prest->nif));
         }
 
         if (isset($prest->cnaonif)) {
-            $el->appendChild($doc->createElement('cNaoNIF', $prest->cnaonif));
+            $el->appendChild($this->text($doc, 'cNaoNIF', $prest->cnaonif));
         }
 
         if (isset($prest->caepf)) {
-            $el->appendChild($doc->createElement('CAEPF', $prest->caepf));
+            $el->appendChild($this->text($doc, 'CAEPF', $prest->caepf));
         }
 
         if (isset($prest->im)) {
-            $el->appendChild($doc->createElement('IM', $prest->im));
+            $el->appendChild($this->text($doc, 'IM', $prest->im));
         }
 
         if (isset($prest->xnome)) {
-            $el->appendChild($doc->createElement('xNome', $prest->xnome));
+            $el->appendChild($this->text($doc, 'xNome', $prest->xnome));
         }
 
         if (isset($prest->end)) {
@@ -47,20 +47,20 @@ class PrestadorBuilder
         }
 
         if (isset($prest->fone)) {
-            $el->appendChild($doc->createElement('fone', $prest->fone));
+            $el->appendChild($this->text($doc, 'fone', $prest->fone));
         }
 
         if (isset($prest->email)) {
-            $el->appendChild($doc->createElement('email', $prest->email));
+            $el->appendChild($this->text($doc, 'email', $prest->email));
         }
 
         $regTrib = $doc->createElement('regTrib');
-        $regTrib->appendChild($doc->createElement('opSimpNac', (string) $prest->regtrib->opsimpnac));
+        $regTrib->appendChild($this->text($doc, 'opSimpNac', (string) $prest->regtrib->opsimpnac));
         if (isset($prest->regtrib->regaptribsn)) {
-            $regTrib->appendChild($doc->createElement('regApTribSN', (string) $prest->regtrib->regaptribsn));
+            $regTrib->appendChild($this->text($doc, 'regApTribSN', (string) $prest->regtrib->regaptribsn));
         }
 
-        $regTrib->appendChild($doc->createElement('regEspTrib', (string) $prest->regtrib->regesptrib));
+        $regTrib->appendChild($this->text($doc, 'regEspTrib', (string) $prest->regtrib->regesptrib));
         $el->appendChild($regTrib);
 
         return $el;
@@ -71,25 +71,33 @@ class PrestadorBuilder
         $el = $doc->createElement('end');
         if (isset($end->endnac)) {
             $endNac = $doc->createElement('endNac');
-            $endNac->appendChild($doc->createElement('cMun', $end->endnac->cmun));
-            $endNac->appendChild($doc->createElement('CEP', $end->endnac->cep));
+            $endNac->appendChild($this->text($doc, 'cMun', $end->endnac->cmun));
+            $endNac->appendChild($this->text($doc, 'CEP', $end->endnac->cep));
             $el->appendChild($endNac);
         } elseif (isset($end->endext)) {
             $endExt = $doc->createElement('endExt');
-            $endExt->appendChild($doc->createElement('cPais', $end->endext->cpais));
-            $endExt->appendChild($doc->createElement('cEndPost', $end->endext->cendpost));
-            $endExt->appendChild($doc->createElement('xCidade', $end->endext->xcidade));
-            $endExt->appendChild($doc->createElement('xEstProvReg', $end->endext->xestprovreg));
+            $endExt->appendChild($this->text($doc, 'cPais', $end->endext->cpais));
+            $endExt->appendChild($this->text($doc, 'cEndPost', $end->endext->cendpost));
+            $endExt->appendChild($this->text($doc, 'xCidade', $end->endext->xcidade));
+            $endExt->appendChild($this->text($doc, 'xEstProvReg', $end->endext->xestprovreg));
             $el->appendChild($endExt);
         }
 
-        $el->appendChild($doc->createElement('xLgr', $end->xlgr));
-        $el->appendChild($doc->createElement('nro', $end->nro));
+        $el->appendChild($this->text($doc, 'xLgr', $end->xlgr));
+        $el->appendChild($this->text($doc, 'nro', $end->nro));
         if (isset($end->xcpl)) {
-            $el->appendChild($doc->createElement('xCpl', $end->xcpl));
+            $el->appendChild($this->text($doc, 'xCpl', $end->xcpl));
         }
 
-        $el->appendChild($doc->createElement('xBairro', $end->xbairro));
+        $el->appendChild($this->text($doc, 'xBairro', $end->xbairro));
+        return $el;
+    }
+
+    private function text(DOMDocument $doc, string $name, string $value): DOMElement
+    {
+        $el = $doc->createElement($name);
+        $el->appendChild($doc->createTextNode($value));
+
         return $el;
     }
 }

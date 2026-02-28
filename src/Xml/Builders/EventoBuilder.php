@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
+use DOMElement;
 use Pulsar\NfseNacional\Enums\MotivoCancelamento;
 
 class EventoBuilder
@@ -34,17 +35,17 @@ class EventoBuilder
         $infPedReg = $doc->createElement('infPedReg');
         $infPedReg->setAttribute('Id', $this->generateId($chNFSe, $motivo));
 
-        $infPedReg->appendChild($doc->createElement('tpAmb', (string) $tpAmb));
-        $infPedReg->appendChild($doc->createElement('verAplic', $verAplic));
-        $infPedReg->appendChild($doc->createElement('dhEvento', $dhEvento));
+        $infPedReg->appendChild($this->text($doc, 'tpAmb', (string) $tpAmb));
+        $infPedReg->appendChild($this->text($doc, 'verAplic', $verAplic));
+        $infPedReg->appendChild($this->text($doc, 'dhEvento', $dhEvento));
 
         if ($cnpjAutor !== null) {
-            $infPedReg->appendChild($doc->createElement('CNPJAutor', $cnpjAutor));
+            $infPedReg->appendChild($this->text($doc, 'CNPJAutor', $cnpjAutor));
         } elseif ($cpfAutor !== null) {
-            $infPedReg->appendChild($doc->createElement('CPFAutor', $cpfAutor));
+            $infPedReg->appendChild($this->text($doc, 'CPFAutor', $cpfAutor));
         }
 
-        $infPedReg->appendChild($doc->createElement('chNFSe', $chNFSe));
+        $infPedReg->appendChild($this->text($doc, 'chNFSe', $chNFSe));
 
         $xDesc = match ($motivo) {
             MotivoCancelamento::ErroEmissao => 'Cancelamento de NFS-e',
@@ -52,9 +53,9 @@ class EventoBuilder
         };
 
         $motivoEl = $doc->createElement($motivo->value);
-        $motivoEl->appendChild($doc->createElement('xDesc', $xDesc));
-        $motivoEl->appendChild($doc->createElement('cMotivo', $motivo->value));
-        $motivoEl->appendChild($doc->createElement('xMotivo', $descricao));
+        $motivoEl->appendChild($this->text($doc, 'xDesc', $xDesc));
+        $motivoEl->appendChild($this->text($doc, 'cMotivo', $motivo->value));
+        $motivoEl->appendChild($this->text($doc, 'xMotivo', $descricao));
 
         $infPedReg->appendChild($motivoEl);
 
@@ -68,5 +69,13 @@ class EventoBuilder
     {
         $codigo = $motivo === MotivoCancelamento::ErroEmissao ? '101101' : '105102';
         return 'PRE' . $chNFSe . $codigo;
+    }
+
+    private function text(DOMDocument $doc, string $name, string $value): DOMElement
+    {
+        $el = $doc->createElement($name);
+        $el->appendChild($doc->createTextNode($value));
+
+        return $el;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
+use DOMElement;
 use LibXMLError;
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Exceptions\NfseException;
@@ -46,22 +47,22 @@ class DpsBuilder
         $infDps->setAttribute('Id', $this->generateId($data));
 
         $d = $data->infDps;
-        $infDps->appendChild($doc->createElement('tpAmb',    (string) $d->tpamb));
-        $infDps->appendChild($doc->createElement('dhEmi',    $d->dhemi));
-        $infDps->appendChild($doc->createElement('verAplic', $d->veraplic));
-        $infDps->appendChild($doc->createElement('serie',    $d->serie));
-        $infDps->appendChild($doc->createElement('nDPS',     (string) $d->ndps));
-        $infDps->appendChild($doc->createElement('dCompet',  $d->dcompet));
-        $infDps->appendChild($doc->createElement('tpEmit',   (string) $d->tpemit));
+        $infDps->appendChild($this->text($doc, 'tpAmb',    (string) $d->tpamb));
+        $infDps->appendChild($this->text($doc, 'dhEmi',    $d->dhemi));
+        $infDps->appendChild($this->text($doc, 'verAplic', $d->veraplic));
+        $infDps->appendChild($this->text($doc, 'serie',    $d->serie));
+        $infDps->appendChild($this->text($doc, 'nDPS',     (string) $d->ndps));
+        $infDps->appendChild($this->text($doc, 'dCompet',  $d->dcompet));
+        $infDps->appendChild($this->text($doc, 'tpEmit',   (string) $d->tpemit));
         if (isset($d->cmotivoemisti)) {
-            $infDps->appendChild($doc->createElement('cMotivoEmisTI', $d->cmotivoemisti));
+            $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cmotivoemisti));
         }
 
         if (isset($d->chnfserej)) {
-            $infDps->appendChild($doc->createElement('chNFSeRej', $d->chnfserej));
+            $infDps->appendChild($this->text($doc, 'chNFSeRej', $d->chnfserej));
         }
 
-        $infDps->appendChild($doc->createElement('cLocEmi', $d->clocemi));
+        $infDps->appendChild($this->text($doc, 'cLocEmi', $d->clocemi));
 
         if ((array) $data->prestador !== []) {
             $infDps->appendChild((new PrestadorBuilder())->build($doc, $data->prestador));
@@ -129,5 +130,13 @@ class DpsBuilder
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
         $id .= str_pad((string) $d->serie, 5, '0', STR_PAD_LEFT);
         return $id . str_pad((string) $d->ndps, 15, '0', STR_PAD_LEFT);
+    }
+
+    private function text(DOMDocument $doc, string $name, string $value): DOMElement
+    {
+        $el = $doc->createElement($name);
+        $el->appendChild($doc->createTextNode($value));
+
+        return $el;
     }
 }
