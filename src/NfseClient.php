@@ -180,6 +180,10 @@ class NfseClient implements NfseClientContract
             $cnpj = $certificate->getCnpj() ?: null;
             $cpf  = $certificate->getCpf() ?: null;
 
+            if ($cnpj === null && $cpf === null) {
+                throw new NfseException('Certificado não contém CNPJ nem CPF. É necessário ao menos um para cancelar a NFS-e.');
+            }
+
             $xml = (new EventoBuilder())->build(
                 tpAmb:     $this->ambiente->value,
                 verAplic:  '1.0',

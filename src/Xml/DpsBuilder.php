@@ -91,7 +91,7 @@ class DpsBuilder
     {
         $xsdPath = $this->schemesPath . '/DPS_v1.01.xsd';
         if (!file_exists($xsdPath)) {
-            return;
+            throw new NfseException('Schema XSD não encontrado: ' . $xsdPath);
         }
 
         $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;

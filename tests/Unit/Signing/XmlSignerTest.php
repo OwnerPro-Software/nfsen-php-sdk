@@ -70,16 +70,11 @@ it('defaults to sha1 when no algorithm is specified', function () {
     expect($signatureMethod->getAttribute('Algorithm'))->toContain('sha1');
 });
 
-it('falls back to sha1 for unrecognized algorithm string', function () {
-    $cert   = makeTestCertificate();
-    $signer = new XmlSigner($cert, 'md5');
+it('throws InvalidArgumentException for unrecognized algorithm string', function () {
+    $cert = makeTestCertificate();
 
-    $signed = $signer->sign(makeTestXml(), 'infDPS', 'DPS');
-    $doc    = parseSignedXml($signed);
-    $dsNs   = 'http://www.w3.org/2000/09/xmldsig#';
-
-    $signatureMethod = $doc->getElementsByTagNameNS($dsNs, 'SignatureMethod')->item(0);
-    expect($signatureMethod->getAttribute('Algorithm'))->toContain('sha1');
+    expect(fn () => new XmlSigner($cert, 'md5'))
+        ->toThrow(InvalidArgumentException::class, 'Algoritmo de assinatura não suportado: md5');
 });
 
 it('includes KeyInfo with X509Certificate element', function () {

@@ -94,11 +94,11 @@ it('includes toma element as child of infDPS when tomador has data', function ()
     expect($xpath->query('n:xNome', $toma)->item(0)->textContent)->toBe('Tomador Ltda');
 });
 
-it('skips XSD validation when scheme file does not exist', function (DpsData $data) {
+it('throws NfseException when scheme file does not exist', function (DpsData $data) {
     $builder = new DpsBuilder('/nonexistent/path');
-    $xml     = $builder->buildAndValidate($data);
 
-    expect($xml)->toContain('<DPS ');
+    expect(fn () => $builder->buildAndValidate($data))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'Schema XSD não encontrado');
 })->with('dpsData');
 
 it('throws NfseException on invalid XSD', function () {

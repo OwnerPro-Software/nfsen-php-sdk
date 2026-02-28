@@ -60,7 +60,7 @@ it('cancelar returns rejection NfseResponse on erro field', function () {
 it('cancelar returns rejection NfseResponse on singular erro field', function () {
     Http::fake(['*' => Http::response(['erro' => 'Operação não permitida'], 200)]);
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client   = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
         MotivoCancelamento::ErroEmissao,
@@ -71,26 +71,22 @@ it('cancelar returns rejection NfseResponse on singular erro field', function ()
     expect($response->erro)->toBe('Operação não permitida');
 });
 
-it('cancelar works with cert without ICP-Brasil OID', function () {
-    Http::fake(['*' => Http::response(
-        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/cancelar_sucesso.json'), true),
-        200
-    )]);
+it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {
+    Http::fake(['*' => Http::response([], 200)]);
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->cancelar(
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
         MotivoCancelamento::ErroEmissao,
         'Erro ao emitir'
-    );
-
-    expect($response->sucesso)->toBeTrue();
+    ))->toThrow(NfseException::class, 'Certificado não contém CNPJ nem CPF');
 });
 
 it('cancelar throws HttpException on server error', function () {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
@@ -128,7 +124,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
         }
     );
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client   = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',
         MotivoCancelamento::ErroEmissao,
@@ -144,7 +140,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
 it('cancelar uses Americana custom URL without operation path', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_AM'], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
     $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
 
     Http::assertSent(fn (Request $req) =>
@@ -156,7 +152,7 @@ it('cancelar uses Americana custom URL without operation path', function () {
 it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_SP'], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '3547304');
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3547304');
     $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
 
     Http::assertSent(fn (Request $req) =>
@@ -180,7 +176,7 @@ it('cancelar throws NfseException when gzip compression fails', function () {
         dpsBuilder:         new DpsBuilder(__DIR__ . '/../../storage/schemes'),
         gzipCompressor:     $compressor,
     );
-    $client->configure(makePfxContent(), 'secret', '9999999');
+    $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
         'CHAVE50CARACTERES1234567890123456789012345678901',

@@ -8,6 +8,11 @@ function makePfxContent(): string
     return file_get_contents(__DIR__ . '/fixtures/certs/fake.pfx');
 }
 
+function makeIcpBrPfxContent(): string
+{
+    return file_get_contents(__DIR__ . '/fixtures/certs/fake-icpbr.pfx');
+}
+
 function makeTestCertificate(): Certificate
 {
     return (new CertificateManager(makePfxContent(), 'secret'))->getCertificate();

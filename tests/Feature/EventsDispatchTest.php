@@ -59,7 +59,7 @@ it('dispatches NfseRejected on cancelar rejection', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'cancelar');
@@ -170,7 +170,7 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
         dpsBuilder:         new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__ . '/../../storage/schemes'),
         gzipCompressor:     $compressor,
     );
-    $client->configure(makePfxContent(), 'secret', '9999999');
+    $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
 
     try {
         $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
