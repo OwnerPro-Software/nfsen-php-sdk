@@ -18,8 +18,8 @@ it('builds evento xml for e101101', function () {
     );
 
     expect($xml)->toContain('<pedRegEvento');
-    expect($xml)->toContain('<infPedReg Id="PRE');
-    expect($xml)->toContain('<chNFSe>');
+    expect($xml)->toContain('<infPedReg Id="PRECHAVE50CARACTERES1234567890123456789012345678901101101"');
+    expect($xml)->toContain('<chNFSe>CHAVE50CARACTERES1234567890123456789012345678901</chNFSe>');
     expect($xml)->toContain('<e101101>');
     expect($xml)->toContain('<xDesc>Cancelamento de NFS-e</xDesc>');
     expect($xml)->toContain('<cMotivo>e101101</cMotivo>');
@@ -40,6 +40,8 @@ it('builds evento xml for e105102', function () {
         descricao: 'Motivo diverso',
     );
 
+    expect($xml)->toContain('<infPedReg Id="PRECHAVE50CARACTERES1234567890123456789012345678901105102"');
     expect($xml)->toContain('<e105102>');
+    expect($xml)->toContain('<xDesc>Cancelamento de NFS-e por Substituicao</xDesc>');
     expect($xml)->toContain('<CPFAutor>12345678901</CPFAutor>');
 });
