@@ -160,6 +160,9 @@ class NfseClient implements NfseClientContract
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;
+        } catch (Throwable $e) {
+            $this->dispatchEvent(new NfseFailed($operacao, $e->getMessage()));
+            throw $e;
         }
     }
 
@@ -218,6 +221,9 @@ class NfseClient implements NfseClientContract
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;
+        } catch (Throwable $e) {
+            $this->dispatchEvent(new NfseFailed($operacao, $e->getMessage()));
+            throw $e;
         }
     }
 
@@ -276,6 +282,9 @@ class NfseClient implements NfseClientContract
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;
+        } catch (Throwable $e) {
+            $this->dispatchEvent(new NfseFailed($operacao, $e->getMessage()));
+            throw $e;
         }
     }
 
@@ -309,6 +318,9 @@ class NfseClient implements NfseClientContract
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;
+        } catch (Throwable $e) {
+            $this->dispatchEvent(new NfseFailed($operacao, $e->getMessage()));
+            throw $e;
         }
     }
 }

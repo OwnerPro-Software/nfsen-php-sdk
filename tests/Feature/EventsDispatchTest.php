@@ -126,6 +126,96 @@ it('dispatches NfseRejected on executeGetRaw with singular erro field', function
     Event::assertNotDispatched(NfseQueried::class);
 });
 
+it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
+    Event::fake();
+    Http::fake(['*' => Http::response(['chNFSe' => 'X'], 200)]);
+
+    $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
+    $compressor->shouldReceive('__invoke')->andReturn(false);
+
+    $client = new NfseClient(
+        ambiente:           \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
+        timeout:            30,
+        signingAlgorithm:   'sha1',
+        sslVerify:          true,
+        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json'),
+        dpsBuilder:         new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__ . '/../../storage/schemes'),
+        gzipCompressor:     $compressor,
+    );
+    $client->configure(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->emitir($data);
+    } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
+        // expected
+    }
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'emitir');
+})->with('dpsData');
+
+it('dispatches NfseFailed on cancelar NfseException', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['chNFSe' => 'X'], 200)]);
+
+    $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
+    $compressor->shouldReceive('__invoke')->andReturn(false);
+
+    $client = new NfseClient(
+        ambiente:           \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
+        timeout:            30,
+        signingAlgorithm:   'sha1',
+        sslVerify:          true,
+        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json'),
+        dpsBuilder:         new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__ . '/../../storage/schemes'),
+        gzipCompressor:     $compressor,
+    );
+    $client->configure(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+    } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
+        // expected
+    }
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'cancelar');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'cancelar');
+});
+
+it('dispatches NfseFailed on consultar NfseException', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => '!!!invalid-base64!!!'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->consultar()->nfse('CHAVE123');
+    } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
+        // expected
+    }
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
+});
+
+it('dispatches NfseFailed on executeGetRaw non-HTTP exception', function () {
+    Event::fake();
+    Http::fake(['*' => function (): never {
+        throw new \RuntimeException('Connection reset');
+    }]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->executeGetRaw('https://fake.url/test');
+    } catch (\RuntimeException) {
+        // expected
+    }
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
+});
+
 it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);
