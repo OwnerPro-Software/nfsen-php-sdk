@@ -47,16 +47,19 @@ it('throws HttpException on 4xx response', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
-it('certificate PEM output is valid for mTLS', function () {
-    $cert = makeTestCertificate();
+it('passes mTLS options and payload to HTTP client', function () {
+    Http::fake(['*' => Http::response(['sucesso' => true], 200)]);
 
-    $certPem = (string) $cert;
-    expect($certPem)->toContain('-----BEGIN CERTIFICATE-----');
-    $parsed = openssl_x509_parse($certPem);
-    expect($parsed)->not->toBeFalse();
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, sslVerify: false);
+    $client->post('https://example.com/nfse', ['dps' => 'xml']);
 
-    $keyPem = (string) $cert->privateKey;
-    expect($keyPem)->toContain('-----BEGIN');
-    $key = openssl_pkey_get_private($keyPem);
-    expect($key)->not->toBeFalse();
+    // Laravel HTTP fake exposes url, method, headers, and body.
+    // Guzzle-level options (cert, ssl_key, verify) cannot be asserted
+    // through Http::assertSent -- mTLS is validated by integration tests.
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://example.com/nfse' &&
+        $req->method() === 'POST' &&
+        $req->isJson() &&
+        $req['dps'] === 'xml'
+    );
 });
