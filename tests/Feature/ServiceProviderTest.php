@@ -31,3 +31,14 @@ it('configures client when cert path, senha and prefeitura are set', function ()
     // If configured, consultar() returns a ConsultaBuilder without throwing
     expect($client->consultar())->toBeInstanceOf(\Pulsar\NfseNacional\Consulta\ConsultaBuilder::class);
 });
+
+it('throws RuntimeException when cert file exists but cannot be read', function () {
+    config([
+        'nfse-nacional.certificado.path'  => __DIR__ . '/../fixtures/certs',
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura'        => '3501608',
+    ]);
+
+    expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
+        ->toThrow(\RuntimeException::class, 'Falha ao ler certificado');
+});

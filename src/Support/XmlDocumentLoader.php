@@ -10,8 +10,16 @@ class XmlDocumentLoader
 {
     public function __invoke(string $xml): DOMDocument|false
     {
-        $doc = new DOMDocument();
+        $prev = libxml_use_internal_errors(true);
 
-        return $doc->loadXML($xml) === false ? false : $doc;
+        try {
+            $doc = new DOMDocument();
+            $result = $doc->loadXML($xml, LIBXML_NONET);
+            libxml_clear_errors();
+
+            return $result === false ? false : $doc;
+        } finally {
+            libxml_use_internal_errors($prev);
+        }
     }
 }

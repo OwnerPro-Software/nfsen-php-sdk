@@ -155,7 +155,11 @@ class NfseClient implements NfseClientContract
             }
 
             $chave = $result['chNFSe'] ?? null;
-            $this->dispatchEvent(new NfseEmitted($chave ?? ''));
+
+            if ($chave !== null) {
+                $this->dispatchEvent(new NfseEmitted($chave));
+            }
+
             return new NfseResponse(true, $chave, null, null);
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));

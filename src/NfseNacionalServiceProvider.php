@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional;
 
+use RuntimeException;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
@@ -43,11 +44,17 @@ class NfseNacionalServiceProvider extends ServiceProvider
             );
 
             $certPath    = $config['certificado']['path'];
-            $certSenha   = $config['certificado']['senha'];
-            $prefeitura  = $config['prefeitura'];
+            $certSenha   = (string) $config['certificado']['senha'];
+            $prefeitura  = (string) $config['prefeitura'];
 
             if ($certPath && $certSenha && $prefeitura && file_exists($certPath)) {
-                $client->configure((string) file_get_contents($certPath), (string) $certSenha, (string) $prefeitura);
+                $certContent = @file_get_contents($certPath);
+
+                if ($certContent === false || $certContent === '') {
+                    throw new RuntimeException('Falha ao ler certificado: ' . $certPath);
+                }
+
+                $client->configure($certContent, $certSenha, $prefeitura);
             }
 
             return $client;

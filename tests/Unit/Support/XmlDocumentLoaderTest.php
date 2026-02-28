@@ -10,10 +10,10 @@ it('loads valid XML and returns DOMDocument', function () {
     expect($doc)->toBeInstanceOf(DOMDocument::class);
 });
 
-it('returns false for invalid XML', function () {
+it('returns false for invalid XML without emitting warnings', function () {
     $loader = new XmlDocumentLoader();
 
-    $result = @$loader('not valid xml <<<');
+    $result = $loader('not valid xml <<<');
 
     expect($result)->toBeFalse();
 });

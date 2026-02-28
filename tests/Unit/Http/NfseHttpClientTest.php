@@ -107,3 +107,13 @@ it('throws NfseException and closes second handle when first tmpfile fails', fun
     expect(fn () => $client->post('https://example.com/nfse', []))
         ->toThrow(NfseException::class, 'arquivos temporários');
 });
+
+it('throws NfseException when fwrite fails on read-only handle', function () {
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(fn () => fopen('php://memory', 'r'));
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    expect(fn () => @$client->post('https://example.com/nfse', []))
+        ->toThrow(NfseException::class, 'escrever certificado');
+});

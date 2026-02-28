@@ -56,8 +56,11 @@ class NfseHttpClient
         }
 
         try {
-            fwrite($certHandle, (string) $this->certificate);
-            fwrite($keyHandle, (string) $this->certificate->privateKey);
+            if (fwrite($certHandle, (string) $this->certificate) === false
+                || fwrite($keyHandle, (string) $this->certificate->privateKey) === false
+            ) {
+                throw new NfseException('Falha ao escrever certificado em arquivo temporário.');
+            }
 
             $certPath = stream_get_meta_data($certHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
             $keyPath  = stream_get_meta_data($keyHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
