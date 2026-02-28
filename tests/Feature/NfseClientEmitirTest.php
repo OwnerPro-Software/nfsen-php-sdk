@@ -226,6 +226,25 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
     );
 })->with('dpsData');
 
+it('emitir validates XML against XSD before sending', function () {
+    Http::fake(['*' => Http::response(['chNFSe' => 'SHOULD_NOT_REACH'], 200)]);
+
+    $data = new DpsData(
+        infDps: makeInfDps(['tpemit' => 99]), // invalid per XSD (expects 1-3)
+        prestador: makePrestadorCnpj(),
+        tomador: new stdClass,
+        servico: makeServicoMinimo(),
+        valores: new stdClass,
+    );
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->emitir($data))
+        ->toThrow(NfseException::class, 'XML inválido');
+
+    Http::assertNothingSent();
+});
+
 it('emitir throws NfseException when gzip compression fails', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chNFSe' => 'X'], 200)]);
 

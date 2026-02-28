@@ -131,7 +131,7 @@ final class NfseClient implements NfseClientContract
         $this->dispatchEvent(new NfseRequested($operacao, []));
 
         try {
-            $xml = $this->dpsBuilder->build($data);
+            $xml = $this->dpsBuilder->buildAndValidate($data);
             $signer = new XmlSigner($certificate, $this->signingAlgorithm);
             $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$signer->sign($xml, 'infDPS', 'DPS');
             $compressed = ($this->gzipCompressor)($signed);
