@@ -101,13 +101,13 @@ it('throws InvalidArgumentException when file_get_contents fails', function () u
         ->toThrow(\InvalidArgumentException::class, 'Falha ao ler');
 });
 
-it('throws InvalidArgumentException for invalid json content', function () {
+it('throws InvalidArgumentException for invalid json content with parse error detail', function () {
     $tmpFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
     file_put_contents($tmpFile, '{ invalid json }');
 
     try {
         expect(fn () => new PrefeituraResolver($tmpFile))
-            ->toThrow(\InvalidArgumentException::class, 'JSON inválido');
+            ->toThrow(\InvalidArgumentException::class, 'Syntax error');
     } finally {
         unlink($tmpFile);
     }

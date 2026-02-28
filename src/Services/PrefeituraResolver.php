@@ -55,7 +55,7 @@ final class PrefeituraResolver
 
             $decoded = json_decode($contents, true);
             if (! is_array($decoded)) {
-                throw new InvalidArgumentException(sprintf("JSON inválido no arquivo de prefeituras: '%s'.", $jsonPath));
+                throw new InvalidArgumentException(sprintf("JSON inválido no arquivo de prefeituras: '%s'. Erro: %s.", $jsonPath, json_last_error_msg()));
             }
 
             /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> $decoded */
