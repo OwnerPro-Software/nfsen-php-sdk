@@ -175,3 +175,44 @@ it('throws NfseException on invalid XSD', function () {
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'XML inválido');
 });
+
+it('generates correct Id for CNPJ prestador', function (DpsData $data) {
+    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
+    $xml     = $builder->build($data);
+
+    expect($xml)->toContain('Id="DPS350160821234567800019500001000000000000001"');
+})->with('dpsData');
+
+it('generates correct Id for CPF prestador', function () {
+    $infDps           = new stdClass();
+    $infDps->tpamb    = 2;
+    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
+    $infDps->veraplic = '1.0';
+    $infDps->serie    = '1';
+    $infDps->ndps     = 1;
+    $infDps->dcompet  = '2026-02-27';
+    $infDps->tpemit   = 1;
+    $infDps->clocemi  = '3501608';
+
+    $prestador        = new stdClass();
+    $prestador->cpf   = '12345678901';
+    $prestador->xnome = 'Pessoa Física';
+    $regTrib             = new stdClass();
+    $regTrib->opsimpnac  = 0;
+    $regTrib->regesptrib = 0;
+    $prestador->regtrib  = $regTrib;
+
+    $servico                          = new stdClass();
+    $servico->locprest                = new stdClass();
+    $servico->locprest->clocprestacao = '3501608';
+    $servico->cserv                   = new stdClass();
+    $servico->cserv->ctribnac         = '010101';
+    $servico->cserv->xdescserv        = 'Serviço';
+
+    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
+
+    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
+    $xml     = $builder->build($data);
+
+    expect($xml)->toContain('Id="DPS350160810001234567890100001000000000000001"');
+});

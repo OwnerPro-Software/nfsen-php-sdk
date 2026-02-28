@@ -171,3 +171,31 @@ it('buildUrl returns baseUrl when path is empty', function () {
 
     unlink($tmpJson);
 });
+
+it('passes custom tipoEvento and nSequencial to eventos URL', function () {
+    $fakeClient = new FakeNfseClientForConsulta();
+    $builder    = makeConsultaBuilder($fakeClient);
+
+    $builder->eventos('CHAVE123', 105102, 2);
+
+    expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/CHAVE123/eventos/105102/2');
+});
+
+it('danfse uses adnBaseUrl when populated', function () {
+    $fakeClient = new FakeNfseClientForConsulta();
+    $resolver   = new PrefeituraResolver(__DIR__ . '/../../../storage/prefeituras.json');
+    $builder    = new ConsultaBuilder($fakeClient, 'https://sefin.base', 'https://adn.base', $resolver, '9999999');
+
+    $builder->danfse('CHAVE123');
+
+    expect($fakeClient->calls[0])->toBe('https://adn.base/danfse/CHAVE123');
+});
+
+it('danfse falls back to seFinBaseUrl when adnBaseUrl is empty', function () {
+    $fakeClient = new FakeNfseClientForConsulta();
+    $builder    = makeConsultaBuilder($fakeClient);
+
+    $builder->danfse('CHAVE123');
+
+    expect($fakeClient->calls[0])->toBe('https://sefin.base/danfse/CHAVE123');
+});

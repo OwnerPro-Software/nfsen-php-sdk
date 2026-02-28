@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\NfseClient;
@@ -12,44 +13,59 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
         200
     )]);
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->not->toBeNull();
-})->with('dpsData');
 
-it('emitir returns rejection NfseResponse on erro field', function (DpsData $data) {
-    Http::fake(['*' => Http::response(
-        json_decode(file_get_contents(__DIR__ . '/../fixtures/responses/emitir_rejeicao.json'), true),
-        200
-    )]);
-
-    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
-    $response = $client->emitir($data);
-
-    expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->not->toBeNull();
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
+        $req->method() === 'POST' &&
+        isset($req['dpsXmlGZipB64'])
+    );
 })->with('dpsData');
 
 it('consultar()->nfse returns success NfseResponse', function () {
     $xmlB64 = base64_encode(gzencode('<NFSe/>'));
     Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64], 200)]);
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->nfse('CHAVE123');
 
     expect($response->sucesso)->toBeTrue();
     expect($response->xml)->toContain('<NFSe');
+
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE123' &&
+        $req->method() === 'GET'
+    );
 });
 
-it('consultar()->dps returns success NfseResponse', function () {
-    Http::fake(['*' => Http::response(['dps' => 'dados'], 200)]);
+it('consultar()->dps returns success NfseResponse with dpsXmlGZipB64', function () {
+    $xmlB64 = base64_encode(gzencode('<DPS/>'));
+    Http::fake(['*' => Http::response(['dpsXmlGZipB64' => $xmlB64], 200)]);
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->dps('CHAVE123');
 
     expect($response->sucesso)->toBeTrue();
+    expect($response->xml)->toContain('<DPS');
+
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/dps/CHAVE123' &&
+        $req->method() === 'GET'
+    );
+});
+
+it('consultar()->dps returns null xml when response has no gzip key', function () {
+    Http::fake(['*' => Http::response(['dps' => 'dados'], 200)]);
+
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->consultar()->dps('CHAVE123');
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->xml)->toBeNull();
 });
 
 it('throws InvalidArgumentException for invalid IBGE code', function () {
@@ -60,7 +76,7 @@ it('throws InvalidArgumentException for invalid IBGE code', function () {
 it('forStandalone creates client without Laravel container', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_STANDALONE'], 200)]);
 
-    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '3501608');
+    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -73,17 +89,22 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
         200
     )]);
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erro)->toContain('CNPJ');
+
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
+        isset($req['dpsXmlGZipB64'])
+    );
 })->with('dpsData');
 
 it('emitir throws HttpException on server error', function (DpsData $data) {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
@@ -112,7 +133,7 @@ it('for() falls back to forStandalone when container has no binding', function (
     // Temporarily remove the binding
     app()->offsetUnset(NfseClient::class);
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -145,11 +166,35 @@ it('emitir succeeds and reports error when event listener throws', function (Dps
         }
     );
 
-    $client   = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client   = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
     expect($reported)->toHaveCount(1);
     expect($reported[0])->toBeInstanceOf(\RuntimeException::class);
     expect($reported[0]->getMessage())->toBe('Listener exploded');
+})->with('dpsData');
+
+it('emitir uses Americana custom URL without operation path', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_AM'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client->emitir($data);
+
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
+        isset($req['dpsXmlGZipB64'])
+    );
+})->with('dpsData');
+
+it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_SP'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '3547304');
+    $client->emitir($data);
+
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse' &&
+        isset($req['dpsXmlGZipB64'])
+    );
 })->with('dpsData');
