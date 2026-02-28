@@ -3,172 +3,109 @@
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
-it('builds xml with DPS root element', function (DpsData $data) {
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+function buildDps(DpsData $data): string
+{
+    return (new DpsBuilder(__DIR__ . '/../../../storage/schemes'))->build($data);
+}
 
-    expect($xml)->toContain('<DPS ');
-    expect($xml)->toContain('versao=');
-    expect($xml)->toContain('xmlns="http://www.sped.fazenda.gov.br/nfse"');
+function parseDpsXml(string $xml): DOMXPath
+{
+    $doc = new DOMDocument();
+    $doc->loadXML($xml);
+    $xpath = new DOMXPath($doc);
+    $xpath->registerNamespace('n', 'http://www.sped.fazenda.gov.br/nfse');
+    return $xpath;
+}
+
+it('builds xml with DPS root element and correct attributes', function (DpsData $data) {
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
+
+    $dps = $xpath->query('/n:DPS')->item(0);
+    expect($dps)->not->toBeNull();
+    expect($dps->getAttribute('versao'))->not->toBeEmpty();
+    expect($dps->namespaceURI)->toBe('http://www.sped.fazenda.gov.br/nfse');
 })->with('dpsData');
 
-it('builds xml with infDPS Id', function (DpsData $data) {
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+it('builds xml with infDPS Id as child of DPS', function (DpsData $data) {
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
-    expect($xml)->toContain('<infDPS Id="DPS');
+    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
+    expect($infDps)->not->toBeNull();
+    expect($infDps->getAttribute('Id'))->toStartWith('DPS');
 })->with('dpsData');
 
 it('includes tpAmb in infDPS', function (DpsData $data) {
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
-    expect($xml)->toContain('<tpAmb>2</tpAmb>');
+    $tpAmb = $xpath->query('/n:DPS/n:infDPS/n:tpAmb')->item(0);
+    expect($tpAmb->textContent)->toBe('2');
 })->with('dpsData');
 
 it('includes cMotivoEmisTI when set', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '1';
-    $infDps->ndps     = 1;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '3501608';
-    $infDps->cmotivoemisti = '1';
+    $data = new DpsData(
+        makeInfDps(['cmotivoemisti' => '1']),
+        makePrestadorCnpj(),
+        new stdClass(),
+        makeServicoMinimo(),
+        new stdClass(),
+    );
 
-    $prestador        = new stdClass();
-    $prestador->cnpj  = '12345678000195';
-    $regTrib             = new stdClass();
-    $regTrib->opsimpnac  = 1;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib  = $regTrib;
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
-    $servico                         = new stdClass();
-    $servico->locprest               = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv                  = new stdClass();
-    $servico->cserv->ctribnac        = '010101';
-    $servico->cserv->xdescserv       = 'Serviço';
-
-    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
-
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
-
-    expect($xml)->toContain('<cMotivoEmisTI>1</cMotivoEmisTI>');
+    $node = $xpath->query('//n:cMotivoEmisTI')->item(0);
+    expect($node)->not->toBeNull();
+    expect($node->textContent)->toBe('1');
 });
 
 it('includes chNFSeRej when set', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '1';
-    $infDps->ndps     = 1;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '3501608';
-    $infDps->chnfserej = 'CHAVE_REJEITADA_123';
+    $data = new DpsData(
+        makeInfDps(['chnfserej' => 'CHAVE_REJEITADA_123']),
+        makePrestadorCnpj(),
+        new stdClass(),
+        makeServicoMinimo(),
+        new stdClass(),
+    );
 
-    $prestador        = new stdClass();
-    $prestador->cnpj  = '12345678000195';
-    $regTrib             = new stdClass();
-    $regTrib->opsimpnac  = 1;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib  = $regTrib;
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
-    $servico                         = new stdClass();
-    $servico->locprest               = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv                  = new stdClass();
-    $servico->cserv->ctribnac        = '010101';
-    $servico->cserv->xdescserv       = 'Serviço';
-
-    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
-
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
-
-    expect($xml)->toContain('<chNFSeRej>CHAVE_REJEITADA_123</chNFSeRej>');
+    $node = $xpath->query('//n:chNFSeRej')->item(0);
+    expect($node)->not->toBeNull();
+    expect($node->textContent)->toBe('CHAVE_REJEITADA_123');
 });
 
-it('includes toma element when tomador has data', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '1';
-    $infDps->ndps     = 1;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '3501608';
-
-    $prestador        = new stdClass();
-    $prestador->cnpj  = '12345678000195';
-    $regTrib             = new stdClass();
-    $regTrib->opsimpnac  = 1;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib  = $regTrib;
-
+it('includes toma element as child of infDPS when tomador has data', function () {
     $tomador        = new stdClass();
     $tomador->cnpj  = '98765432000111';
     $tomador->xnome = 'Tomador Ltda';
 
-    $servico                         = new stdClass();
-    $servico->locprest               = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv                  = new stdClass();
-    $servico->cserv->ctribnac        = '010101';
-    $servico->cserv->xdescserv       = 'Serviço';
+    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), $tomador, makeServicoMinimo(), new stdClass());
 
-    $data = new DpsData($infDps, $prestador, $tomador, $servico, new stdClass());
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
-
-    expect($xml)
-        ->toContain('<toma>')
-        ->toContain('<CNPJ>98765432000111</CNPJ>')
-        ->toContain('<xNome>Tomador Ltda</xNome>');
+    $toma = $xpath->query('/n:DPS/n:infDPS/n:toma')->item(0);
+    expect($toma)->not->toBeNull();
+    expect($xpath->query('n:CNPJ', $toma)->item(0)->textContent)->toBe('98765432000111');
+    expect($xpath->query('n:xNome', $toma)->item(0)->textContent)->toBe('Tomador Ltda');
 });
 
 it('skips XSD validation when scheme file does not exist', function (DpsData $data) {
     $builder = new DpsBuilder('/nonexistent/path');
     $xml     = $builder->buildAndValidate($data);
 
-    // Should not throw — just returns the XML
     expect($xml)->toContain('<DPS ');
 })->with('dpsData');
 
 it('throws NfseException on invalid XSD', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '1';
-    $infDps->ndps     = 1;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '3501608';
+    $servico = makeServicoMinimo();
+    $servico->cserv->ctribnac = 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH';
 
-    $prestador        = new stdClass();
-    $prestador->cnpj  = '12345678000195';
-    $regTrib             = new stdClass();
-    $regTrib->opsimpnac  = 1;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib  = $regTrib;
-
-    // serviço incomplete on purpose — no locprest
-    $servico              = new stdClass();
-    $servico->locprest    = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv       = new stdClass();
-    $servico->cserv->ctribnac  = 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH';
-    $servico->cserv->xdescserv = 'Serviço';
-
-    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
+    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), new stdClass(), $servico, new stdClass());
 
     $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
 
@@ -177,24 +114,15 @@ it('throws NfseException on invalid XSD', function () {
 });
 
 it('generates correct Id for CNPJ prestador', function (DpsData $data) {
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
     // DPS + clocemi(7) + tipo=2(CNPJ) + cnpj(14) + serie(5 padded) + ndps(15 padded)
-    expect($xml)->toContain('Id="DPS350160821234567800019500001000000000000001"');
+    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000001');
 })->with('dpsData');
 
 it('generates correct Id for CPF prestador', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '1';
-    $infDps->ndps     = 1;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '3501608';
-
     $prestador        = new stdClass();
     $prestador->cpf   = '12345678901';
     $prestador->xnome = 'Pessoa Física';
@@ -203,120 +131,63 @@ it('generates correct Id for CPF prestador', function () {
     $regTrib->regesptrib = 0;
     $prestador->regtrib  = $regTrib;
 
-    $servico                          = new stdClass();
-    $servico->locprest                = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv                   = new stdClass();
-    $servico->cserv->ctribnac         = '010101';
-    $servico->cserv->xdescserv        = 'Serviço';
+    $data = new DpsData(makeInfDps(), $prestador, new stdClass(), makeServicoMinimo(), new stdClass());
 
-    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
-
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
     // tipo=1(CPF) + CPF left-padded to 14 digits
-    expect($xml)->toContain('Id="DPS350160810001234567890100001000000000000001"');
+    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160810001234567890100001000000000000001');
 });
 
 it('generates Id with max serie and large ndps padding', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '99999';
-    $infDps->ndps     = 999999999999999;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '3501608';
+    $data = new DpsData(
+        makeInfDps(['serie' => '99999', 'ndps' => 999999999999999]),
+        makePrestadorCnpj(),
+        new stdClass(),
+        makeServicoMinimo(),
+        new stdClass(),
+    );
 
-    $prestador        = new stdClass();
-    $prestador->cnpj  = '12345678000195';
-    $regTrib             = new stdClass();
-    $regTrib->opsimpnac  = 1;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib  = $regTrib;
-
-    $servico                          = new stdClass();
-    $servico->locprest                = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv                   = new stdClass();
-    $servico->cserv->ctribnac         = '010101';
-    $servico->cserv->xdescserv        = 'Serviço';
-
-    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
-
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
     // serie=99999 (no padding needed), ndps=999999999999999 (no padding needed)
-    expect($xml)->toContain('Id="DPS350160821234567800019599999999999999999999"');
+    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019599999999999999999999');
 });
 
 it('generates Id with single-digit serie and ndps left-padded', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '1';
-    $infDps->ndps     = 42;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '3501608';
+    $data = new DpsData(
+        makeInfDps(['ndps' => 42]),
+        makePrestadorCnpj(),
+        new stdClass(),
+        makeServicoMinimo(),
+        new stdClass(),
+    );
 
-    $prestador        = new stdClass();
-    $prestador->cnpj  = '12345678000195';
-    $regTrib             = new stdClass();
-    $regTrib->opsimpnac  = 1;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib  = $regTrib;
-
-    $servico                          = new stdClass();
-    $servico->locprest                = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv                   = new stdClass();
-    $servico->cserv->ctribnac         = '010101';
-    $servico->cserv->xdescserv        = 'Serviço';
-
-    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
-
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
     // serie padded to 5 → 00001, ndps padded to 15 → 000000000000042
-    expect($xml)->toContain('Id="DPS350160821234567800019500001000000000000042"');
+    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000042');
 });
 
 it('generates Id truncating clocemi to 7 chars', function () {
-    $infDps           = new stdClass();
-    $infDps->tpamb    = 2;
-    $infDps->dhemi    = '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = '1.0';
-    $infDps->serie    = '1';
-    $infDps->ndps     = 1;
-    $infDps->dcompet  = '2026-02-27';
-    $infDps->tpemit   = 1;
-    $infDps->clocemi  = '35016089999';
+    $data = new DpsData(
+        makeInfDps(['clocemi' => '35016089999']),
+        makePrestadorCnpj(),
+        new stdClass(),
+        makeServicoMinimo(),
+        new stdClass(),
+    );
 
-    $prestador        = new stdClass();
-    $prestador->cnpj  = '12345678000195';
-    $regTrib             = new stdClass();
-    $regTrib->opsimpnac  = 1;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib  = $regTrib;
-
-    $servico                          = new stdClass();
-    $servico->locprest                = new stdClass();
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv                   = new stdClass();
-    $servico->cserv->ctribnac         = '010101';
-    $servico->cserv->xdescserv        = 'Serviço';
-
-    $data = new DpsData($infDps, $prestador, new stdClass(), $servico, new stdClass());
-
-    $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
-    $xml     = $builder->build($data);
+    $xml   = buildDps($data);
+    $xpath = parseDpsXml($xml);
 
     // Only first 7 chars of clocemi used
-    expect($xml)->toContain('Id="DPS350160821234567800019500001000000000000001"');
+    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000001');
 });

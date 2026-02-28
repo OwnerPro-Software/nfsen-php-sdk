@@ -55,6 +55,17 @@ it('dispatches NfseRejected on emitir rejection', function (DpsData $data) {
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E001');
 })->with('dpsData');
 
+it('dispatches NfseRejected on cancelar rejection', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'cancelar');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
+});
+
 it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);

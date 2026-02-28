@@ -200,3 +200,25 @@ it('builds obra element without optional fields', function () {
         ->not->toContain('<cCIB>')
         ->not->toContain('<end>');
 });
+
+it('handles accented characters in field values', function () {
+    $builder = new ServicoBuilder();
+    $doc     = new DOMDocument('1.0', 'UTF-8');
+
+    $serv                          = new stdClass();
+    $serv->locprest                = new stdClass();
+    $serv->locprest->clocprestacao = '3501608';
+
+    $serv->cserv            = new stdClass();
+    $serv->cserv->ctribnac  = '01.01.01.000';
+    $serv->cserv->xdescserv = 'Consultoria em gestão tributária';
+
+    $element = $builder->build($doc, $serv);
+    $xml     = $doc->saveXML($element);
+
+    // Verify accented characters survive round-trip
+    $reparsed = new DOMDocument();
+    expect($reparsed->loadXML($xml))->toBeTrue();
+    expect($reparsed->getElementsByTagName('xDescServ')->item(0)->textContent)
+        ->toBe('Consultoria em gestão tributária');
+});

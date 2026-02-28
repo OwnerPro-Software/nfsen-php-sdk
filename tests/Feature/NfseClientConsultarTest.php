@@ -97,6 +97,23 @@ it('executeGetRaw throws HttpException on server error', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
+it('consultar throws NfseException when client is not configured', function () {
+    $resolver   = new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json');
+    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__ . '/../../storage/schemes');
+
+    $client = new NfseClient(
+        ambiente:           \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
+        timeout:            30,
+        signingAlgorithm:   'sha1',
+        sslVerify:          true,
+        prefeituraResolver: $resolver,
+        dpsBuilder:         $dpsBuilder,
+    );
+
+    expect(fn () => $client->consultar())
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'não configurado');
+});
+
 it('consultar()->danfse uses Santa Ana de Parnaiba custom operation path', function () {
     Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/PDF'], 200)]);
 

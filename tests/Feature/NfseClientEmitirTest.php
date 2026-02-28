@@ -198,3 +198,21 @@ it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function 
         isset($req['dpsXmlGZipB64'])
     );
 })->with('dpsData');
+
+it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_PROD'], 200)]);
+
+    $client = NfseClient::forStandalone(
+        makePfxContent(), 'secret', '9999999',
+        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::PRODUCAO,
+    );
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE_PROD');
+
+    Http::assertSent(fn (Request $req) =>
+        $req->url() === 'https://sefin.nfse.gov.br/sefinnacional/nfse' &&
+        $req->method() === 'POST'
+    );
+})->with('dpsData');

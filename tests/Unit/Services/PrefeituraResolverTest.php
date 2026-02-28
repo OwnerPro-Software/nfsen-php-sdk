@@ -5,6 +5,8 @@ use Pulsar\NfseNacional\Services\PrefeituraResolver;
 
 $jsonPath = __DIR__ . '/../../../storage/prefeituras.json';
 
+afterEach(fn () => PrefeituraResolver::clearCache());
+
 it('resolves default sefin url for unknown prefeitura in homologacao', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
@@ -53,6 +55,22 @@ it('returns empty string for empty operation override', function () use ($jsonPa
     $path = $resolver->resolveOperation('3501608', 'emitir_nfse');
 
     expect($path)->toBe('');
+});
+
+it('resolves default sefin url for unknown prefeitura in producao', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    $url = $resolver->resolveSeFinUrl('9999999', NfseAmbiente::PRODUCAO);
+
+    expect($url)->toBe('https://sefin.nfse.gov.br/sefinnacional');
+});
+
+it('resolves default adn url for unknown prefeitura in homologacao', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    $url = $resolver->resolveAdnUrl('9999999', NfseAmbiente::HOMOLOGACAO);
+
+    expect($url)->toBe('https://adn.producaorestrita.nfse.gov.br');
 });
 
 it('throws InvalidArgumentException for non-7-digit ibge code', function () use ($jsonPath) {
