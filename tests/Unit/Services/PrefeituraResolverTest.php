@@ -80,6 +80,13 @@ it('throws InvalidArgumentException for non-7-digit ibge code', function () use 
         ->toThrow(\InvalidArgumentException::class, 'IBGE');
 });
 
+it('throws InvalidArgumentException for unknown operation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    expect(fn () => $resolver->resolveOperation('9999999', 'operacao_inexistente'))
+        ->toThrow(\InvalidArgumentException::class, 'Operação desconhecida');
+});
+
 it('clearCache resets the static cache', function () use ($jsonPath) {
     // Load data into cache
     $resolver = new PrefeituraResolver($jsonPath);

@@ -73,7 +73,8 @@ class PrefeituraResolver
     {
         $this->validateIbge($codigoIbge);
         $template = $this->data[$codigoIbge]['operations'][$operacao]
-            ?? self::DEFAULT_OPERATIONS[$operacao];
+            ?? self::DEFAULT_OPERATIONS[$operacao]
+            ?? throw new InvalidArgumentException(sprintf("Operação desconhecida: '%s'.", $operacao));
 
         foreach ($params as $key => $value) {
             $template = str_replace('{' . $key . '}', (string) $value, $template);

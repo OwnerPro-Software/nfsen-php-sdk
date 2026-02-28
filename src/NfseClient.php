@@ -142,7 +142,7 @@ class NfseClient implements NfseClientContract
 
             $seFinUrl   = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
             $opPath     = $this->prefeituraResolver->resolveOperation($prefeitura, 'emitir_nfse');
-            $url        = rtrim($seFinUrl, '/') . ($opPath !== '' && $opPath !== '0' ? '/' . ltrim($opPath, '/') : '');
+            $url        = $opPath !== '' ? rtrim($seFinUrl, '/') . '/' . ltrim($opPath, '/') : $seFinUrl;
 
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, chNFSe?: string} $result */
             $result = $httpClient->post($url, $payload);
@@ -203,7 +203,7 @@ class NfseClient implements NfseClientContract
             $opPath    = $this->prefeituraResolver->resolveOperation(
                 $prefeitura, 'cancelar_nfse', ['chave' => $chave]
             );
-            $url = rtrim($seFinUrl, '/') . ($opPath !== '' && $opPath !== '0' ? '/' . ltrim($opPath, '/') : '');
+            $url = $opPath !== '' ? rtrim($seFinUrl, '/') . '/' . ltrim($opPath, '/') : $seFinUrl;
 
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string} $result */
             $result = $httpClient->post($url, $payload);

@@ -93,7 +93,13 @@ class DpsBuilder
 
         $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;
         $doc = new DOMDocument();
-        $doc->loadXML($xmlWithDecl);
+
+        // @codeCoverageIgnoreStart
+        if ($doc->loadXML($xmlWithDecl) === false) {
+            throw new NfseException('XML inválido: falha ao carregar documento.');
+        }
+
+        // @codeCoverageIgnoreEnd
 
         $prev = libxml_use_internal_errors(true);
 
