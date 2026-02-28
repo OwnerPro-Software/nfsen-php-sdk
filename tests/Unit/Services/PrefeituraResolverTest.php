@@ -2,6 +2,7 @@
 
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Support\FileReader;
 
 $jsonPath = __DIR__ . '/../../../storage/prefeituras.json';
 
@@ -90,6 +91,14 @@ it('throws InvalidArgumentException for unknown operation', function () use ($js
 it('throws InvalidArgumentException for missing json file', function () {
     expect(fn () => new PrefeituraResolver('/non/existent/path.json'))
         ->toThrow(\InvalidArgumentException::class, 'não encontrado');
+});
+
+it('throws InvalidArgumentException when file_get_contents fails', function () use ($jsonPath) {
+    $reader = Mockery::mock(FileReader::class);
+    $reader->shouldReceive('__invoke')->with($jsonPath)->andReturn(false);
+
+    expect(fn () => new PrefeituraResolver($jsonPath, $reader))
+        ->toThrow(\InvalidArgumentException::class, 'Falha ao ler');
 });
 
 it('throws InvalidArgumentException for invalid json content', function () {

@@ -6,6 +6,7 @@ namespace Pulsar\NfseNacional\Services;
 
 use InvalidArgumentException;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\Support\FileReader;
 
 class PrefeituraResolver
 {
@@ -38,20 +39,19 @@ class PrefeituraResolver
     /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> */
     private array $data;
 
-    public function __construct(string $jsonPath)
-    {
+    public function __construct(
+        string $jsonPath,
+        private readonly FileReader $fileReader = new FileReader(),
+    ) {
         if (!isset(self::$cache[$jsonPath])) {
             if (!file_exists($jsonPath)) {
                 throw new InvalidArgumentException(sprintf("Arquivo de prefeituras não encontrado: '%s'.", $jsonPath));
             }
 
-            $contents = file_get_contents($jsonPath);
-            // @codeCoverageIgnoreStart
+            $contents = ($this->fileReader)($jsonPath);
             if ($contents === false) {
                 throw new InvalidArgumentException(sprintf("Falha ao ler arquivo de prefeituras: '%s'.", $jsonPath));
             }
-
-            // @codeCoverageIgnoreEnd
 
             $decoded = json_decode($contents, true);
             if (!is_array($decoded)) {
