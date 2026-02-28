@@ -25,6 +25,7 @@ use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\MotivoCancelamento;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 class NfseClient implements NfseClientContract
@@ -42,6 +43,7 @@ class NfseClient implements NfseClientContract
         private readonly bool $sslVerify,
         private readonly PrefeituraResolver $prefeituraResolver,
         private readonly DpsBuilder $dpsBuilder,
+        private readonly GzipCompressor $gzipCompressor = new GzipCompressor(),
     ) {}
 
     public static function for(string $pfxContent, string $senha, string $prefeitura): self
@@ -131,13 +133,11 @@ class NfseClient implements NfseClientContract
             $xml     = $this->dpsBuilder->build($data);
             $signer  = new XmlSigner($certificate, $this->signingAlgorithm);
             $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infDPS', 'DPS');
-            $compressed = gzencode($signed);
-            // @codeCoverageIgnoreStart
+            $compressed = ($this->gzipCompressor)($signed);
             if ($compressed === false) {
                 throw new NfseException('Falha ao comprimir XML.');
             }
 
-            // @codeCoverageIgnoreEnd
             $payload = ['dpsXmlGZipB64' => base64_encode($compressed)];
 
             $seFinUrl   = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
@@ -190,13 +190,11 @@ class NfseClient implements NfseClientContract
 
             $signer  = new XmlSigner($certificate, $this->signingAlgorithm);
             $signed  = '<?xml version="1.0" encoding="UTF-8"?>' . $signer->sign($xml, 'infPedReg', 'pedRegEvento');
-            $compressed = gzencode($signed);
-            // @codeCoverageIgnoreStart
+            $compressed = ($this->gzipCompressor)($signed);
             if ($compressed === false) {
                 throw new NfseException('Falha ao comprimir XML.');
             }
 
-            // @codeCoverageIgnoreEnd
             $payload = ['pedidoRegistroEventoXmlGZipB64' => base64_encode($compressed)];
 
             $seFinUrl  = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);

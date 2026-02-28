@@ -2,7 +2,9 @@
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
+use Pulsar\NfseNacional\Support\TempFileFactory;
 
 it('posts json payload to given url', function () {
     Http::fake(['*' => Http::response(['sucesso' => true], 200)]);
@@ -62,4 +64,46 @@ it('passes mTLS options and payload to HTTP client', function () {
         $req->isJson() &&
         $req['dps'] === 'xml'
     );
+});
+
+it('throws NfseException when tmpfile fails for both handles', function () {
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturn(false);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(NfseException::class, 'arquivos temporários');
+});
+
+it('throws NfseException and closes first handle when second tmpfile fails', function () {
+    $realHandle = tmpfile();
+    $callCount = 0;
+
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$callCount, $realHandle) {
+        $callCount++;
+        return $callCount === 1 ? $realHandle : false;
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(NfseException::class, 'arquivos temporários');
+});
+
+it('throws NfseException and closes second handle when first tmpfile fails', function () {
+    $realHandle = tmpfile();
+    $callCount = 0;
+
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$callCount, $realHandle) {
+        $callCount++;
+        return $callCount === 1 ? false : $realHandle;
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(NfseException::class, 'arquivos temporários');
 });

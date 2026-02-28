@@ -3,7 +3,12 @@
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\NfseClient;
+use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Support\GzipCompressor;
+use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 // makePfxContent() definida em tests/helpers.php (criado na Task 8)
 
@@ -225,4 +230,25 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
         $req->url() === 'https://sefin.nfse.gov.br/sefinnacional/nfse' &&
         $req->method() === 'POST'
     );
+})->with('dpsData');
+
+it('emitir throws NfseException when gzip compression fails', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chNFSe' => 'X'], 200)]);
+
+    $compressor = Mockery::mock(GzipCompressor::class);
+    $compressor->shouldReceive('__invoke')->andReturn(false);
+
+    $client = new NfseClient(
+        ambiente:           NfseAmbiente::HOMOLOGACAO,
+        timeout:            30,
+        signingAlgorithm:   'sha1',
+        sslVerify:          true,
+        prefeituraResolver: new PrefeituraResolver(__DIR__ . '/../../storage/prefeituras.json'),
+        dpsBuilder:         new DpsBuilder(__DIR__ . '/../../storage/schemes'),
+        gzipCompressor:     $compressor,
+    );
+    $client->configure(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->emitir($data))
+        ->toThrow(NfseException::class, 'comprimir XML');
 })->with('dpsData');

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Xml;
 
-use LibXMLError;
-use Pulsar\NfseNacional\Exceptions\NfseException;
 use DOMDocument;
+use LibXMLError;
 use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\Exceptions\NfseException;
+use Pulsar\NfseNacional\Support\XmlDocumentLoader;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
@@ -19,9 +20,10 @@ class DpsBuilder
 
     private const XMLNS   = 'http://www.sped.fazenda.gov.br/nfse';
 
-    public function __construct(private readonly string $schemesPath)
-    {
-    }
+    public function __construct(
+        private readonly string $schemesPath,
+        private readonly XmlDocumentLoader $xmlDocumentLoader = new XmlDocumentLoader(),
+    ) {}
 
     public function buildAndValidate(DpsData $data): string
     {
@@ -92,14 +94,11 @@ class DpsBuilder
         }
 
         $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>' . $xmlFragment;
-        $doc = new DOMDocument();
+        $doc = ($this->xmlDocumentLoader)($xmlWithDecl);
 
-        // @codeCoverageIgnoreStart
-        if ($doc->loadXML($xmlWithDecl) === false) {
+        if ($doc === false) {
             throw new NfseException('XML inválido: falha ao carregar documento.');
         }
-
-        // @codeCoverageIgnoreEnd
 
         $prev = libxml_use_internal_errors(true);
 

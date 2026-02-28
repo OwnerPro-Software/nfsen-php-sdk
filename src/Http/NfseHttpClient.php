@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Exceptions\HttpException;
 use Pulsar\NfseNacional\Exceptions\NfseException;
+use Pulsar\NfseNacional\Support\TempFileFactory;
 
 class NfseHttpClient
 {
@@ -15,6 +16,7 @@ class NfseHttpClient
         private readonly Certificate $certificate,
         private readonly int $timeout = 30,
         private readonly bool $sslVerify = true,
+        private readonly TempFileFactory $tempFileFactory = new TempFileFactory(),
     ) {}
 
     /**
@@ -38,10 +40,9 @@ class NfseHttpClient
      */
     private function request(string $method, string $url, array $payload): array
     {
-        $certHandle = tmpfile();
-        $keyHandle  = tmpfile();
+        $certHandle = ($this->tempFileFactory)();
+        $keyHandle  = ($this->tempFileFactory)();
 
-        // @codeCoverageIgnoreStart
         if ($certHandle === false || $keyHandle === false) {
             if ($certHandle !== false) {
                 fclose($certHandle);
@@ -53,8 +54,6 @@ class NfseHttpClient
 
             throw new NfseException('Falha ao criar arquivos temporários para o certificado.');
         }
-
-        // @codeCoverageIgnoreEnd
 
         try {
             fwrite($certHandle, (string) $this->certificate);
