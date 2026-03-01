@@ -60,6 +60,18 @@ it('dispatches NfseQueried on successful consultar', function () {
     Event::assertDispatched(NfseQueried::class);
 });
 
+it('dispatches NfseRejected on emitir when response has no chNFSe', function (DpsData $data) {
+    Event::fake();
+    Http::fake(['*' => Http::response(['status' => 'ok'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client->emitir($data);
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'SEM_CHAVE');
+    Event::assertNotDispatched(NfseEmitted::class);
+})->with('dpsData');
+
 it('dispatches NfseRejected on emitir rejection', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Erro', 'codigo' => 'E001']]], 200)]);

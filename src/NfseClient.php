@@ -169,9 +169,13 @@ final class NfseClient implements NfseClientContract
 
             $chave = $result['chNFSe'] ?? null;
 
-            if ($chave !== null) {
-                $this->dispatchEvent(new NfseEmitted($chave));
+            if ($chave === null) {
+                $this->dispatchEvent(new NfseRejected($operacao, 'SEM_CHAVE'));
+
+                return new NfseResponse(false, null, null, 'Resposta da API não contém chNFSe.');
             }
+
+            $this->dispatchEvent(new NfseEmitted($chave));
 
             return new NfseResponse(true, $chave, null, null);
         } catch (HttpException $httpException) {

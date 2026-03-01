@@ -201,6 +201,17 @@ it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function 
     );
 })->with('dpsData');
 
+it('emitir returns rejection when response has no chNFSe', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['status' => 'ok'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->chave)->toBeNull();
+    expect($response->erro)->toBe('Resposta da API não contém chNFSe.');
+})->with('dpsData');
+
 it('emitir returns rejection with singular erro field', function (DpsData $data) {
     Http::fake(['*' => Http::response(['erro' => 'Erro genérico na emissão'], 200)]);
 
