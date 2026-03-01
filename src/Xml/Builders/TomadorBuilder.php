@@ -10,6 +10,8 @@ use stdClass;
 
 final class TomadorBuilder
 {
+    use CreatesTextElements;
+
     public function build(DOMDocument $doc, stdClass $toma): DOMElement
     {
         $el = $doc->createElement('toma');
@@ -73,14 +75,6 @@ final class TomadorBuilder
         if (isset($toma->email)) {
             $el->appendChild($this->text($doc, 'email', $toma->email));
         }
-
-        return $el;
-    }
-
-    private function text(DOMDocument $doc, string $name, string $value): DOMElement
-    {
-        $el = $doc->createElement($name);
-        $el->appendChild($doc->createTextNode($value));
 
         return $el;
     }

@@ -10,6 +10,8 @@ use stdClass;
 
 final class PrestadorBuilder
 {
+    use CreatesTextElements;
+
     public function build(DOMDocument $doc, stdClass $prest): DOMElement
     {
         $el = $doc->createElement('prest');
@@ -90,14 +92,6 @@ final class PrestadorBuilder
         }
 
         $el->appendChild($this->text($doc, 'xBairro', $end->xbairro));
-
-        return $el;
-    }
-
-    private function text(DOMDocument $doc, string $name, string $value): DOMElement
-    {
-        $el = $doc->createElement($name);
-        $el->appendChild($doc->createTextNode($value));
 
         return $el;
     }

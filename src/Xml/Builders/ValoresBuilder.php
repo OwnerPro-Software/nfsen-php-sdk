@@ -10,6 +10,8 @@ use stdClass;
 
 final class ValoresBuilder
 {
+    use CreatesTextElements;
+
     public function build(DOMDocument $doc, stdClass $valores): DOMElement
     {
         $el = $doc->createElement('valores');
@@ -175,14 +177,6 @@ final class ValoresBuilder
 
             $el->appendChild($totTrib);
         }
-
-        return $el;
-    }
-
-    private function text(DOMDocument $doc, string $name, string $value): DOMElement
-    {
-        $el = $doc->createElement($name);
-        $el->appendChild($doc->createTextNode($value));
 
         return $el;
     }

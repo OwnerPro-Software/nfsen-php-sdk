@@ -10,6 +10,8 @@ use stdClass;
 
 final class ServicoBuilder
 {
+    use CreatesTextElements;
+
     public function build(DOMDocument $doc, stdClass $serv): DOMElement
     {
         $el = $doc->createElement('serv');
@@ -109,14 +111,6 @@ final class ServicoBuilder
 
             $el->appendChild($obra);
         }
-
-        return $el;
-    }
-
-    private function text(DOMDocument $doc, string $name, string $value): DOMElement
-    {
-        $el = $doc->createElement($name);
-        $el->appendChild($doc->createTextNode($value));
 
         return $el;
     }
