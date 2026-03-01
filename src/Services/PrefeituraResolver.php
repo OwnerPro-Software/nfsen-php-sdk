@@ -98,6 +98,10 @@ final class PrefeituraResolver
             $template = str_replace('{'.$key.'}', (string) $value, $template);
         }
 
+        if (preg_match('/\{(\w+)\}/', $template, $matches)) {
+            throw new InvalidArgumentException(sprintf("Parâmetro não fornecido: '{%s}' na operação '%s'.", $matches[1], $operacao));
+        }
+
         return $template;
     }
 

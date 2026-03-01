@@ -81,6 +81,13 @@ it('throws InvalidArgumentException for non-7-digit ibge code', function () use 
         ->toThrow(\InvalidArgumentException::class, 'IBGE');
 });
 
+it('throws InvalidArgumentException for missing template parameter', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    expect(fn () => $resolver->resolveOperation('9999999', 'consultar_eventos', ['chave' => 'ABC']))
+        ->toThrow(\InvalidArgumentException::class, "'{tipoEvento}'");
+});
+
 it('throws InvalidArgumentException for unknown operation', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
