@@ -40,3 +40,18 @@ it('success response without xml has null xml', function () {
         ->chave->toBe('CHAVE50')
         ->xml->toBeNull();
 });
+
+it('success response carries protocolo from emitir', function () {
+    $response = new NfseResponse(true, 'CHAVE50', null, null, '135016080000001');
+
+    expect($response)
+        ->sucesso->toBeTrue()
+        ->chave->toBe('CHAVE50')
+        ->protocolo->toBe('135016080000001');
+});
+
+it('protocolo defaults to null', function () {
+    $response = new NfseResponse(true, 'CHAVE50', null, null);
+
+    expect($response->protocolo)->toBeNull();
+});

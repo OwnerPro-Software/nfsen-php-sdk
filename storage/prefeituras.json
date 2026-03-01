@@ -7,7 +7,11 @@
         "operations":{
             "emitir_nfse" : "",
             "cancelar_nfse" : "",
-            "substituir_nfse" : ""
+            "substituir_nfse" : "",
+            "consultar_nfse" : "",
+            "consultar_dps" : "",
+            "consultar_eventos" : "",
+            "consultar_danfse" : ""
         }
     },
     "3547304": {

@@ -26,7 +26,7 @@ it('substituir returns success NfseResponse', function () {
     );
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe($chave);
+    expect($response->chave)->toBe('CHAVE_OK');
 
     Http::assertSent(fn (Request $req) => str_contains($req->url(), $chave.'/eventos') &&
         $req->method() === 'POST' &&

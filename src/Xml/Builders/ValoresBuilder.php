@@ -72,9 +72,7 @@ final class ValoresBuilder
             $bm->appendChild($this->text($doc, 'nBM', $trib->tribmun->bm->nbm));
             if (isset($trib->tribmun->bm->vredbcbm)) {
                 $bm->appendChild($this->text($doc, 'vRedBCBM', $trib->tribmun->bm->vredbcbm));
-            }
-
-            if (isset($trib->tribmun->bm->predbcbm)) {
+            } elseif (isset($trib->tribmun->bm->predbcbm)) {
                 $bm->appendChild($this->text($doc, 'pRedBCBM', $trib->tribmun->bm->predbcbm));
             }
 
@@ -93,9 +91,7 @@ final class ValoresBuilder
             $tribFed = $doc->createElement('tribFed');
             if (isset($trib->tribfed->piscofins)) {
                 $pisCofins = $doc->createElement('pisCofins');
-                if (isset($trib->tribfed->piscofins->cst)) {
-                    $pisCofins->appendChild($this->text($doc, 'CST', $trib->tribfed->piscofins->cst));
-                }
+                $pisCofins->appendChild($this->text($doc, 'CST', $trib->tribfed->piscofins->cst));
 
                 if (isset($trib->tribfed->piscofins->vbcpiscofins)) {
                     $pisCofins->appendChild($this->text($doc, 'vBCPisCofins', $trib->tribfed->piscofins->vbcpiscofins));

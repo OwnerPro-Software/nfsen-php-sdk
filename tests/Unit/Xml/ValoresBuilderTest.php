@@ -127,7 +127,57 @@ it('builds exigSusp in tribMun', function () {
         ->toContain('<nProcesso>0001234-56.2026.8.26.0100</nProcesso>');
 });
 
-it('builds BM in tribMun', function () {
+it('builds BM in tribMun with vRedBCBM', function () {
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $valores = new stdClass;
+    $valores->vservprest = makeVServPrestMinimo();
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
+    $valores->trib->tribmun->tpretissqn = '1';
+    $valores->trib->tribmun->bm = new stdClass;
+    $valores->trib->tribmun->bm->nbm = '12345';
+    $valores->trib->tribmun->bm->vredbcbm = '50.00';
+    $valores->trib->totaltrib = new stdClass;
+    $valores->trib->totaltrib->indtottrib = '0';
+
+    $xml = $doc->saveXML($builder->build($doc, $valores));
+
+    expect($xml)
+        ->toContain('<BM>')
+        ->toContain('<nBM>12345</nBM>')
+        ->toContain('<vRedBCBM>50.00</vRedBCBM>')
+        ->not->toContain('<pRedBCBM>');
+});
+
+it('builds BM in tribMun with pRedBCBM', function () {
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $valores = new stdClass;
+    $valores->vservprest = makeVServPrestMinimo();
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
+    $valores->trib->tribmun->tpretissqn = '1';
+    $valores->trib->tribmun->bm = new stdClass;
+    $valores->trib->tribmun->bm->nbm = '12345';
+    $valores->trib->tribmun->bm->predbcbm = '10.00';
+    $valores->trib->totaltrib = new stdClass;
+    $valores->trib->totaltrib->indtottrib = '0';
+
+    $xml = $doc->saveXML($builder->build($doc, $valores));
+
+    expect($xml)
+        ->toContain('<BM>')
+        ->toContain('<nBM>12345</nBM>')
+        ->toContain('<pRedBCBM>10.00</pRedBCBM>')
+        ->not->toContain('<vRedBCBM>');
+});
+
+it('BM choice prioritizes vRedBCBM over pRedBCBM when both set', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
@@ -147,10 +197,8 @@ it('builds BM in tribMun', function () {
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
     expect($xml)
-        ->toContain('<BM>')
-        ->toContain('<nBM>12345</nBM>')
         ->toContain('<vRedBCBM>50.00</vRedBCBM>')
-        ->toContain('<pRedBCBM>10.00</pRedBCBM>');
+        ->not->toContain('<pRedBCBM>');
 });
 
 it('builds tribFed with pisCofins and retencoes', function () {

@@ -156,7 +156,7 @@ final class NfseClient implements NfseClientContract
             $opPath = $this->prefeituraResolver->resolveOperation($prefeitura, 'emitir_nfse');
             $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
-            /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, chNFSe?: string} $result */
+            /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, chNFSe?: string, nProtNFSe?: string} $result */
             $result = $httpClient->post($url, $payload);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
@@ -177,7 +177,7 @@ final class NfseClient implements NfseClientContract
 
             $this->dispatchEvent(new NfseEmitted($chave));
 
-            return new NfseResponse(true, $chave, null, null);
+            return new NfseResponse(true, $chave, null, null, $result['nProtNFSe'] ?? null);
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;
@@ -285,7 +285,7 @@ final class NfseClient implements NfseClientContract
         );
         $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
-        /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string} $result */
+        /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: string, chNFSe?: string} $result */
         $result = $httpClient->post($url, $payload);
 
         if (! empty($result['erros']) || isset($result['erro'])) {
@@ -298,7 +298,7 @@ final class NfseClient implements NfseClientContract
 
         $this->dispatchEvent($successEvent);
 
-        return new NfseResponse(true, $chave, null, null);
+        return new NfseResponse(true, $result['chNFSe'] ?? $chave, null, null);
     }
 
     public function consultar(): ConsultaBuilder

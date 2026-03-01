@@ -23,6 +23,7 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->not->toBeNull();
+    expect($response->protocolo)->toBe('135016080000001');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
         $req->method() === 'POST' &&

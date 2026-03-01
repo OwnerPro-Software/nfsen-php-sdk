@@ -27,7 +27,7 @@ it('cancelar returns success NfseResponse', function () {
     );
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe('12345678901234567890123456789012345678901234567890');
+    expect($response->chave)->toBe('35016082026022700000000000000000000000000000000001');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         $req->method() === 'POST' &&
