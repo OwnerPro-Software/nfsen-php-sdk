@@ -18,7 +18,7 @@
   "require-dev": {
     "pestphp/pest": "^3.0",
     "pestphp/pest-plugin-laravel": "^3.0",
-    "orchestra/testbench": "^9.0",
+    "orchestra/testbench": "^9.0|^10.0",
     "pestphp/pest-plugin-type-coverage": "^3.6",
     "rector/rector": "^2.3",
     "driftingly/rector-laravel": "^2.1",
