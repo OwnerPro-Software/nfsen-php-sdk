@@ -6,7 +6,8 @@
         },
         "operations":{
             "emitir_nfse" : "",
-            "cancelar_nfse" : ""
+            "cancelar_nfse" : "",
+            "substituir_nfse" : ""
         }
     },
     "3547304": {

@@ -79,6 +79,19 @@ it('substituir works without descricao', function () {
     expect($response->sucesso)->toBeTrue();
 });
 
+it('substituir uses Americana custom URL without operation path', function () {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_AM'], 200)]);
+
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+    $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::Outros, 'Outro motivo para substituicao');
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
+        isset($req['pedidoRegistroEventoXmlGZipB64'])
+    );
+});
+
 it('substituir throws NfseException when gzip compression fails', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'X'], 200)]);
 
