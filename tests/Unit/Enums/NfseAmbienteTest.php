@@ -3,16 +3,16 @@
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 it('has producao value of 1', function () {
-    expect(NfseAmbiente::PRODUCAO->value)->toBe(1);
+    expect(NfseAmbiente::PRODUCAO->value)->toBe('1');
 });
 
 it('has homologacao value of 2', function () {
-    expect(NfseAmbiente::HOMOLOGACAO->value)->toBe(2);
+    expect(NfseAmbiente::HOMOLOGACAO->value)->toBe('2');
 });
 
 it('can be created from value', function () {
-    expect(NfseAmbiente::from(1))->toBe(NfseAmbiente::PRODUCAO);
-    expect(NfseAmbiente::from(2))->toBe(NfseAmbiente::HOMOLOGACAO);
+    expect(NfseAmbiente::from('1'))->toBe(NfseAmbiente::PRODUCAO);
+    expect(NfseAmbiente::from('2'))->toBe(NfseAmbiente::HOMOLOGACAO);
 });
 
 it('fromConfig accepts integer values', function () {

@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Facades;
 
 use Illuminate\Support\Facades\Facade;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
-use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;

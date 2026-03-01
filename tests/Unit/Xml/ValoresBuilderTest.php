@@ -1,34 +1,48 @@
 <?php
 
+use Pulsar\NfseNacional\DTOs\Dps\Valores\BeneficioMunicipal;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\DescontoCondIncond;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\ExigibilidadeSuspensa;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\PisCofins;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\TotTribPercentual;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\TotTribValor;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoFederal;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TipoCST;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TipoImunidadeISSQN;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetPisCofins;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TipoSuspensao;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
+use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 
-function makeTribMinimo(): stdClass
+function makeTribMunMinimo(): TributacaoMunicipal
 {
-    $trib = new stdClass;
-    $trib->tribMun = new stdClass;
-    $trib->tribMun->tribISSQN = '1';
-    $trib->tribMun->tpRetISSQN = '1';
-    $trib->totTrib = new stdClass;
-    $trib->totTrib->indTotTrib = '0';
-
-    return $trib;
+    return new TributacaoMunicipal(
+        tribISSQN: TribISSQN::Tributavel,
+        tpRetISSQN: TipoRetISSQN::NaoRetido,
+    );
 }
 
-function makeVServPrestMinimo(): stdClass
+function makeTribMinimo(): Tributacao
 {
-    $vServPrest = new stdClass;
-    $vServPrest->vServ = '100.00';
+    return new Tributacao(tribMun: makeTribMunMinimo(), indTotTrib: '0');
+}
 
-    return $vServPrest;
+function makeVServPrestMinimo(): ValorServicoPrestado
+{
+    return new ValorServicoPrestado(vServ: '100.00');
 }
 
 it('builds valores element with vServPrest', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = makeTribMinimo();
+    $valores = new Valores(vServPrest: makeVServPrestMinimo(), trib: makeTribMinimo());
 
     $element = $builder->build($doc, $valores);
     $xml = $doc->saveXML($element);
@@ -47,11 +61,10 @@ it('includes vReceb in vServPrest when set', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = new stdClass;
-    $valores->vServPrest->vReceb = '80.00';
-    $valores->vServPrest->vServ = '100.00';
-    $valores->trib = makeTribMinimo();
+    $valores = new Valores(
+        vServPrest: new ValorServicoPrestado(vServ: '100.00', vReceb: '80.00'),
+        trib: makeTribMinimo(),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -64,12 +77,11 @@ it('builds vDescCondIncond block', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->vDescCondIncond = new stdClass;
-    $valores->vDescCondIncond->vDescIncond = '10.00';
-    $valores->vDescCondIncond->vDescCond = '5.00';
-    $valores->trib = makeTribMinimo();
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: makeTribMinimo(),
+        vDescCondIncond: new DescontoCondIncond(vDescIncond: '10.00', vDescCond: '5.00'),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -83,17 +95,19 @@ it('includes tribMun optional fields', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->cPaisResult = '01058';
-    $valores->trib->tribMun->tpImunidade = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->tribMun->pAliq = '5.00';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->indTotTrib = '0';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: new TributacaoMunicipal(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                cPaisResult: '01058',
+                tpImunidade: TipoImunidadeISSQN::PatrimonioRendaServicos,
+                pAliq: '5.00',
+            ),
+            indTotTrib: '0',
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -107,17 +121,20 @@ it('builds exigSusp in tribMun', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->tribMun->exigSusp = new stdClass;
-    $valores->trib->tribMun->exigSusp->tpSusp = '1';
-    $valores->trib->tribMun->exigSusp->nProcesso = '0001234-56.2026.8.26.0100';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->indTotTrib = '0';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: new TributacaoMunicipal(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                exigSusp: new ExigibilidadeSuspensa(
+                    tpSusp: TipoSuspensao::DecisaoJudicial,
+                    nProcesso: '0001234-56.2026.8.26.0100',
+                ),
+            ),
+            indTotTrib: '0',
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -131,17 +148,17 @@ it('builds BM in tribMun with vRedBCBM', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->tribMun->BM = new stdClass;
-    $valores->trib->tribMun->BM->nBM = '12345';
-    $valores->trib->tribMun->BM->vRedBCBM = '50.00';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->indTotTrib = '0';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: new TributacaoMunicipal(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                BM: new BeneficioMunicipal(nBM: '12345', vRedBCBM: '50.00'),
+            ),
+            indTotTrib: '0',
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -156,17 +173,17 @@ it('builds BM in tribMun with pRedBCBM', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->tribMun->BM = new stdClass;
-    $valores->trib->tribMun->BM->nBM = '12345';
-    $valores->trib->tribMun->BM->pRedBCBM = '10.00';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->indTotTrib = '0';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: new TributacaoMunicipal(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                BM: new BeneficioMunicipal(nBM: '12345', pRedBCBM: '10.00'),
+            ),
+            indTotTrib: '0',
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -178,50 +195,35 @@ it('builds BM in tribMun with pRedBCBM', function () {
 });
 
 it('throws when both vRedBCBM and pRedBCBM are set in BM', function () {
-    $builder = new ValoresBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->tribMun->BM = new stdClass;
-    $valores->trib->tribMun->BM->nBM = '12345';
-    $valores->trib->tribMun->BM->vRedBCBM = '50.00';
-    $valores->trib->tribMun->BM->pRedBCBM = '10.00';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->indTotTrib = '0';
-
-    expect(fn () => $builder->build($doc, $valores))
-        ->toThrow(InvalidArgumentException::class, 'não ambos');
+    expect(fn () => new BeneficioMunicipal(nBM: '12345', vRedBCBM: '50.00', pRedBCBM: '10.00'))
+        ->toThrow(InvalidDpsArgument::class, 'não ambos');
 });
 
 it('builds tribFed with pisCofins and retencoes', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->tribFed = new stdClass;
-    $valores->trib->tribFed->pisCofins = new stdClass;
-    $valores->trib->tribFed->pisCofins->CST = '01';
-    $valores->trib->tribFed->pisCofins->vBCPisCofins = '100.00';
-    $valores->trib->tribFed->pisCofins->pAliqPis = '0.65';
-    $valores->trib->tribFed->pisCofins->pAliqCofins = '3.00';
-    $valores->trib->tribFed->pisCofins->vPis = '0.65';
-    $valores->trib->tribFed->pisCofins->vCofins = '3.00';
-    $valores->trib->tribFed->pisCofins->tpRetPisCofins = '1';
-    $valores->trib->tribFed->vRetCP = '11.00';
-    $valores->trib->tribFed->vRetIRRF = '1.50';
-    $valores->trib->tribFed->vRetCSLL = '1.00';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->indTotTrib = '0';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: makeTribMunMinimo(),
+            indTotTrib: '0',
+            tribFed: new TributacaoFederal(
+                pisCofins: new PisCofins(
+                    CST: TipoCST::AliqBasica,
+                    vBCPisCofins: '100.00',
+                    pAliqPis: '0.65',
+                    pAliqCofins: '3.00',
+                    vPis: '0.65',
+                    vCofins: '3.00',
+                    tpRetPisCofins: TipoRetPisCofins::Retido,
+                ),
+                vRetCP: '11.00',
+                vRetIRRF: '1.50',
+                vRetCSLL: '1.00',
+            ),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -244,17 +246,13 @@ it('builds totTrib with vTotTrib choice', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->vTotTrib = new stdClass;
-    $valores->trib->totTrib->vTotTrib->vTotTribFed = '10.00';
-    $valores->trib->totTrib->vTotTrib->vTotTribEst = '5.00';
-    $valores->trib->totTrib->vTotTrib->vTotTribMun = '3.00';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: makeTribMunMinimo(),
+            vTotTrib: new TotTribValor(vTotTribFed: '10.00', vTotTribEst: '5.00', vTotTribMun: '3.00'),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -269,17 +267,13 @@ it('builds totTrib with pTotTrib choice', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->pTotTrib = new stdClass;
-    $valores->trib->totTrib->pTotTrib->pTotTribFed = '10.00';
-    $valores->trib->totTrib->pTotTrib->pTotTribEst = '5.00';
-    $valores->trib->totTrib->pTotTrib->pTotTribMun = '3.00';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: makeTribMunMinimo(),
+            pTotTrib: new TotTribPercentual(pTotTribFed: '10.00', pTotTribEst: '5.00', pTotTribMun: '3.00'),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -294,14 +288,10 @@ it('builds totTrib with pTotTribSN choice', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->pTotTribSN = '5.00';
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(tribMun: makeTribMunMinimo(), pTotTribSN: '5.00'),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
@@ -309,35 +299,14 @@ it('builds totTrib with pTotTribSN choice', function () {
 });
 
 it('throws when multiple totTrib choices are set', function () {
-    $builder = new ValoresBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->totTrib = new stdClass;
-    $valores->trib->totTrib->indTotTrib = '0';
-    $valores->trib->totTrib->pTotTribSN = '5.00';
-
-    expect(fn () => $builder->build($doc, $valores))
-        ->toThrow(InvalidArgumentException::class, 'apenas um');
+    expect(fn () => new Tributacao(
+        tribMun: makeTribMunMinimo(),
+        indTotTrib: '0',
+        pTotTribSN: '5.00',
+    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('throws when no totTrib choice is set', function () {
-    $builder = new ValoresBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $valores = new stdClass;
-    $valores->vServPrest = makeVServPrestMinimo();
-    $valores->trib = new stdClass;
-    $valores->trib->tribMun = new stdClass;
-    $valores->trib->tribMun->tribISSQN = '1';
-    $valores->trib->tribMun->tpRetISSQN = '1';
-    $valores->trib->totTrib = new stdClass;
-
-    expect(fn () => $builder->build($doc, $valores))
-        ->toThrow(InvalidArgumentException::class, 'requer vTotTrib');
+    expect(fn () => new Tributacao(tribMun: makeTribMunMinimo()))
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });

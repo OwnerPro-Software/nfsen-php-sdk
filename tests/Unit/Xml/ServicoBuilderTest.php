@@ -1,18 +1,26 @@
 <?php
 
+use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\ComercioExterior;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoExteriorObra;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoObra;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\Obra;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
+use Pulsar\NfseNacional\Enums\Dps\Servico\MDIC;
+use Pulsar\NfseNacional\Enums\Dps\Servico\MecAFComexP;
+use Pulsar\NfseNacional\Enums\Dps\Servico\MecAFComexT;
+use Pulsar\NfseNacional\Enums\Dps\Servico\ModoPrestacao;
+use Pulsar\NfseNacional\Enums\Dps\Servico\MovTempBens;
+use Pulsar\NfseNacional\Enums\Dps\Servico\VinculoPrestacao;
+use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 
-function makeServMinimo(): stdClass
+function makeServMinimo(): Servico
 {
-    $serv = new stdClass;
-    $serv->locPrest = new stdClass;
-    $serv->locPrest->cLocPrestacao = '3501608';
-    $serv->cServ = new stdClass;
-    $serv->cServ->cTribNac = '01.01.01.000';
-    $serv->cServ->xDescServ = 'Serviço X';
-    $serv->cServ->cNBS = '123456789';
-
-    return $serv;
+    return new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+    );
 }
 
 it('builds serv element with locPrest and cServ', function () {
@@ -36,9 +44,10 @@ it('uses cPaisPrestacao when cLocPrestacao is not set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->locPrest = new stdClass;
-    $serv->locPrest->cPaisPrestacao = '01058';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cPaisPrestacao: '01058',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -48,35 +57,33 @@ it('uses cPaisPrestacao when cLocPrestacao is not set', function () {
 });
 
 it('throws when both cLocPrestacao and cPaisPrestacao are set', function () {
-    $builder = new ServicoBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $serv = makeServMinimo();
-    $serv->locPrest->cLocPrestacao = '3501608';
-    $serv->locPrest->cPaisPrestacao = '01058';
-
-    expect(fn () => $builder->build($doc, $serv))
-        ->toThrow(InvalidArgumentException::class, 'não ambos');
+    expect(fn () => new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
+        cLocPrestacao: '3501608',
+        cPaisPrestacao: '01058',
+    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('throws when locPrest has no choice set', function () {
-    $builder = new ServicoBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $serv = makeServMinimo();
-    $serv->locPrest = new stdClass;
-
-    expect(fn () => $builder->build($doc, $serv))
-        ->toThrow(InvalidArgumentException::class, 'requer cLocPrestacao');
+    expect(fn () => new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
+    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('includes optional cServ fields when set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->cServ->cTribMun = '01.01';
-    $serv->cServ->cIntContrib = 'INT-001';
+    $serv = new Servico(
+        cServ: new CodigoServico(
+            cTribNac: '01.01.01.000',
+            xDescServ: 'Serviço X',
+            cNBS: '123456789',
+            cTribMun: '01.01',
+            cIntContrib: 'INT-001',
+        ),
+        cLocPrestacao: '3501608',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -90,18 +97,22 @@ it('builds comExt element with all fields', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->comExt = new stdClass;
-    $serv->comExt->mdPrestacao = '1';
-    $serv->comExt->vincPrest = '0';
-    $serv->comExt->tpMoeda = '790';
-    $serv->comExt->vServMoeda = '500.00';
-    $serv->comExt->mecAFComexP = '13';
-    $serv->comExt->mecAFComexT = '13';
-    $serv->comExt->movTempBens = '0';
-    $serv->comExt->nDI = '123456';
-    $serv->comExt->nRE = '789012';
-    $serv->comExt->mdic = '0';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        comExt: new ComercioExterior(
+            mdPrestacao: ModoPrestacao::Transfronteirico,
+            vincPrest: VinculoPrestacao::SemVinculo,
+            tpMoeda: '790',
+            vServMoeda: '500.00',
+            mecAFComexP: MecAFComexP::PROEXFinanciamento,
+            mecAFComexT: MecAFComexT::PromocaoBrasilExterior,
+            movTempBens: MovTempBens::Desconhecido,
+            mdic: MDIC::NaoEnviar,
+            nDI: '123456',
+            nRE: '789012',
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -111,7 +122,7 @@ it('builds comExt element with all fields', function () {
         ->toContain('<vincPrest>0</vincPrest>')
         ->toContain('<tpMoeda>790</tpMoeda>')
         ->toContain('<vServMoeda>500.00</vServMoeda>')
-        ->toContain('<mecAFComexP>13</mecAFComexP>')
+        ->toContain('<mecAFComexP>08</mecAFComexP>')
         ->toContain('<mecAFComexT>13</mecAFComexT>')
         ->toContain('<movTempBens>0</movTempBens>')
         ->toContain('<nDI>123456</nDI>')
@@ -123,16 +134,20 @@ it('builds comExt without optional nDI and nRE', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->comExt = new stdClass;
-    $serv->comExt->mdPrestacao = '1';
-    $serv->comExt->vincPrest = '0';
-    $serv->comExt->tpMoeda = '790';
-    $serv->comExt->vServMoeda = '500.00';
-    $serv->comExt->mecAFComexP = '13';
-    $serv->comExt->mecAFComexT = '13';
-    $serv->comExt->movTempBens = '0';
-    $serv->comExt->mdic = '0';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        comExt: new ComercioExterior(
+            mdPrestacao: ModoPrestacao::Transfronteirico,
+            vincPrest: VinculoPrestacao::SemVinculo,
+            tpMoeda: '790',
+            vServMoeda: '500.00',
+            mecAFComexP: MecAFComexP::PROEXFinanciamento,
+            mecAFComexT: MecAFComexT::PromocaoBrasilExterior,
+            movTempBens: MovTempBens::Desconhecido,
+            mdic: MDIC::NaoEnviar,
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -146,10 +161,11 @@ it('builds obra with cObra choice', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->obra = new stdClass;
-    $serv->obra->inscImobFisc = '12345';
-    $serv->obra->cObra = '67890';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        obra: new Obra(inscImobFisc: '12345', cObra: '67890'),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -165,9 +181,11 @@ it('builds obra with cCIB choice', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->obra = new stdClass;
-    $serv->obra->cCIB = '11111';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        obra: new Obra(cCIB: '11111'),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -182,14 +200,16 @@ it('builds obra with end choice using CEP', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->obra = new stdClass;
-    $serv->obra->end = new stdClass;
-    $serv->obra->end->CEP = '01001000';
-    $serv->obra->end->xLgr = 'Rua Teste';
-    $serv->obra->end->nro = '100';
-    $serv->obra->end->xCpl = 'Sala 1';
-    $serv->obra->end->xBairro = 'Centro';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        obra: new Obra(
+            end: new EnderecoObra(
+                xLgr: 'Rua Teste', nro: '100', xBairro: 'Centro',
+                CEP: '01001000', xCpl: 'Sala 1',
+            ),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -210,16 +230,16 @@ it('builds obra with end choice using endExt', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->obra = new stdClass;
-    $serv->obra->end = new stdClass;
-    $serv->obra->end->endExt = new stdClass;
-    $serv->obra->end->endExt->cEndPost = '10001';
-    $serv->obra->end->endExt->xCidade = 'New York';
-    $serv->obra->end->endExt->xEstProvReg = 'NY';
-    $serv->obra->end->xLgr = '5th Avenue';
-    $serv->obra->end->nro = '350';
-    $serv->obra->end->xBairro = 'Manhattan';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        obra: new Obra(
+            end: new EnderecoObra(
+                xLgr: '5th Avenue', nro: '350', xBairro: 'Manhattan',
+                endExt: new EnderecoExteriorObra(cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY'),
+            ),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -240,9 +260,11 @@ it('builds obra without optional inscImobFisc', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->obra = new stdClass;
-    $serv->obra->cObra = '67890';
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        obra: new Obra(cObra: '67890'),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -253,24 +275,22 @@ it('builds obra without optional inscImobFisc', function () {
 });
 
 it('throws when multiple obra choices are set', function () {
-    $builder = new ServicoBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $serv = makeServMinimo();
-    $serv->obra = new stdClass;
-    $serv->obra->cObra = '67890';
-    $serv->obra->cCIB = '11111';
-
-    expect(fn () => $builder->build($doc, $serv))
-        ->toThrow(InvalidArgumentException::class, 'apenas um');
+    expect(fn () => new Obra(cObra: '67890', cCIB: '11111'))
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('handles accented characters in field values', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = makeServMinimo();
-    $serv->cServ->xDescServ = 'Consultoria em gestão tributária';
+    $serv = new Servico(
+        cServ: new CodigoServico(
+            cTribNac: '01.01.01.000',
+            xDescServ: 'Consultoria em gestão tributária',
+            cNBS: '123456789',
+        ),
+        cLocPrestacao: '3501608',
+    );
 
     $element = $builder->build($doc, $serv);
     $xml = $doc->saveXML($element);

@@ -6,15 +6,15 @@ namespace Pulsar\NfseNacional\Enums;
 
 use InvalidArgumentException;
 
-enum NfseAmbiente: int
+enum NfseAmbiente: string
 {
-    case PRODUCAO = 1;
-    case HOMOLOGACAO = 2;
+    case PRODUCAO = '1';
+    case HOMOLOGACAO = '2';
 
     public static function fromConfig(int|string $v): self
     {
         if (is_int($v) || ctype_digit($v)) {
-            return self::tryFrom((int) $v)
+            return self::tryFrom((string) (int) $v)
                 ?? throw new InvalidArgumentException(
                     sprintf("Ambiente NFSe inválido: '%s'. Valores aceitos: 1, 2, 'producao', 'homologacao'.", $v)
                 );

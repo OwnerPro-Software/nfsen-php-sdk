@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\NfseClient;
@@ -243,12 +243,21 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
 it('emitir validates XML against XSD before sending', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'SHOULD_NOT_REACH'], 200)]);
 
+    $servico = new \Pulsar\NfseNacional\DTOs\Dps\Servico\Servico(
+        cServ: new \Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico(
+            cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD',
+            xDescServ: 'Serviço',
+            cNBS: '123456789',
+        ),
+        cLocPrestacao: '3501608',
+    );
+
     $data = new DpsData(
-        infDPS: makeInfDps(['tpEmit' => 99]), // invalid per XSD (expects 1-3)
+        infDPS: makeInfDps(),
         prest: makePrestadorCnpj(),
-        toma: new stdClass,
-        serv: makeServicoMinimo(),
-        valores: new stdClass,
+        toma: null,
+        serv: $servico,
+        valores: null,
     );
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');

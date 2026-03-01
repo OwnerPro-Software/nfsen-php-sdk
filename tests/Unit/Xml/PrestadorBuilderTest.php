@@ -1,18 +1,27 @@
 <?php
 
+use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoExterior;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\RegTrib;
+use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
+use Pulsar\NfseNacional\Enums\Dps\Prestador\RegApTribSN;
+use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
+use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
+
+function makeRegTrib(): RegTrib
+{
+    return new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum);
+}
 
 it('builds prest element with CNPJ', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->xNome = 'Empresa Teste';
-    $regTrib = new stdClass;
-    $regTrib->opSimpNac = 1;
-    $regTrib->regEspTrib = 0;
-    $prest->regTrib = $regTrib;
+    $prest = new Prestador(CNPJ: '12345678000195', regTrib: makeRegTrib(), xNome: 'Empresa Teste');
 
     $element = $builder->build($doc, $prest);
     $doc->appendChild($element);
@@ -27,13 +36,11 @@ it('builds prest element with CPF when no CNPJ', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CPF = '12345678901';
-    $prest->xNome = 'Pessoa Física';
-    $regTrib = new stdClass;
-    $regTrib->opSimpNac = 0;
-    $regTrib->regEspTrib = 0;
-    $prest->regTrib = $regTrib;
+    $prest = new Prestador(
+        CPF: '12345678901',
+        regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
+        xNome: 'Pessoa Física',
+    );
 
     $element = $builder->build($doc, $prest);
 
@@ -44,14 +51,13 @@ it('includes CAEPF and IM when set', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->CAEPF = '12345678901234';
-    $prest->IM = '9876543';
-    $prest->xNome = 'Empresa';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regEspTrib = 0;
+    $prest = new Prestador(
+        CNPJ: '12345678000195',
+        regTrib: makeRegTrib(),
+        CAEPF: '12345678901234',
+        IM: '9876543',
+        xNome: 'Empresa',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -64,12 +70,11 @@ it('builds prest element with NIF', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->NIF = 'NIF999';
-    $prest->xNome = 'Empresa Estrangeira';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 0;
-    $prest->regTrib->regEspTrib = 0;
+    $prest = new Prestador(
+        NIF: 'NIF999',
+        regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
+        xNome: 'Empresa Estrangeira',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -83,12 +88,11 @@ it('builds prest element with cNaoNIF', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->cNaoNIF = '1';
-    $prest->xNome = 'Empresa Estrangeira';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 0;
-    $prest->regTrib->regEspTrib = 0;
+    $prest = new Prestador(
+        cNaoNIF: CodNaoNIF::Dispensado,
+        regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
+        xNome: 'Empresa Estrangeira',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -100,47 +104,32 @@ it('builds prest element with cNaoNIF', function () {
 });
 
 it('throws when both CNPJ and CPF are set', function () {
-    $builder = new PrestadorBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->CPF = '12345678901';
-    $prest->xNome = 'Empresa';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regEspTrib = 0;
-
-    expect(fn () => $builder->build($doc, $prest))
-        ->toThrow(InvalidArgumentException::class, 'apenas um');
+    expect(fn () => new Prestador(
+        CNPJ: '12345678000195',
+        CPF: '12345678901',
+        regTrib: makeRegTrib(),
+        xNome: 'Empresa',
+    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('throws when no identification is set', function () {
-    $builder = new PrestadorBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $prest = new stdClass;
-    $prest->xNome = 'Empresa';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regEspTrib = 0;
-
-    expect(fn () => $builder->build($doc, $prest))
-        ->toThrow(InvalidArgumentException::class, 'requer CNPJ');
+    expect(fn () => new Prestador(
+        regTrib: makeRegTrib(),
+        xNome: 'Empresa',
+    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('includes fone and email when set', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->xNome = 'Empresa';
-    $prest->fone = '11999998888';
-    $prest->email = 'empresa@test.com';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regEspTrib = 0;
+    $prest = new Prestador(
+        CNPJ: '12345678000195',
+        regTrib: makeRegTrib(),
+        xNome: 'Empresa',
+        fone: '11999998888',
+        email: 'empresa@test.com',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -153,13 +142,15 @@ it('includes regApTribSN when set', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->xNome = 'Empresa';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regApTribSN = 2;
-    $prest->regTrib->regEspTrib = 0;
+    $prest = new Prestador(
+        CNPJ: '12345678000195',
+        regTrib: new RegTrib(
+            opSimpNac: OpSimpNac::NaoOptante,
+            regEspTrib: RegEspTrib::Nenhum,
+            regApTribSN: RegApTribSN::ApuracaoSNIssqnFora,
+        ),
+        xNome: 'Empresa',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -170,20 +161,17 @@ it('builds endNac address block', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->xNome = 'Empresa';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regEspTrib = 0;
-
-    $prest->end = new stdClass;
-    $prest->end->endNac = new stdClass;
-    $prest->end->endNac->cMun = '3501608';
-    $prest->end->endNac->CEP = '01001000';
-    $prest->end->xLgr = 'Rua Teste';
-    $prest->end->nro = '100';
-    $prest->end->xBairro = 'Centro';
+    $prest = new Prestador(
+        CNPJ: '12345678000195',
+        regTrib: makeRegTrib(),
+        xNome: 'Empresa',
+        end: new Endereco(
+            xLgr: 'Rua Teste',
+            nro: '100',
+            xBairro: 'Centro',
+            endNac: new EnderecoNacional(cMun: '3501608', CEP: '01001000'),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -200,22 +188,17 @@ it('builds endExt address block', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->xNome = 'Empresa';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regEspTrib = 0;
-
-    $prest->end = new stdClass;
-    $prest->end->endExt = new stdClass;
-    $prest->end->endExt->cPais = '01058';
-    $prest->end->endExt->cEndPost = '10001';
-    $prest->end->endExt->xCidade = 'New York';
-    $prest->end->endExt->xEstProvReg = 'NY';
-    $prest->end->xLgr = '5th Avenue';
-    $prest->end->nro = '200';
-    $prest->end->xBairro = 'Manhattan';
+    $prest = new Prestador(
+        CNPJ: '12345678000195',
+        regTrib: makeRegTrib(),
+        xNome: 'Empresa',
+        end: new Endereco(
+            xLgr: '5th Avenue',
+            nro: '200',
+            xBairro: 'Manhattan',
+            endExt: new EnderecoExterior(cPais: '01058', cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY'),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -231,21 +214,18 @@ it('includes xCpl in address when set', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $prest = new stdClass;
-    $prest->CNPJ = '12345678000195';
-    $prest->xNome = 'Empresa';
-    $prest->regTrib = new stdClass;
-    $prest->regTrib->opSimpNac = 1;
-    $prest->regTrib->regEspTrib = 0;
-
-    $prest->end = new stdClass;
-    $prest->end->endNac = new stdClass;
-    $prest->end->endNac->cMun = '3501608';
-    $prest->end->endNac->CEP = '01001000';
-    $prest->end->xLgr = 'Rua Teste';
-    $prest->end->nro = '100';
-    $prest->end->xCpl = 'Andar 5';
-    $prest->end->xBairro = 'Centro';
+    $prest = new Prestador(
+        CNPJ: '12345678000195',
+        regTrib: makeRegTrib(),
+        xNome: 'Empresa',
+        end: new Endereco(
+            xLgr: 'Rua Teste',
+            nro: '100',
+            xBairro: 'Centro',
+            endNac: new EnderecoNacional(cMun: '3501608', CEP: '01001000'),
+            xCpl: 'Andar 5',
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 

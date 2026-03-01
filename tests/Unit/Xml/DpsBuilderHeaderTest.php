@@ -1,6 +1,12 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\RegTrib;
+use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
+use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function buildDps(DpsData $data): string
@@ -47,11 +53,11 @@ it('includes tpAmb in infDPS', function (DpsData $data) {
 
 it('includes cMotivoEmisTI when set', function () {
     $data = new DpsData(
-        makeInfDps(['cMotivoEmisTI' => '1']),
+        makeInfDps(cMotivoEmisTI: MotivoEmissaoTI::ImportacaoServico),
         makePrestadorCnpj(),
-        new stdClass,
+        null,
         makeServicoMinimo(),
-        new stdClass,
+        null,
     );
 
     $xml = buildDps($data);
@@ -64,11 +70,11 @@ it('includes cMotivoEmisTI when set', function () {
 
 it('includes chNFSeRej when set', function () {
     $data = new DpsData(
-        makeInfDps(['chNFSeRej' => 'CHAVE_REJEITADA_123']),
+        makeInfDps(chNFSeRej: 'CHAVE_REJEITADA_123'),
         makePrestadorCnpj(),
-        new stdClass,
+        null,
         makeServicoMinimo(),
-        new stdClass,
+        null,
     );
 
     $xml = buildDps($data);
@@ -80,11 +86,9 @@ it('includes chNFSeRej when set', function () {
 });
 
 it('includes toma element as child of infDPS when tomador has data', function () {
-    $tomador = new stdClass;
-    $tomador->CNPJ = '98765432000111';
-    $tomador->xNome = 'Tomador Ltda';
+    $tomador = new Tomador(CNPJ: '98765432000111', xNome: 'Tomador Ltda');
 
-    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), $tomador, makeServicoMinimo(), new stdClass);
+    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), $tomador, makeServicoMinimo(), null);
 
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
@@ -103,10 +107,16 @@ it('throws NfseException when scheme file does not exist', function (DpsData $da
 })->with('dpsData');
 
 it('throws NfseException on invalid XSD', function () {
-    $servico = makeServicoMinimo();
-    $servico->cServ->cTribNac = 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH';
+    $servico = new \Pulsar\NfseNacional\DTOs\Dps\Servico\Servico(
+        cServ: new \Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico(
+            cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH',
+            xDescServ: 'Serviço',
+            cNBS: '123456789',
+        ),
+        cLocPrestacao: '3501608',
+    );
 
-    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), new stdClass, $servico, new stdClass);
+    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), null, $servico, null);
 
     $builder = new DpsBuilder(makeXsdValidator());
 
@@ -124,15 +134,13 @@ it('generates correct Id for CNPJ prestador', function (DpsData $data) {
 })->with('dpsData');
 
 it('generates correct Id for CPF prestador', function () {
-    $prestador = new stdClass;
-    $prestador->CPF = '12345678901';
-    $prestador->xNome = 'Pessoa Física';
-    $regTrib = new stdClass;
-    $regTrib->opSimpNac = 0;
-    $regTrib->regEspTrib = 0;
-    $prestador->regTrib = $regTrib;
+    $prestador = new Prestador(
+        CPF: '12345678901',
+        regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
+        xNome: 'Pessoa Física',
+    );
 
-    $data = new DpsData(makeInfDps(), $prestador, new stdClass, makeServicoMinimo(), new stdClass);
+    $data = new DpsData(makeInfDps(), $prestador, null, makeServicoMinimo(), null);
 
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
@@ -144,11 +152,11 @@ it('generates correct Id for CPF prestador', function () {
 
 it('generates Id with max serie and large ndps padding', function () {
     $data = new DpsData(
-        makeInfDps(['serie' => '99999', 'nDPS' => 999999999999999]),
+        makeInfDps(serie: '99999', nDPS: 999999999999999),
         makePrestadorCnpj(),
-        new stdClass,
+        null,
         makeServicoMinimo(),
-        new stdClass,
+        null,
     );
 
     $xml = buildDps($data);
@@ -161,11 +169,11 @@ it('generates Id with max serie and large ndps padding', function () {
 
 it('generates Id with single-digit serie and ndps left-padded', function () {
     $data = new DpsData(
-        makeInfDps(['nDPS' => 42]),
+        makeInfDps(nDPS: 42),
         makePrestadorCnpj(),
-        new stdClass,
+        null,
         makeServicoMinimo(),
-        new stdClass,
+        null,
     );
 
     $xml = buildDps($data);
@@ -178,11 +186,11 @@ it('generates Id with single-digit serie and ndps left-padded', function () {
 
 it('generates Id truncating cLocEmi to 7 chars', function () {
     $data = new DpsData(
-        makeInfDps(['cLocEmi' => '35016089999']),
+        makeInfDps(cLocEmi: '35016089999'),
         makePrestadorCnpj(),
-        new stdClass,
+        null,
         makeServicoMinimo(),
-        new stdClass,
+        null,
     );
 
     $xml = buildDps($data);

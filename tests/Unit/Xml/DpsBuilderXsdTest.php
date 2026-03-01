@@ -1,6 +1,6 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
 use Pulsar\NfseNacional\Xml\DpsBuilder;

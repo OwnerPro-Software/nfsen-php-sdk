@@ -1,21 +1,20 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('exposes all five groups as readonly properties', function () {
-    $infDps = new stdClass;
-    $prestador = new stdClass;
-    $tomador = new stdClass;
-    $servico = new stdClass;
-    $valores = new stdClass;
+    $infDps = makeInfDps();
+    $prestador = makePrestadorCnpj();
+    $servico = makeServicoMinimo();
+    $valores = makeValoresMinimo();
 
-    $data = new DpsData($infDps, $prestador, $tomador, $servico, $valores);
+    $data = new DpsData($infDps, $prestador, null, $servico, $valores);
 
     expect($data)
         ->infDPS->toBe($infDps)
         ->prest->toBe($prestador)
-        ->toma->toBe($tomador)
+        ->toma->toBeNull()
         ->serv->toBe($servico)
         ->valores->toBe($valores);
 });

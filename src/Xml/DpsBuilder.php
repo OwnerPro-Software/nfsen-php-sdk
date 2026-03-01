@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
-use Pulsar\NfseNacional\DTOs\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
+use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
+use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
@@ -47,29 +51,29 @@ final readonly class DpsBuilder
         $infDps->setAttribute('Id', $this->generateId($data));
 
         $d = $data->infDPS;
-        $infDps->appendChild($this->text($doc, 'tpAmb', (string) $d->tpAmb));
+        $infDps->appendChild($this->text($doc, 'tpAmb', $d->tpAmb->value));
         $infDps->appendChild($this->text($doc, 'dhEmi', $d->dhEmi));
         $infDps->appendChild($this->text($doc, 'verAplic', $d->verAplic));
         $infDps->appendChild($this->text($doc, 'serie', $d->serie));
         $infDps->appendChild($this->text($doc, 'nDPS', (string) $d->nDPS));
         $infDps->appendChild($this->text($doc, 'dCompet', $d->dCompet));
-        $infDps->appendChild($this->text($doc, 'tpEmit', (string) $d->tpEmit));
-        if (isset($d->cMotivoEmisTI)) {
-            $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cMotivoEmisTI));
+        $infDps->appendChild($this->text($doc, 'tpEmit', $d->tpEmit->value));
+        if ($d->cMotivoEmisTI instanceof MotivoEmissaoTI) {
+            $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cMotivoEmisTI->value));
         }
 
-        if (isset($d->chNFSeRej)) {
+        if ($d->chNFSeRej !== null) {
             $infDps->appendChild($this->text($doc, 'chNFSeRej', $d->chNFSeRej));
         }
 
         $infDps->appendChild($this->text($doc, 'cLocEmi', $d->cLocEmi));
 
-        if ((array) $data->prest !== []) {
+        if ($data->prest instanceof Prestador) {
             $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prest));
         }
 
         // toma (optional)
-        if ((array) $data->toma !== []) {
+        if ($data->toma instanceof Tomador) {
             $infDps->appendChild((new TomadorBuilder)->build($doc, $data->toma));
         }
 
@@ -77,7 +81,7 @@ final readonly class DpsBuilder
         $infDps->appendChild((new ServicoBuilder)->build($doc, $data->serv));
 
         // valores (obrigatório quando houver dados)
-        if ((array) $data->valores !== []) {
+        if ($data->valores instanceof Valores) {
             $infDps->appendChild((new ValoresBuilder)->build($doc, $data->valores));
         }
 
@@ -92,11 +96,11 @@ final readonly class DpsBuilder
         $d = $data->infDPS;
         $p = $data->prest;
         $id = 'DPS';
-        $id .= substr((string) $d->cLocEmi, 0, 7);
-        $id .= isset($p->CNPJ) ? '2' : '1';
-        $inscricao = $p->CNPJ ?? $p->CPF ?? '';
+        $id .= substr($d->cLocEmi, 0, 7);
+        $id .= $p instanceof Prestador && $p->CNPJ !== null ? '2' : '1';
+        $inscricao = $p instanceof Prestador ? ($p->CNPJ ?? $p->CPF ?? '') : '';
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
-        $id .= str_pad((string) $d->serie, 5, '0', STR_PAD_LEFT);
+        $id .= str_pad($d->serie, 5, '0', STR_PAD_LEFT);
 
         return $id.str_pad((string) $d->nDPS, 15, '0', STR_PAD_LEFT);
     }

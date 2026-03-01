@@ -1,14 +1,18 @@
 <?php
 
+use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoExterior;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 
 it('builds toma element with CNPJ', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->CNPJ = '98765432000111';
-    $toma->xNome = 'Tomador Ltda';
+    $toma = new Tomador(CNPJ: '98765432000111', xNome: 'Tomador Ltda');
 
     $element = $builder->build($doc, $toma);
 
@@ -20,9 +24,7 @@ it('builds toma element with CPF', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->CPF = '12345678901';
-    $toma->xNome = 'Pessoa Física';
+    $toma = new Tomador(CPF: '12345678901', xNome: 'Pessoa Física');
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -35,9 +37,7 @@ it('builds toma element with NIF', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->NIF = 'NIF12345';
-    $toma->xNome = 'Estrangeiro';
+    $toma = new Tomador(NIF: 'NIF12345', xNome: 'Estrangeiro');
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -51,9 +51,7 @@ it('builds toma element with cNaoNIF', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->cNaoNIF = '1';
-    $toma->xNome = 'Estrangeiro';
+    $toma = new Tomador(cNaoNIF: CodNaoNIF::Dispensado, xNome: 'Estrangeiro');
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -66,11 +64,7 @@ it('includes CAEPF and IM when set', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->CPF = '12345678901';
-    $toma->CAEPF = '12345678901234';
-    $toma->IM = '1234567';
-    $toma->xNome = 'Pessoa';
+    $toma = new Tomador(CPF: '12345678901', xNome: 'Pessoa', CAEPF: '12345678901234', IM: '1234567');
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -83,17 +77,16 @@ it('builds endNac address block', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->CNPJ = '98765432000111';
-    $toma->xNome = 'Tomador';
-
-    $toma->end = new stdClass;
-    $toma->end->endNac = new stdClass;
-    $toma->end->endNac->cMun = '3501608';
-    $toma->end->endNac->CEP = '01001000';
-    $toma->end->xLgr = 'Rua Teste';
-    $toma->end->nro = '100';
-    $toma->end->xBairro = 'Centro';
+    $toma = new Tomador(
+        CNPJ: '98765432000111',
+        xNome: 'Tomador',
+        end: new Endereco(
+            xLgr: 'Rua Teste',
+            nro: '100',
+            xBairro: 'Centro',
+            endNac: new EnderecoNacional(cMun: '3501608', CEP: '01001000'),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -111,19 +104,16 @@ it('builds endExt address block', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->CNPJ = '98765432000111';
-    $toma->xNome = 'Tomador';
-
-    $toma->end = new stdClass;
-    $toma->end->endExt = new stdClass;
-    $toma->end->endExt->cPais = '01058';
-    $toma->end->endExt->cEndPost = '10001';
-    $toma->end->endExt->xCidade = 'New York';
-    $toma->end->endExt->xEstProvReg = 'NY';
-    $toma->end->xLgr = '5th Avenue';
-    $toma->end->nro = '200';
-    $toma->end->xBairro = 'Manhattan';
+    $toma = new Tomador(
+        CNPJ: '98765432000111',
+        xNome: 'Tomador',
+        end: new Endereco(
+            xLgr: '5th Avenue',
+            nro: '200',
+            xBairro: 'Manhattan',
+            endExt: new EnderecoExterior(cPais: '01058', cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY'),
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -140,18 +130,17 @@ it('includes xCpl in address when set', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->CNPJ = '98765432000111';
-    $toma->xNome = 'Tomador';
-
-    $toma->end = new stdClass;
-    $toma->end->endNac = new stdClass;
-    $toma->end->endNac->cMun = '3501608';
-    $toma->end->endNac->CEP = '01001000';
-    $toma->end->xLgr = 'Rua Teste';
-    $toma->end->nro = '100';
-    $toma->end->xCpl = 'Sala 5';
-    $toma->end->xBairro = 'Centro';
+    $toma = new Tomador(
+        CNPJ: '98765432000111',
+        xNome: 'Tomador',
+        end: new Endereco(
+            xLgr: 'Rua Teste',
+            nro: '100',
+            xBairro: 'Centro',
+            endNac: new EnderecoNacional(cMun: '3501608', CEP: '01001000'),
+            xCpl: 'Sala 5',
+        ),
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -159,38 +148,25 @@ it('includes xCpl in address when set', function () {
 });
 
 it('throws when both CNPJ and CPF are set', function () {
-    $builder = new TomadorBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $toma = new stdClass;
-    $toma->CNPJ = '98765432000111';
-    $toma->CPF = '12345678901';
-    $toma->xNome = 'Tomador';
-
-    expect(fn () => $builder->build($doc, $toma))
-        ->toThrow(InvalidArgumentException::class, 'apenas um');
+    expect(fn () => new Tomador(CNPJ: '98765432000111', CPF: '12345678901', xNome: 'Tomador'))
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('throws when no identification is set', function () {
-    $builder = new TomadorBuilder;
-    $doc = new DOMDocument('1.0', 'UTF-8');
-
-    $toma = new stdClass;
-    $toma->xNome = 'Tomador';
-
-    expect(fn () => $builder->build($doc, $toma))
-        ->toThrow(InvalidArgumentException::class, 'requer CNPJ');
+    expect(fn () => new Tomador(xNome: 'Tomador'))
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
 });
 
 it('includes fone and email when set', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new stdClass;
-    $toma->CNPJ = '98765432000111';
-    $toma->xNome = 'Tomador';
-    $toma->fone = '11999998888';
-    $toma->email = 'tomador@test.com';
+    $toma = new Tomador(
+        CNPJ: '98765432000111',
+        xNome: 'Tomador',
+        fone: '11999998888',
+        email: 'tomador@test.com',
+    );
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 

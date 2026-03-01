@@ -2,6 +2,22 @@
 
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\DTOs\Dps\InfDPS\InfDPS;
+use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
+use Pulsar\NfseNacional\DTOs\Dps\Shared\RegTrib;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado;
+use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Enums\Dps\InfDPS\TipoEmitente;
+use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
+use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;
+use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
+use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Support\XsdValidator;
 
 function makePfxContent(): string
@@ -24,56 +40,69 @@ function makeTestCertificate(): Certificate
     return (new CertificateManager(makePfxContent(), 'secret'))->getCertificate();
 }
 
-/**
- * @param  array<string, mixed>  $overrides
- */
-function makeInfDps(array $overrides = []): stdClass
-{
-    $infDps = new stdClass;
-    $infDps->tpAmb = $overrides['tpAmb'] ?? 2;
-    $infDps->dhEmi = $overrides['dhEmi'] ?? '2026-02-27T10:00:00-03:00';
-    $infDps->verAplic = $overrides['verAplic'] ?? '1.0';
-    $infDps->serie = $overrides['serie'] ?? '1';
-    $infDps->nDPS = $overrides['nDPS'] ?? 1;
-    $infDps->dCompet = $overrides['dCompet'] ?? '2026-02-27';
-    $infDps->tpEmit = $overrides['tpEmit'] ?? 1;
-    $infDps->cLocEmi = $overrides['cLocEmi'] ?? '3501608';
-
-    foreach ($overrides as $key => $value) {
-        if (! property_exists($infDps, $key)) {
-            $infDps->{$key} = $value;
-        }
-    }
-
-    return $infDps;
+function makeInfDps(
+    ?NfseAmbiente $tpAmb = null,
+    ?string $dhEmi = null,
+    ?string $verAplic = null,
+    ?string $serie = null,
+    ?int $nDPS = null,
+    ?string $dCompet = null,
+    ?TipoEmitente $tpEmit = null,
+    ?string $cLocEmi = null,
+    ?MotivoEmissaoTI $cMotivoEmisTI = null,
+    ?string $chNFSeRej = null,
+): InfDPS {
+    return new InfDPS(
+        tpAmb: $tpAmb ?? NfseAmbiente::HOMOLOGACAO,
+        dhEmi: $dhEmi ?? '2026-02-27T10:00:00-03:00',
+        verAplic: $verAplic ?? '1.0',
+        serie: $serie ?? '1',
+        nDPS: $nDPS ?? 1,
+        dCompet: $dCompet ?? '2026-02-27',
+        tpEmit: $tpEmit ?? TipoEmitente::Prestador,
+        cLocEmi: $cLocEmi ?? '3501608',
+        cMotivoEmisTI: $cMotivoEmisTI,
+        chNFSeRej: $chNFSeRej,
+    );
 }
 
-/**
- * @param  array<string, mixed>  $overrides
- */
-function makePrestadorCnpj(array $overrides = []): stdClass
-{
-    $prestador = new stdClass;
-    $prestador->CNPJ = $overrides['CNPJ'] ?? '12345678000195';
-    $prestador->xNome = $overrides['xNome'] ?? 'Empresa Teste';
-
-    $regTrib = new stdClass;
-    $regTrib->opSimpNac = $overrides['opSimpNac'] ?? 1;
-    $regTrib->regEspTrib = $overrides['regEspTrib'] ?? 0;
-    $prestador->regTrib = $regTrib;
-
-    return $prestador;
+function makePrestadorCnpj(
+    ?string $CNPJ = null,
+    ?string $xNome = null,
+    ?RegTrib $regTrib = null,
+): Prestador {
+    return new Prestador(
+        CNPJ: $CNPJ ?? '12345678000195',
+        regTrib: $regTrib ?? new RegTrib(
+            opSimpNac: OpSimpNac::NaoOptante,
+            regEspTrib: RegEspTrib::Nenhum,
+        ),
+        xNome: $xNome ?? 'Empresa Teste',
+    );
 }
 
-function makeServicoMinimo(): stdClass
+function makeServicoMinimo(?string $cLocPrestacao = null): Servico
 {
-    $servico = new stdClass;
-    $servico->locPrest = new stdClass;
-    $servico->locPrest->cLocPrestacao = '3501608';
-    $servico->cServ = new stdClass;
-    $servico->cServ->cTribNac = '010101';
-    $servico->cServ->xDescServ = 'Serviço';
-    $servico->cServ->cNBS = '123456789';
+    return new Servico(
+        cServ: new CodigoServico(
+            cTribNac: '010101',
+            xDescServ: 'Serviço',
+            cNBS: '123456789',
+        ),
+        cLocPrestacao: $cLocPrestacao ?? '3501608',
+    );
+}
 
-    return $servico;
+function makeValoresMinimo(?string $vServ = null): Valores
+{
+    return new Valores(
+        vServPrest: new ValorServicoPrestado(vServ: $vServ ?? '100.00'),
+        trib: new Tributacao(
+            tribMun: new TributacaoMunicipal(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TipoRetISSQN::NaoRetido,
+            ),
+            indTotTrib: '0',
+        ),
+    );
 }

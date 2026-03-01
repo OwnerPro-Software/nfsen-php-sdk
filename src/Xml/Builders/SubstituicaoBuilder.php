@@ -23,7 +23,7 @@ final readonly class SubstituicaoBuilder
     ) {}
 
     public function buildAndValidate(
-        int $tpAmb,
+        string $tpAmb,
         string $verAplic,
         string $dhEvento,
         ?string $cnpjAutor,
@@ -48,7 +48,7 @@ final readonly class SubstituicaoBuilder
     }
 
     public function build(
-        int $tpAmb,
+        string $tpAmb,
         string $verAplic,
         string $dhEvento,
         ?string $cnpjAutor,
@@ -70,7 +70,7 @@ final readonly class SubstituicaoBuilder
         $infPedReg = $doc->createElement('infPedReg');
         $infPedReg->setAttribute('Id', $this->generateId($chNFSe, $nPedRegEvento));
 
-        $infPedReg->appendChild($this->text($doc, 'tpAmb', (string) $tpAmb));
+        $infPedReg->appendChild($this->text($doc, 'tpAmb', $tpAmb));
         $infPedReg->appendChild($this->text($doc, 'verAplic', $verAplic));
         $infPedReg->appendChild($this->text($doc, 'dhEvento', $dhEvento));
 
