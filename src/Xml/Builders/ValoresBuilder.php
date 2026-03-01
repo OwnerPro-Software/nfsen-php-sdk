@@ -17,18 +17,13 @@ final class ValoresBuilder
         $el = $doc->createElement('valores');
 
         // vServPrest (obrigatório)
-        if (isset($valores->vservprest)) {
-            $vServ = $doc->createElement('vServPrest');
-            if (isset($valores->vservprest->vreceb)) {
-                $vServ->appendChild($this->text($doc, 'vReceb', $valores->vservprest->vreceb));
-            }
-
-            if (isset($valores->vservprest->vserv)) {
-                $vServ->appendChild($this->text($doc, 'vServ', $valores->vservprest->vserv));
-            }
-
-            $el->appendChild($vServ);
+        $vServPrest = $doc->createElement('vServPrest');
+        if (isset($valores->vservprest->vreceb)) {
+            $vServPrest->appendChild($this->text($doc, 'vReceb', $valores->vservprest->vreceb));
         }
+
+        $vServPrest->appendChild($this->text($doc, 'vServ', $valores->vservprest->vserv));
+        $el->appendChild($vServPrest);
 
         // vDescCondIncond (opcional)
         if (isset($valores->vdesccondincond)) {
@@ -45,9 +40,7 @@ final class ValoresBuilder
         }
 
         // trib (obrigatório)
-        if (isset($valores->trib)) {
-            $el->appendChild($this->buildTrib($doc, $valores->trib));
-        }
+        $el->appendChild($this->buildTrib($doc, $valores->trib));
 
         return $el;
     }
@@ -57,51 +50,43 @@ final class ValoresBuilder
         $el = $doc->createElement('trib');
 
         // tribMun (obrigatório)
-        if (isset($trib->tribmun)) {
-            $tribMun = $doc->createElement('tribMun');
-            $tribMun->appendChild($this->text($doc, 'tribISSQN', $trib->tribmun->tribissqn));
-            if (isset($trib->tribmun->cpaisresult)) {
-                $tribMun->appendChild($this->text($doc, 'cPaisResult', $trib->tribmun->cpaisresult));
-            }
-
-            if (isset($trib->tribmun->tpimunidade)) {
-                $tribMun->appendChild($this->text($doc, 'tpImunidade', $trib->tribmun->tpimunidade));
-            }
-
-            if (isset($trib->tribmun->exigsusp)) {
-                $exigSusp = $doc->createElement('exigSusp');
-                if (isset($trib->tribmun->exigsusp->nmotsusp)) {
-                    $exigSusp->appendChild($this->text($doc, 'nMotSusp', $trib->tribmun->exigsusp->nmotsusp));
-                }
-
-                if (isset($trib->tribmun->exigsusp->nprocesso)) {
-                    $exigSusp->appendChild($this->text($doc, 'nProcesso', $trib->tribmun->exigsusp->nprocesso));
-                }
-
-                $tribMun->appendChild($exigSusp);
-            }
-
-            if (isset($trib->tribmun->bm)) {
-                $bm = $doc->createElement('BM');
-                $bm->appendChild($this->text($doc, 'nBM', $trib->tribmun->bm->nbm));
-                if (isset($trib->tribmun->bm->vredbcbm)) {
-                    $bm->appendChild($this->text($doc, 'vRedBCBM', $trib->tribmun->bm->vredbcbm));
-                }
-
-                if (isset($trib->tribmun->bm->predbcbm)) {
-                    $bm->appendChild($this->text($doc, 'pRedBCBM', $trib->tribmun->bm->predbcbm));
-                }
-
-                $tribMun->appendChild($bm);
-            }
-
-            $tribMun->appendChild($this->text($doc, 'tpRetISSQN', $trib->tribmun->tpretissqn));
-            if (isset($trib->tribmun->paliq)) {
-                $tribMun->appendChild($this->text($doc, 'pAliq', $trib->tribmun->paliq));
-            }
-
-            $el->appendChild($tribMun);
+        $tribMun = $doc->createElement('tribMun');
+        $tribMun->appendChild($this->text($doc, 'tribISSQN', $trib->tribmun->tribissqn));
+        if (isset($trib->tribmun->cpaisresult)) {
+            $tribMun->appendChild($this->text($doc, 'cPaisResult', $trib->tribmun->cpaisresult));
         }
+
+        if (isset($trib->tribmun->tpimunidade)) {
+            $tribMun->appendChild($this->text($doc, 'tpImunidade', $trib->tribmun->tpimunidade));
+        }
+
+        if (isset($trib->tribmun->exigsusp)) {
+            $exigSusp = $doc->createElement('exigSusp');
+            $exigSusp->appendChild($this->text($doc, 'tpSusp', $trib->tribmun->exigsusp->tpsusp));
+            $exigSusp->appendChild($this->text($doc, 'nProcesso', $trib->tribmun->exigsusp->nprocesso));
+            $tribMun->appendChild($exigSusp);
+        }
+
+        if (isset($trib->tribmun->bm)) {
+            $bm = $doc->createElement('BM');
+            $bm->appendChild($this->text($doc, 'nBM', $trib->tribmun->bm->nbm));
+            if (isset($trib->tribmun->bm->vredbcbm)) {
+                $bm->appendChild($this->text($doc, 'vRedBCBM', $trib->tribmun->bm->vredbcbm));
+            }
+
+            if (isset($trib->tribmun->bm->predbcbm)) {
+                $bm->appendChild($this->text($doc, 'pRedBCBM', $trib->tribmun->bm->predbcbm));
+            }
+
+            $tribMun->appendChild($bm);
+        }
+
+        $tribMun->appendChild($this->text($doc, 'tpRetISSQN', $trib->tribmun->tpretissqn));
+        if (isset($trib->tribmun->paliq)) {
+            $tribMun->appendChild($this->text($doc, 'pAliq', $trib->tribmun->paliq));
+        }
+
+        $el->appendChild($tribMun);
 
         // tribFed (opcional)
         if (isset($trib->tribfed)) {
@@ -155,28 +140,26 @@ final class ValoresBuilder
         }
 
         // totTrib (obrigatório — choice)
-        if (isset($trib->totaltrib)) {
-            $totTrib = $doc->createElement('totTrib');
-            if (isset($trib->totaltrib->vtottrib)) {
-                $vTotTrib = $doc->createElement('vTotTrib');
-                $vTotTrib->appendChild($this->text($doc, 'vTotTribFed', $trib->totaltrib->vtottrib->vtottribfed));
-                $vTotTrib->appendChild($this->text($doc, 'vTotTribEst', $trib->totaltrib->vtottrib->vtottribest));
-                $vTotTrib->appendChild($this->text($doc, 'vTotTribMun', $trib->totaltrib->vtottrib->vtottribmun));
-                $totTrib->appendChild($vTotTrib);
-            } elseif (isset($trib->totaltrib->ptottrib)) {
-                $pTotTrib = $doc->createElement('pTotTrib');
-                $pTotTrib->appendChild($this->text($doc, 'pTotTribFed', $trib->totaltrib->ptottrib->ptottribfed));
-                $pTotTrib->appendChild($this->text($doc, 'pTotTribEst', $trib->totaltrib->ptottrib->ptottribest));
-                $pTotTrib->appendChild($this->text($doc, 'pTotTribMun', $trib->totaltrib->ptottrib->ptottribmun));
-                $totTrib->appendChild($pTotTrib);
-            } elseif (isset($trib->totaltrib->indtottrib)) {
-                $totTrib->appendChild($this->text($doc, 'indTotTrib', $trib->totaltrib->indtottrib));
-            } elseif (isset($trib->totaltrib->ptottribsn)) {
-                $totTrib->appendChild($this->text($doc, 'pTotTribSN', $trib->totaltrib->ptottribsn));
-            }
-
-            $el->appendChild($totTrib);
+        $totTrib = $doc->createElement('totTrib');
+        if (isset($trib->totaltrib->vtottrib)) {
+            $vTotTrib = $doc->createElement('vTotTrib');
+            $vTotTrib->appendChild($this->text($doc, 'vTotTribFed', $trib->totaltrib->vtottrib->vtottribfed));
+            $vTotTrib->appendChild($this->text($doc, 'vTotTribEst', $trib->totaltrib->vtottrib->vtottribest));
+            $vTotTrib->appendChild($this->text($doc, 'vTotTribMun', $trib->totaltrib->vtottrib->vtottribmun));
+            $totTrib->appendChild($vTotTrib);
+        } elseif (isset($trib->totaltrib->ptottrib)) {
+            $pTotTrib = $doc->createElement('pTotTrib');
+            $pTotTrib->appendChild($this->text($doc, 'pTotTribFed', $trib->totaltrib->ptottrib->ptottribfed));
+            $pTotTrib->appendChild($this->text($doc, 'pTotTribEst', $trib->totaltrib->ptottrib->ptottribest));
+            $pTotTrib->appendChild($this->text($doc, 'pTotTribMun', $trib->totaltrib->ptottrib->ptottribmun));
+            $totTrib->appendChild($pTotTrib);
+        } elseif (isset($trib->totaltrib->indtottrib)) {
+            $totTrib->appendChild($this->text($doc, 'indTotTrib', $trib->totaltrib->indtottrib));
+        } elseif (isset($trib->totaltrib->ptottribsn)) {
+            $totTrib->appendChild($this->text($doc, 'pTotTribSN', $trib->totaltrib->ptottribsn));
         }
+
+        $el->appendChild($totTrib);
 
         return $el;
     }

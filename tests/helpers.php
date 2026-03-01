@@ -73,6 +73,7 @@ function makeServicoMinimo(): stdClass
     $servico->cserv = new stdClass;
     $servico->cserv->ctribnac = '010101';
     $servico->cserv->xdescserv = 'Serviço';
+    $servico->cserv->cnbs = '123456789';
 
     return $servico;
 }

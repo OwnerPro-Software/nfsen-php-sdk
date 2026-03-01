@@ -16,10 +16,11 @@ final class ServicoBuilder
     {
         $el = $doc->createElement('serv');
 
-        // locPrest (obrigatório)
+        // locPrest (obrigatório — choice)
         $locPrest = $doc->createElement('locPrest');
-        $locPrest->appendChild($this->text($doc, 'cLocPrestacao', $serv->locprest->clocprestacao));
-        if (isset($serv->locprest->cpaisprestacao)) {
+        if (isset($serv->locprest->clocprestacao)) {
+            $locPrest->appendChild($this->text($doc, 'cLocPrestacao', $serv->locprest->clocprestacao));
+        } elseif (isset($serv->locprest->cpaisprestacao)) {
             $locPrest->appendChild($this->text($doc, 'cPaisPrestacao', $serv->locprest->cpaisprestacao));
         }
 
@@ -33,10 +34,7 @@ final class ServicoBuilder
         }
 
         $cServ->appendChild($this->text($doc, 'xDescServ', $serv->cserv->xdescserv));
-        if (isset($serv->cserv->cnbs)) {
-            $cServ->appendChild($this->text($doc, 'cNBS', $serv->cserv->cnbs));
-        }
-
+        $cServ->appendChild($this->text($doc, 'cNBS', $serv->cserv->cnbs));
         if (isset($serv->cserv->cintcontrib)) {
             $cServ->appendChild($this->text($doc, 'cIntContrib', $serv->cserv->cintcontrib));
         }
@@ -72,40 +70,30 @@ final class ServicoBuilder
                 $obra->appendChild($this->text($doc, 'inscImobFisc', $serv->obra->inscimobfisc));
             }
 
+            // choice (obrigatório): cObra | cCIB | end
             if (isset($serv->obra->cobra)) {
                 $obra->appendChild($this->text($doc, 'cObra', $serv->obra->cobra));
-            }
-
-            if (isset($serv->obra->ccib)) {
+            } elseif (isset($serv->obra->ccib)) {
                 $obra->appendChild($this->text($doc, 'cCIB', $serv->obra->ccib));
-            }
-
-            if (isset($serv->obra->end)) {
+            } elseif (isset($serv->obra->end)) {
                 $endObra = $doc->createElement('end');
                 if (isset($serv->obra->end->cep)) {
                     $endObra->appendChild($this->text($doc, 'CEP', $serv->obra->end->cep));
+                } elseif (isset($serv->obra->end->endext)) {
+                    $endExt = $doc->createElement('endExt');
+                    $endExt->appendChild($this->text($doc, 'cEndPost', $serv->obra->end->endext->cendpost));
+                    $endExt->appendChild($this->text($doc, 'xCidade', $serv->obra->end->endext->xcidade));
+                    $endExt->appendChild($this->text($doc, 'xEstProvReg', $serv->obra->end->endext->xestprovreg));
+                    $endObra->appendChild($endExt);
                 }
 
-                if (isset($serv->obra->end->cmun)) {
-                    $endObra->appendChild($this->text($doc, 'cMun', $serv->obra->end->cmun));
-                }
-
-                if (isset($serv->obra->end->xlgr)) {
-                    $endObra->appendChild($this->text($doc, 'xLgr', $serv->obra->end->xlgr));
-                }
-
-                if (isset($serv->obra->end->nro)) {
-                    $endObra->appendChild($this->text($doc, 'nro', $serv->obra->end->nro));
-                }
-
+                $endObra->appendChild($this->text($doc, 'xLgr', $serv->obra->end->xlgr));
+                $endObra->appendChild($this->text($doc, 'nro', $serv->obra->end->nro));
                 if (isset($serv->obra->end->xcpl)) {
                     $endObra->appendChild($this->text($doc, 'xCpl', $serv->obra->end->xcpl));
                 }
 
-                if (isset($serv->obra->end->xbairro)) {
-                    $endObra->appendChild($this->text($doc, 'xBairro', $serv->obra->end->xbairro));
-                }
-
+                $endObra->appendChild($this->text($doc, 'xBairro', $serv->obra->end->xbairro));
                 $obra->appendChild($endObra);
             }
 

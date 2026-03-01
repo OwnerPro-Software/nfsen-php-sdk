@@ -2,19 +2,24 @@
 
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 
+function makeServMinimo(): stdClass
+{
+    $serv = new stdClass;
+    $serv->locprest = new stdClass;
+    $serv->locprest->clocprestacao = '3501608';
+    $serv->cserv = new stdClass;
+    $serv->cserv->ctribnac = '01.01.01.000';
+    $serv->cserv->xdescserv = 'Serviço X';
+    $serv->cserv->cnbs = '123456789';
+
+    return $serv;
+}
+
 it('builds serv element with locPrest and cServ', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
-    $locPrest = new stdClass;
-    $locPrest->clocprestacao = '3501608';
-    $serv->locprest = $locPrest;
-
-    $cServ = new stdClass;
-    $cServ->ctribnac = '01.01.01.000';
-    $cServ->xdescserv = 'Serviço X';
-    $serv->cserv = $cServ;
+    $serv = makeServMinimo();
 
     $element = $builder->build($doc, $serv);
     $xml = $doc->saveXML($element);
@@ -24,39 +29,45 @@ it('builds serv element with locPrest and cServ', function () {
     expect($xml)->toContain('<cServ>');
     expect($xml)->toContain('<cTribNac>01.01.01.000</cTribNac>');
     expect($xml)->toContain('<xDescServ>Serviço X</xDescServ>');
+    expect($xml)->toContain('<cNBS>123456789</cNBS>');
 });
 
-it('includes cPaisPrestacao when set', function () {
+it('uses cPaisPrestacao when cLocPrestacao is not set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
+    $serv = makeServMinimo();
     $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
     $serv->locprest->cpaisprestacao = '01058';
-
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
-    $serv->cserv->xdescserv = 'Serviço X';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
-    expect($xml)->toContain('<cPaisPrestacao>01058</cPaisPrestacao>');
+    expect($xml)
+        ->toContain('<cPaisPrestacao>01058</cPaisPrestacao>')
+        ->not->toContain('<cLocPrestacao>');
+});
+
+it('uses cLocPrestacao over cPaisPrestacao when both are set', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = makeServMinimo();
+    $serv->locprest->clocprestacao = '3501608';
+    $serv->locprest->cpaisprestacao = '01058';
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<cLocPrestacao>3501608</cLocPrestacao>')
+        ->not->toContain('<cPaisPrestacao>');
 });
 
 it('includes optional cServ fields when set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
-    $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
-
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
+    $serv = makeServMinimo();
     $serv->cserv->ctribmun = '01.01';
-    $serv->cserv->xdescserv = 'Serviço X';
-    $serv->cserv->cnbs = '123456789';
     $serv->cserv->cintcontrib = 'INT-001';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
@@ -71,14 +82,7 @@ it('builds comExt element with all fields', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
-    $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
-
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
-    $serv->cserv->xdescserv = 'Serviço X';
-
+    $serv = makeServMinimo();
     $serv->comext = new stdClass;
     $serv->comext->mdprestacao = '1';
     $serv->comext->vincprest = '0';
@@ -111,14 +115,7 @@ it('builds comExt without optional nDI and nRE', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
-    $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
-
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
-    $serv->cserv->xdescserv = 'Serviço X';
-
+    $serv = makeServMinimo();
     $serv->comext = new stdClass;
     $serv->comext->mdprestacao = '1';
     $serv->comext->vincprest = '0';
@@ -137,25 +134,50 @@ it('builds comExt without optional nDI and nRE', function () {
         ->not->toContain('<nRE>');
 });
 
-it('builds obra element with all fields', function () {
+it('builds obra with cObra choice', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
-    $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
-
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
-    $serv->cserv->xdescserv = 'Serviço X';
-
+    $serv = makeServMinimo();
     $serv->obra = new stdClass;
     $serv->obra->inscimobfisc = '12345';
     $serv->obra->cobra = '67890';
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<obra>')
+        ->toContain('<inscImobFisc>12345</inscImobFisc>')
+        ->toContain('<cObra>67890</cObra>')
+        ->not->toContain('<cCIB>')
+        ->not->toContain('<end>');
+});
+
+it('builds obra with cCIB choice', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = makeServMinimo();
+    $serv->obra = new stdClass;
     $serv->obra->ccib = '11111';
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<obra>')
+        ->toContain('<cCIB>11111</cCIB>')
+        ->not->toContain('<cObra>')
+        ->not->toContain('<end>');
+});
+
+it('builds obra with end choice using CEP', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = makeServMinimo();
+    $serv->obra = new stdClass;
     $serv->obra->end = new stdClass;
     $serv->obra->end->cep = '01001000';
-    $serv->obra->end->cmun = '3501608';
     $serv->obra->end->xlgr = 'Rua Teste';
     $serv->obra->end->nro = '100';
     $serv->obra->end->xcpl = 'Sala 1';
@@ -165,52 +187,84 @@ it('builds obra element with all fields', function () {
 
     expect($xml)
         ->toContain('<obra>')
-        ->toContain('<inscImobFisc>12345</inscImobFisc>')
-        ->toContain('<cObra>67890</cObra>')
-        ->toContain('<cCIB>11111</cCIB>')
         ->toContain('<end>')
         ->toContain('<CEP>01001000</CEP>')
-        ->toContain('<cMun>3501608</cMun>')
         ->toContain('<xLgr>Rua Teste</xLgr>')
         ->toContain('<nro>100</nro>')
         ->toContain('<xCpl>Sala 1</xCpl>')
-        ->toContain('<xBairro>Centro</xBairro>');
+        ->toContain('<xBairro>Centro</xBairro>')
+        ->not->toContain('<cMun>')
+        ->not->toContain('<cObra>')
+        ->not->toContain('<cCIB>');
 });
 
-it('builds obra element without optional fields', function () {
+it('builds obra with end choice using endExt', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
-    $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
-
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
-    $serv->cserv->xdescserv = 'Serviço X';
-
+    $serv = makeServMinimo();
     $serv->obra = new stdClass;
+    $serv->obra->end = new stdClass;
+    $serv->obra->end->endext = new stdClass;
+    $serv->obra->end->endext->cendpost = '10001';
+    $serv->obra->end->endext->xcidade = 'New York';
+    $serv->obra->end->endext->xestprovreg = 'NY';
+    $serv->obra->end->xlgr = '5th Avenue';
+    $serv->obra->end->nro = '350';
+    $serv->obra->end->xbairro = 'Manhattan';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
     expect($xml)
-        ->toContain('<obra/>')
-        ->not->toContain('<inscImobFisc>')
-        ->not->toContain('<cObra>')
-        ->not->toContain('<cCIB>')
-        ->not->toContain('<end>');
+        ->toContain('<obra>')
+        ->toContain('<end>')
+        ->toContain('<endExt>')
+        ->toContain('<cEndPost>10001</cEndPost>')
+        ->toContain('<xCidade>New York</xCidade>')
+        ->toContain('<xEstProvReg>NY</xEstProvReg>')
+        ->toContain('<xLgr>5th Avenue</xLgr>')
+        ->toContain('<nro>350</nro>')
+        ->toContain('<xBairro>Manhattan</xBairro>')
+        ->not->toContain('<CEP>');
+});
+
+it('builds obra without optional inscImobFisc', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = makeServMinimo();
+    $serv->obra = new stdClass;
+    $serv->obra->cobra = '67890';
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<obra>')
+        ->toContain('<cObra>67890</cObra>')
+        ->not->toContain('<inscImobFisc>');
+});
+
+it('prefers cObra over cCIB and end when multiple are set', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = makeServMinimo();
+    $serv->obra = new stdClass;
+    $serv->obra->cobra = '67890';
+    $serv->obra->ccib = '11111';
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<cObra>67890</cObra>')
+        ->not->toContain('<cCIB>');
 });
 
 it('handles accented characters in field values', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new stdClass;
-    $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
-
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
+    $serv = makeServMinimo();
     $serv->cserv->xdescserv = 'Consultoria em gestão tributária';
 
     $element = $builder->build($doc, $serv);
