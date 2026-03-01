@@ -29,3 +29,12 @@ it('throws NfseException on XSD validation failure', function () {
     expect(fn () => $validator->validate($invalidXml, 'DPS_v1.01.xsd'))
         ->toThrow(NfseException::class, 'XML inválido');
 });
+
+it('includes specific libxml error details in exception message', function () {
+    $validator = makeXsdValidator();
+
+    $invalidXml = '<DPS versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse"><invalid/></DPS>';
+
+    expect(fn () => $validator->validate($invalidXml, 'DPS_v1.01.xsd'))
+        ->toThrow(NfseException::class, "This element is not expected. Expected is ( {http://www.sped.fazenda.gov.br/nfse}infDPS ).");
+});
