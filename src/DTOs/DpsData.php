@@ -9,10 +9,10 @@ use stdClass;
 final readonly class DpsData
 {
     public function __construct(
-        public stdClass $infDps,
-        public stdClass $prestador,
-        public stdClass $tomador,
-        public stdClass $servico,
+        public stdClass $infDPS,
+        public stdClass $prest,
+        public stdClass $toma,
+        public stdClass $serv,
         public stdClass $valores,
     ) {}
 }

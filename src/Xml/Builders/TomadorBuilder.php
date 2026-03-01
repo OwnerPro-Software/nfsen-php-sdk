@@ -18,7 +18,7 @@ final class TomadorBuilder
         $el = $doc->createElement('toma');
 
         // choice (obrigatório e exclusivo): CNPJ | CPF | NIF | cNaoNIF
-        $idCount = (int) isset($toma->cnpj) + (int) isset($toma->cpf) + (int) isset($toma->nif) + (int) isset($toma->cnaonif);
+        $idCount = (int) isset($toma->CNPJ) + (int) isset($toma->CPF) + (int) isset($toma->NIF) + (int) isset($toma->cNaoNIF);
         if ($idCount === 0) {
             throw new InvalidArgumentException('Tomador requer CNPJ, CPF, NIF ou cNaoNIF.');
         }
@@ -27,49 +27,49 @@ final class TomadorBuilder
             throw new InvalidArgumentException('Tomador deve ter apenas um entre CNPJ, CPF, NIF ou cNaoNIF.');
         }
 
-        if (isset($toma->cnpj)) {
-            $el->appendChild($this->text($doc, 'CNPJ', $toma->cnpj));
-        } elseif (isset($toma->cpf)) {
-            $el->appendChild($this->text($doc, 'CPF', $toma->cpf));
-        } elseif (isset($toma->nif)) {
-            $el->appendChild($this->text($doc, 'NIF', $toma->nif));
+        if (isset($toma->CNPJ)) {
+            $el->appendChild($this->text($doc, 'CNPJ', $toma->CNPJ));
+        } elseif (isset($toma->CPF)) {
+            $el->appendChild($this->text($doc, 'CPF', $toma->CPF));
+        } elseif (isset($toma->NIF)) {
+            $el->appendChild($this->text($doc, 'NIF', $toma->NIF));
         } else {
-            $el->appendChild($this->text($doc, 'cNaoNIF', $toma->cnaonif));
+            $el->appendChild($this->text($doc, 'cNaoNIF', $toma->cNaoNIF));
         }
 
-        if (isset($toma->caepf)) {
-            $el->appendChild($this->text($doc, 'CAEPF', $toma->caepf));
+        if (isset($toma->CAEPF)) {
+            $el->appendChild($this->text($doc, 'CAEPF', $toma->CAEPF));
         }
 
-        if (isset($toma->im)) {
-            $el->appendChild($this->text($doc, 'IM', $toma->im));
+        if (isset($toma->IM)) {
+            $el->appendChild($this->text($doc, 'IM', $toma->IM));
         }
 
-        $el->appendChild($this->text($doc, 'xNome', $toma->xnome));
+        $el->appendChild($this->text($doc, 'xNome', $toma->xNome));
 
         if (isset($toma->end)) {
             $endEl = $doc->createElement('end');
-            if (isset($toma->end->endnac)) {
+            if (isset($toma->end->endNac)) {
                 $endNac = $doc->createElement('endNac');
-                $endNac->appendChild($this->text($doc, 'cMun', $toma->end->endnac->cmun));
-                $endNac->appendChild($this->text($doc, 'CEP', $toma->end->endnac->cep));
+                $endNac->appendChild($this->text($doc, 'cMun', $toma->end->endNac->cMun));
+                $endNac->appendChild($this->text($doc, 'CEP', $toma->end->endNac->CEP));
                 $endEl->appendChild($endNac);
-            } elseif (isset($toma->end->endext)) {
+            } elseif (isset($toma->end->endExt)) {
                 $endExt = $doc->createElement('endExt');
-                $endExt->appendChild($this->text($doc, 'cPais', $toma->end->endext->cpais));
-                $endExt->appendChild($this->text($doc, 'cEndPost', $toma->end->endext->cendpost));
-                $endExt->appendChild($this->text($doc, 'xCidade', $toma->end->endext->xcidade));
-                $endExt->appendChild($this->text($doc, 'xEstProvReg', $toma->end->endext->xestprovreg));
+                $endExt->appendChild($this->text($doc, 'cPais', $toma->end->endExt->cPais));
+                $endExt->appendChild($this->text($doc, 'cEndPost', $toma->end->endExt->cEndPost));
+                $endExt->appendChild($this->text($doc, 'xCidade', $toma->end->endExt->xCidade));
+                $endExt->appendChild($this->text($doc, 'xEstProvReg', $toma->end->endExt->xEstProvReg));
                 $endEl->appendChild($endExt);
             }
 
-            $endEl->appendChild($this->text($doc, 'xLgr', $toma->end->xlgr));
+            $endEl->appendChild($this->text($doc, 'xLgr', $toma->end->xLgr));
             $endEl->appendChild($this->text($doc, 'nro', $toma->end->nro));
-            if (isset($toma->end->xcpl)) {
-                $endEl->appendChild($this->text($doc, 'xCpl', $toma->end->xcpl));
+            if (isset($toma->end->xCpl)) {
+                $endEl->appendChild($this->text($doc, 'xCpl', $toma->end->xCpl));
             }
 
-            $endEl->appendChild($this->text($doc, 'xBairro', $toma->end->xbairro));
+            $endEl->appendChild($this->text($doc, 'xBairro', $toma->end->xBairro));
             $el->appendChild($endEl);
         }
 

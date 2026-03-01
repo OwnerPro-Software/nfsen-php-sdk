@@ -7,12 +7,12 @@ it('builds prest element with CNPJ', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->xnome = 'Empresa Teste';
+    $prest->CNPJ = '12345678000195';
+    $prest->xNome = 'Empresa Teste';
     $regTrib = new stdClass;
-    $regTrib->opsimpnac = 1;
-    $regTrib->regesptrib = 0;
-    $prest->regtrib = $regTrib;
+    $regTrib->opSimpNac = 1;
+    $regTrib->regEspTrib = 0;
+    $prest->regTrib = $regTrib;
 
     $element = $builder->build($doc, $prest);
     $doc->appendChild($element);
@@ -28,12 +28,12 @@ it('builds prest element with CPF when no CNPJ', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cpf = '12345678901';
-    $prest->xnome = 'Pessoa Física';
+    $prest->CPF = '12345678901';
+    $prest->xNome = 'Pessoa Física';
     $regTrib = new stdClass;
-    $regTrib->opsimpnac = 0;
-    $regTrib->regesptrib = 0;
-    $prest->regtrib = $regTrib;
+    $regTrib->opSimpNac = 0;
+    $regTrib->regEspTrib = 0;
+    $prest->regTrib = $regTrib;
 
     $element = $builder->build($doc, $prest);
 
@@ -45,13 +45,13 @@ it('includes CAEPF and IM when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->caepf = '12345678901234';
-    $prest->im = '9876543';
-    $prest->xnome = 'Empresa';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regesptrib = 0;
+    $prest->CNPJ = '12345678000195';
+    $prest->CAEPF = '12345678901234';
+    $prest->IM = '9876543';
+    $prest->xNome = 'Empresa';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regEspTrib = 0;
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -65,11 +65,11 @@ it('builds prest element with NIF', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->nif = 'NIF999';
-    $prest->xnome = 'Empresa Estrangeira';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 0;
-    $prest->regtrib->regesptrib = 0;
+    $prest->NIF = 'NIF999';
+    $prest->xNome = 'Empresa Estrangeira';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 0;
+    $prest->regTrib->regEspTrib = 0;
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -84,11 +84,11 @@ it('builds prest element with cNaoNIF', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnaonif = '1';
-    $prest->xnome = 'Empresa Estrangeira';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 0;
-    $prest->regtrib->regesptrib = 0;
+    $prest->cNaoNIF = '1';
+    $prest->xNome = 'Empresa Estrangeira';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 0;
+    $prest->regTrib->regEspTrib = 0;
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -104,12 +104,12 @@ it('throws when both CNPJ and CPF are set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->cpf = '12345678901';
-    $prest->xnome = 'Empresa';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regesptrib = 0;
+    $prest->CNPJ = '12345678000195';
+    $prest->CPF = '12345678901';
+    $prest->xNome = 'Empresa';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regEspTrib = 0;
 
     expect(fn () => $builder->build($doc, $prest))
         ->toThrow(InvalidArgumentException::class, 'apenas um');
@@ -120,10 +120,10 @@ it('throws when no identification is set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->xnome = 'Empresa';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regesptrib = 0;
+    $prest->xNome = 'Empresa';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regEspTrib = 0;
 
     expect(fn () => $builder->build($doc, $prest))
         ->toThrow(InvalidArgumentException::class, 'requer CNPJ');
@@ -134,13 +134,13 @@ it('includes fone and email when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->xnome = 'Empresa';
+    $prest->CNPJ = '12345678000195';
+    $prest->xNome = 'Empresa';
     $prest->fone = '11999998888';
     $prest->email = 'empresa@test.com';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regesptrib = 0;
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regEspTrib = 0;
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -154,12 +154,12 @@ it('includes regApTribSN when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->xnome = 'Empresa';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regaptribsn = 2;
-    $prest->regtrib->regesptrib = 0;
+    $prest->CNPJ = '12345678000195';
+    $prest->xNome = 'Empresa';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regApTribSN = 2;
+    $prest->regTrib->regEspTrib = 0;
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -171,19 +171,19 @@ it('builds endNac address block', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->xnome = 'Empresa';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regesptrib = 0;
+    $prest->CNPJ = '12345678000195';
+    $prest->xNome = 'Empresa';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regEspTrib = 0;
 
     $prest->end = new stdClass;
-    $prest->end->endnac = new stdClass;
-    $prest->end->endnac->cmun = '3501608';
-    $prest->end->endnac->cep = '01001000';
-    $prest->end->xlgr = 'Rua Teste';
+    $prest->end->endNac = new stdClass;
+    $prest->end->endNac->cMun = '3501608';
+    $prest->end->endNac->CEP = '01001000';
+    $prest->end->xLgr = 'Rua Teste';
     $prest->end->nro = '100';
-    $prest->end->xbairro = 'Centro';
+    $prest->end->xBairro = 'Centro';
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -201,21 +201,21 @@ it('builds endExt address block', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->xnome = 'Empresa';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regesptrib = 0;
+    $prest->CNPJ = '12345678000195';
+    $prest->xNome = 'Empresa';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regEspTrib = 0;
 
     $prest->end = new stdClass;
-    $prest->end->endext = new stdClass;
-    $prest->end->endext->cpais = '01058';
-    $prest->end->endext->cendpost = '10001';
-    $prest->end->endext->xcidade = 'New York';
-    $prest->end->endext->xestprovreg = 'NY';
-    $prest->end->xlgr = '5th Avenue';
+    $prest->end->endExt = new stdClass;
+    $prest->end->endExt->cPais = '01058';
+    $prest->end->endExt->cEndPost = '10001';
+    $prest->end->endExt->xCidade = 'New York';
+    $prest->end->endExt->xEstProvReg = 'NY';
+    $prest->end->xLgr = '5th Avenue';
     $prest->end->nro = '200';
-    $prest->end->xbairro = 'Manhattan';
+    $prest->end->xBairro = 'Manhattan';
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
@@ -232,20 +232,20 @@ it('includes xCpl in address when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
-    $prest->cnpj = '12345678000195';
-    $prest->xnome = 'Empresa';
-    $prest->regtrib = new stdClass;
-    $prest->regtrib->opsimpnac = 1;
-    $prest->regtrib->regesptrib = 0;
+    $prest->CNPJ = '12345678000195';
+    $prest->xNome = 'Empresa';
+    $prest->regTrib = new stdClass;
+    $prest->regTrib->opSimpNac = 1;
+    $prest->regTrib->regEspTrib = 0;
 
     $prest->end = new stdClass;
-    $prest->end->endnac = new stdClass;
-    $prest->end->endnac->cmun = '3501608';
-    $prest->end->endnac->cep = '01001000';
-    $prest->end->xlgr = 'Rua Teste';
+    $prest->end->endNac = new stdClass;
+    $prest->end->endNac->cMun = '3501608';
+    $prest->end->endNac->CEP = '01001000';
+    $prest->end->xLgr = 'Rua Teste';
     $prest->end->nro = '100';
-    $prest->end->xcpl = 'Andar 5';
-    $prest->end->xbairro = 'Centro';
+    $prest->end->xCpl = 'Andar 5';
+    $prest->end->xBairro = 'Centro';
 
     $xml = $doc->saveXML($builder->build($doc, $prest));
 

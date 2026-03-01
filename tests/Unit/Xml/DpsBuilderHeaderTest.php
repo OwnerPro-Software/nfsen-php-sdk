@@ -47,7 +47,7 @@ it('includes tpAmb in infDPS', function (DpsData $data) {
 
 it('includes cMotivoEmisTI when set', function () {
     $data = new DpsData(
-        makeInfDps(['cmotivoemisti' => '1']),
+        makeInfDps(['cMotivoEmisTI' => '1']),
         makePrestadorCnpj(),
         new stdClass,
         makeServicoMinimo(),
@@ -64,7 +64,7 @@ it('includes cMotivoEmisTI when set', function () {
 
 it('includes chNFSeRej when set', function () {
     $data = new DpsData(
-        makeInfDps(['chnfserej' => 'CHAVE_REJEITADA_123']),
+        makeInfDps(['chNFSeRej' => 'CHAVE_REJEITADA_123']),
         makePrestadorCnpj(),
         new stdClass,
         makeServicoMinimo(),
@@ -81,8 +81,8 @@ it('includes chNFSeRej when set', function () {
 
 it('includes toma element as child of infDPS when tomador has data', function () {
     $tomador = new stdClass;
-    $tomador->cnpj = '98765432000111';
-    $tomador->xnome = 'Tomador Ltda';
+    $tomador->CNPJ = '98765432000111';
+    $tomador->xNome = 'Tomador Ltda';
 
     $data = new DpsData(makeInfDps(), makePrestadorCnpj(), $tomador, makeServicoMinimo(), new stdClass);
 
@@ -104,7 +104,7 @@ it('throws NfseException when scheme file does not exist', function (DpsData $da
 
 it('throws NfseException on invalid XSD', function () {
     $servico = makeServicoMinimo();
-    $servico->cserv->ctribnac = 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH';
+    $servico->cServ->cTribNac = 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH';
 
     $data = new DpsData(makeInfDps(), makePrestadorCnpj(), new stdClass, $servico, new stdClass);
 
@@ -118,19 +118,19 @@ it('generates correct Id for CNPJ prestador', function (DpsData $data) {
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
 
-    // DPS + clocemi(7) + tipo=2(CNPJ) + cnpj(14) + serie(5 padded) + ndps(15 padded)
+    // DPS + cLocEmi(7) + tipo=2(CNPJ) + cnpj(14) + serie(5 padded) + nDPS(15 padded)
     $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
     expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000001');
 })->with('dpsData');
 
 it('generates correct Id for CPF prestador', function () {
     $prestador = new stdClass;
-    $prestador->cpf = '12345678901';
-    $prestador->xnome = 'Pessoa Física';
+    $prestador->CPF = '12345678901';
+    $prestador->xNome = 'Pessoa Física';
     $regTrib = new stdClass;
-    $regTrib->opsimpnac = 0;
-    $regTrib->regesptrib = 0;
-    $prestador->regtrib = $regTrib;
+    $regTrib->opSimpNac = 0;
+    $regTrib->regEspTrib = 0;
+    $prestador->regTrib = $regTrib;
 
     $data = new DpsData(makeInfDps(), $prestador, new stdClass, makeServicoMinimo(), new stdClass);
 
@@ -144,7 +144,7 @@ it('generates correct Id for CPF prestador', function () {
 
 it('generates Id with max serie and large ndps padding', function () {
     $data = new DpsData(
-        makeInfDps(['serie' => '99999', 'ndps' => 999999999999999]),
+        makeInfDps(['serie' => '99999', 'nDPS' => 999999999999999]),
         makePrestadorCnpj(),
         new stdClass,
         makeServicoMinimo(),
@@ -154,14 +154,14 @@ it('generates Id with max serie and large ndps padding', function () {
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
 
-    // serie=99999 (no padding needed), ndps=999999999999999 (no padding needed)
+    // serie=99999 (no padding needed), nDPS=999999999999999 (no padding needed)
     $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
     expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019599999999999999999999');
 });
 
 it('generates Id with single-digit serie and ndps left-padded', function () {
     $data = new DpsData(
-        makeInfDps(['ndps' => 42]),
+        makeInfDps(['nDPS' => 42]),
         makePrestadorCnpj(),
         new stdClass,
         makeServicoMinimo(),
@@ -171,14 +171,14 @@ it('generates Id with single-digit serie and ndps left-padded', function () {
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
 
-    // serie padded to 5 → 00001, ndps padded to 15 → 000000000000042
+    // serie padded to 5 → 00001, nDPS padded to 15 → 000000000000042
     $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
     expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000042');
 });
 
-it('generates Id truncating clocemi to 7 chars', function () {
+it('generates Id truncating cLocEmi to 7 chars', function () {
     $data = new DpsData(
-        makeInfDps(['clocemi' => '35016089999']),
+        makeInfDps(['cLocEmi' => '35016089999']),
         makePrestadorCnpj(),
         new stdClass,
         makeServicoMinimo(),
@@ -188,7 +188,7 @@ it('generates Id truncating clocemi to 7 chars', function () {
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
 
-    // Only first 7 chars of clocemi used
+    // Only first 7 chars of cLocEmi used
     $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
     expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000001');
 });

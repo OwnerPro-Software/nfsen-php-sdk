@@ -18,7 +18,7 @@ final class PrestadorBuilder
         $el = $doc->createElement('prest');
 
         // choice (obrigatório e exclusivo): CNPJ | CPF | NIF | cNaoNIF
-        $idCount = (int) isset($prest->cnpj) + (int) isset($prest->cpf) + (int) isset($prest->nif) + (int) isset($prest->cnaonif);
+        $idCount = (int) isset($prest->CNPJ) + (int) isset($prest->CPF) + (int) isset($prest->NIF) + (int) isset($prest->cNaoNIF);
         if ($idCount === 0) {
             throw new InvalidArgumentException('Prestador requer CNPJ, CPF, NIF ou cNaoNIF.');
         }
@@ -27,26 +27,26 @@ final class PrestadorBuilder
             throw new InvalidArgumentException('Prestador deve ter apenas um entre CNPJ, CPF, NIF ou cNaoNIF.');
         }
 
-        if (isset($prest->cnpj)) {
-            $el->appendChild($this->text($doc, 'CNPJ', $prest->cnpj));
-        } elseif (isset($prest->cpf)) {
-            $el->appendChild($this->text($doc, 'CPF', $prest->cpf));
-        } elseif (isset($prest->nif)) {
-            $el->appendChild($this->text($doc, 'NIF', $prest->nif));
+        if (isset($prest->CNPJ)) {
+            $el->appendChild($this->text($doc, 'CNPJ', $prest->CNPJ));
+        } elseif (isset($prest->CPF)) {
+            $el->appendChild($this->text($doc, 'CPF', $prest->CPF));
+        } elseif (isset($prest->NIF)) {
+            $el->appendChild($this->text($doc, 'NIF', $prest->NIF));
         } else {
-            $el->appendChild($this->text($doc, 'cNaoNIF', $prest->cnaonif));
+            $el->appendChild($this->text($doc, 'cNaoNIF', $prest->cNaoNIF));
         }
 
-        if (isset($prest->caepf)) {
-            $el->appendChild($this->text($doc, 'CAEPF', $prest->caepf));
+        if (isset($prest->CAEPF)) {
+            $el->appendChild($this->text($doc, 'CAEPF', $prest->CAEPF));
         }
 
-        if (isset($prest->im)) {
-            $el->appendChild($this->text($doc, 'IM', $prest->im));
+        if (isset($prest->IM)) {
+            $el->appendChild($this->text($doc, 'IM', $prest->IM));
         }
 
-        if (isset($prest->xnome)) {
-            $el->appendChild($this->text($doc, 'xNome', $prest->xnome));
+        if (isset($prest->xNome)) {
+            $el->appendChild($this->text($doc, 'xNome', $prest->xNome));
         }
 
         if (isset($prest->end)) {
@@ -62,12 +62,12 @@ final class PrestadorBuilder
         }
 
         $regTrib = $doc->createElement('regTrib');
-        $regTrib->appendChild($this->text($doc, 'opSimpNac', (string) $prest->regtrib->opsimpnac));
-        if (isset($prest->regtrib->regaptribsn)) {
-            $regTrib->appendChild($this->text($doc, 'regApTribSN', (string) $prest->regtrib->regaptribsn));
+        $regTrib->appendChild($this->text($doc, 'opSimpNac', (string) $prest->regTrib->opSimpNac));
+        if (isset($prest->regTrib->regApTribSN)) {
+            $regTrib->appendChild($this->text($doc, 'regApTribSN', (string) $prest->regTrib->regApTribSN));
         }
 
-        $regTrib->appendChild($this->text($doc, 'regEspTrib', (string) $prest->regtrib->regesptrib));
+        $regTrib->appendChild($this->text($doc, 'regEspTrib', (string) $prest->regTrib->regEspTrib));
         $el->appendChild($regTrib);
 
         return $el;
@@ -76,27 +76,27 @@ final class PrestadorBuilder
     private function buildEnd(DOMDocument $doc, stdClass $end): DOMElement
     {
         $el = $doc->createElement('end');
-        if (isset($end->endnac)) {
+        if (isset($end->endNac)) {
             $endNac = $doc->createElement('endNac');
-            $endNac->appendChild($this->text($doc, 'cMun', $end->endnac->cmun));
-            $endNac->appendChild($this->text($doc, 'CEP', $end->endnac->cep));
+            $endNac->appendChild($this->text($doc, 'cMun', $end->endNac->cMun));
+            $endNac->appendChild($this->text($doc, 'CEP', $end->endNac->CEP));
             $el->appendChild($endNac);
-        } elseif (isset($end->endext)) {
+        } elseif (isset($end->endExt)) {
             $endExt = $doc->createElement('endExt');
-            $endExt->appendChild($this->text($doc, 'cPais', $end->endext->cpais));
-            $endExt->appendChild($this->text($doc, 'cEndPost', $end->endext->cendpost));
-            $endExt->appendChild($this->text($doc, 'xCidade', $end->endext->xcidade));
-            $endExt->appendChild($this->text($doc, 'xEstProvReg', $end->endext->xestprovreg));
+            $endExt->appendChild($this->text($doc, 'cPais', $end->endExt->cPais));
+            $endExt->appendChild($this->text($doc, 'cEndPost', $end->endExt->cEndPost));
+            $endExt->appendChild($this->text($doc, 'xCidade', $end->endExt->xCidade));
+            $endExt->appendChild($this->text($doc, 'xEstProvReg', $end->endExt->xEstProvReg));
             $el->appendChild($endExt);
         }
 
-        $el->appendChild($this->text($doc, 'xLgr', $end->xlgr));
+        $el->appendChild($this->text($doc, 'xLgr', $end->xLgr));
         $el->appendChild($this->text($doc, 'nro', $end->nro));
-        if (isset($end->xcpl)) {
-            $el->appendChild($this->text($doc, 'xCpl', $end->xcpl));
+        if (isset($end->xCpl)) {
+            $el->appendChild($this->text($doc, 'xCpl', $end->xCpl));
         }
 
-        $el->appendChild($this->text($doc, 'xBairro', $end->xbairro));
+        $el->appendChild($this->text($doc, 'xBairro', $end->xBairro));
 
         return $el;
     }

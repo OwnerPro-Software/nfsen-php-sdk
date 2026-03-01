@@ -244,10 +244,10 @@ it('emitir validates XML against XSD before sending', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'SHOULD_NOT_REACH'], 200)]);
 
     $data = new DpsData(
-        infDps: makeInfDps(['tpemit' => 99]), // invalid per XSD (expects 1-3)
-        prestador: makePrestadorCnpj(),
-        tomador: new stdClass,
-        servico: makeServicoMinimo(),
+        infDPS: makeInfDps(['tpEmit' => 99]), // invalid per XSD (expects 1-3)
+        prest: makePrestadorCnpj(),
+        toma: new stdClass,
+        serv: makeServicoMinimo(),
         valores: new stdClass,
     );
 

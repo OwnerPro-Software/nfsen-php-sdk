@@ -5,46 +5,46 @@ use Pulsar\NfseNacional\DTOs\DpsData;
 dataset('dpsData', [
     'basico' => function (): DpsData {
         $infDps = new stdClass;
-        $infDps->tpamb = 2;
-        $infDps->dhemi = '2026-02-27T10:00:00-03:00';
-        $infDps->veraplic = '1.0';
+        $infDps->tpAmb = 2;
+        $infDps->dhEmi = '2026-02-27T10:00:00-03:00';
+        $infDps->verAplic = '1.0';
         $infDps->serie = '1';
-        $infDps->ndps = 1;
-        $infDps->dcompet = '2026-02-27';
-        $infDps->tpemit = 1;
-        $infDps->clocemi = '3501608';
+        $infDps->nDPS = 1;
+        $infDps->dCompet = '2026-02-27';
+        $infDps->tpEmit = 1;
+        $infDps->cLocEmi = '3501608';
 
         $prestador = new stdClass;
-        $prestador->cnpj = '12345678000195';
-        $prestador->xnome = 'Empresa';
+        $prestador->CNPJ = '12345678000195';
+        $prestador->xNome = 'Empresa';
         $regTrib = new stdClass;
-        $regTrib->opsimpnac = 1;
-        $regTrib->regesptrib = 0;
-        $prestador->regtrib = $regTrib;
+        $regTrib->opSimpNac = 1;
+        $regTrib->regEspTrib = 0;
+        $prestador->regTrib = $regTrib;
 
         $tomador = new stdClass;
         $servico = new stdClass;
 
         $locPrest = new stdClass;
-        $locPrest->clocprestacao = '3501608';
-        $servico->locprest = $locPrest;
+        $locPrest->cLocPrestacao = '3501608';
+        $servico->locPrest = $locPrest;
 
         $cServ = new stdClass;
-        $cServ->ctribnac = '010101';
-        $cServ->xdescserv = 'Serviço de Teste';
-        $cServ->cnbs = '123456789';
-        $servico->cserv = $cServ;
+        $cServ->cTribNac = '010101';
+        $cServ->xDescServ = 'Serviço de Teste';
+        $cServ->cNBS = '123456789';
+        $servico->cServ = $cServ;
 
         $valores = new stdClass;
-        $valores->vservprest = new stdClass;
-        $valores->vservprest->vserv = '100.00';
+        $valores->vServPrest = new stdClass;
+        $valores->vServPrest->vServ = '100.00';
 
         $valores->trib = new stdClass;
-        $valores->trib->tribmun = new stdClass;
-        $valores->trib->tribmun->tribissqn = '1';
-        $valores->trib->tribmun->tpretissqn = '1';
-        $valores->trib->totaltrib = new stdClass;
-        $valores->trib->totaltrib->indtottrib = '0';
+        $valores->trib->tribMun = new stdClass;
+        $valores->trib->tribMun->tribISSQN = '1';
+        $valores->trib->tribMun->tpRetISSQN = '1';
+        $valores->trib->totTrib = new stdClass;
+        $valores->trib->totTrib->indTotTrib = '0';
 
         return new DpsData($infDps, $prestador, $tomador, $servico, $valores);
     },

@@ -7,8 +7,8 @@ it('builds toma element with CNPJ', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cnpj = '98765432000111';
-    $toma->xnome = 'Tomador Ltda';
+    $toma->CNPJ = '98765432000111';
+    $toma->xNome = 'Tomador Ltda';
 
     $element = $builder->build($doc, $toma);
 
@@ -21,8 +21,8 @@ it('builds toma element with CPF', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cpf = '12345678901';
-    $toma->xnome = 'Pessoa Física';
+    $toma->CPF = '12345678901';
+    $toma->xNome = 'Pessoa Física';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -36,8 +36,8 @@ it('builds toma element with NIF', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->nif = 'NIF12345';
-    $toma->xnome = 'Estrangeiro';
+    $toma->NIF = 'NIF12345';
+    $toma->xNome = 'Estrangeiro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -52,8 +52,8 @@ it('builds toma element with cNaoNIF', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cnaonif = '1';
-    $toma->xnome = 'Estrangeiro';
+    $toma->cNaoNIF = '1';
+    $toma->xNome = 'Estrangeiro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -67,10 +67,10 @@ it('includes CAEPF and IM when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cpf = '12345678901';
-    $toma->caepf = '12345678901234';
-    $toma->im = '1234567';
-    $toma->xnome = 'Pessoa';
+    $toma->CPF = '12345678901';
+    $toma->CAEPF = '12345678901234';
+    $toma->IM = '1234567';
+    $toma->xNome = 'Pessoa';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -84,16 +84,16 @@ it('builds endNac address block', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cnpj = '98765432000111';
-    $toma->xnome = 'Tomador';
+    $toma->CNPJ = '98765432000111';
+    $toma->xNome = 'Tomador';
 
     $toma->end = new stdClass;
-    $toma->end->endnac = new stdClass;
-    $toma->end->endnac->cmun = '3501608';
-    $toma->end->endnac->cep = '01001000';
-    $toma->end->xlgr = 'Rua Teste';
+    $toma->end->endNac = new stdClass;
+    $toma->end->endNac->cMun = '3501608';
+    $toma->end->endNac->CEP = '01001000';
+    $toma->end->xLgr = 'Rua Teste';
     $toma->end->nro = '100';
-    $toma->end->xbairro = 'Centro';
+    $toma->end->xBairro = 'Centro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -112,18 +112,18 @@ it('builds endExt address block', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cnpj = '98765432000111';
-    $toma->xnome = 'Tomador';
+    $toma->CNPJ = '98765432000111';
+    $toma->xNome = 'Tomador';
 
     $toma->end = new stdClass;
-    $toma->end->endext = new stdClass;
-    $toma->end->endext->cpais = '01058';
-    $toma->end->endext->cendpost = '10001';
-    $toma->end->endext->xcidade = 'New York';
-    $toma->end->endext->xestprovreg = 'NY';
-    $toma->end->xlgr = '5th Avenue';
+    $toma->end->endExt = new stdClass;
+    $toma->end->endExt->cPais = '01058';
+    $toma->end->endExt->cEndPost = '10001';
+    $toma->end->endExt->xCidade = 'New York';
+    $toma->end->endExt->xEstProvReg = 'NY';
+    $toma->end->xLgr = '5th Avenue';
     $toma->end->nro = '200';
-    $toma->end->xbairro = 'Manhattan';
+    $toma->end->xBairro = 'Manhattan';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -141,17 +141,17 @@ it('includes xCpl in address when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cnpj = '98765432000111';
-    $toma->xnome = 'Tomador';
+    $toma->CNPJ = '98765432000111';
+    $toma->xNome = 'Tomador';
 
     $toma->end = new stdClass;
-    $toma->end->endnac = new stdClass;
-    $toma->end->endnac->cmun = '3501608';
-    $toma->end->endnac->cep = '01001000';
-    $toma->end->xlgr = 'Rua Teste';
+    $toma->end->endNac = new stdClass;
+    $toma->end->endNac->cMun = '3501608';
+    $toma->end->endNac->CEP = '01001000';
+    $toma->end->xLgr = 'Rua Teste';
     $toma->end->nro = '100';
-    $toma->end->xcpl = 'Sala 5';
-    $toma->end->xbairro = 'Centro';
+    $toma->end->xCpl = 'Sala 5';
+    $toma->end->xBairro = 'Centro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
@@ -163,9 +163,9 @@ it('throws when both CNPJ and CPF are set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cnpj = '98765432000111';
-    $toma->cpf = '12345678901';
-    $toma->xnome = 'Tomador';
+    $toma->CNPJ = '98765432000111';
+    $toma->CPF = '12345678901';
+    $toma->xNome = 'Tomador';
 
     expect(fn () => $builder->build($doc, $toma))
         ->toThrow(InvalidArgumentException::class, 'apenas um');
@@ -176,7 +176,7 @@ it('throws when no identification is set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->xnome = 'Tomador';
+    $toma->xNome = 'Tomador';
 
     expect(fn () => $builder->build($doc, $toma))
         ->toThrow(InvalidArgumentException::class, 'requer CNPJ');
@@ -187,8 +187,8 @@ it('includes fone and email when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
-    $toma->cnpj = '98765432000111';
-    $toma->xnome = 'Tomador';
+    $toma->CNPJ = '98765432000111';
+    $toma->xNome = 'Tomador';
     $toma->fone = '11999998888';
     $toma->email = 'tomador@test.com';
 

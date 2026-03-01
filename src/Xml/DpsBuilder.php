@@ -46,35 +46,35 @@ final readonly class DpsBuilder
         $infDps = $doc->createElement('infDPS');
         $infDps->setAttribute('Id', $this->generateId($data));
 
-        $d = $data->infDps;
-        $infDps->appendChild($this->text($doc, 'tpAmb', (string) $d->tpamb));
-        $infDps->appendChild($this->text($doc, 'dhEmi', $d->dhemi));
-        $infDps->appendChild($this->text($doc, 'verAplic', $d->veraplic));
+        $d = $data->infDPS;
+        $infDps->appendChild($this->text($doc, 'tpAmb', (string) $d->tpAmb));
+        $infDps->appendChild($this->text($doc, 'dhEmi', $d->dhEmi));
+        $infDps->appendChild($this->text($doc, 'verAplic', $d->verAplic));
         $infDps->appendChild($this->text($doc, 'serie', $d->serie));
-        $infDps->appendChild($this->text($doc, 'nDPS', (string) $d->ndps));
-        $infDps->appendChild($this->text($doc, 'dCompet', $d->dcompet));
-        $infDps->appendChild($this->text($doc, 'tpEmit', (string) $d->tpemit));
-        if (isset($d->cmotivoemisti)) {
-            $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cmotivoemisti));
+        $infDps->appendChild($this->text($doc, 'nDPS', (string) $d->nDPS));
+        $infDps->appendChild($this->text($doc, 'dCompet', $d->dCompet));
+        $infDps->appendChild($this->text($doc, 'tpEmit', (string) $d->tpEmit));
+        if (isset($d->cMotivoEmisTI)) {
+            $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cMotivoEmisTI));
         }
 
-        if (isset($d->chnfserej)) {
-            $infDps->appendChild($this->text($doc, 'chNFSeRej', $d->chnfserej));
+        if (isset($d->chNFSeRej)) {
+            $infDps->appendChild($this->text($doc, 'chNFSeRej', $d->chNFSeRej));
         }
 
-        $infDps->appendChild($this->text($doc, 'cLocEmi', $d->clocemi));
+        $infDps->appendChild($this->text($doc, 'cLocEmi', $d->cLocEmi));
 
-        if ((array) $data->prestador !== []) {
-            $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prestador));
+        if ((array) $data->prest !== []) {
+            $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prest));
         }
 
         // toma (optional)
-        if ((array) $data->tomador !== []) {
-            $infDps->appendChild((new TomadorBuilder)->build($doc, $data->tomador));
+        if ((array) $data->toma !== []) {
+            $infDps->appendChild((new TomadorBuilder)->build($doc, $data->toma));
         }
 
         // serv (obrigatório)
-        $infDps->appendChild((new ServicoBuilder)->build($doc, $data->servico));
+        $infDps->appendChild((new ServicoBuilder)->build($doc, $data->serv));
 
         // valores (obrigatório quando houver dados)
         if ((array) $data->valores !== []) {
@@ -89,15 +89,15 @@ final readonly class DpsBuilder
 
     private function generateId(DpsData $data): string
     {
-        $d = $data->infDps;
-        $p = $data->prestador;
+        $d = $data->infDPS;
+        $p = $data->prest;
         $id = 'DPS';
-        $id .= substr((string) $d->clocemi, 0, 7);
-        $id .= isset($p->cnpj) ? '2' : '1';
-        $inscricao = $p->cnpj ?? $p->cpf ?? '';
+        $id .= substr((string) $d->cLocEmi, 0, 7);
+        $id .= isset($p->CNPJ) ? '2' : '1';
+        $inscricao = $p->CNPJ ?? $p->CPF ?? '';
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
         $id .= str_pad((string) $d->serie, 5, '0', STR_PAD_LEFT);
 
-        return $id.str_pad((string) $d->ndps, 15, '0', STR_PAD_LEFT);
+        return $id.str_pad((string) $d->nDPS, 15, '0', STR_PAD_LEFT);
     }
 }

@@ -30,14 +30,14 @@ function makeTestCertificate(): Certificate
 function makeInfDps(array $overrides = []): stdClass
 {
     $infDps = new stdClass;
-    $infDps->tpamb = $overrides['tpamb'] ?? 2;
-    $infDps->dhemi = $overrides['dhemi'] ?? '2026-02-27T10:00:00-03:00';
-    $infDps->veraplic = $overrides['veraplic'] ?? '1.0';
+    $infDps->tpAmb = $overrides['tpAmb'] ?? 2;
+    $infDps->dhEmi = $overrides['dhEmi'] ?? '2026-02-27T10:00:00-03:00';
+    $infDps->verAplic = $overrides['verAplic'] ?? '1.0';
     $infDps->serie = $overrides['serie'] ?? '1';
-    $infDps->ndps = $overrides['ndps'] ?? 1;
-    $infDps->dcompet = $overrides['dcompet'] ?? '2026-02-27';
-    $infDps->tpemit = $overrides['tpemit'] ?? 1;
-    $infDps->clocemi = $overrides['clocemi'] ?? '3501608';
+    $infDps->nDPS = $overrides['nDPS'] ?? 1;
+    $infDps->dCompet = $overrides['dCompet'] ?? '2026-02-27';
+    $infDps->tpEmit = $overrides['tpEmit'] ?? 1;
+    $infDps->cLocEmi = $overrides['cLocEmi'] ?? '3501608';
 
     foreach ($overrides as $key => $value) {
         if (! property_exists($infDps, $key)) {
@@ -54,13 +54,13 @@ function makeInfDps(array $overrides = []): stdClass
 function makePrestadorCnpj(array $overrides = []): stdClass
 {
     $prestador = new stdClass;
-    $prestador->cnpj = $overrides['cnpj'] ?? '12345678000195';
-    $prestador->xnome = $overrides['xnome'] ?? 'Empresa Teste';
+    $prestador->CNPJ = $overrides['CNPJ'] ?? '12345678000195';
+    $prestador->xNome = $overrides['xNome'] ?? 'Empresa Teste';
 
     $regTrib = new stdClass;
-    $regTrib->opsimpnac = $overrides['opsimpnac'] ?? 1;
-    $regTrib->regesptrib = $overrides['regesptrib'] ?? 0;
-    $prestador->regtrib = $regTrib;
+    $regTrib->opSimpNac = $overrides['opSimpNac'] ?? 1;
+    $regTrib->regEspTrib = $overrides['regEspTrib'] ?? 0;
+    $prestador->regTrib = $regTrib;
 
     return $prestador;
 }
@@ -68,12 +68,12 @@ function makePrestadorCnpj(array $overrides = []): stdClass
 function makeServicoMinimo(): stdClass
 {
     $servico = new stdClass;
-    $servico->locprest = new stdClass;
-    $servico->locprest->clocprestacao = '3501608';
-    $servico->cserv = new stdClass;
-    $servico->cserv->ctribnac = '010101';
-    $servico->cserv->xdescserv = 'Serviço';
-    $servico->cserv->cnbs = '123456789';
+    $servico->locPrest = new stdClass;
+    $servico->locPrest->cLocPrestacao = '3501608';
+    $servico->cServ = new stdClass;
+    $servico->cServ->cTribNac = '010101';
+    $servico->cServ->xDescServ = 'Serviço';
+    $servico->cServ->cNBS = '123456789';
 
     return $servico;
 }

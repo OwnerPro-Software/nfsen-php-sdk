@@ -5,12 +5,12 @@ use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 function makeServMinimo(): stdClass
 {
     $serv = new stdClass;
-    $serv->locprest = new stdClass;
-    $serv->locprest->clocprestacao = '3501608';
-    $serv->cserv = new stdClass;
-    $serv->cserv->ctribnac = '01.01.01.000';
-    $serv->cserv->xdescserv = 'Serviço X';
-    $serv->cserv->cnbs = '123456789';
+    $serv->locPrest = new stdClass;
+    $serv->locPrest->cLocPrestacao = '3501608';
+    $serv->cServ = new stdClass;
+    $serv->cServ->cTribNac = '01.01.01.000';
+    $serv->cServ->xDescServ = 'Serviço X';
+    $serv->cServ->cNBS = '123456789';
 
     return $serv;
 }
@@ -37,8 +37,8 @@ it('uses cPaisPrestacao when cLocPrestacao is not set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $serv = makeServMinimo();
-    $serv->locprest = new stdClass;
-    $serv->locprest->cpaisprestacao = '01058';
+    $serv->locPrest = new stdClass;
+    $serv->locPrest->cPaisPrestacao = '01058';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -52,8 +52,8 @@ it('throws when both cLocPrestacao and cPaisPrestacao are set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $serv = makeServMinimo();
-    $serv->locprest->clocprestacao = '3501608';
-    $serv->locprest->cpaisprestacao = '01058';
+    $serv->locPrest->cLocPrestacao = '3501608';
+    $serv->locPrest->cPaisPrestacao = '01058';
 
     expect(fn () => $builder->build($doc, $serv))
         ->toThrow(InvalidArgumentException::class, 'não ambos');
@@ -64,7 +64,7 @@ it('throws when locPrest has no choice set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $serv = makeServMinimo();
-    $serv->locprest = new stdClass;
+    $serv->locPrest = new stdClass;
 
     expect(fn () => $builder->build($doc, $serv))
         ->toThrow(InvalidArgumentException::class, 'requer cLocPrestacao');
@@ -75,8 +75,8 @@ it('includes optional cServ fields when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $serv = makeServMinimo();
-    $serv->cserv->ctribmun = '01.01';
-    $serv->cserv->cintcontrib = 'INT-001';
+    $serv->cServ->cTribMun = '01.01';
+    $serv->cServ->cIntContrib = 'INT-001';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -91,17 +91,17 @@ it('builds comExt element with all fields', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $serv = makeServMinimo();
-    $serv->comext = new stdClass;
-    $serv->comext->mdprestacao = '1';
-    $serv->comext->vincprest = '0';
-    $serv->comext->tpmoeda = '790';
-    $serv->comext->vservmoeda = '500.00';
-    $serv->comext->mecafcomexp = '13';
-    $serv->comext->mecafcomext = '13';
-    $serv->comext->movtempbens = '0';
-    $serv->comext->ndi = '123456';
-    $serv->comext->nre = '789012';
-    $serv->comext->mdic = '0';
+    $serv->comExt = new stdClass;
+    $serv->comExt->mdPrestacao = '1';
+    $serv->comExt->vincPrest = '0';
+    $serv->comExt->tpMoeda = '790';
+    $serv->comExt->vServMoeda = '500.00';
+    $serv->comExt->mecAFComexP = '13';
+    $serv->comExt->mecAFComexT = '13';
+    $serv->comExt->movTempBens = '0';
+    $serv->comExt->nDI = '123456';
+    $serv->comExt->nRE = '789012';
+    $serv->comExt->mdic = '0';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -124,15 +124,15 @@ it('builds comExt without optional nDI and nRE', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $serv = makeServMinimo();
-    $serv->comext = new stdClass;
-    $serv->comext->mdprestacao = '1';
-    $serv->comext->vincprest = '0';
-    $serv->comext->tpmoeda = '790';
-    $serv->comext->vservmoeda = '500.00';
-    $serv->comext->mecafcomexp = '13';
-    $serv->comext->mecafcomext = '13';
-    $serv->comext->movtempbens = '0';
-    $serv->comext->mdic = '0';
+    $serv->comExt = new stdClass;
+    $serv->comExt->mdPrestacao = '1';
+    $serv->comExt->vincPrest = '0';
+    $serv->comExt->tpMoeda = '790';
+    $serv->comExt->vServMoeda = '500.00';
+    $serv->comExt->mecAFComexP = '13';
+    $serv->comExt->mecAFComexT = '13';
+    $serv->comExt->movTempBens = '0';
+    $serv->comExt->mdic = '0';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -148,8 +148,8 @@ it('builds obra with cObra choice', function () {
 
     $serv = makeServMinimo();
     $serv->obra = new stdClass;
-    $serv->obra->inscimobfisc = '12345';
-    $serv->obra->cobra = '67890';
+    $serv->obra->inscImobFisc = '12345';
+    $serv->obra->cObra = '67890';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -167,7 +167,7 @@ it('builds obra with cCIB choice', function () {
 
     $serv = makeServMinimo();
     $serv->obra = new stdClass;
-    $serv->obra->ccib = '11111';
+    $serv->obra->cCIB = '11111';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -185,11 +185,11 @@ it('builds obra with end choice using CEP', function () {
     $serv = makeServMinimo();
     $serv->obra = new stdClass;
     $serv->obra->end = new stdClass;
-    $serv->obra->end->cep = '01001000';
-    $serv->obra->end->xlgr = 'Rua Teste';
+    $serv->obra->end->CEP = '01001000';
+    $serv->obra->end->xLgr = 'Rua Teste';
     $serv->obra->end->nro = '100';
-    $serv->obra->end->xcpl = 'Sala 1';
-    $serv->obra->end->xbairro = 'Centro';
+    $serv->obra->end->xCpl = 'Sala 1';
+    $serv->obra->end->xBairro = 'Centro';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -213,13 +213,13 @@ it('builds obra with end choice using endExt', function () {
     $serv = makeServMinimo();
     $serv->obra = new stdClass;
     $serv->obra->end = new stdClass;
-    $serv->obra->end->endext = new stdClass;
-    $serv->obra->end->endext->cendpost = '10001';
-    $serv->obra->end->endext->xcidade = 'New York';
-    $serv->obra->end->endext->xestprovreg = 'NY';
-    $serv->obra->end->xlgr = '5th Avenue';
+    $serv->obra->end->endExt = new stdClass;
+    $serv->obra->end->endExt->cEndPost = '10001';
+    $serv->obra->end->endExt->xCidade = 'New York';
+    $serv->obra->end->endExt->xEstProvReg = 'NY';
+    $serv->obra->end->xLgr = '5th Avenue';
     $serv->obra->end->nro = '350';
-    $serv->obra->end->xbairro = 'Manhattan';
+    $serv->obra->end->xBairro = 'Manhattan';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -242,7 +242,7 @@ it('builds obra without optional inscImobFisc', function () {
 
     $serv = makeServMinimo();
     $serv->obra = new stdClass;
-    $serv->obra->cobra = '67890';
+    $serv->obra->cObra = '67890';
 
     $xml = $doc->saveXML($builder->build($doc, $serv));
 
@@ -258,8 +258,8 @@ it('throws when multiple obra choices are set', function () {
 
     $serv = makeServMinimo();
     $serv->obra = new stdClass;
-    $serv->obra->cobra = '67890';
-    $serv->obra->ccib = '11111';
+    $serv->obra->cObra = '67890';
+    $serv->obra->cCIB = '11111';
 
     expect(fn () => $builder->build($doc, $serv))
         ->toThrow(InvalidArgumentException::class, 'apenas um');
@@ -270,7 +270,7 @@ it('handles accented characters in field values', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $serv = makeServMinimo();
-    $serv->cserv->xdescserv = 'Consultoria em gestão tributária';
+    $serv->cServ->xDescServ = 'Consultoria em gestão tributária';
 
     $element = $builder->build($doc, $serv);
     $xml = $doc->saveXML($element);

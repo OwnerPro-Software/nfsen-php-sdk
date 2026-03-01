@@ -13,10 +13,10 @@ it('exposes all five groups as readonly properties', function () {
     $data = new DpsData($infDps, $prestador, $tomador, $servico, $valores);
 
     expect($data)
-        ->infDps->toBe($infDps)
-        ->prestador->toBe($prestador)
-        ->tomador->toBe($tomador)
-        ->servico->toBe($servico)
+        ->infDPS->toBe($infDps)
+        ->prest->toBe($prestador)
+        ->toma->toBe($tomador)
+        ->serv->toBe($servico)
         ->valores->toBe($valores);
 });
 
