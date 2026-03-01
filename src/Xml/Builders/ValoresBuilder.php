@@ -6,6 +6,7 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
+use InvalidArgumentException;
 use stdClass;
 
 final class ValoresBuilder
@@ -68,6 +69,10 @@ final class ValoresBuilder
         }
 
         if (isset($trib->tribmun->bm)) {
+            if (isset($trib->tribmun->bm->vredbcbm) && isset($trib->tribmun->bm->predbcbm)) {
+                throw new InvalidArgumentException('BM deve ter apenas vRedBCBM ou pRedBCBM, não ambos.');
+            }
+
             $bm = $doc->createElement('BM');
             $bm->appendChild($this->text($doc, 'nBM', $trib->tribmun->bm->nbm));
             if (isset($trib->tribmun->bm->vredbcbm)) {
@@ -135,7 +140,12 @@ final class ValoresBuilder
             $el->appendChild($tribFed);
         }
 
-        // totTrib (obrigatório — choice)
+        // totTrib (obrigatório e exclusivo — choice)
+        $totTribCount = (int) isset($trib->totaltrib->vtottrib) + (int) isset($trib->totaltrib->ptottrib) + (int) isset($trib->totaltrib->indtottrib) + (int) isset($trib->totaltrib->ptottribsn);
+        if ($totTribCount > 1) {
+            throw new InvalidArgumentException('totTrib deve ter apenas um entre vTotTrib, pTotTrib, indTotTrib ou pTotTribSN.');
+        }
+
         $totTrib = $doc->createElement('totTrib');
         if (isset($trib->totaltrib->vtottrib)) {
             $vTotTrib = $doc->createElement('vTotTrib');
@@ -153,6 +163,8 @@ final class ValoresBuilder
             $totTrib->appendChild($this->text($doc, 'indTotTrib', $trib->totaltrib->indtottrib));
         } elseif (isset($trib->totaltrib->ptottribsn)) {
             $totTrib->appendChild($this->text($doc, 'pTotTribSN', $trib->totaltrib->ptottribsn));
+        } else {
+            throw new InvalidArgumentException('totTrib requer vTotTrib, pTotTrib, indTotTrib ou pTotTribSN.');
         }
 
         $el->appendChild($totTrib);

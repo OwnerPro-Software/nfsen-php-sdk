@@ -99,7 +99,7 @@ it('builds prest element with cNaoNIF', function () {
         ->not->toContain('<NIF>');
 });
 
-it('uses CNPJ over CPF when both are set', function () {
+it('throws when both CNPJ and CPF are set', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
@@ -111,11 +111,22 @@ it('uses CNPJ over CPF when both are set', function () {
     $prest->regtrib->opsimpnac = 1;
     $prest->regtrib->regesptrib = 0;
 
-    $xml = $doc->saveXML($builder->build($doc, $prest));
+    expect(fn () => $builder->build($doc, $prest))
+        ->toThrow(InvalidArgumentException::class, 'apenas um');
+});
 
-    expect($xml)
-        ->toContain('<CNPJ>12345678000195</CNPJ>')
-        ->not->toContain('<CPF>');
+it('throws when no identification is set', function () {
+    $builder = new PrestadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $prest = new stdClass;
+    $prest->xnome = 'Empresa';
+    $prest->regtrib = new stdClass;
+    $prest->regtrib->opsimpnac = 1;
+    $prest->regtrib->regesptrib = 0;
+
+    expect(fn () => $builder->build($doc, $prest))
+        ->toThrow(InvalidArgumentException::class, 'requer CNPJ');
 });
 
 it('includes fone and email when set', function () {

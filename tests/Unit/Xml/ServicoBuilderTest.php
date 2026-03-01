@@ -47,7 +47,7 @@ it('uses cPaisPrestacao when cLocPrestacao is not set', function () {
         ->not->toContain('<cLocPrestacao>');
 });
 
-it('uses cLocPrestacao over cPaisPrestacao when both are set', function () {
+it('throws when both cLocPrestacao and cPaisPrestacao are set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
@@ -55,11 +55,19 @@ it('uses cLocPrestacao over cPaisPrestacao when both are set', function () {
     $serv->locprest->clocprestacao = '3501608';
     $serv->locprest->cpaisprestacao = '01058';
 
-    $xml = $doc->saveXML($builder->build($doc, $serv));
+    expect(fn () => $builder->build($doc, $serv))
+        ->toThrow(InvalidArgumentException::class, 'não ambos');
+});
 
-    expect($xml)
-        ->toContain('<cLocPrestacao>3501608</cLocPrestacao>')
-        ->not->toContain('<cPaisPrestacao>');
+it('throws when locPrest has no choice set', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = makeServMinimo();
+    $serv->locprest = new stdClass;
+
+    expect(fn () => $builder->build($doc, $serv))
+        ->toThrow(InvalidArgumentException::class, 'requer cLocPrestacao');
 });
 
 it('includes optional cServ fields when set', function () {
@@ -244,7 +252,7 @@ it('builds obra without optional inscImobFisc', function () {
         ->not->toContain('<inscImobFisc>');
 });
 
-it('prefers cObra over cCIB and end when multiple are set', function () {
+it('throws when multiple obra choices are set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
@@ -253,11 +261,8 @@ it('prefers cObra over cCIB and end when multiple are set', function () {
     $serv->obra->cobra = '67890';
     $serv->obra->ccib = '11111';
 
-    $xml = $doc->saveXML($builder->build($doc, $serv));
-
-    expect($xml)
-        ->toContain('<cObra>67890</cObra>')
-        ->not->toContain('<cCIB>');
+    expect(fn () => $builder->build($doc, $serv))
+        ->toThrow(InvalidArgumentException::class, 'apenas um');
 });
 
 it('handles accented characters in field values', function () {

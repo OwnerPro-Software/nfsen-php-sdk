@@ -6,6 +6,7 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
+use InvalidArgumentException;
 use stdClass;
 
 final class TomadorBuilder
@@ -16,14 +17,23 @@ final class TomadorBuilder
     {
         $el = $doc->createElement('toma');
 
-        // choice (obrigatório): CNPJ | CPF | NIF | cNaoNIF
+        // choice (obrigatório e exclusivo): CNPJ | CPF | NIF | cNaoNIF
+        $idCount = (int) isset($toma->cnpj) + (int) isset($toma->cpf) + (int) isset($toma->nif) + (int) isset($toma->cnaonif);
+        if ($idCount === 0) {
+            throw new InvalidArgumentException('Tomador requer CNPJ, CPF, NIF ou cNaoNIF.');
+        }
+
+        if ($idCount > 1) {
+            throw new InvalidArgumentException('Tomador deve ter apenas um entre CNPJ, CPF, NIF ou cNaoNIF.');
+        }
+
         if (isset($toma->cnpj)) {
             $el->appendChild($this->text($doc, 'CNPJ', $toma->cnpj));
         } elseif (isset($toma->cpf)) {
             $el->appendChild($this->text($doc, 'CPF', $toma->cpf));
         } elseif (isset($toma->nif)) {
             $el->appendChild($this->text($doc, 'NIF', $toma->nif));
-        } elseif (isset($toma->cnaonif)) {
+        } else {
             $el->appendChild($this->text($doc, 'cNaoNIF', $toma->cnaonif));
         }
 

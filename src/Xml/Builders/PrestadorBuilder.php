@@ -6,6 +6,7 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
+use InvalidArgumentException;
 use stdClass;
 
 final class PrestadorBuilder
@@ -16,14 +17,23 @@ final class PrestadorBuilder
     {
         $el = $doc->createElement('prest');
 
-        // choice (obrigatório): CNPJ | CPF | NIF | cNaoNIF
+        // choice (obrigatório e exclusivo): CNPJ | CPF | NIF | cNaoNIF
+        $idCount = (int) isset($prest->cnpj) + (int) isset($prest->cpf) + (int) isset($prest->nif) + (int) isset($prest->cnaonif);
+        if ($idCount === 0) {
+            throw new InvalidArgumentException('Prestador requer CNPJ, CPF, NIF ou cNaoNIF.');
+        }
+
+        if ($idCount > 1) {
+            throw new InvalidArgumentException('Prestador deve ter apenas um entre CNPJ, CPF, NIF ou cNaoNIF.');
+        }
+
         if (isset($prest->cnpj)) {
             $el->appendChild($this->text($doc, 'CNPJ', $prest->cnpj));
         } elseif (isset($prest->cpf)) {
             $el->appendChild($this->text($doc, 'CPF', $prest->cpf));
         } elseif (isset($prest->nif)) {
             $el->appendChild($this->text($doc, 'NIF', $prest->nif));
-        } elseif (isset($prest->cnaonif)) {
+        } else {
             $el->appendChild($this->text($doc, 'cNaoNIF', $prest->cnaonif));
         }
 

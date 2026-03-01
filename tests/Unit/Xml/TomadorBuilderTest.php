@@ -158,6 +158,30 @@ it('includes xCpl in address when set', function () {
     expect($xml)->toContain('<xCpl>Sala 5</xCpl>');
 });
 
+it('throws when both CNPJ and CPF are set', function () {
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $toma = new stdClass;
+    $toma->cnpj = '98765432000111';
+    $toma->cpf = '12345678901';
+    $toma->xnome = 'Tomador';
+
+    expect(fn () => $builder->build($doc, $toma))
+        ->toThrow(InvalidArgumentException::class, 'apenas um');
+});
+
+it('throws when no identification is set', function () {
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $toma = new stdClass;
+    $toma->xnome = 'Tomador';
+
+    expect(fn () => $builder->build($doc, $toma))
+        ->toThrow(InvalidArgumentException::class, 'requer CNPJ');
+});
+
 it('includes fone and email when set', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');

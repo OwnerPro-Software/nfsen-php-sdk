@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
+use InvalidArgumentException;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XsdValidator;
@@ -69,10 +70,16 @@ final readonly class CancelamentoBuilder
         $infPedReg->appendChild($this->text($doc, 'verAplic', $verAplic));
         $infPedReg->appendChild($this->text($doc, 'dhEvento', $dhEvento));
 
+        if ($cnpjAutor !== null && $cpfAutor !== null) {
+            throw new InvalidArgumentException('Apenas CNPJAutor ou CPFAutor deve ser informado, não ambos.');
+        }
+
         if ($cnpjAutor !== null) {
             $infPedReg->appendChild($this->text($doc, 'CNPJAutor', $cnpjAutor));
         } elseif ($cpfAutor !== null) {
             $infPedReg->appendChild($this->text($doc, 'CPFAutor', $cpfAutor));
+        } else {
+            throw new InvalidArgumentException('CNPJAutor ou CPFAutor é obrigatório para o pedido de registro de evento.');
         }
 
         $infPedReg->appendChild($this->text($doc, 'chNFSe', $chNFSe));

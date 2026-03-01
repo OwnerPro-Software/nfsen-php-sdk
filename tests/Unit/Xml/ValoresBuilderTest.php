@@ -177,7 +177,7 @@ it('builds BM in tribMun with pRedBCBM', function () {
         ->not->toContain('<vRedBCBM>');
 });
 
-it('BM choice prioritizes vRedBCBM over pRedBCBM when both set', function () {
+it('throws when both vRedBCBM and pRedBCBM are set in BM', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
@@ -194,11 +194,8 @@ it('BM choice prioritizes vRedBCBM over pRedBCBM when both set', function () {
     $valores->trib->totaltrib = new stdClass;
     $valores->trib->totaltrib->indtottrib = '0';
 
-    $xml = $doc->saveXML($builder->build($doc, $valores));
-
-    expect($xml)
-        ->toContain('<vRedBCBM>50.00</vRedBCBM>')
-        ->not->toContain('<pRedBCBM>');
+    expect(fn () => $builder->build($doc, $valores))
+        ->toThrow(InvalidArgumentException::class, 'não ambos');
 });
 
 it('builds tribFed with pisCofins and retencoes', function () {
@@ -309,4 +306,38 @@ it('builds totTrib with pTotTribSN choice', function () {
     $xml = $doc->saveXML($builder->build($doc, $valores));
 
     expect($xml)->toContain('<pTotTribSN>5.00</pTotTribSN>');
+});
+
+it('throws when multiple totTrib choices are set', function () {
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $valores = new stdClass;
+    $valores->vservprest = makeVServPrestMinimo();
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
+    $valores->trib->tribmun->tpretissqn = '1';
+    $valores->trib->totaltrib = new stdClass;
+    $valores->trib->totaltrib->indtottrib = '0';
+    $valores->trib->totaltrib->ptottribsn = '5.00';
+
+    expect(fn () => $builder->build($doc, $valores))
+        ->toThrow(InvalidArgumentException::class, 'apenas um');
+});
+
+it('throws when no totTrib choice is set', function () {
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $valores = new stdClass;
+    $valores->vservprest = makeVServPrestMinimo();
+    $valores->trib = new stdClass;
+    $valores->trib->tribmun = new stdClass;
+    $valores->trib->tribmun->tribissqn = '1';
+    $valores->trib->tribmun->tpretissqn = '1';
+    $valores->trib->totaltrib = new stdClass;
+
+    expect(fn () => $builder->build($doc, $valores))
+        ->toThrow(InvalidArgumentException::class, 'requer vTotTrib');
 });

@@ -6,6 +6,7 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
+use InvalidArgumentException;
 use stdClass;
 
 final class ServicoBuilder
@@ -16,12 +17,18 @@ final class ServicoBuilder
     {
         $el = $doc->createElement('serv');
 
-        // locPrest (obrigatório — choice)
+        // locPrest (obrigatório e exclusivo — choice)
+        if (isset($serv->locprest->clocprestacao) && isset($serv->locprest->cpaisprestacao)) {
+            throw new InvalidArgumentException('locPrest deve ter apenas cLocPrestacao ou cPaisPrestacao, não ambos.');
+        }
+
         $locPrest = $doc->createElement('locPrest');
         if (isset($serv->locprest->clocprestacao)) {
             $locPrest->appendChild($this->text($doc, 'cLocPrestacao', $serv->locprest->clocprestacao));
         } elseif (isset($serv->locprest->cpaisprestacao)) {
             $locPrest->appendChild($this->text($doc, 'cPaisPrestacao', $serv->locprest->cpaisprestacao));
+        } else {
+            throw new InvalidArgumentException('locPrest requer cLocPrestacao ou cPaisPrestacao.');
         }
 
         $el->appendChild($locPrest);
@@ -70,7 +77,12 @@ final class ServicoBuilder
                 $obra->appendChild($this->text($doc, 'inscImobFisc', $serv->obra->inscimobfisc));
             }
 
-            // choice (obrigatório): cObra | cCIB | end
+            // choice (obrigatório e exclusivo): cObra | cCIB | end
+            $obraChoiceCount = (int) isset($serv->obra->cobra) + (int) isset($serv->obra->ccib) + (int) isset($serv->obra->end);
+            if ($obraChoiceCount > 1) {
+                throw new InvalidArgumentException('Obra deve ter apenas um entre cObra, cCIB ou end.');
+            }
+
             if (isset($serv->obra->cobra)) {
                 $obra->appendChild($this->text($doc, 'cObra', $serv->obra->cobra));
             } elseif (isset($serv->obra->ccib)) {

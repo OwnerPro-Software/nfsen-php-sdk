@@ -115,6 +115,38 @@ it('validates against pedRegEvento XSD', function (): void {
     expect($xml)->toContain('<pedRegEvento');
 });
 
+it('throws when both cnpjAutor and cpfAutor are set', function (): void {
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
+
+    expect(fn () => $builder->build(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: '12345678901',
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+        chSubstituta: '98765432109876543210987654321098765432109876543210',
+        descricao: 'Outro motivo para substituicao',
+    ))->toThrow(InvalidArgumentException::class, 'não ambos');
+});
+
+it('throws when neither cnpjAutor nor cpfAutor is set', function (): void {
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
+
+    expect(fn () => $builder->build(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: null,
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+        chSubstituta: '98765432109876543210987654321098765432109876543210',
+        descricao: 'Outro motivo para substituicao',
+    ))->toThrow(InvalidArgumentException::class, 'obrigatório');
+});
+
 it('throws NfseException when descricao is too short', function (): void {
     $builder = new SubstituicaoBuilder(makeXsdValidator());
 
