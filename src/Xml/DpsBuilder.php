@@ -6,9 +6,7 @@ namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
 use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
@@ -68,9 +66,7 @@ final readonly class DpsBuilder
 
         $infDps->appendChild($this->text($doc, 'cLocEmi', $d->cLocEmi));
 
-        if ($data->prest instanceof Prestador) {
-            $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prest));
-        }
+        $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prest));
 
         // toma (optional)
         if ($data->toma instanceof Tomador) {
@@ -80,10 +76,8 @@ final readonly class DpsBuilder
         // serv (obrigatório)
         $infDps->appendChild((new ServicoBuilder)->build($doc, $data->serv));
 
-        // valores (obrigatório quando houver dados)
-        if ($data->valores instanceof Valores) {
-            $infDps->appendChild((new ValoresBuilder)->build($doc, $data->valores));
-        }
+        // valores (obrigatório)
+        $infDps->appendChild((new ValoresBuilder)->build($doc, $data->valores));
 
         $dps->appendChild($infDps);
         $doc->appendChild($dps);
@@ -97,8 +91,8 @@ final readonly class DpsBuilder
         $p = $data->prest;
         $id = 'DPS';
         $id .= substr($d->cLocEmi, 0, 7);
-        $id .= $p instanceof Prestador && $p->CNPJ !== null ? '2' : '1';
-        $inscricao = $p instanceof Prestador ? ($p->CNPJ ?? $p->CPF ?? '') : '';
+        $id .= $p->CNPJ !== null ? '2' : '1';
+        $inscricao = $p->CNPJ ?? $p->CPF ?? '';
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
         $id .= str_pad($d->serie, 5, '0', STR_PAD_LEFT);
 

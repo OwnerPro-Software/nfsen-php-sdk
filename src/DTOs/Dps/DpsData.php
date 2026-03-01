@@ -14,9 +14,9 @@ final readonly class DpsData
 {
     public function __construct(
         public InfDPS $infDPS,
-        public ?Prestador $prest,
+        public Prestador $prest,
         public ?Tomador $toma,
         public Servico $serv,
-        public ?Valores $valores,
+        public Valores $valores,
     ) {}
 }

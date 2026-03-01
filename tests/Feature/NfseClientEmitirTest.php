@@ -257,7 +257,7 @@ it('emitir validates XML against XSD before sending', function () {
         prest: makePrestadorCnpj(),
         toma: null,
         serv: $servico,
-        valores: null,
+        valores: makeValoresMinimo(),
     );
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');

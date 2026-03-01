@@ -199,7 +199,7 @@ it('throws when both vRedBCBM and pRedBCBM are set in BM', function () {
         ->toThrow(InvalidDpsArgument::class, 'não ambos');
 });
 
-it('builds tribFed with pisCofins and retencoes', function () {
+it('builds tribFed with piscofins and retencoes', function () {
     $builder = new ValoresBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
@@ -209,7 +209,7 @@ it('builds tribFed with pisCofins and retencoes', function () {
             tribMun: makeTribMunMinimo(),
             indTotTrib: '0',
             tribFed: new TributacaoFederal(
-                pisCofins: new PisCofins(
+                piscofins: new PisCofins(
                     CST: TipoCST::AliqBasica,
                     vBCPisCofins: '100.00',
                     pAliqPis: '0.65',
@@ -229,7 +229,7 @@ it('builds tribFed with pisCofins and retencoes', function () {
 
     expect($xml)
         ->toContain('<tribFed>')
-        ->toContain('<pisCofins>')
+        ->toContain('<piscofins>')
         ->toContain('<CST>01</CST>')
         ->toContain('<vBCPisCofins>100.00</vBCPisCofins>')
         ->toContain('<pAliqPis>0.65</pAliqPis>')

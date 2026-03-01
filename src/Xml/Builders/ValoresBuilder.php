@@ -99,35 +99,35 @@ final class ValoresBuilder
         // tribFed (opcional)
         if ($trib->tribFed instanceof TributacaoFederal) {
             $tribFed = $doc->createElement('tribFed');
-            if ($trib->tribFed->pisCofins instanceof PisCofins) {
-                $pisCofins = $doc->createElement('pisCofins');
-                $pisCofins->appendChild($this->text($doc, 'CST', $trib->tribFed->pisCofins->CST->value));
+            if ($trib->tribFed->piscofins instanceof PisCofins) {
+                $piscofins = $doc->createElement('piscofins');
+                $piscofins->appendChild($this->text($doc, 'CST', $trib->tribFed->piscofins->CST->value));
 
-                if ($trib->tribFed->pisCofins->vBCPisCofins !== null) {
-                    $pisCofins->appendChild($this->text($doc, 'vBCPisCofins', $trib->tribFed->pisCofins->vBCPisCofins));
+                if ($trib->tribFed->piscofins->vBCPisCofins !== null) {
+                    $piscofins->appendChild($this->text($doc, 'vBCPisCofins', $trib->tribFed->piscofins->vBCPisCofins));
                 }
 
-                if ($trib->tribFed->pisCofins->pAliqPis !== null) {
-                    $pisCofins->appendChild($this->text($doc, 'pAliqPis', $trib->tribFed->pisCofins->pAliqPis));
+                if ($trib->tribFed->piscofins->pAliqPis !== null) {
+                    $piscofins->appendChild($this->text($doc, 'pAliqPis', $trib->tribFed->piscofins->pAliqPis));
                 }
 
-                if ($trib->tribFed->pisCofins->pAliqCofins !== null) {
-                    $pisCofins->appendChild($this->text($doc, 'pAliqCofins', $trib->tribFed->pisCofins->pAliqCofins));
+                if ($trib->tribFed->piscofins->pAliqCofins !== null) {
+                    $piscofins->appendChild($this->text($doc, 'pAliqCofins', $trib->tribFed->piscofins->pAliqCofins));
                 }
 
-                if ($trib->tribFed->pisCofins->vPis !== null) {
-                    $pisCofins->appendChild($this->text($doc, 'vPis', $trib->tribFed->pisCofins->vPis));
+                if ($trib->tribFed->piscofins->vPis !== null) {
+                    $piscofins->appendChild($this->text($doc, 'vPis', $trib->tribFed->piscofins->vPis));
                 }
 
-                if ($trib->tribFed->pisCofins->vCofins !== null) {
-                    $pisCofins->appendChild($this->text($doc, 'vCofins', $trib->tribFed->pisCofins->vCofins));
+                if ($trib->tribFed->piscofins->vCofins !== null) {
+                    $piscofins->appendChild($this->text($doc, 'vCofins', $trib->tribFed->piscofins->vCofins));
                 }
 
-                if ($trib->tribFed->pisCofins->tpRetPisCofins instanceof TipoRetPisCofins) {
-                    $pisCofins->appendChild($this->text($doc, 'tpRetPisCofins', $trib->tribFed->pisCofins->tpRetPisCofins->value));
+                if ($trib->tribFed->piscofins->tpRetPisCofins instanceof TipoRetPisCofins) {
+                    $piscofins->appendChild($this->text($doc, 'tpRetPisCofins', $trib->tribFed->piscofins->tpRetPisCofins->value));
                 }
 
-                $tribFed->appendChild($pisCofins);
+                $tribFed->appendChild($piscofins);
             }
 
             if ($trib->tribFed->vRetCP !== null) {
