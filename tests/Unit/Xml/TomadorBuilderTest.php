@@ -31,20 +31,35 @@ it('builds toma element with CPF', function () {
         ->not->toContain('<CNPJ>');
 });
 
-it('includes NIF and cNaoNIF when set', function () {
+it('builds toma element with NIF', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $toma = new stdClass;
     $toma->nif = 'NIF12345';
-    $toma->cnaonif = '1';
     $toma->xnome = 'Estrangeiro';
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 
     expect($xml)
         ->toContain('<NIF>NIF12345</NIF>')
-        ->toContain('<cNaoNIF>1</cNaoNIF>');
+        ->not->toContain('<CNPJ>')
+        ->not->toContain('<CPF>');
+});
+
+it('builds toma element with cNaoNIF', function () {
+    $builder = new TomadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $toma = new stdClass;
+    $toma->cnaonif = '1';
+    $toma->xnome = 'Estrangeiro';
+
+    $xml = $doc->saveXML($builder->build($doc, $toma));
+
+    expect($xml)
+        ->toContain('<cNaoNIF>1</cNaoNIF>')
+        ->not->toContain('<NIF>');
 });
 
 it('includes CAEPF and IM when set', function () {

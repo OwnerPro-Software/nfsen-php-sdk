@@ -16,19 +16,14 @@ final class TomadorBuilder
     {
         $el = $doc->createElement('toma');
 
+        // choice (obrigatório): CNPJ | CPF | NIF | cNaoNIF
         if (isset($toma->cnpj)) {
             $el->appendChild($this->text($doc, 'CNPJ', $toma->cnpj));
-        }
-
-        if (isset($toma->cpf)) {
+        } elseif (isset($toma->cpf)) {
             $el->appendChild($this->text($doc, 'CPF', $toma->cpf));
-        }
-
-        if (isset($toma->nif)) {
+        } elseif (isset($toma->nif)) {
             $el->appendChild($this->text($doc, 'NIF', $toma->nif));
-        }
-
-        if (isset($toma->cnaonif)) {
+        } elseif (isset($toma->cnaonif)) {
             $el->appendChild($this->text($doc, 'cNaoNIF', $toma->cnaonif));
         }
 

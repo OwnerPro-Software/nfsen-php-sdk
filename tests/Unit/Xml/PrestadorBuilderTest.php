@@ -40,14 +40,12 @@ it('builds prest element with CPF when no CNPJ', function () {
     expect($doc->saveXML($element))->toContain('<CPF>12345678901</CPF>');
 });
 
-it('includes NIF, cNaoNIF, CAEPF and IM when set', function () {
+it('includes CAEPF and IM when set', function () {
     $builder = new PrestadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new stdClass;
     $prest->cnpj = '12345678000195';
-    $prest->nif = 'NIF999';
-    $prest->cnaonif = '1';
     $prest->caepf = '12345678901234';
     $prest->im = '9876543';
     $prest->xnome = 'Empresa';
@@ -58,10 +56,66 @@ it('includes NIF, cNaoNIF, CAEPF and IM when set', function () {
     $xml = $doc->saveXML($builder->build($doc, $prest));
 
     expect($xml)
-        ->toContain('<NIF>NIF999</NIF>')
-        ->toContain('<cNaoNIF>1</cNaoNIF>')
         ->toContain('<CAEPF>12345678901234</CAEPF>')
         ->toContain('<IM>9876543</IM>');
+});
+
+it('builds prest element with NIF', function () {
+    $builder = new PrestadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $prest = new stdClass;
+    $prest->nif = 'NIF999';
+    $prest->xnome = 'Empresa Estrangeira';
+    $prest->regtrib = new stdClass;
+    $prest->regtrib->opsimpnac = 0;
+    $prest->regtrib->regesptrib = 0;
+
+    $xml = $doc->saveXML($builder->build($doc, $prest));
+
+    expect($xml)
+        ->toContain('<NIF>NIF999</NIF>')
+        ->not->toContain('<CNPJ>')
+        ->not->toContain('<CPF>');
+});
+
+it('builds prest element with cNaoNIF', function () {
+    $builder = new PrestadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $prest = new stdClass;
+    $prest->cnaonif = '1';
+    $prest->xnome = 'Empresa Estrangeira';
+    $prest->regtrib = new stdClass;
+    $prest->regtrib->opsimpnac = 0;
+    $prest->regtrib->regesptrib = 0;
+
+    $xml = $doc->saveXML($builder->build($doc, $prest));
+
+    expect($xml)
+        ->toContain('<cNaoNIF>1</cNaoNIF>')
+        ->not->toContain('<CNPJ>')
+        ->not->toContain('<CPF>')
+        ->not->toContain('<NIF>');
+});
+
+it('uses CNPJ over CPF when both are set', function () {
+    $builder = new PrestadorBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $prest = new stdClass;
+    $prest->cnpj = '12345678000195';
+    $prest->cpf = '12345678901';
+    $prest->xnome = 'Empresa';
+    $prest->regtrib = new stdClass;
+    $prest->regtrib->opsimpnac = 1;
+    $prest->regtrib->regesptrib = 0;
+
+    $xml = $doc->saveXML($builder->build($doc, $prest));
+
+    expect($xml)
+        ->toContain('<CNPJ>12345678000195</CNPJ>')
+        ->not->toContain('<CPF>');
 });
 
 it('includes fone and email when set', function () {

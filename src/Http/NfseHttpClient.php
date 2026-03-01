@@ -56,8 +56,11 @@ final readonly class NfseHttpClient
         }
 
         try {
-            if (fwrite($certHandle, (string) $this->certificate) === false
-                || fwrite($keyHandle, (string) $this->certificate->privateKey) === false
+            $certData = (string) $this->certificate;
+            $keyData = (string) $this->certificate->privateKey;
+
+            if (fwrite($certHandle, $certData) !== strlen($certData)
+                || fwrite($keyHandle, $keyData) !== strlen($keyData)
             ) {
                 throw new NfseException('Falha ao escrever certificado em arquivo temporário.');
             }
@@ -78,10 +81,14 @@ final readonly class NfseHttpClient
                 : $pending->get($url);
 
             if ($response->serverError() || $response->clientError()) {
-                throw new HttpException(
-                    'HTTP error: '.$response->status(),
-                    $response->status()
-                );
+                $body = substr($response->body(), 0, 500);
+                $message = 'HTTP error: '.$response->status();
+
+                if ($body !== '') {
+                    $message .= ' — '.$body;
+                }
+
+                throw new HttpException($message, $response->status());
             }
 
             /** @var array<string, mixed> $json */

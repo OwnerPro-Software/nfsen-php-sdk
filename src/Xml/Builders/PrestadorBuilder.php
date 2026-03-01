@@ -16,19 +16,14 @@ final class PrestadorBuilder
     {
         $el = $doc->createElement('prest');
 
+        // choice (obrigatório): CNPJ | CPF | NIF | cNaoNIF
         if (isset($prest->cnpj)) {
             $el->appendChild($this->text($doc, 'CNPJ', $prest->cnpj));
-        }
-
-        if (isset($prest->cpf)) {
+        } elseif (isset($prest->cpf)) {
             $el->appendChild($this->text($doc, 'CPF', $prest->cpf));
-        }
-
-        if (isset($prest->nif)) {
+        } elseif (isset($prest->nif)) {
             $el->appendChild($this->text($doc, 'NIF', $prest->nif));
-        }
-
-        if (isset($prest->cnaonif)) {
+        } elseif (isset($prest->cnaonif)) {
             $el->appendChild($this->text($doc, 'cNaoNIF', $prest->cnaonif));
         }
 
