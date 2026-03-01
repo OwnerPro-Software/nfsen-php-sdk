@@ -21,7 +21,7 @@ it('exposes all five groups as readonly properties', function () {
 });
 
 it('produces valid XML when passed to DpsBuilder', function (DpsData $data) {
-    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new DpsBuilder(makeXsdValidator());
     $xml = $builder->build($data);
 
     $doc = new DOMDocument;

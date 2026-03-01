@@ -166,17 +166,15 @@ it('cancelar throws NfseException when gzip compression fails', function () {
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $schemesPath = __DIR__.'/../../storage/schemes';
-
     $client = new NfseClient(
         ambiente: NfseAmbiente::HOMOLOGACAO,
         timeout: 30,
         signingAlgorithm: 'sha1',
         sslVerify: true,
         prefeituraResolver: new PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator($schemesPath)),
-        cancelamentoBuilder: new CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator($schemesPath)),
-        substituicaoBuilder: new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator($schemesPath)),
+        dpsBuilder: new DpsBuilder(makeXsdValidator()),
+        cancelamentoBuilder: new CancelamentoBuilder(makeXsdValidator()),
+        substituicaoBuilder: new SubstituicaoBuilder(makeXsdValidator()),
         gzipCompressor: $compressor,
     );
     $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');

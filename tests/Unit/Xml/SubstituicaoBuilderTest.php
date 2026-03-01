@@ -16,7 +16,7 @@ function parseSubstituicaoXml(string $xml): DOMXPath
 }
 
 it('builds valid substituicao xml with chSubstituta', function (): void {
-    $builder = new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
 
@@ -47,7 +47,7 @@ it('builds valid substituicao xml with chSubstituta', function (): void {
 });
 
 it('omits xMotivo when descricao is empty', function (): void {
-    $builder = new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
 
@@ -69,7 +69,7 @@ it('omits xMotivo when descricao is empty', function (): void {
 });
 
 it('generates correct Id with tipo 105102 and padded nPedRegEvento', function (): void {
-    $builder = new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
 
@@ -96,7 +96,7 @@ it('generates correct Id with tipo 105102 and padded nPedRegEvento', function ()
 });
 
 it('validates against pedRegEvento XSD', function (): void {
-    $builder = new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
 
@@ -115,8 +115,8 @@ it('validates against pedRegEvento XSD', function (): void {
     expect($xml)->toContain('<pedRegEvento');
 });
 
-it('throws NfseException on invalid XSD', function (): void {
-    $builder = new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+it('throws NfseException when descricao is too short', function (): void {
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate(
         tpAmb: 2,
@@ -128,7 +128,40 @@ it('throws NfseException on invalid XSD', function (): void {
         codigoMotivo: CodigoJustificativaSubstituicao::Outros,
         chSubstituta: '98765432109876543210987654321098765432109876543210',
         descricao: 'curto',
-    ))->toThrow(NfseException::class, 'XML inválido');
+    ))->toThrow(NfseException::class, 'O campo descricao deve ter entre 15 e 255 caracteres.');
+});
+
+it('throws NfseException when descricao is too long', function (): void {
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
+
+    expect(fn () => $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+        chSubstituta: '98765432109876543210987654321098765432109876543210',
+        descricao: str_repeat('A', 256),
+    ))->toThrow(NfseException::class, 'O campo descricao deve ter entre 15 e 255 caracteres.');
+});
+
+it('skips descricao validation when empty', function (): void {
+    $builder = new SubstituicaoBuilder(makeXsdValidator());
+
+    $xml = $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+        chSubstituta: '98765432109876543210987654321098765432109876543210',
+    );
+
+    expect($xml)->toContain('<pedRegEvento');
 });
 
 it('throws NfseException when scheme file does not exist', function (): void {
@@ -152,7 +185,7 @@ it('throws NfseException when XML loading fails', function (): void {
     $loader = Mockery::mock(XmlDocumentLoader::class);
     $loader->shouldReceive('__invoke')->andReturn(false);
 
-    $builder = new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes', $loader));
+    $builder = new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
 

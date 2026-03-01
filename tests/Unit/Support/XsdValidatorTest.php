@@ -15,14 +15,14 @@ it('throws NfseException when XML loading fails', function () {
     $loader = Mockery::mock(XmlDocumentLoader::class);
     $loader->shouldReceive('__invoke')->andReturn(false);
 
-    $validator = new XsdValidator(__DIR__.'/../../../storage/schemes', $loader);
+    $validator = new XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader);
 
     expect(fn () => $validator->validate('<root/>', 'DPS_v1.01.xsd'))
         ->toThrow(NfseException::class, 'falha ao carregar documento');
 });
 
 it('throws NfseException on XSD validation failure', function () {
-    $validator = new XsdValidator(__DIR__.'/../../../storage/schemes');
+    $validator = makeXsdValidator();
 
     $invalidXml = '<DPS versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse"><invalid/></DPS>';
 

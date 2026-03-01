@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
-use DOMElement;
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Support\XsdValidator;
+use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
@@ -15,6 +15,8 @@ use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 
 final readonly class DpsBuilder
 {
+    use CreatesTextElements;
+
     private const VERSION = '1.01';
 
     private const XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
@@ -97,13 +99,5 @@ final readonly class DpsBuilder
         $id .= str_pad((string) $d->serie, 5, '0', STR_PAD_LEFT);
 
         return $id.str_pad((string) $d->ndps, 15, '0', STR_PAD_LEFT);
-    }
-
-    private function text(DOMDocument $doc, string $name, string $value): DOMElement
-    {
-        $el = $doc->createElement($name);
-        $el->appendChild($doc->createTextNode($value));
-
-        return $el;
     }
 }

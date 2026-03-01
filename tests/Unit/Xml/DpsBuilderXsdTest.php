@@ -6,7 +6,7 @@ use Pulsar\NfseNacional\Support\XmlDocumentLoader;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data) {
-    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new DpsBuilder(makeXsdValidator());
     $xml = $builder->buildAndValidate($data);
 
     // Se chegou aqui sem exception, o XML é válido
@@ -20,7 +20,7 @@ it('DPS_v1.01.xsd scheme file exists', function () {
 });
 
 it('build() does not validate XSD (fast path)', function (DpsData $data) {
-    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new DpsBuilder(makeXsdValidator());
     $xml = $builder->build($data);
 
     // build() retorna XML sem validar — não lança exceção mesmo se inválido
@@ -31,7 +31,7 @@ it('buildAndValidate throws NfseException when XML loading fails', function (Dps
     $loader = Mockery::mock(XmlDocumentLoader::class);
     $loader->shouldReceive('__invoke')->andReturn(false);
 
-    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes', $loader));
+    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
 
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(NfseException::class, 'falha ao carregar documento');

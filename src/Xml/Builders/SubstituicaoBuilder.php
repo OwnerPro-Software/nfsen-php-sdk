@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
-use DOMElement;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
+use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XsdValidator;
 
 final readonly class SubstituicaoBuilder
 {
+    use CreatesTextElements;
+
     private const VERSION = '1.01';
 
     private const XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
@@ -31,6 +33,10 @@ final readonly class SubstituicaoBuilder
         string $descricao = '',
         int $nPedRegEvento = 1,
     ): string {
+        if ($descricao !== '') {
+            $this->validateDescricao($descricao);
+        }
+
         $xml = $this->build(
             $tpAmb, $verAplic, $dhEvento, $cnpjAutor, $cpfAutor,
             $chNFSe, $codigoMotivo, $chSubstituta, $descricao, $nPedRegEvento,
@@ -94,16 +100,17 @@ final readonly class SubstituicaoBuilder
         return (string) $doc->saveXML($doc->documentElement);
     }
 
+    private function validateDescricao(string $descricao): void
+    {
+        $length = mb_strlen($descricao);
+
+        if ($length < 15 || $length > 255) {
+            throw new NfseException('O campo descricao deve ter entre 15 e 255 caracteres.');
+        }
+    }
+
     private function generateId(string $chNFSe, int $nPedRegEvento): string
     {
         return 'PRE'.$chNFSe.'105102'.str_pad((string) $nPedRegEvento, 3, '0', STR_PAD_LEFT);
-    }
-
-    private function text(DOMDocument $doc, string $name, string $value): DOMElement
-    {
-        $el = $doc->createElement($name);
-        $el->appendChild($doc->createTextNode($value));
-
-        return $el;
     }
 }

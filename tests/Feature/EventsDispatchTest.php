@@ -168,9 +168,9 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
         signingAlgorithm: 'sha1',
         sslVerify: true,
         prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator()),
+        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
+        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
         gzipCompressor: $compressor,
     );
     $client->configure(makePfxContent(), 'secret', '9999999');
@@ -198,9 +198,9 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
         signingAlgorithm: 'sha1',
         sslVerify: true,
         prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator()),
+        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
+        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
         gzipCompressor: $compressor,
     );
     $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');

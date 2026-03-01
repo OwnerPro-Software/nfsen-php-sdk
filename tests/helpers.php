@@ -2,6 +2,7 @@
 
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Support\XsdValidator;
 
 function makePfxContent(): string
 {
@@ -11,6 +12,11 @@ function makePfxContent(): string
 function makeIcpBrPfxContent(): string
 {
     return file_get_contents(__DIR__.'/fixtures/certs/fake-icpbr.pfx');
+}
+
+function makeXsdValidator(): XsdValidator
+{
+    return new XsdValidator(__DIR__.'/../storage/schemes');
 }
 
 function makeTestCertificate(): Certificate

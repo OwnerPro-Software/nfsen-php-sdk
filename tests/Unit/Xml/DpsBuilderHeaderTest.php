@@ -5,7 +5,7 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function buildDps(DpsData $data): string
 {
-    return (new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes')))->build($data);
+    return (new DpsBuilder(makeXsdValidator()))->build($data);
 }
 
 function parseDpsXml(string $xml): DOMXPath
@@ -108,7 +108,7 @@ it('throws NfseException on invalid XSD', function () {
 
     $data = new DpsData(makeInfDps(), makePrestadorCnpj(), new stdClass, $servico, new stdClass);
 
-    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
+    $builder = new DpsBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'XML inválido');

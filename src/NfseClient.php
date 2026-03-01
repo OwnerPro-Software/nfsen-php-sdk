@@ -264,7 +264,7 @@ final class NfseClient implements NfseClientContract
         }
     }
 
-    private function sendEvento(string $xml, string $chave, string $prefeitura, Certificate $certificate, NfseHttpClient $httpClient, string $operacao, string $operationKey, object $successEvent): NfseResponse
+    private function sendEvento(string $xml, string $chave, string $prefeitura, Certificate $certificate, NfseHttpClient $httpClient, string $operacao, string $operationKey, NfseCancelled|NfseSubstituted $successEvent): NfseResponse
     {
         $signer = new XmlSigner($certificate, $this->signingAlgorithm);
         $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$signer->sign($xml, 'infPedReg', 'pedRegEvento');
