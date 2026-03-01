@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Http;
+use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\Facades\NfseNacional;
 use Pulsar\NfseNacional\NfseClient;
 
@@ -30,6 +32,29 @@ it('configures client when cert path, senha and prefeitura are set', function ()
 
     // If configured, consultar() returns a ConsultaBuilder without throwing
     expect($client->consultar())->toBeInstanceOf(\Pulsar\NfseNacional\Consulta\ConsultaBuilder::class);
+});
+
+it('facade emitir works directly when config is set', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_FACADE'], 200)]);
+
+    config([
+        'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura' => '3501608',
+    ]);
+
+    $response = NfseNacional::emitir($data);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE_FACADE');
+})->with('dpsData');
+
+it('facade for() returns configured NfseClient without double resolution', function () {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_FOR'], 200)]);
+
+    $client = NfseNacional::for(makePfxContent(), 'secret', '9999999');
+
+    expect($client)->toBeInstanceOf(NfseClient::class);
 });
 
 it('throws RuntimeException when cert file exists but cannot be read', function () {
