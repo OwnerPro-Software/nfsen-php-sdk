@@ -34,6 +34,7 @@ final class PrefeituraResolver
         'consultar_danfse' => 'danfse/{chave}',
         'emitir_nfse' => 'nfse',
         'cancelar_nfse' => 'nfse/{chave}/eventos',
+        'substituir_nfse' => 'nfse/{chave}/eventos',
     ];
 
     /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> */

@@ -7,6 +7,9 @@ namespace Pulsar\NfseNacional;
 use Illuminate\Support\ServiceProvider;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Support\XsdValidator;
+use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 use RuntimeException;
 
@@ -33,13 +36,17 @@ final class NfseNacionalServiceProvider extends ServiceProvider
             $config = config('nfse-nacional');
             $jsonPath = __DIR__.'/../storage/prefeituras.json';
 
+            $xsdValidator = new XsdValidator(__DIR__.'/../storage/schemes');
+
             $client = new NfseClient(
                 ambiente: NfseAmbiente::fromConfig($config['ambiente']),
                 timeout: $config['timeout'],
                 signingAlgorithm: $config['signing_algorithm'],
                 sslVerify: $config['ssl_verify'],
                 prefeituraResolver: new PrefeituraResolver($jsonPath),
-                dpsBuilder: new DpsBuilder(__DIR__.'/../storage/schemes'),
+                dpsBuilder: new DpsBuilder($xsdValidator),
+                cancelamentoBuilder: new CancelamentoBuilder($xsdValidator),
+                substituicaoBuilder: new SubstituicaoBuilder($xsdValidator),
             );
 
             $certPath = $config['certificado']['path'];

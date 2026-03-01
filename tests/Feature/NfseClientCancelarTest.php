@@ -2,12 +2,14 @@
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
+use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 use Pulsar\NfseNacional\Support\GzipCompressor;
+use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('cancelar returns success NfseResponse', function () {
@@ -19,15 +21,15 @@ it('cancelar returns success NfseResponse', function () {
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
     $client = NfseClient::for($pfx, 'secret', '9999999');
     $response = $client->cancelar(
-        'CHAVE50CARACTERES1234567890123456789012345678901',
-        MotivoCancelamento::ErroEmissao,
-        'Erro ao emitir'
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
     );
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe('CHAVE50CARACTERES1234567890123456789012345678901');
+    expect($response->chave)->toBe('12345678901234567890123456789012345678901234567890');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         $req->method() === 'POST' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
@@ -42,15 +44,15 @@ it('cancelar returns rejection NfseResponse on erro field', function () {
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
     $client = NfseClient::for($pfx, 'secret', '9999999');
     $response = $client->cancelar(
-        'CHAVE50CARACTERES1234567890123456789012345678901',
-        MotivoCancelamento::ErroEmissao,
-        'Erro ao emitir'
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
     );
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erro)->toContain('não encontrada');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
 });
@@ -60,9 +62,9 @@ it('cancelar returns rejection NfseResponse on singular erro field', function ()
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
-        'CHAVE50CARACTERES1234567890123456789012345678901',
-        MotivoCancelamento::ErroEmissao,
-        'Erro ao emitir'
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
     );
 
     expect($response->sucesso)->toBeFalse();
@@ -75,9 +77,9 @@ it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
-        'CHAVE50CARACTERES1234567890123456789012345678901',
-        MotivoCancelamento::ErroEmissao,
-        'Erro ao emitir'
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
     ))->toThrow(NfseException::class, 'Certificado não contém CNPJ nem CPF');
 });
 
@@ -87,9 +89,9 @@ it('cancelar throws HttpException on server error', function () {
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
-        'CHAVE50CARACTERES1234567890123456789012345678901',
-        MotivoCancelamento::ErroEmissao,
-        'Erro ao emitir'
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
     ))->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
@@ -125,9 +127,9 @@ it('cancelar succeeds and reports error when event listener throws', function ()
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
-        'CHAVE50CARACTERES1234567890123456789012345678901',
-        MotivoCancelamento::ErroEmissao,
-        'Erro ao emitir'
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
     );
 
     expect($response->sucesso)->toBeTrue();
@@ -140,7 +142,7 @@ it('cancelar uses Americana custom URL without operation path', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_AM'], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
-    $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+    $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
@@ -151,9 +153,9 @@ it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', functio
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_SP'], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3547304');
-    $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+    $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse/CHAVE50CARACTERES1234567890123456789012345678901/eventos' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
 });
@@ -164,20 +166,24 @@ it('cancelar throws NfseException when gzip compression fails', function () {
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
+    $schemesPath = __DIR__.'/../../storage/schemes';
+
     $client = new NfseClient(
         ambiente: NfseAmbiente::HOMOLOGACAO,
         timeout: 30,
         signingAlgorithm: 'sha1',
         sslVerify: true,
         prefeituraResolver: new PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new DpsBuilder(__DIR__.'/../../storage/schemes'),
+        dpsBuilder: new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator($schemesPath)),
+        cancelamentoBuilder: new CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator($schemesPath)),
+        substituicaoBuilder: new SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator($schemesPath)),
         gzipCompressor: $compressor,
     );
     $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
-        'CHAVE50CARACTERES1234567890123456789012345678901',
-        MotivoCancelamento::ErroEmissao,
-        'Erro ao emitir'
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
     ))->toThrow(NfseException::class, 'comprimir XML');
 });

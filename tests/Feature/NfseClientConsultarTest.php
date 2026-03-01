@@ -105,7 +105,7 @@ it('consultar()->eventos throws HttpException on server error', function () {
 
 it('consultar throws NfseException when client is not configured', function () {
     $resolver = new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json');
-    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__.'/../../storage/schemes');
+    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes'));
 
     $client = new NfseClient(
         ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
@@ -114,6 +114,8 @@ it('consultar throws NfseException when client is not configured', function () {
         sslVerify: true,
         prefeituraResolver: $resolver,
         dpsBuilder: $dpsBuilder,
+        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
     );
 
     expect(fn () => $client->consultar())

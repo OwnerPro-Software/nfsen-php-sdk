@@ -113,7 +113,7 @@ it('emitir throws HttpException on server error', function (DpsData $data) {
 
 it('throws NfseException when not configured', function (DpsData $data) {
     $resolver = new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json');
-    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__.'/../../storage/schemes');
+    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes'));
 
     $client = new NfseClient(
         ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
@@ -122,6 +122,8 @@ it('throws NfseException when not configured', function (DpsData $data) {
         sslVerify: true,
         prefeituraResolver: $resolver,
         dpsBuilder: $dpsBuilder,
+        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
     );
 
     expect(fn () => $client->emitir($data))
@@ -257,7 +259,9 @@ it('emitir throws NfseException when gzip compression fails', function (DpsData 
         signingAlgorithm: 'sha1',
         sslVerify: true,
         prefeituraResolver: new PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new DpsBuilder(__DIR__.'/../../storage/schemes'),
+        dpsBuilder: new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
         gzipCompressor: $compressor,
     );
     $client->configure(makePfxContent(), 'secret', '9999999');

@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\Facade;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\DTOs\DpsData;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
+use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
+use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\NfseClient;
 
 /**
  * @method static NfseResponse emitir(DpsData $data)
- * @method static NfseResponse cancelar(string $chave, MotivoCancelamento $motivo, string $descricao)
+ * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento $codigoMotivo, string $descricao, int $nPedRegEvento = 1)
+ * @method static NfseResponse substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1)
  * @method static ConsultaBuilder consultar()
  */
 final class NfseNacional extends Facade

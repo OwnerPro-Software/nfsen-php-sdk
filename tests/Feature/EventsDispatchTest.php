@@ -3,13 +3,15 @@
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
+use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
+use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Events\NfseCancelled;
 use Pulsar\NfseNacional\Events\NfseEmitted;
 use Pulsar\NfseNacional\Events\NfseFailed;
 use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
+use Pulsar\NfseNacional\Events\NfseSubstituted;
 use Pulsar\NfseNacional\NfseClient;
 
 it('dispatches NfseRequested and NfseEmitted on successful emitir', function (DpsData $data) {
@@ -29,9 +31,22 @@ it('dispatches NfseCancelled on successful cancelar', function () {
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
     $client = NfseClient::for($pfx, 'secret', '9999999');
-    $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+    $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
     Event::assertDispatched(NfseCancelled::class);
+});
+
+it('dispatches NfseSubstituted on successful substituir', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_OK'], 200)]);
+
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+    $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional, 'Desenquadramento do Simples Nacional');
+
+    Event::assertDispatched(NfseSubstituted::class, fn (NfseSubstituted $e) => $e->chave === $chave && $e->chaveSubstituta === $chaveSub);
+    Event::assertNotDispatched(NfseCancelled::class);
 });
 
 it('dispatches NfseQueried on successful consultar', function () {
@@ -60,10 +75,24 @@ it('dispatches NfseRejected on cancelar rejection', function () {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
-    $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+    $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'cancelar');
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
+});
+
+it('dispatches NfseRejected on substituir rejection', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
+
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+    $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::Outros, 'Outro motivo para substituicao');
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'substituir');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
+    Event::assertNotDispatched(NfseSubstituted::class);
 });
 
 it('dispatches NfseRequested and NfseQueried on consultar danfse', function () {
@@ -139,7 +168,9 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
         signingAlgorithm: 'sha1',
         sslVerify: true,
         prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__.'/../../storage/schemes'),
+        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
         gzipCompressor: $compressor,
     );
     $client->configure(makePfxContent(), 'secret', '9999999');
@@ -167,13 +198,15 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
         signingAlgorithm: 'sha1',
         sslVerify: true,
         prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(__DIR__.'/../../storage/schemes'),
+        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
+        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../storage/schemes')),
         gzipCompressor: $compressor,
     );
     $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
 
     try {
-        $client->cancelar('CHAVE50CARACTERES1234567890123456789012345678901', MotivoCancelamento::ErroEmissao, 'Erro');
+        $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
     } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
         // expected
     }

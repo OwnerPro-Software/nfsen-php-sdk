@@ -6,10 +6,8 @@ namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
 use DOMElement;
-use LibXMLError;
 use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\XmlDocumentLoader;
+use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
@@ -22,14 +20,13 @@ final readonly class DpsBuilder
     private const XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function __construct(
-        private string $schemesPath,
-        private XmlDocumentLoader $xmlDocumentLoader = new XmlDocumentLoader,
+        private XsdValidator $xsdValidator,
     ) {}
 
     public function buildAndValidate(DpsData $data): string
     {
         $xml = $this->build($data);
-        $this->validateXsd($xml);
+        $this->xsdValidator->validate($xml, 'DPS_v1.01.xsd');
 
         return $xml;
     }
@@ -86,38 +83,6 @@ final readonly class DpsBuilder
         $doc->appendChild($dps);
 
         return (string) $doc->saveXML($doc->documentElement);
-    }
-
-    private function validateXsd(string $xmlFragment): void
-    {
-        $xsdPath = $this->schemesPath.'/DPS_v1.01.xsd';
-        if (! file_exists($xsdPath)) {
-            throw new NfseException('Schema XSD não encontrado: '.$xsdPath);
-        }
-
-        $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>'.$xmlFragment;
-        $doc = ($this->xmlDocumentLoader)($xmlWithDecl);
-
-        if ($doc === false) {
-            throw new NfseException('XML inválido: falha ao carregar documento.');
-        }
-
-        $prev = libxml_use_internal_errors(true);
-
-        try {
-            $valid = $doc->schemaValidate($xsdPath);
-            $errors = libxml_get_errors();
-            libxml_clear_errors();
-        } finally {
-            libxml_use_internal_errors($prev);
-        }
-
-        if (! $valid) {
-            $messages = array_map(fn (LibXMLError $e): string => trim($e->message), $errors);
-            throw new NfseException(
-                'XML inválido: '.implode('; ', $messages)
-            );
-        }
     }
 
     private function generateId(DpsData $data): string

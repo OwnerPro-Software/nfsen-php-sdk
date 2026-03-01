@@ -5,7 +5,7 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function buildDps(DpsData $data): string
 {
-    return (new DpsBuilder(__DIR__.'/../../../storage/schemes'))->build($data);
+    return (new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes')))->build($data);
 }
 
 function parseDpsXml(string $xml): DOMXPath
@@ -96,7 +96,7 @@ it('includes toma element as child of infDPS when tomador has data', function ()
 });
 
 it('throws NfseException when scheme file does not exist', function (DpsData $data) {
-    $builder = new DpsBuilder('/nonexistent/path');
+    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator('/nonexistent/path'));
 
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'Schema XSD não encontrado');
@@ -108,7 +108,7 @@ it('throws NfseException on invalid XSD', function () {
 
     $data = new DpsData(makeInfDps(), makePrestadorCnpj(), new stdClass, $servico, new stdClass);
 
-    $builder = new DpsBuilder(__DIR__.'/../../../storage/schemes');
+    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes'));
 
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'XML inválido');

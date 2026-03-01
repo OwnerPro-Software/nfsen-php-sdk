@@ -6,6 +6,7 @@ use Pulsar\NfseNacional\Events\NfseFailed;
 use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
+use Pulsar\NfseNacional\Events\NfseSubstituted;
 
 it('NfseRequested carries operacao and metadata', function () {
     $event = new NfseRequested('emitir', ['payload']);
@@ -21,6 +22,12 @@ it('NfseEmitted carries chave', function () {
 it('NfseCancelled carries chave', function () {
     $event = new NfseCancelled('CHAVE123');
     expect($event->chave)->toBe('CHAVE123');
+});
+
+it('NfseSubstituted carries chave and chaveSubstituta', function () {
+    $event = new NfseSubstituted('CHAVE123', 'CHAVE456');
+    expect($event->chave)->toBe('CHAVE123');
+    expect($event->chaveSubstituta)->toBe('CHAVE456');
 });
 
 it('NfseQueried carries operacao', function () {
