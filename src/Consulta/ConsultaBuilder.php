@@ -37,7 +37,7 @@ final readonly class ConsultaBuilder
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_dps', ['id' => $id]);
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
-        $tipoAmbiente = isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null;
+        $tipoAmbiente = $result['tipoAmbiente'] ?? null;
         $versaoAplicativo = $result['versaoAplicativo'] ?? null;
         $dataHoraProcessamento = $result['dataHoraProcessamento'] ?? null;
 
@@ -69,7 +69,7 @@ final readonly class ConsultaBuilder
 
         $result = $this->client->executeGetRaw($this->buildUrl($baseUrl, $path));
 
-        $tipoAmbiente = isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null;
+        $tipoAmbiente = $result['tipoAmbiente'] ?? null;
         $versaoAplicativo = $result['versaoAplicativo'] ?? null;
         $dataHoraProcessamento = $result['dataHoraProcessamento'] ?? null;
 
@@ -108,7 +108,7 @@ final readonly class ConsultaBuilder
 
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
-        $tipoAmbiente = isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null;
+        $tipoAmbiente = $result['tipoAmbiente'] ?? null;
         $versaoAplicativo = $result['versaoAplicativo'] ?? null;
         $dataHoraProcessamento = $result['dataHoraProcessamento'] ?? null;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional;
 
 use Illuminate\Container\Container;
+use InvalidArgumentException;
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Certificates\CertificateManager;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
@@ -22,7 +23,6 @@ use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Events\NfseSubstituted;
-use InvalidArgumentException;
 use Pulsar\NfseNacional\Exceptions\HttpException;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
@@ -210,9 +210,9 @@ final class NfseClient implements NfseClientContract
 
                 return new NfseResponse(
                     sucesso: false,
-                    erros: $erros,
                     idDps: $result['idDPS'] ?? $result['idDps'] ?? null,
-                    tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                    erros: $erros,
+                    tipoAmbiente: $result['tipoAmbiente'] ?? null,
                     versaoAplicativo: $result['versaoAplicativo'] ?? null,
                     dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
                 );
@@ -237,7 +237,7 @@ final class NfseClient implements NfseClientContract
                 xml: GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null),
                 idDps: $result['idDps'] ?? null,
                 alertas: MensagemProcessamento::fromArrayList($result['alertas'] ?? []),
-                tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
             );
@@ -380,7 +380,7 @@ final class NfseClient implements NfseClientContract
             return new NfseResponse(
                 sucesso: false,
                 erros: $erros,
-                tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
             );
@@ -392,7 +392,7 @@ final class NfseClient implements NfseClientContract
             sucesso: true,
             chave: $chave,
             xml: GzipCompressor::decompressB64($result['eventoXmlGZipB64'] ?? null),
-            tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+            tipoAmbiente: $result['tipoAmbiente'] ?? null,
             versaoAplicativo: $result['versaoAplicativo'] ?? null,
             dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
         );
@@ -439,7 +439,7 @@ final class NfseClient implements NfseClientContract
                 return new NfseResponse(
                     sucesso: false,
                     erros: $erros,
-                    tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                    tipoAmbiente: $result['tipoAmbiente'] ?? null,
                     versaoAplicativo: $result['versaoAplicativo'] ?? null,
                     dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
                 );
@@ -451,7 +451,7 @@ final class NfseClient implements NfseClientContract
                 sucesso: true,
                 chave: $result['chaveAcesso'] ?? null,
                 xml: GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null),
-                tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
             );
