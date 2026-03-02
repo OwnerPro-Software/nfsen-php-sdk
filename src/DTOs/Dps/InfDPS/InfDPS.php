@@ -9,7 +9,7 @@ use Pulsar\NfseNacional\Enums\Dps\InfDPS\TipoEmitente;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 /**
- * @phpstan-type InfDPSArray array{tpAmb: string, dhEmi: string, verAplic: string, serie: string, nDPS: int|string, dCompet: string, tpEmit: string, cLocEmi: string, cMotivoEmisTI?: string, chNFSeRej?: string}
+ * @phpstan-type InfDPSArray array{tpAmb: string, dhEmi: string, verAplic: string, serie: string, nDPS: string, dCompet: string, tpEmit: string, cLocEmi: string, cMotivoEmisTI?: string, chNFSeRej?: string}
  */
 final readonly class InfDPS
 {
@@ -18,7 +18,7 @@ final readonly class InfDPS
         public string $dhEmi,
         public string $verAplic,
         public string $serie,
-        public int $nDPS,
+        public string $nDPS,
         public string $dCompet,
         public TipoEmitente $tpEmit,
         public string $cLocEmi,
@@ -34,7 +34,7 @@ final readonly class InfDPS
             dhEmi: $data['dhEmi'],
             verAplic: $data['verAplic'],
             serie: $data['serie'],
-            nDPS: (int) $data['nDPS'],
+            nDPS: (string) $data['nDPS'],
             dCompet: $data['dCompet'],
             tpEmit: TipoEmitente::from($data['tpEmit']),
             cLocEmi: $data['cLocEmi'],

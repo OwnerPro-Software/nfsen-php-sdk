@@ -53,7 +53,7 @@ it('creates DpsData from array via fromArray', function () {
             'dhEmi' => '2026-02-27T10:00:00-03:00',
             'verAplic' => '1.0',
             'serie' => '1',
-            'nDPS' => 1,
+            'nDPS' => '1',
             'dCompet' => '2026-02-27',
             'tpEmit' => '1',
             'cLocEmi' => '3501608',

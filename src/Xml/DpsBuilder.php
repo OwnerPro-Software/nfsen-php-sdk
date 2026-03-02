@@ -56,7 +56,7 @@ final readonly class DpsBuilder
         $infDps->appendChild($this->text($doc, 'dhEmi', $d->dhEmi));
         $infDps->appendChild($this->text($doc, 'verAplic', $d->verAplic));
         $infDps->appendChild($this->text($doc, 'serie', $d->serie));
-        $infDps->appendChild($this->text($doc, 'nDPS', (string) $d->nDPS));
+        $infDps->appendChild($this->text($doc, 'nDPS', $d->nDPS));
         $infDps->appendChild($this->text($doc, 'dCompet', $d->dCompet));
         $infDps->appendChild($this->text($doc, 'tpEmit', $d->tpEmit->value));
         if ($d->cMotivoEmisTI instanceof MotivoEmissaoTI) {
@@ -121,6 +121,6 @@ final readonly class DpsBuilder
         $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
         $id .= str_pad($d->serie, 5, '0', STR_PAD_LEFT);
 
-        return $id.str_pad((string) $d->nDPS, 15, '0', STR_PAD_LEFT);
+        return $id.str_pad($d->nDPS, 15, '0', STR_PAD_LEFT);
     }
 }

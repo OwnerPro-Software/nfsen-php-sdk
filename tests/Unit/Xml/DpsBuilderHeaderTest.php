@@ -150,7 +150,7 @@ it('generates correct Id for CPF prestador', function () {
 
 it('generates Id with max serie and large ndps padding', function () {
     $data = new DpsData(
-        infDPS: makeInfDps(serie: '99999', nDPS: 999999999999999),
+        infDPS: makeInfDps(serie: '99999', nDPS: '999999999999999'),
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: makeValoresMinimo(),
@@ -166,7 +166,7 @@ it('generates Id with max serie and large ndps padding', function () {
 
 it('generates Id with single-digit serie and ndps left-padded', function () {
     $data = new DpsData(
-        infDPS: makeInfDps(nDPS: 42),
+        infDPS: makeInfDps(nDPS: '42'),
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: makeValoresMinimo(),
