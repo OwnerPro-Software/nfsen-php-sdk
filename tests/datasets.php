@@ -7,10 +7,12 @@ use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
 dataset('dpsData', [
     'basico' => function (): DpsData {
         return new DpsData(
-            makeInfDps(),
-            makePrestadorCnpj(xNome: 'Empresa'),
-            null,
-            new Servico(
+            infDPS: makeInfDps(),
+            subst: null,
+            prest: makePrestadorCnpj(xNome: 'Empresa'),
+            toma: null,
+            interm: null,
+            serv: new Servico(
                 cServ: new CodigoServico(
                     cTribNac: '010101',
                     xDescServ: 'Serviço de Teste',
@@ -18,7 +20,7 @@ dataset('dpsData', [
                 ),
                 cLocPrestacao: '3501608',
             ),
-            makeValoresMinimo(),
+            valores: makeValoresMinimo(),
         );
     },
 ]);

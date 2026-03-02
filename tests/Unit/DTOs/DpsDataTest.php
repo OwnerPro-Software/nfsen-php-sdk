@@ -9,12 +9,22 @@ it('exposes all five groups as readonly properties', function () {
     $servico = makeServicoMinimo();
     $valores = makeValoresMinimo();
 
-    $data = new DpsData($infDps, $prestador, null, $servico, $valores);
+    $data = new DpsData(
+        infDPS: $infDps,
+        subst: null,
+        prest: $prestador,
+        toma: null,
+        interm: null,
+        serv: $servico,
+        valores: $valores,
+    );
 
     expect($data)
         ->infDPS->toBe($infDps)
         ->prest->toBe($prestador)
         ->toma->toBeNull()
+        ->subst->toBeNull()
+        ->interm->toBeNull()
         ->serv->toBe($servico)
         ->valores->toBe($valores);
 });

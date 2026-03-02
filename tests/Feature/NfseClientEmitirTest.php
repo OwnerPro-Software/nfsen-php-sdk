@@ -254,8 +254,10 @@ it('emitir validates XML against XSD before sending', function () {
 
     $data = new DpsData(
         infDPS: makeInfDps(),
+        subst: null,
         prest: makePrestadorCnpj(),
         toma: null,
+        interm: null,
         serv: $servico,
         valores: makeValoresMinimo(),
     );

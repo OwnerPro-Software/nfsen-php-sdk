@@ -10,5 +10,6 @@ final readonly class Valores
         public ValorServicoPrestado $vServPrest,
         public Tributacao $trib,
         public ?DescontoCondIncond $vDescCondIncond = null,
+        public ?InfoDedRed $vDedRed = null,
     ) {}
 }

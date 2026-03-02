@@ -6,9 +6,14 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
+use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\BeneficioMunicipal;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\DescontoCondIncond;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\DocDedRed;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\DocNFNFS;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\DocOutNFSe;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\ExigibilidadeSuspensa;
+use Pulsar\NfseNacional\DTOs\Dps\Valores\InfoDedRed;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\PisCofins;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\TotTribPercentual;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\TotTribValor;
@@ -49,8 +54,75 @@ final class ValoresBuilder
             $el->appendChild($vDesc);
         }
 
+        // vDedRed (opcional)
+        if ($valores->vDedRed instanceof InfoDedRed) {
+            $el->appendChild($this->buildVDedRed($doc, $valores->vDedRed));
+        }
+
         // trib (obrigatório)
         $el->appendChild($this->buildTrib($doc, $valores->trib));
+
+        return $el;
+    }
+
+    private function buildVDedRed(DOMDocument $doc, InfoDedRed $info): DOMElement
+    {
+        $el = $doc->createElement('vDedRed');
+
+        if ($info->pDR !== null) {
+            $el->appendChild($this->text($doc, 'pDR', $info->pDR));
+        } elseif ($info->vDR !== null) {
+            $el->appendChild($this->text($doc, 'vDR', $info->vDR));
+        } elseif ($info->documentos !== null) {
+            $documentos = $doc->createElement('documentos');
+            foreach ($info->documentos as $docDedRed) {
+                $documentos->appendChild($this->buildDocDedRed($doc, $docDedRed));
+            }
+
+            $el->appendChild($documentos);
+        }
+
+        return $el;
+    }
+
+    private function buildDocDedRed(DOMDocument $doc, DocDedRed $docDedRed): DOMElement
+    {
+        $el = $doc->createElement('docDedRed');
+
+        if ($docDedRed->chNFSe !== null) {
+            $el->appendChild($this->text($doc, 'chNFSe', $docDedRed->chNFSe));
+        } elseif ($docDedRed->chNFe !== null) {
+            $el->appendChild($this->text($doc, 'chNFe', $docDedRed->chNFe));
+        } elseif ($docDedRed->NFSeMun instanceof DocOutNFSe) {
+            $nfseMun = $doc->createElement('NFSeMun');
+            $nfseMun->appendChild($this->text($doc, 'cMunNFSeMun', $docDedRed->NFSeMun->cMunNFSeMun));
+            $nfseMun->appendChild($this->text($doc, 'nNFSeMun', $docDedRed->NFSeMun->nNFSeMun));
+            $nfseMun->appendChild($this->text($doc, 'cVerifNFSeMun', $docDedRed->NFSeMun->cVerifNFSeMun));
+            $el->appendChild($nfseMun);
+        } elseif ($docDedRed->NFNFS instanceof DocNFNFS) {
+            $nfnfs = $doc->createElement('NFNFS');
+            $nfnfs->appendChild($this->text($doc, 'nNFS', $docDedRed->NFNFS->nNFS));
+            $nfnfs->appendChild($this->text($doc, 'modNFS', $docDedRed->NFNFS->modNFS));
+            $nfnfs->appendChild($this->text($doc, 'serieNFS', $docDedRed->NFNFS->serieNFS));
+            $el->appendChild($nfnfs);
+        } elseif ($docDedRed->nDocFisc !== null) {
+            $el->appendChild($this->text($doc, 'nDocFisc', $docDedRed->nDocFisc));
+        } elseif ($docDedRed->nDoc !== null) {
+            $el->appendChild($this->text($doc, 'nDoc', $docDedRed->nDoc));
+        }
+
+        $el->appendChild($this->text($doc, 'tpDedRed', $docDedRed->tpDedRed->value));
+        if ($docDedRed->xDescOutDed !== null) {
+            $el->appendChild($this->text($doc, 'xDescOutDed', $docDedRed->xDescOutDed));
+        }
+
+        $el->appendChild($this->text($doc, 'dtEmiDoc', $docDedRed->dtEmiDoc));
+        $el->appendChild($this->text($doc, 'vDedutivelRedutivel', $docDedRed->vDedutivelRedutivel));
+        $el->appendChild($this->text($doc, 'vDeducaoReducao', $docDedRed->vDeducaoReducao));
+
+        if ($docDedRed->fornec instanceof Tomador) {
+            $el->appendChild((new TomadorBuilder)->build($doc, $docDedRed->fornec, 'fornec'));
+        }
 
         return $el;
     }

@@ -1,0 +1,96 @@
+<?php
+
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoDest;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoImovel;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosIBSCBS;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosSitClas;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoValoresIBSCBS;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocDFe;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocFornec;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocReeRepRes;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoObra;
+use Pulsar\NfseNacional\Enums\Dps\IBSCBS\FinNFSe;
+use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndDest;
+use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndFinal;
+use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TipoChaveDFe;
+use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpReeRepRes;
+use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+
+it('throws when InfoIBSCBS refNFSe is empty array', function () {
+    expect(fn () => new InfoIBSCBS(
+        finNFSe: FinNFSe::Regular,
+        indFinal: IndFinal::Sim,
+        cIndOp: '01',
+        indDest: IndDest::Tomador,
+        valores: new InfoValoresIBSCBS(
+            trib: new InfoTributosIBSCBS(
+                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+            ),
+        ),
+        refNFSe: [],
+    ))->toThrow(InvalidDpsArgument::class, 'ao menos um');
+});
+
+it('throws when InfoDest has no identification', function () {
+    expect(fn () => new InfoDest(xNome: 'Dest'))
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+});
+
+it('throws when InfoDest has multiple identifications', function () {
+    expect(fn () => new InfoDest(xNome: 'Dest', CNPJ: '12345678000195', CPF: '12345678901'))
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+});
+
+it('creates InfoDest with CNPJ', function () {
+    $dest = new InfoDest(xNome: 'Destinatário', CNPJ: '12345678000195');
+    expect($dest->CNPJ)->toBe('12345678000195');
+});
+
+it('throws when InfoImovel has no choice', function () {
+    expect(fn () => new InfoImovel)
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+});
+
+it('throws when InfoImovel has both choices', function () {
+    expect(fn () => new InfoImovel(
+        cCIB: '12345678',
+        end: new EnderecoObra(xLgr: 'Rua', nro: '1', xBairro: 'Centro', CEP: '01001000'),
+    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+});
+
+it('creates InfoImovel with cCIB', function () {
+    $imovel = new InfoImovel(cCIB: '12345678');
+    expect($imovel->cCIB)->toBe('12345678');
+});
+
+it('throws when ListaDocFornec has no identification', function () {
+    expect(fn () => new ListaDocFornec(xNome: 'Fornec'))
+        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+});
+
+it('creates ListaDocFornec with CPF', function () {
+    $fornec = new ListaDocFornec(xNome: 'Fornecedor', CPF: '12345678901');
+    expect($fornec->CPF)->toBe('12345678901');
+});
+
+it('throws when ListaDocReeRepRes has no document', function () {
+    expect(fn () => new ListaDocReeRepRes(
+        dtEmiDoc: '2026-01-01',
+        dtCompDoc: '2026-01-01',
+        tpReeRepRes: TpReeRepRes::Outros,
+        vlrReeRepRes: '100.00',
+    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+});
+
+it('creates ListaDocReeRepRes with dFeNacional', function () {
+    $doc = new ListaDocReeRepRes(
+        dtEmiDoc: '2026-01-01',
+        dtCompDoc: '2026-01-01',
+        tpReeRepRes: TpReeRepRes::RepasseImoveis,
+        vlrReeRepRes: '100.00',
+        dFeNacional: new ListaDocDFe(tipoChaveDFe: TipoChaveDFe::NFSe, chaveDFe: '12345678901234567890123456789012345678901234567890'),
+    );
+
+    expect($doc->dFeNacional)->toBeInstanceOf(ListaDocDFe::class);
+});

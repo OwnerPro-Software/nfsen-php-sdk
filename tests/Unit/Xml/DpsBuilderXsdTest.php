@@ -1,6 +1,17 @@
 <?php
 
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\AtividadeEvento;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoSimples;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\ExploracaoRodoviaria;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\InfoComplementar;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\LocacaoSublocacao;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
+use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaServico;
+use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaVeiculo;
+use Pulsar\NfseNacional\Enums\Dps\Servico\ObjetoLocacao;
+use Pulsar\NfseNacional\Enums\Dps\Servico\TipoRodagem;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
@@ -36,3 +47,159 @@ it('buildAndValidate throws NfseException when XML loading fails', function (Dps
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(NfseException::class, 'falha ao carregar documento');
 })->with('dpsData');
+
+it('validates DPS with lsadppu against XSD', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: new Servico(
+            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+            cLocPrestacao: '3501608',
+            lsadppu: new LocacaoSublocacao(
+                categ: CategoriaServico::Locacao,
+                objeto: ObjetoLocacao::Ferrovia,
+                extensao: '12345',
+                nPostes: '100',
+            ),
+        ),
+        valores: makeValoresMinimo(),
+    );
+
+    $builder = new DpsBuilder(makeXsdValidator());
+    $xml = $builder->buildAndValidate($data);
+
+    expect($xml)->toContain('<lsadppu>');
+});
+
+it('validates DPS with atvEvento (idAtvEvt) against XSD', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: new Servico(
+            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+            cLocPrestacao: '3501608',
+            atvEvento: new AtividadeEvento(
+                xNome: 'Festival',
+                dtIni: '2026-01-01',
+                dtFim: '2026-01-03',
+                idAtvEvt: 'EVT001',
+            ),
+        ),
+        valores: makeValoresMinimo(),
+    );
+
+    $builder = new DpsBuilder(makeXsdValidator());
+    $xml = $builder->buildAndValidate($data);
+
+    expect($xml)->toContain('<atvEvento>');
+});
+
+it('validates DPS with atvEvento (end with CEP) against XSD', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: new Servico(
+            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+            cLocPrestacao: '3501608',
+            atvEvento: new AtividadeEvento(
+                xNome: 'Show',
+                dtIni: '2026-02-01',
+                dtFim: '2026-02-02',
+                end: new EnderecoSimples(
+                    xLgr: 'Rua Evento',
+                    nro: '200',
+                    xBairro: 'Centro',
+                    CEP: '01001000',
+                ),
+            ),
+        ),
+        valores: makeValoresMinimo(),
+    );
+
+    $builder = new DpsBuilder(makeXsdValidator());
+    $xml = $builder->buildAndValidate($data);
+
+    expect($xml)->toContain('<atvEvento>');
+});
+
+it('validates DPS with atvEvento (end with endExt) against XSD', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: new Servico(
+            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+            cLocPrestacao: '3501608',
+            atvEvento: new AtividadeEvento(
+                xNome: 'Conferencia Internacional',
+                dtIni: '2026-03-01',
+                dtFim: '2026-03-05',
+                end: new EnderecoSimples(
+                    xLgr: 'Broadway',
+                    nro: '500',
+                    xBairro: 'Midtown',
+                    endExt: new \Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoExteriorObra(
+                        cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY',
+                    ),
+                ),
+            ),
+        ),
+        valores: makeValoresMinimo(),
+    );
+
+    $builder = new DpsBuilder(makeXsdValidator());
+    $xml = $builder->buildAndValidate($data);
+
+    expect($xml)
+        ->toContain('<atvEvento>')
+        ->toContain('<endExt>');
+});
+
+it('validates DPS with explRod against XSD', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: new Servico(
+            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+            cLocPrestacao: '3501608',
+            explRod: new ExploracaoRodoviaria(
+                categVeic: CategoriaVeiculo::AutomovelCaminhonete,
+                nEixos: '2',
+                rodagem: TipoRodagem::Simples,
+                sentido: '180',
+                placa: 'ABC1234',
+                codAcessoPed: 'ABCDEF0123',
+                codContrato: 'AB01',
+            ),
+        ),
+        valores: makeValoresMinimo(),
+    );
+
+    $builder = new DpsBuilder(makeXsdValidator());
+    $xml = $builder->buildAndValidate($data);
+
+    expect($xml)->toContain('<explRod>');
+});
+
+it('validates DPS with infoCompl against XSD', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: new Servico(
+            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+            cLocPrestacao: '3501608',
+            infoCompl: new InfoComplementar(
+                idDocTec: 'ART-123',
+                docRef: 'Documento de referencia',
+                xPed: '789',
+                xItemPed: ['item1', 'item2'],
+                xInfComp: 'Informacao complementar do servico',
+            ),
+        ),
+        valores: makeValoresMinimo(),
+    );
+
+    $builder = new DpsBuilder(makeXsdValidator());
+    $xml = $builder->buildAndValidate($data);
+
+    expect($xml)->toContain('<infoCompl>');
+});

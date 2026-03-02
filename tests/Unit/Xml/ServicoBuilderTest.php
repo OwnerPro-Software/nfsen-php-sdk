@@ -1,16 +1,25 @@
 <?php
 
+use Pulsar\NfseNacional\DTOs\Dps\Servico\AtividadeEvento;
 use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
 use Pulsar\NfseNacional\DTOs\Dps\Servico\ComercioExterior;
 use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoExteriorObra;
 use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoObra;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoSimples;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\ExploracaoRodoviaria;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\InfoComplementar;
+use Pulsar\NfseNacional\DTOs\Dps\Servico\LocacaoSublocacao;
 use Pulsar\NfseNacional\DTOs\Dps\Servico\Obra;
 use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
+use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaServico;
+use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaVeiculo;
 use Pulsar\NfseNacional\Enums\Dps\Servico\MDIC;
 use Pulsar\NfseNacional\Enums\Dps\Servico\MecAFComexP;
 use Pulsar\NfseNacional\Enums\Dps\Servico\MecAFComexT;
 use Pulsar\NfseNacional\Enums\Dps\Servico\ModoPrestacao;
 use Pulsar\NfseNacional\Enums\Dps\Servico\MovTempBens;
+use Pulsar\NfseNacional\Enums\Dps\Servico\ObjetoLocacao;
+use Pulsar\NfseNacional\Enums\Dps\Servico\TipoRodagem;
 use Pulsar\NfseNacional\Enums\Dps\Servico\VinculoPrestacao;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
@@ -300,4 +309,211 @@ it('handles accented characters in field values', function () {
     expect($reparsed->loadXML($xml))->toBeTrue();
     expect($reparsed->getElementsByTagName('xDescServ')->item(0)->textContent)
         ->toBe('Consultoria em gestão tributária');
+});
+
+it('builds lsadppu element', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        lsadppu: new LocacaoSublocacao(
+            categ: CategoriaServico::Locacao,
+            objeto: ObjetoLocacao::Ferrovia,
+            extensao: '12345',
+            nPostes: '100',
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<lsadppu>')
+        ->toContain('<categ>1</categ>')
+        ->toContain('<objeto>1</objeto>')
+        ->toContain('<extensao>12345</extensao>')
+        ->toContain('<nPostes>100</nPostes>');
+});
+
+it('builds atvEvento with idAtvEvt choice', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        atvEvento: new AtividadeEvento(
+            xNome: 'Festival de Musica',
+            dtIni: '2026-01-01',
+            dtFim: '2026-01-03',
+            idAtvEvt: 'EVT001',
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<atvEvento>')
+        ->toContain('<xNome>Festival de Musica</xNome>')
+        ->toContain('<dtIni>2026-01-01</dtIni>')
+        ->toContain('<dtFim>2026-01-03</dtFim>')
+        ->toContain('<idAtvEvt>EVT001</idAtvEvt>')
+        ->not->toContain('<end>');
+});
+
+it('builds atvEvento with end choice using CEP', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        atvEvento: new AtividadeEvento(
+            xNome: 'Show',
+            dtIni: '2026-02-01',
+            dtFim: '2026-02-02',
+            end: new EnderecoSimples(
+                xLgr: 'Rua Evento',
+                nro: '200',
+                xBairro: 'Bairro Evento',
+                CEP: '01001000',
+                xCpl: 'Bloco A',
+            ),
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<atvEvento>')
+        ->toContain('<end>')
+        ->toContain('<CEP>01001000</CEP>')
+        ->toContain('<xLgr>Rua Evento</xLgr>')
+        ->toContain('<nro>200</nro>')
+        ->toContain('<xCpl>Bloco A</xCpl>')
+        ->toContain('<xBairro>Bairro Evento</xBairro>')
+        ->not->toContain('<idAtvEvt>');
+});
+
+it('builds atvEvento with end choice using endExt', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        atvEvento: new AtividadeEvento(
+            xNome: 'Conferencia',
+            dtIni: '2026-03-01',
+            dtFim: '2026-03-05',
+            end: new EnderecoSimples(
+                xLgr: 'Broadway',
+                nro: '500',
+                xBairro: 'Midtown',
+                endExt: new EnderecoExteriorObra(cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY'),
+            ),
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<atvEvento>')
+        ->toContain('<end>')
+        ->toContain('<endExt>')
+        ->toContain('<cEndPost>10036</cEndPost>')
+        ->toContain('<xCidade>New York</xCidade>')
+        ->toContain('<xEstProvReg>NY</xEstProvReg>')
+        ->toContain('<xLgr>Broadway</xLgr>')
+        ->toContain('<nro>500</nro>')
+        ->toContain('<xBairro>Midtown</xBairro>')
+        ->not->toContain('<CEP>')
+        ->not->toContain('<idAtvEvt>');
+});
+
+it('builds explRod element', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        explRod: new ExploracaoRodoviaria(
+            categVeic: CategoriaVeiculo::AutomovelCaminhonete,
+            nEixos: '2',
+            rodagem: TipoRodagem::Simples,
+            sentido: '180',
+            placa: 'ABC1234',
+            codAcessoPed: 'ABCDEF0123',
+            codContrato: 'AB01',
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<explRod>')
+        ->toContain('<categVeic>01</categVeic>')
+        ->toContain('<nEixos>2</nEixos>')
+        ->toContain('<rodagem>1</rodagem>')
+        ->toContain('<sentido>180</sentido>')
+        ->toContain('<placa>ABC1234</placa>')
+        ->toContain('<codAcessoPed>ABCDEF0123</codAcessoPed>')
+        ->toContain('<codContrato>AB01</codContrato>');
+});
+
+it('builds infoCompl with all fields', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        infoCompl: new InfoComplementar(
+            idDocTec: 'ART-123',
+            docRef: 'REF-456',
+            xPed: '789',
+            xItemPed: ['item1', 'item2'],
+            xInfComp: 'Informacao complementar',
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<infoCompl>')
+        ->toContain('<idDocTec>ART-123</idDocTec>')
+        ->toContain('<docRef>REF-456</docRef>')
+        ->toContain('<xPed>789</xPed>')
+        ->toContain('<gItemPed>')
+        ->toContain('<xItemPed>item1</xItemPed>')
+        ->toContain('<xItemPed>item2</xItemPed>')
+        ->toContain('<xInfComp>Informacao complementar</xInfComp>');
+});
+
+it('builds infoCompl with only xItemPed array', function () {
+    $builder = new ServicoBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $serv = new Servico(
+        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+        cLocPrestacao: '3501608',
+        infoCompl: new InfoComplementar(
+            xItemPed: ['pedido1', 'pedido2', 'pedido3'],
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $serv));
+
+    expect($xml)
+        ->toContain('<infoCompl>')
+        ->toContain('<gItemPed>')
+        ->toContain('<xItemPed>pedido1</xItemPed>')
+        ->toContain('<xItemPed>pedido2</xItemPed>')
+        ->toContain('<xItemPed>pedido3</xItemPed>')
+        ->not->toContain('<idDocTec>')
+        ->not->toContain('<docRef>')
+        ->not->toContain('<xPed>')
+        ->not->toContain('<xInfComp>');
 });

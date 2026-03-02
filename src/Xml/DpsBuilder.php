@@ -6,10 +6,13 @@ namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\DTOs\Dps\InfDPS\SubstituicaoData;
 use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
+use Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
@@ -66,6 +69,18 @@ final readonly class DpsBuilder
 
         $infDps->appendChild($this->text($doc, 'cLocEmi', $d->cLocEmi));
 
+        // subst (optional)
+        if ($data->subst instanceof SubstituicaoData) {
+            $subst = $doc->createElement('subst');
+            $subst->appendChild($this->text($doc, 'chSubstda', $data->subst->chSubstda));
+            $subst->appendChild($this->text($doc, 'cMotivo', $data->subst->cMotivo->value));
+            if ($data->subst->xMotivo !== null) {
+                $subst->appendChild($this->text($doc, 'xMotivo', $data->subst->xMotivo));
+            }
+
+            $infDps->appendChild($subst);
+        }
+
         $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prest));
 
         // toma (optional)
@@ -73,11 +88,21 @@ final readonly class DpsBuilder
             $infDps->appendChild((new TomadorBuilder)->build($doc, $data->toma));
         }
 
+        // interm (optional)
+        if ($data->interm instanceof Tomador) {
+            $infDps->appendChild((new TomadorBuilder)->build($doc, $data->interm, 'interm'));
+        }
+
         // serv (obrigatório)
         $infDps->appendChild((new ServicoBuilder)->build($doc, $data->serv));
 
         // valores (obrigatório)
         $infDps->appendChild((new ValoresBuilder)->build($doc, $data->valores));
+
+        // IBSCBS (optional)
+        if ($data->IBSCBS instanceof InfoIBSCBS) {
+            $infDps->appendChild((new IBSCBSBuilder)->build($doc, $data->IBSCBS));
+        }
 
         $dps->appendChild($infDps);
         $doc->appendChild($dps);

@@ -53,11 +53,10 @@ it('includes tpAmb in infDPS', function (DpsData $data) {
 
 it('includes cMotivoEmisTI when set', function () {
     $data = new DpsData(
-        makeInfDps(cMotivoEmisTI: MotivoEmissaoTI::ImportacaoServico),
-        makePrestadorCnpj(),
-        null,
-        makeServicoMinimo(),
-        makeValoresMinimo(),
+        infDPS: makeInfDps(cMotivoEmisTI: MotivoEmissaoTI::ImportacaoServico),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
     );
 
     $xml = buildDps($data);
@@ -70,11 +69,10 @@ it('includes cMotivoEmisTI when set', function () {
 
 it('includes chNFSeRej when set', function () {
     $data = new DpsData(
-        makeInfDps(chNFSeRej: 'CHAVE_REJEITADA_123'),
-        makePrestadorCnpj(),
-        null,
-        makeServicoMinimo(),
-        makeValoresMinimo(),
+        infDPS: makeInfDps(chNFSeRej: 'CHAVE_REJEITADA_123'),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
     );
 
     $xml = buildDps($data);
@@ -88,7 +86,7 @@ it('includes chNFSeRej when set', function () {
 it('includes toma element as child of infDPS when tomador has data', function () {
     $tomador = new Tomador(CNPJ: '98765432000111', xNome: 'Tomador Ltda');
 
-    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), $tomador, makeServicoMinimo(), makeValoresMinimo());
+    $data = new DpsData(infDPS: makeInfDps(), prest: makePrestadorCnpj(), serv: makeServicoMinimo(), valores: makeValoresMinimo(), toma: $tomador);
 
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
@@ -116,7 +114,7 @@ it('throws NfseException on invalid XSD', function () {
         cLocPrestacao: '3501608',
     );
 
-    $data = new DpsData(makeInfDps(), makePrestadorCnpj(), null, $servico, makeValoresMinimo());
+    $data = new DpsData(infDPS: makeInfDps(), prest: makePrestadorCnpj(), serv: $servico, valores: makeValoresMinimo());
 
     $builder = new DpsBuilder(makeXsdValidator());
 
@@ -140,7 +138,7 @@ it('generates correct Id for CPF prestador', function () {
         xNome: 'Pessoa Física',
     );
 
-    $data = new DpsData(makeInfDps(), $prestador, null, makeServicoMinimo(), makeValoresMinimo());
+    $data = new DpsData(infDPS: makeInfDps(), prest: $prestador, serv: makeServicoMinimo(), valores: makeValoresMinimo());
 
     $xml = buildDps($data);
     $xpath = parseDpsXml($xml);
@@ -152,11 +150,10 @@ it('generates correct Id for CPF prestador', function () {
 
 it('generates Id with max serie and large ndps padding', function () {
     $data = new DpsData(
-        makeInfDps(serie: '99999', nDPS: 999999999999999),
-        makePrestadorCnpj(),
-        null,
-        makeServicoMinimo(),
-        makeValoresMinimo(),
+        infDPS: makeInfDps(serie: '99999', nDPS: 999999999999999),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
     );
 
     $xml = buildDps($data);
@@ -169,11 +166,10 @@ it('generates Id with max serie and large ndps padding', function () {
 
 it('generates Id with single-digit serie and ndps left-padded', function () {
     $data = new DpsData(
-        makeInfDps(nDPS: 42),
-        makePrestadorCnpj(),
-        null,
-        makeServicoMinimo(),
-        makeValoresMinimo(),
+        infDPS: makeInfDps(nDPS: 42),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
     );
 
     $xml = buildDps($data);
@@ -186,11 +182,10 @@ it('generates Id with single-digit serie and ndps left-padded', function () {
 
 it('generates Id truncating cLocEmi to 7 chars', function () {
     $data = new DpsData(
-        makeInfDps(cLocEmi: '35016089999'),
-        makePrestadorCnpj(),
-        null,
-        makeServicoMinimo(),
-        makeValoresMinimo(),
+        infDPS: makeInfDps(cLocEmi: '35016089999'),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
     );
 
     $xml = buildDps($data);

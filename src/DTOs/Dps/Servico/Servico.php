@@ -16,6 +16,10 @@ final readonly class Servico
         public ?string $cPaisPrestacao = null,
         public ?ComercioExterior $comExt = null,
         public ?Obra $obra = null,
+        public ?LocacaoSublocacao $lsadppu = null,
+        public ?AtividadeEvento $atvEvento = null,
+        public ?ExploracaoRodoviaria $explRod = null,
+        public ?InfoComplementar $infoCompl = null,
     ) {
         self::validateChoice(
             ['cLocPrestacao' => $cLocPrestacao, 'cPaisPrestacao' => $cPaisPrestacao],

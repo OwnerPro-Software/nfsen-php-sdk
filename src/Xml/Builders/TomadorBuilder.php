@@ -14,9 +14,9 @@ final class TomadorBuilder
 {
     use CreatesTextElements;
 
-    public function build(DOMDocument $doc, Tomador $toma): DOMElement
+    public function build(DOMDocument $doc, Tomador $toma, string $elementName = 'toma'): DOMElement
     {
-        $el = $doc->createElement('toma');
+        $el = $doc->createElement($elementName);
 
         if ($toma->CNPJ !== null) {
             $el->appendChild($this->text($doc, 'CNPJ', $toma->CNPJ));
