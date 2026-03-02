@@ -1,0 +1,120 @@
+<?php
+
+use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
+
+it('constructs with all fields', function () {
+    $msg = new MensagemProcessamento(
+        mensagem: 'Mensagem teste',
+        codigo: 'E001',
+        descricao: 'Descrição do erro',
+        complemento: 'Informação adicional',
+    );
+
+    expect($msg)
+        ->mensagem->toBe('Mensagem teste')
+        ->codigo->toBe('E001')
+        ->descricao->toBe('Descrição do erro')
+        ->complemento->toBe('Informação adicional');
+});
+
+it('constructs with defaults when no arguments provided', function () {
+    $msg = new MensagemProcessamento;
+
+    expect($msg)
+        ->mensagem->toBeNull()
+        ->codigo->toBeNull()
+        ->descricao->toBeNull()
+        ->complemento->toBeNull();
+});
+
+it('creates from array with full data', function () {
+    $msg = MensagemProcessamento::fromArray([
+        'mensagem' => 'Mensagem',
+        'codigo' => 'A001',
+        'descricao' => 'Descrição',
+        'complemento' => 'Complemento',
+    ]);
+
+    expect($msg)
+        ->toBeInstanceOf(MensagemProcessamento::class)
+        ->mensagem->toBe('Mensagem')
+        ->codigo->toBe('A001')
+        ->descricao->toBe('Descrição')
+        ->complemento->toBe('Complemento');
+});
+
+it('creates from array with partial data', function () {
+    $msg = MensagemProcessamento::fromArray([
+        'descricao' => 'Apenas descrição',
+    ]);
+
+    expect($msg)
+        ->mensagem->toBeNull()
+        ->codigo->toBeNull()
+        ->descricao->toBe('Apenas descrição')
+        ->complemento->toBeNull();
+});
+
+it('creates from empty array', function () {
+    $msg = MensagemProcessamento::fromArray([]);
+
+    expect($msg)
+        ->mensagem->toBeNull()
+        ->codigo->toBeNull()
+        ->descricao->toBeNull()
+        ->complemento->toBeNull();
+});
+
+it('creates list from array of items', function () {
+    $items = [
+        ['codigo' => 'E001', 'descricao' => 'Primeiro erro'],
+        ['codigo' => 'E002', 'descricao' => 'Segundo erro', 'mensagem' => 'Msg'],
+    ];
+
+    $list = MensagemProcessamento::fromArrayList($items);
+
+    expect($list)->toHaveCount(2);
+    expect($list[0])
+        ->toBeInstanceOf(MensagemProcessamento::class)
+        ->codigo->toBe('E001')
+        ->descricao->toBe('Primeiro erro');
+    expect($list[1])
+        ->codigo->toBe('E002')
+        ->descricao->toBe('Segundo erro')
+        ->mensagem->toBe('Msg');
+});
+
+it('creates empty list from empty array', function () {
+    $list = MensagemProcessamento::fromArrayList([]);
+
+    expect($list)->toBeEmpty();
+});
+
+it('fromApiResult normalizes plural erros key', function () {
+    $result = ['erros' => [
+        ['codigo' => 'E001', 'descricao' => 'Primeiro'],
+        ['codigo' => 'E002', 'descricao' => 'Segundo'],
+    ]];
+
+    $list = MensagemProcessamento::fromApiResult($result);
+
+    expect($list)->toHaveCount(2);
+    expect($list[0]->codigo)->toBe('E001');
+    expect($list[1]->codigo)->toBe('E002');
+});
+
+it('fromApiResult normalizes singular erro key', function () {
+    $result = ['erro' => ['codigo' => 'E999', 'descricao' => 'Erro único']];
+
+    $list = MensagemProcessamento::fromApiResult($result);
+
+    expect($list)->toHaveCount(1);
+    expect($list[0]->codigo)->toBe('E999');
+    expect($list[0]->descricao)->toBe('Erro único');
+});
+
+it('fromApiResult returns empty list when no error keys', function () {
+    $list = MensagemProcessamento::fromApiResult([]);
+
+    expect($list)->toBeEmpty();
+});

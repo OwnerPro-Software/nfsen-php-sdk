@@ -1,27 +1,31 @@
 <?php
 
 use Pulsar\NfseNacional\DTOs\DanfseResponse;
+use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 
-it('success response carries danfse url and no erro', function () {
-    $response = new DanfseResponse(true, 'https://danfse.exemplo.com/CHAVE123', null);
+it('success response carries danfse url and no erros', function () {
+    $response = new DanfseResponse(true, 'https://danfse.exemplo.com/CHAVE123');
 
     expect($response)
         ->sucesso->toBeTrue()
         ->url->toBe('https://danfse.exemplo.com/CHAVE123')
-        ->erro->toBeNull();
+        ->erros->toBeEmpty();
 });
 
-it('failure response carries erro and no url', function () {
-    $response = new DanfseResponse(false, null, 'NFSe não encontrada');
+it('failure response carries erros and no url', function () {
+    $erros = [new MensagemProcessamento(descricao: 'NFSe não encontrada', codigo: 'E404')];
+
+    $response = new DanfseResponse(false, erros: $erros);
 
     expect($response)
         ->sucesso->toBeFalse()
-        ->url->toBeNull()
-        ->erro->toBe('NFSe não encontrada');
+        ->url->toBeNull();
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->descricao)->toBe('NFSe não encontrada');
 });
 
 it('maps from real fixture response shape', function () {
-    /** @var array{danfseUrl?: string, erros?: list<array{descricao?: string}>} $fixture */
+    /** @var array{danfseUrl?: string} $fixture */
     $fixture = json_decode(
         file_get_contents(__DIR__.'/../../fixtures/responses/consultar_danfse.json'),
         true,
@@ -30,9 +34,17 @@ it('maps from real fixture response shape', function () {
     $response = new DanfseResponse(
         sucesso: isset($fixture['danfseUrl']),
         url: $fixture['danfseUrl'] ?? null,
-        erro: null,
     );
 
     expect($response->sucesso)->toBeTrue();
     expect($response->url)->toBe('https://danfse.exemplo.com/CHAVE123');
+    expect($response->erros)->toBeEmpty();
+});
+
+it('defaults all optional fields', function () {
+    $response = new DanfseResponse(true);
+
+    expect($response)
+        ->url->toBeNull()
+        ->erros->toBeEmpty();
 });

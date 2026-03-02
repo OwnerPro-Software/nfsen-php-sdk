@@ -7,8 +7,10 @@ namespace Pulsar\NfseNacional\Consulta;
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
 use Pulsar\NfseNacional\DTOs\DanfseResponse;
 use Pulsar\NfseNacional\DTOs\EventosResponse;
+use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class ConsultaBuilder
 {
@@ -33,12 +35,17 @@ final readonly class ConsultaBuilder
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
         if (! empty($result['erros']) || isset($result['erro'])) {
-            $erro = $result['erros'][0]['descricao'] ?? $result['erro']['descricao'] ?? 'Erro';
-
-            return new NfseResponse(false, null, null, $erro);
+            return new NfseResponse(
+                sucesso: false,
+                erros: MensagemProcessamento::fromApiResult($result),
+            );
         }
 
-        return new NfseResponse(true, $result['chaveAcesso'] ?? null, null, null);
+        return new NfseResponse(
+            sucesso: true,
+            chave: $result['chaveAcesso'] ?? null,
+            idDps: $result['idDps'] ?? null,
+        );
     }
 
     public function danfse(string $chave): DanfseResponse
@@ -49,12 +56,13 @@ final readonly class ConsultaBuilder
         $result = $this->client->executeGetRaw($this->buildUrl($baseUrl, $path));
 
         if (! empty($result['erros']) || isset($result['erro'])) {
-            $erro = $result['erros'][0]['descricao'] ?? $result['erro']['descricao'] ?? 'Erro';
-
-            return new DanfseResponse(false, null, $erro);
+            return new DanfseResponse(
+                sucesso: false,
+                erros: MensagemProcessamento::fromApiResult($result),
+            );
         }
 
-        return new DanfseResponse(true, $result['danfseUrl'] ?? null, null);
+        return new DanfseResponse(sucesso: true, url: $result['danfseUrl'] ?? null);
     }
 
     public function eventos(string $chave, int $tipoEvento = 101101, int $nSequencial = 1): EventosResponse
@@ -68,12 +76,16 @@ final readonly class ConsultaBuilder
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
         if (! empty($result['erros']) || isset($result['erro'])) {
-            $erro = $result['erros'][0]['descricao'] ?? $result['erro']['descricao'] ?? 'Erro';
-
-            return new EventosResponse(false, [], $erro);
+            return new EventosResponse(
+                sucesso: false,
+                erros: MensagemProcessamento::fromApiResult($result),
+            );
         }
 
-        return new EventosResponse(true, $result['eventos'] ?? [], null);
+        return new EventosResponse(
+            sucesso: true,
+            xml: GzipCompressor::decompressB64($result['eventoXmlGZipB64'] ?? null),
+        );
     }
 
     private function buildUrl(string $baseUrl, string $path): string

@@ -28,6 +28,7 @@ it('cancelar returns success NfseResponse', function () {
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('12345678901234567890123456789012345678901234567890');
+    expect($response->xml)->not->toBeNull();
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         $req->method() === 'POST' &&
@@ -51,6 +52,7 @@ it('cancelar accepts string codigoMotivo and coerces to enum', function () {
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('12345678901234567890123456789012345678901234567890');
+    expect($response->xml)->not->toBeNull();
 });
 
 it('cancelar throws ValueError for invalid string codigoMotivo', function () {
@@ -78,7 +80,7 @@ it('cancelar returns rejection NfseResponse on erro field', function () {
     );
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toContain('não encontrada');
+    expect($response->erros[0]->descricao)->toContain('não encontrada');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
@@ -96,7 +98,7 @@ it('cancelar returns rejection NfseResponse on singular erro field', function ()
     );
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('Operação não permitida');
+    expect($response->erros[0]->descricao)->toBe('Operação não permitida');
 });
 
 it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {
@@ -167,7 +169,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
 });
 
 it('cancelar uses Americana custom URL without operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
@@ -178,7 +180,7 @@ it('cancelar uses Americana custom URL without operation path', function () {
 });
 
 it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3547304');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
@@ -189,7 +191,7 @@ it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', functio
 });
 
 it('cancelar throws NfseException when gzip compression fails', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);

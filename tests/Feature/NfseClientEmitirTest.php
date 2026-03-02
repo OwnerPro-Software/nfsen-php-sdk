@@ -24,6 +24,8 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->not->toBeNull();
     expect($response->xml)->toContain('<NFSe');
+    expect($response->idDps)->toBe('DPS001');
+    expect($response->alertas)->not->toBeEmpty();
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
         $req->method() === 'POST' &&
@@ -33,12 +35,13 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
 
 it('consultar()->nfse returns success NfseResponse', function () {
     $xmlB64 = base64_encode(gzencode('<NFSe/>'));
-    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64], 200)]);
+    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64, 'chaveAcesso' => 'CHAVE123'], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->nfse('CHAVE123');
 
     expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE123');
     expect($response->xml)->toContain('<NFSe');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE123' &&
@@ -96,7 +99,9 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toContain('CNPJ');
+    expect($response->erros)->toBeArray();
+    expect($response->erros[0])->toBeInstanceOf(\Pulsar\NfseNacional\DTOs\MensagemProcessamento::class);
+    expect($response->erros[0]->descricao)->toContain('CNPJ');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
         isset($req['dpsXmlGZipB64'])
@@ -110,7 +115,7 @@ it('emitir returns rejection on 4xx response with erro body', function (DpsData 
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('Certificado inválido');
+    expect($response->erros[0]->descricao)->toBe('Certificado inválido');
 })->with('dpsData');
 
 it('emitir throws HttpException on server error', function (DpsData $data) {
@@ -220,7 +225,7 @@ it('emitir returns rejection when response has no chaveAcesso', function (DpsDat
 
     expect($response->sucesso)->toBeFalse();
     expect($response->chave)->toBeNull();
-    expect($response->erro)->toBe('Resposta da API não contém chaveAcesso.');
+    expect($response->erros[0]->descricao)->toBe('Resposta da API não contém chaveAcesso.');
 })->with('dpsData');
 
 it('emitir returns rejection with singular erro field', function (DpsData $data) {
@@ -230,7 +235,7 @@ it('emitir returns rejection with singular erro field', function (DpsData $data)
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('Erro genérico na emissão');
+    expect($response->erros[0]->descricao)->toBe('Erro genérico na emissão');
 })->with('dpsData');
 
 it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data) {

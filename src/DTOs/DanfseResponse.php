@@ -6,9 +6,10 @@ namespace Pulsar\NfseNacional\DTOs;
 
 final readonly class DanfseResponse
 {
+    /** @param list<MensagemProcessamento> $erros */
     public function __construct(
         public bool $sucesso,
-        public ?string $url,
-        public ?string $erro,
+        public ?string $url = null,
+        public array $erros = [],
     ) {}
 }

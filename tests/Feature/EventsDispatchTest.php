@@ -27,7 +27,7 @@ it('dispatches NfseRequested and NfseEmitted on successful emitir', function (Dp
 
 it('dispatches NfseCancelled on successful cancelar', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
     $client = NfseClient::for($pfx, 'secret', '9999999');
@@ -38,7 +38,7 @@ it('dispatches NfseCancelled on successful cancelar', function () {
 
 it('dispatches NfseSubstituted on successful substituir', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';

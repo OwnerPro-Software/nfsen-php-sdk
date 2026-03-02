@@ -19,27 +19,27 @@ it('consultar()->danfse returns DanfseResponse with url', function () {
 });
 
 it('consultar()->eventos returns EventosResponse', function () {
-    Http::fake(['*' => Http::response(['eventos' => [['tipo' => '101101']]], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->eventos('CHAVE123');
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->eventos)->toHaveCount(1);
+    expect($response->xml)->toContain('<Evento');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE123/eventos/101101/1' &&
         $req->method() === 'GET'
     );
 });
 
-it('consultar()->eventos returns empty array when no events', function () {
-    Http::fake(['*' => Http::response(['eventos' => []], 200)]);
+it('consultar()->eventos returns null xml when no eventoXmlGZipB64', function () {
+    Http::fake(['*' => Http::response([], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->eventos('CHAVE123');
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->eventos)->toBeEmpty();
+    expect($response->xml)->toBeNull();
 });
 
 it('consultar()->nfse returns rejection on erros response', function () {
@@ -49,7 +49,7 @@ it('consultar()->nfse returns rejection on erros response', function () {
     $response = $client->consultar()->nfse('CHAVE_INVALIDA');
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('NFSe não encontrada');
+    expect($response->erros[0]->descricao)->toBe('NFSe não encontrada');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE_INVALIDA' &&
         $req->method() === 'GET'
@@ -72,7 +72,7 @@ it('consultar()->danfse returns failure on erros response', function () {
     $response = $client->consultar()->danfse('CHAVE_INVALIDA');
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('DANFSe não encontrada');
+    expect($response->erros[0]->descricao)->toBe('DANFSe não encontrada');
 });
 
 it('executeGetRaw returns raw array including error keys', function () {

@@ -1,3 +1,6 @@
 {
-  "eventos": []
+  "tipoAmbiente": 2,
+  "versaoAplicativo": "1.0.0",
+  "dataHoraProcessamento": "2026-03-02T12:00:00-03:00",
+  "eventoXmlGZipB64": "H4sIAAAAAAAAA7NxLUvNK8nXtwMAJcdZygkAAAA="
 }

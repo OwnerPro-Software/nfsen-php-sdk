@@ -6,10 +6,10 @@ namespace Pulsar\NfseNacional\DTOs;
 
 final readonly class EventosResponse
 {
-    /** @param array<int, array<string, mixed>> $eventos */
+    /** @param list<MensagemProcessamento> $erros */
     public function __construct(
         public bool $sucesso,
-        public array $eventos,
-        public ?string $erro,
+        public ?string $xml = null,
+        public array $erros = [],
     ) {}
 }

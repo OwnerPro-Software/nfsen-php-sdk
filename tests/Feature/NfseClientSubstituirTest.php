@@ -13,7 +13,7 @@ use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('substituir returns success NfseResponse', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -27,6 +27,7 @@ it('substituir returns success NfseResponse', function () {
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe($chave);
+    expect($response->xml)->not->toBeNull();
 
     Http::assertSent(fn (Request $req) => str_contains($req->url(), $chave.'/eventos') &&
         $req->method() === 'POST' &&
@@ -35,7 +36,7 @@ it('substituir returns success NfseResponse', function () {
 });
 
 it('substituir accepts string codigoMotivo and coerces to enum', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -69,7 +70,7 @@ it('substituir returns rejection NfseResponse', function () {
     $response = $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::Outros, 'Outro motivo para substituicao');
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toContain('não encontrada');
+    expect($response->erros[0]->descricao)->toContain('não encontrada');
 });
 
 it('substituir throws NfseException when cert has no CNPJ nor CPF', function () {
@@ -95,7 +96,7 @@ it('substituir throws HttpException on server error', function () {
 });
 
 it('substituir works without descricao', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -106,7 +107,7 @@ it('substituir works without descricao', function () {
 });
 
 it('substituir uses Americana custom URL without operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -119,7 +120,7 @@ it('substituir uses Americana custom URL without operation path', function () {
 });
 
 it('substituir throws NfseException when gzip compression fails', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);

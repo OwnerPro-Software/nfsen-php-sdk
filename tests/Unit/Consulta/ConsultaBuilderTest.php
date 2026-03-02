@@ -13,14 +13,14 @@ class FakeNfseClientForConsulta implements NfseClientContract
     {
         $this->calls[] = $url;
 
-        return new NfseResponse(true, 'chave123', '<xml/>', null);
+        return new NfseResponse(true, 'chave123', '<xml/>');
     }
 
     public function executeGetRaw(string $url): array
     {
         $this->calls[] = $url;
 
-        return ['sucesso' => true];
+        return ['chaveAcesso' => null];
     }
 }
 
@@ -55,7 +55,7 @@ it('dps returns failure when erros key present', function () {
     {
         public function executeGet(string $url): NfseResponse
         {
-            return new NfseResponse(true, null, null, null);
+            return new NfseResponse(true);
         }
 
         /** @return array{erros: list<array{descricao: string}>} */
@@ -71,7 +71,33 @@ it('dps returns failure when erros key present', function () {
     $response = $builder->dps('CHAVE123');
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('DPS não encontrada');
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->descricao)->toBe('DPS não encontrada');
+});
+
+it('dps returns success with idDps', function () {
+    $fakeClient = new class implements NfseClientContract
+    {
+        public function executeGet(string $url): NfseResponse
+        {
+            return new NfseResponse(true);
+        }
+
+        /** @return array{chaveAcesso: string, idDps: string} */
+        public function executeGetRaw(string $url): array
+        {
+            return ['chaveAcesso' => 'CHAVE_DPS', 'idDps' => 'DPS001'];
+        }
+    };
+
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+
+    $response = $builder->dps('CHAVE123');
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE_DPS');
+    expect($response->idDps)->toBe('DPS001');
 });
 
 it('danfse returns failure when erros key present', function () {
@@ -79,7 +105,7 @@ it('danfse returns failure when erros key present', function () {
     {
         public function executeGet(string $url): NfseResponse
         {
-            return new NfseResponse(true, null, null, null);
+            return new NfseResponse(true);
         }
 
         /** @return array{erros: list<array{descricao: string}>} */
@@ -95,7 +121,8 @@ it('danfse returns failure when erros key present', function () {
     $response = $builder->danfse('CHAVE123');
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('NFSe não encontrada');
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->descricao)->toBe('NFSe não encontrada');
 });
 
 it('danfse returns success with danfseUrl', function () {
@@ -103,7 +130,7 @@ it('danfse returns success with danfseUrl', function () {
     {
         public function executeGet(string $url): NfseResponse
         {
-            return new NfseResponse(true, null, null, null);
+            return new NfseResponse(true);
         }
 
         /** @return array{danfseUrl: string} */
@@ -122,12 +149,37 @@ it('danfse returns success with danfseUrl', function () {
     expect($response->url)->toBe('https://danfse.url/PDF');
 });
 
-it('eventos returns failure when erro key present', function () {
+it('eventos returns failure when erros key present', function () {
     $fakeClient = new class implements NfseClientContract
     {
         public function executeGet(string $url): NfseResponse
         {
-            return new NfseResponse(true, null, null, null);
+            return new NfseResponse(true);
+        }
+
+        /** @return array{erros: list<array{descricao: string}>} */
+        public function executeGetRaw(string $url): array
+        {
+            return ['erros' => [['descricao' => 'Evento não encontrado']]];
+        }
+    };
+
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+
+    $response = $builder->eventos('CHAVE123');
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->descricao)->toBe('Evento não encontrado');
+});
+
+it('eventos returns failure when singular erro key present', function () {
+    $fakeClient = new class implements NfseClientContract
+    {
+        public function executeGet(string $url): NfseResponse
+        {
+            return new NfseResponse(true);
         }
 
         /** @return array{erro: array{descricao: string}} */
@@ -143,21 +195,27 @@ it('eventos returns failure when erro key present', function () {
     $response = $builder->eventos('CHAVE123');
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erro)->toBe('Evento não encontrado');
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->descricao)->toBe('Evento não encontrado');
 });
 
-it('eventos returns success with events list', function () {
-    $fakeClient = new class implements NfseClientContract
+it('eventos returns success with decompressed xml', function () {
+    $originalXml = '<Evento/>';
+    $gzipB64 = base64_encode((string) gzencode($originalXml));
+
+    $fakeClient = new class($gzipB64) implements NfseClientContract
     {
+        public function __construct(private readonly string $gzipB64) {}
+
         public function executeGet(string $url): NfseResponse
         {
-            return new NfseResponse(true, null, null, null);
+            return new NfseResponse(true);
         }
 
-        /** @return array{eventos: list<array{tipo: string}>} */
+        /** @return array{eventoXmlGZipB64: string} */
         public function executeGetRaw(string $url): array
         {
-            return ['eventos' => [['tipo' => '101101']]];
+            return ['eventoXmlGZipB64' => $this->gzipB64];
         }
     };
 
@@ -167,7 +225,7 @@ it('eventos returns success with events list', function () {
     $response = $builder->eventos('CHAVE123');
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->eventos)->toHaveCount(1);
+    expect($response->xml)->toBe('<Evento/>');
 });
 
 it('buildUrl returns baseUrl when path is empty', function () {
@@ -184,7 +242,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
         {
             $this->lastUrl = $url;
 
-            return new NfseResponse(true, null, null, null);
+            return new NfseResponse(true);
         }
 
         /** @return array<string, mixed> */

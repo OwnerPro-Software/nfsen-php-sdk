@@ -14,11 +14,12 @@ interface NfseClientContract
      * Retorna JSON cru da API.
      *
      * @return array{
-     *     erros?: list<array{descricao?: string, codigo?: string}>,
+     *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
      *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
      *     chaveAcesso?: string,
+     *     idDps?: string,
      *     danfseUrl?: string,
-     *     eventos?: array<int, array<string, mixed>>,
+     *     eventoXmlGZipB64?: string,
      * }
      */
     public function executeGetRaw(string $url): array;
