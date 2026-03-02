@@ -29,6 +29,7 @@ final class NfseNacionalServiceProvider extends ServiceProvider
              *         senha: string|null,
              *     },
              *     timeout: int,
+             *     connect_timeout: int,
              *     signing_algorithm: string,
              *     ssl_verify: bool,
              * } $config
@@ -47,6 +48,7 @@ final class NfseNacionalServiceProvider extends ServiceProvider
                 dpsBuilder: new DpsBuilder($xsdValidator),
                 cancelamentoBuilder: new CancelamentoBuilder($xsdValidator),
                 substituicaoBuilder: new SubstituicaoBuilder($xsdValidator),
+                connectTimeout: $config['connect_timeout'],
             );
 
             $certPath = $config['certificado']['path'];

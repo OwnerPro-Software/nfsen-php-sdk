@@ -52,6 +52,7 @@ final class NfseClient implements NfseClientContract
         private readonly CancelamentoBuilder $cancelamentoBuilder,
         private readonly SubstituicaoBuilder $substituicaoBuilder,
         private readonly GzipCompressor $gzipCompressor = new GzipCompressor,
+        private readonly int $connectTimeout = 10,
     ) {}
 
     public static function for(string $pfxContent, string $senha, string $prefeitura): self
@@ -75,6 +76,7 @@ final class NfseClient implements NfseClientContract
         bool $sslVerify = true,
         ?string $prefeiturasJsonPath = null,
         ?string $schemesPath = null,
+        int $connectTimeout = 10,
     ): self {
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
         $schemasPath = $schemesPath ?? __DIR__.'/../storage/schemes';
@@ -90,6 +92,7 @@ final class NfseClient implements NfseClientContract
             dpsBuilder: new DpsBuilder($xsdValidator),
             cancelamentoBuilder: new CancelamentoBuilder($xsdValidator),
             substituicaoBuilder: new SubstituicaoBuilder($xsdValidator),
+            connectTimeout: $connectTimeout,
         );
 
         return $instance->configure($pfxContent, $senha, $prefeitura);
@@ -101,7 +104,7 @@ final class NfseClient implements NfseClientContract
         $this->certManager = new CertificateManager($pfxContent, $senha);
         $this->prefeitura = $prefeitura;
         $effectiveSslVerify = $this->ambiente === NfseAmbiente::PRODUCAO || $this->sslVerify;
-        $this->httpClient = new NfseHttpClient($this->certManager->getCertificate(), $this->timeout, $effectiveSslVerify);
+        $this->httpClient = new NfseHttpClient($this->certManager->getCertificate(), $this->timeout, $this->connectTimeout, $effectiveSslVerify);
 
         return $this;
     }
@@ -361,7 +364,7 @@ final class NfseClient implements NfseClientContract
         $httpClient = $this->httpClient;
 
         $operacao = 'consultar';
-        $this->dispatchEvent(new NfseRequested($operacao, ['url' => $url]));
+        $this->dispatchEvent(new NfseRequested($operacao));
 
         try {
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}, nfseXmlGZipB64?: string} $result */
@@ -401,7 +404,7 @@ final class NfseClient implements NfseClientContract
         $httpClient = $this->httpClient;
 
         $operacao = 'consultar';
-        $this->dispatchEvent(new NfseRequested($operacao, ['url' => $url]));
+        $this->dispatchEvent(new NfseRequested($operacao));
 
         try {
             /** @var array{erros?: list<array{descricao?: string, codigo?: string}>, erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}, chaveAcesso?: string, danfseUrl?: string, eventos?: array<int, array<string, mixed>>} $result */

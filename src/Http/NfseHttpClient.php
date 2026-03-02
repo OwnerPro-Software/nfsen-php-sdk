@@ -15,6 +15,7 @@ final readonly class NfseHttpClient
     public function __construct(
         private Certificate $certificate,
         private int $timeout = 30,
+        private int $connectTimeout = 10,
         private bool $sslVerify = true,
         private TempFileFactory $tempFileFactory = new TempFileFactory,
     ) {}
@@ -68,7 +69,11 @@ final readonly class NfseHttpClient
             $certPath = stream_get_meta_data($certHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
             $keyPath = stream_get_meta_data($keyHandle)['uri']; // @phpstan-ignore offsetAccess.notFound (tmpfile always has uri)
 
-            $pending = Http::timeout($this->timeout)
+            chmod($certPath, 0600);
+            chmod($keyPath, 0600);
+
+            $pending = Http::connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
                 ->acceptJson()
                 ->withOptions([
                     'verify' => $this->sslVerify,
@@ -81,14 +86,7 @@ final readonly class NfseHttpClient
                 : $pending->get($url);
 
             if ($response->serverError()) {
-                $body = substr($response->body(), 0, 500);
-                $message = 'HTTP error: '.$response->status();
-
-                if ($body !== '') {
-                    $message .= ' — '.$body;
-                }
-
-                throw new HttpException($message, $response->status());
+                throw HttpException::fromResponse($response->status(), $response->body());
             }
 
             /** @var array<string, mixed> $json */
