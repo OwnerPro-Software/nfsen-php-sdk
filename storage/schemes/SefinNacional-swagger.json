@@ -5,12 +5,12 @@
     "title": "API NFS-e - Sefin Nacional",
     "description": "<br/><p><strong>Protocolo de comunicação:</strong> TLS 1.0, TLS 1.1 e TLS 1.2 com autenticação mútua</p><br/>\r\n                        <p><strong>Formato para troca de mensagens:</strong> JSON</p><br/>\r\n                        <p><strong>Formato dos documentos da NFS-e:</strong> XML 1.0 (https://www.w3.org/TR/REC-xml)</p><br/>\r\n                        <p><strong>Codificação de caracteres:</strong> UTF-8</p><br/>\r\n                        <p><strong>Certificado digital:</strong> Emitido por Autoridade Certificadora ICP-Brasil, tipo A1 ou A3, CNPJ ou CPF, com \"Autenticação Cliente\"</p><br/>\r\n                        <p><strong>Padrão de assinatura dos documentos XML:</strong> XMLDSIG (https://www.w3.org/TR/xmldsig-core/)</p><br/>\r\n                        <p><strong>Padrão de compactação dos documentos XML para troca de mensagens:</strong> GZip com representação base64binary</p><br/>",
     "x-logo": {
-      "url": "https://sefin.producaorestrita.nfse.gov.br/SefinNacional/img/logo_nfse_vertical.png",
+      "url": "https://sefin.nfse.gov.br/SefinNacional//img/logo_nfse_vertical.png",
       "altText": "Logo da API"
     }
   },
-  "host": "sefin.producaorestrita.nfse.gov.br",
-  "basePath": "/SefinNacional",
+  "host": "sefin.nfse.gov.br",
+  "basePath": "/SefinNacional/",
   "schemes": [
     "http"
   ],
@@ -459,7 +459,7 @@
           "format": "date-time",
           "description": "Data e hora de processamento da requisição",
           "type": "string",
-          "example": "2026-03-02T00:09:01.175148-03:00"
+          "example": "2026-03-02T00:46:35.4669677-03:00"
         },
         "idDps": {
           "description": "Identificador do DPS",
@@ -498,7 +498,7 @@
           "format": "date-time",
           "description": "Data e hora de processamento da requisição",
           "type": "string",
-          "example": "2026-03-02T00:09:01.175148-03:00"
+          "example": "2026-03-02T00:46:35.4669677-03:00"
         },
         "erro": {
           "$ref": "#/definitions/MensagemProcessamento",
@@ -563,7 +563,7 @@
           "format": "date-time",
           "description": "Data e hora de processamento da requisição",
           "type": "string",
-          "example": "2026-03-02T00:09:01.175148-03:00"
+          "example": "2026-03-02T00:46:35.4825901-03:00"
         },
         "eventoXmlGZipB64": {
           "description": "Evento no formato Xml compactado no padrão gZip (base64Binary)",
@@ -613,7 +613,7 @@
           "format": "date-time",
           "description": "Data e hora de processamento da requisição",
           "type": "string",
-          "example": "2026-03-02T00:09:01.175148-03:00"
+          "example": "2026-03-02T00:46:35.4825901-03:00"
         },
         "idDps": {
           "description": "Identificador do DPS",
@@ -667,7 +667,7 @@
           "format": "date-time",
           "description": "Data e hora de processamento da requisição",
           "type": "string",
-          "example": "2026-03-02T00:09:01.175148-03:00"
+          "example": "2026-03-02T00:46:35.4825901-03:00"
         },
         "idDPS": {
           "description": "Id do DPS (se tiver conseguido capturar do Xml)",
@@ -712,7 +712,7 @@
           "format": "date-time",
           "description": "Data e hora de processamento da requisição",
           "type": "string",
-          "example": "2026-03-02T00:09:01.175148-03:00"
+          "example": "2026-03-02T00:46:35.4825901-03:00"
         },
         "chaveAcesso": {
           "description": "Chave de acesso da NFS-e",
