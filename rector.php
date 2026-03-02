@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
+use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddParamArrayDocblockFromDimFetchAccessRector;
 use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
@@ -24,4 +25,8 @@ return RectorConfig::configure()
         rectorPreset: true,
     )
     ->withPhpSets(php82: true)
-    ->withImportNames(removeUnusedImports: true);
+    ->withImportNames(removeUnusedImports: true)
+    // fromArray() methods use @phpstan-param with typed array shapes — this rule would add redundant @param array<string, mixed>
+    ->withSkip([
+        AddParamArrayDocblockFromDimFetchAccessRector::class,
+    ]);

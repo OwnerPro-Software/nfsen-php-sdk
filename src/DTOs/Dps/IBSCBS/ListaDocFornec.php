@@ -7,6 +7,9 @@ namespace Pulsar\NfseNacional\DTOs\Dps\IBSCBS;
 use Pulsar\NfseNacional\DTOs\Dps\Concerns\ValidatesExclusiveChoice;
 use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
 
+/**
+ * @phpstan-type ListaDocFornecArray array{xNome: string, CNPJ?: string, CPF?: string, NIF?: string, cNaoNIF?: string}
+ */
 final readonly class ListaDocFornec
 {
     use ValidatesExclusiveChoice;
@@ -22,6 +25,18 @@ final readonly class ListaDocFornec
             ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'cNaoNIF' => $cNaoNIF],
             expected: 1,
             message: 'ListaDocFornec requer exatamente um entre CNPJ, CPF, NIF ou cNaoNIF.',
+        );
+    }
+
+    /** @phpstan-param ListaDocFornecArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            xNome: $data['xNome'],
+            CNPJ: $data['CNPJ'] ?? null,
+            CPF: $data['CPF'] ?? null,
+            NIF: $data['NIF'] ?? null,
+            cNaoNIF: isset($data['cNaoNIF']) ? CodNaoNIF::from($data['cNaoNIF']) : null,
         );
     }
 }

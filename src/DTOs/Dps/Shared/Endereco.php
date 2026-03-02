@@ -6,6 +6,12 @@ namespace Pulsar\NfseNacional\DTOs\Dps\Shared;
 
 use Pulsar\NfseNacional\DTOs\Dps\Concerns\ValidatesExclusiveChoice;
 
+/**
+ * @phpstan-import-type EnderecoNacionalArray from EnderecoNacional
+ * @phpstan-import-type EnderecoExteriorArray from EnderecoExterior
+ *
+ * @phpstan-type EnderecoArray array{xLgr: string, nro: string, xBairro: string, endNac?: EnderecoNacionalArray, endExt?: EnderecoExteriorArray, xCpl?: string}
+ */
 final readonly class Endereco
 {
     use ValidatesExclusiveChoice;
@@ -22,6 +28,19 @@ final readonly class Endereco
             ['endNac' => $endNac, 'endExt' => $endExt],
             expected: 1,
             message: 'Endereço requer exatamente um entre endNac ou endExt.',
+        );
+    }
+
+    /** @phpstan-param EnderecoArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            xLgr: $data['xLgr'],
+            nro: $data['nro'],
+            xBairro: $data['xBairro'],
+            endNac: isset($data['endNac']) ? EnderecoNacional::fromArray($data['endNac']) : null,
+            endExt: isset($data['endExt']) ? EnderecoExterior::fromArray($data['endExt']) : null,
+            xCpl: $data['xCpl'] ?? null,
         );
     }
 }

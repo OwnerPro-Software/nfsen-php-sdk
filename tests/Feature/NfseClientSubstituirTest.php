@@ -34,6 +34,32 @@ it('substituir returns success NfseResponse', function () {
     );
 });
 
+it('substituir accepts string codigoMotivo and coerces to enum', function () {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_OK'], 200)]);
+
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+    $response = $client->substituir(
+        $chave,
+        $chaveSub,
+        '01',
+        'Desenquadramento do Simples Nacional',
+    );
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE_OK');
+});
+
+it('substituir throws ValueError for invalid string codigoMotivo', function () {
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+
+    expect(fn () => $client->substituir($chave, $chaveSub, 'INVALID', 'Motivo'))
+        ->toThrow(ValueError::class);
+});
+
 it('substituir returns rejection NfseResponse', function () {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
 

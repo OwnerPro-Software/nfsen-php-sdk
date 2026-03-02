@@ -35,6 +35,34 @@ it('cancelar returns success NfseResponse', function () {
     );
 });
 
+it('cancelar accepts string codigoMotivo and coerces to enum', function () {
+    Http::fake(['*' => Http::response(
+        json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
+        200
+    )]);
+
+    $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
+    $client = NfseClient::for($pfx, 'secret', '9999999');
+    $response = $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        '1',
+        'Erro na emissao da nota fiscal'
+    );
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('35016082026022700000000000000000000000000000000001');
+});
+
+it('cancelar throws ValueError for invalid string codigoMotivo', function () {
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        'INVALID',
+        'Erro na emissao da nota fiscal'
+    ))->toThrow(ValueError::class);
+});
+
 it('cancelar returns rejection NfseResponse on erro field', function () {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_rejeicao.json'), true),

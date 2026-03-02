@@ -13,9 +13,11 @@ use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\NfseClient;
 
 /**
- * @method static NfseResponse emitir(DpsData $data)
- * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento $codigoMotivo, string $descricao, int $nPedRegEvento = 1)
- * @method static NfseResponse substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1)
+ * @phpstan-import-type DpsDataArray from DpsData
+ *
+ * @method static NfseResponse emitir(DpsData|DpsDataArray $data)
+ * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1)
+ * @method static NfseResponse substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1)
  * @method static ConsultaBuilder consultar()
  */
 final class NfseNacional extends Facade

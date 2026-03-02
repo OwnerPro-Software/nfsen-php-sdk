@@ -240,6 +240,64 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
     );
 })->with('dpsData');
 
+it('emitir accepts array and coerces to DpsData', function () {
+    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_ARRAY'], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir([
+        'infDPS' => [
+            'tpAmb' => '2',
+            'dhEmi' => '2026-02-27T10:00:00-03:00',
+            'verAplic' => '1.0',
+            'serie' => '1',
+            'nDPS' => 1,
+            'dCompet' => '2026-02-27',
+            'tpEmit' => '1',
+            'cLocEmi' => '3501608',
+        ],
+        'prest' => [
+            'CNPJ' => '12345678000195',
+            'regTrib' => [
+                'opSimpNac' => '1',
+                'regEspTrib' => '0',
+            ],
+            'xNome' => 'Empresa',
+        ],
+        'serv' => [
+            'cServ' => [
+                'cTribNac' => '010101',
+                'xDescServ' => 'Serviço de Teste',
+                'cNBS' => '123456789',
+            ],
+            'cLocPrestacao' => '3501608',
+        ],
+        'valores' => [
+            'vServPrest' => ['vServ' => '100.00'],
+            'trib' => [
+                'tribMun' => [
+                    'tribISSQN' => '1',
+                    'tpRetISSQN' => '1',
+                ],
+                'indTotTrib' => '0',
+            ],
+        ],
+    ]);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE_ARRAY');
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
+        isset($req['dpsXmlGZipB64'])
+    );
+});
+
+it('emitir throws when array is missing required keys', function () {
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->emitir(['infDPS' => []]))
+        ->toThrow(\ErrorException::class);
+});
+
 it('emitir validates XML against XSD before sending', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'SHOULD_NOT_REACH'], 200)]);
 

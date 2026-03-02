@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\DTOs\Dps\Valores;
 
+/**
+ * @phpstan-type DocNFNFSArray array{nNFS: string, modNFS: string, serieNFS: string}
+ */
 final readonly class DocNFNFS
 {
     public function __construct(
@@ -11,4 +14,10 @@ final readonly class DocNFNFS
         public string $modNFS,
         public string $serieNFS,
     ) {}
+
+    /** @phpstan-param DocNFNFSArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(...$data);
+    }
 }

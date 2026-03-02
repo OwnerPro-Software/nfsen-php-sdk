@@ -11,6 +11,13 @@ use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpEnteGov;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpOper;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
+/**
+ * @phpstan-import-type InfoValoresIBSCBSArray from InfoValoresIBSCBS
+ * @phpstan-import-type InfoDestArray from InfoDest
+ * @phpstan-import-type InfoImovelArray from InfoImovel
+ *
+ * @phpstan-type InfoIBSCBSArray array{finNFSe: string, indFinal: string, cIndOp: string, indDest: string, valores: InfoValoresIBSCBSArray, tpOper?: string, refNFSe?: list<string>, tpEnteGov?: string, dest?: InfoDestArray, imovel?: InfoImovelArray}
+ */
 final readonly class InfoIBSCBS
 {
     /** @param list<string>|null $refNFSe */
@@ -29,5 +36,22 @@ final readonly class InfoIBSCBS
         if ($refNFSe !== null && $refNFSe === []) {
             throw new InvalidDpsArgument('refNFSe deve conter ao menos um item.');
         }
+    }
+
+    /** @phpstan-param InfoIBSCBSArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            finNFSe: FinNFSe::from($data['finNFSe']),
+            indFinal: IndFinal::from($data['indFinal']),
+            cIndOp: $data['cIndOp'],
+            indDest: IndDest::from($data['indDest']),
+            valores: InfoValoresIBSCBS::fromArray($data['valores']),
+            tpOper: isset($data['tpOper']) ? TpOper::from($data['tpOper']) : null,
+            refNFSe: $data['refNFSe'] ?? null,
+            tpEnteGov: isset($data['tpEnteGov']) ? TpEnteGov::from($data['tpEnteGov']) : null,
+            dest: isset($data['dest']) ? InfoDest::fromArray($data['dest']) : null,
+            imovel: isset($data['imovel']) ? InfoImovel::fromArray($data['imovel']) : null,
+        );
     }
 }

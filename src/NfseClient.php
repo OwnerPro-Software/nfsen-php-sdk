@@ -33,6 +33,7 @@ use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 use Throwable;
 
+/** @phpstan-import-type DpsDataArray from DpsData */
 final class NfseClient implements NfseClientContract
 {
     private ?CertificateManager $certManager = null;
@@ -131,9 +132,15 @@ final class NfseClient implements NfseClientContract
         }
     }
 
-    public function emitir(DpsData $data): NfseResponse
+    /** @phpstan-param DpsData|DpsDataArray $data */
+    public function emitir(DpsData|array $data): NfseResponse
     {
         $this->ensureConfigured();
+
+        if (is_array($data)) {
+            $data = DpsData::fromArray($data);
+        }
+
         $prefeitura = $this->prefeitura;
         $certificate = $this->certManager->getCertificate();
         $httpClient = $this->httpClient;
@@ -187,9 +194,14 @@ final class NfseClient implements NfseClientContract
         }
     }
 
-    public function cancelar(string $chave, CodigoJustificativaCancelamento $codigoMotivo, string $descricao, int $nPedRegEvento = 1): NfseResponse
+    public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1): NfseResponse
     {
         $this->ensureConfigured();
+
+        if (is_string($codigoMotivo)) {
+            $codigoMotivo = CodigoJustificativaCancelamento::from($codigoMotivo);
+        }
+
         $prefeitura = $this->prefeitura;
         $certificate = $this->certManager->getCertificate();
         $httpClient = $this->httpClient;
@@ -227,9 +239,14 @@ final class NfseClient implements NfseClientContract
         }
     }
 
-    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1): NfseResponse
+    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1): NfseResponse
     {
         $this->ensureConfigured();
+
+        if (is_string($codigoMotivo)) {
+            $codigoMotivo = CodigoJustificativaSubstituicao::from($codigoMotivo);
+        }
+
         $prefeitura = $this->prefeitura;
         $certificate = $this->certManager->getCertificate();
         $httpClient = $this->httpClient;

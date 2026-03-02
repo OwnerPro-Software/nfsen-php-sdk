@@ -6,6 +6,9 @@ namespace Pulsar\NfseNacional\DTOs\Dps\Valores;
 
 use Pulsar\NfseNacional\DTOs\Dps\Concerns\ValidatesExclusiveChoice;
 
+/**
+ * @phpstan-type BeneficioMunicipalArray array{nBM: string, vRedBCBM?: string, pRedBCBM?: string}
+ */
 final readonly class BeneficioMunicipal
 {
     use ValidatesExclusiveChoice;
@@ -19,5 +22,11 @@ final readonly class BeneficioMunicipal
             ['vRedBCBM' => $vRedBCBM, 'pRedBCBM' => $pRedBCBM],
             'BM deve ter apenas vRedBCBM ou pRedBCBM, não ambos.',
         );
+    }
+
+    /** @phpstan-param BeneficioMunicipalArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(...$data);
     }
 }

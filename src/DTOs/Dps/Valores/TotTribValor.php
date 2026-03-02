@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\DTOs\Dps\Valores;
 
+/**
+ * @phpstan-type TotTribValorArray array{vTotTribFed: string, vTotTribEst: string, vTotTribMun: string}
+ */
 final readonly class TotTribValor
 {
     public function __construct(
@@ -11,4 +14,10 @@ final readonly class TotTribValor
         public string $vTotTribEst,
         public string $vTotTribMun,
     ) {}
+
+    /** @phpstan-param TotTribValorArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(...$data);
+    }
 }

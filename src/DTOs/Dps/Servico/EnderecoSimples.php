@@ -6,6 +6,11 @@ namespace Pulsar\NfseNacional\DTOs\Dps\Servico;
 
 use Pulsar\NfseNacional\DTOs\Dps\Concerns\ValidatesExclusiveChoice;
 
+/**
+ * @phpstan-import-type EnderecoExteriorObraArray from EnderecoExteriorObra
+ *
+ * @phpstan-type EnderecoSimplesArray array{xLgr: string, nro: string, xBairro: string, CEP?: string, endExt?: EnderecoExteriorObraArray, xCpl?: string}
+ */
 final readonly class EnderecoSimples
 {
     use ValidatesExclusiveChoice;
@@ -22,6 +27,19 @@ final readonly class EnderecoSimples
             ['CEP' => $CEP, 'endExt' => $endExt],
             expected: 1,
             message: 'EnderecoSimples requer exatamente um entre CEP ou endExt.',
+        );
+    }
+
+    /** @phpstan-param EnderecoSimplesArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            xLgr: $data['xLgr'],
+            nro: $data['nro'],
+            xBairro: $data['xBairro'],
+            CEP: $data['CEP'] ?? null,
+            endExt: isset($data['endExt']) ? EnderecoExteriorObra::fromArray($data['endExt']) : null,
+            xCpl: $data['xCpl'] ?? null,
         );
     }
 }

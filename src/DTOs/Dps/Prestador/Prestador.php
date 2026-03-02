@@ -9,6 +9,12 @@ use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
 use Pulsar\NfseNacional\DTOs\Dps\Shared\RegTrib;
 use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
 
+/**
+ * @phpstan-import-type RegTribArray from RegTrib
+ * @phpstan-import-type EnderecoArray from Endereco
+ *
+ * @phpstan-type PrestadorArray array{regTrib: RegTribArray, CNPJ?: string, CPF?: string, NIF?: string, cNaoNIF?: string, CAEPF?: string, IM?: string, xNome?: string, end?: EnderecoArray, fone?: string, email?: string}
+ */
 final readonly class Prestador
 {
     use ValidatesExclusiveChoice;
@@ -30,6 +36,24 @@ final readonly class Prestador
             ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'cNaoNIF' => $cNaoNIF],
             expected: 1,
             message: 'Prestador requer exatamente um entre CNPJ, CPF, NIF ou cNaoNIF.',
+        );
+    }
+
+    /** @phpstan-param PrestadorArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            regTrib: RegTrib::fromArray($data['regTrib']),
+            CNPJ: $data['CNPJ'] ?? null,
+            CPF: $data['CPF'] ?? null,
+            NIF: $data['NIF'] ?? null,
+            cNaoNIF: isset($data['cNaoNIF']) ? CodNaoNIF::from($data['cNaoNIF']) : null,
+            CAEPF: $data['CAEPF'] ?? null,
+            IM: $data['IM'] ?? null,
+            xNome: $data['xNome'] ?? null,
+            end: isset($data['end']) ? Endereco::fromArray($data['end']) : null,
+            fone: $data['fone'] ?? null,
+            email: $data['email'] ?? null,
         );
     }
 }

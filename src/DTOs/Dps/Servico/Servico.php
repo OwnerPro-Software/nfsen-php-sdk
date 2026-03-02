@@ -6,6 +6,17 @@ namespace Pulsar\NfseNacional\DTOs\Dps\Servico;
 
 use Pulsar\NfseNacional\DTOs\Dps\Concerns\ValidatesExclusiveChoice;
 
+/**
+ * @phpstan-import-type CodigoServicoArray from CodigoServico
+ * @phpstan-import-type ComercioExteriorArray from ComercioExterior
+ * @phpstan-import-type ObraArray from Obra
+ * @phpstan-import-type LocacaoSublocacaoArray from LocacaoSublocacao
+ * @phpstan-import-type AtividadeEventoArray from AtividadeEvento
+ * @phpstan-import-type ExploracaoRodoviariaArray from ExploracaoRodoviaria
+ * @phpstan-import-type InfoComplementarArray from InfoComplementar
+ *
+ * @phpstan-type ServicoArray array{cServ: CodigoServicoArray, cLocPrestacao?: string, cPaisPrestacao?: string, comExt?: ComercioExteriorArray, obra?: ObraArray, lsadppu?: LocacaoSublocacaoArray, atvEvento?: AtividadeEventoArray, explRod?: ExploracaoRodoviariaArray, infoCompl?: InfoComplementarArray}
+ */
 final readonly class Servico
 {
     use ValidatesExclusiveChoice;
@@ -25,6 +36,22 @@ final readonly class Servico
             ['cLocPrestacao' => $cLocPrestacao, 'cPaisPrestacao' => $cPaisPrestacao],
             expected: 1,
             message: 'Serviço requer exatamente um entre cLocPrestacao ou cPaisPrestacao.',
+        );
+    }
+
+    /** @phpstan-param ServicoArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            cServ: CodigoServico::fromArray($data['cServ']),
+            cLocPrestacao: $data['cLocPrestacao'] ?? null,
+            cPaisPrestacao: $data['cPaisPrestacao'] ?? null,
+            comExt: isset($data['comExt']) ? ComercioExterior::fromArray($data['comExt']) : null,
+            obra: isset($data['obra']) ? Obra::fromArray($data['obra']) : null,
+            lsadppu: isset($data['lsadppu']) ? LocacaoSublocacao::fromArray($data['lsadppu']) : null,
+            atvEvento: isset($data['atvEvento']) ? AtividadeEvento::fromArray($data['atvEvento']) : null,
+            explRod: isset($data['explRod']) ? ExploracaoRodoviaria::fromArray($data['explRod']) : null,
+            infoCompl: isset($data['infoCompl']) ? InfoComplementar::fromArray($data['infoCompl']) : null,
         );
     }
 }

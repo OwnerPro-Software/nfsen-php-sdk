@@ -6,6 +6,9 @@ namespace Pulsar\NfseNacional\DTOs\Dps\Servico;
 
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
+/**
+ * @phpstan-type InfoComplementarArray array{idDocTec?: string, docRef?: string, xPed?: string, xItemPed?: list<string>, xInfComp?: string}
+ */
 final readonly class InfoComplementar
 {
     /** @param list<string>|null $xItemPed */
@@ -23,5 +26,11 @@ final readonly class InfoComplementar
         if ($idDocTec === null && $docRef === null && $xPed === null && $xItemPed === null && $xInfComp === null) {
             throw new InvalidDpsArgument('infoCompl deve conter ao menos um campo preenchido.');
         }
+    }
+
+    /** @phpstan-param InfoComplementarArray $data */
+    public static function fromArray(array $data): self
+    {
+        return new self(...$data);
     }
 }
