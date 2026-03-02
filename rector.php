@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddParamArrayDocblockFromDimFetchAccessRector;
+use Rector\TypeDeclarationDocblocks\Rector\Class_\ClassMethodArrayDocblockParamFromLocalCallsRector;
 use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
@@ -26,7 +27,12 @@ return RectorConfig::configure()
     )
     ->withPhpSets(php82: true)
     ->withImportNames(removeUnusedImports: true)
-    // fromArray() methods use @phpstan-param with typed array shapes — this rule would add redundant @param array<string, mixed>
     ->withSkip([
+        // fromArray() methods use @phpstan-param with typed array shapes — this rule would add redundant @param array<string, mixed>
         AddParamArrayDocblockFromDimFetchAccessRector::class,
+        // Bug no Rector 2.3.8: esta regra entra em loop infinito no NfseClient.php.
+        // Ela tenta inferir @param docblocks a partir de chamadas locais entre métodos,
+        // mas os métodos interconectados (emitir→doEmitir→sendEvento→dispatchEvent)
+        // causam re-análise cíclica infinita, travando o processo por >2 minutos.
+        ClassMethodArrayDocblockParamFromLocalCallsRector::class,
     ]);
