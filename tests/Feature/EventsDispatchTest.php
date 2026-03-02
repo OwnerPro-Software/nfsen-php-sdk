@@ -55,7 +55,7 @@ it('dispatches NfseQueried on successful consultar', function () {
     Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $client->consultar()->nfse('CHAVE123');
+    $client->consultar()->nfse(makeChaveAcesso());
 
     Event::assertDispatched(NfseQueried::class);
 });
@@ -109,10 +109,10 @@ it('dispatches NfseRejected on substituir rejection', function () {
 
 it('dispatches NfseRequested and NfseQueried on consultar danfse', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/CHAVE123'], 200)]);
+    Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/test'], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $client->consultar()->danfse('CHAVE123');
+    $client->consultar()->danfse(makeChaveAcesso());
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
     Event::assertDispatched(NfseQueried::class);
@@ -125,7 +125,7 @@ it('dispatches NfseFailed on consultar HttpException', function () {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
-        $client->consultar()->nfse('CHAVE123');
+        $client->consultar()->nfse(makeChaveAcesso());
     } catch (\Pulsar\NfseNacional\Exceptions\HttpException) {
         // expected
     }
@@ -139,7 +139,7 @@ it('dispatches NfseRejected on consultar danfse rejection', function () {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => 'E404']]], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $client->consultar()->danfse('CHAVE123');
+    $client->consultar()->danfse(makeChaveAcesso());
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
     Event::assertNotDispatched(NfseQueried::class);
@@ -150,7 +150,7 @@ it('dispatches NfseRejected on consultar eventos rejection', function () {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Eventos não encontrados', 'codigo' => 'E404']]], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $client->consultar()->eventos('CHAVE123');
+    $client->consultar()->eventos(makeChaveAcesso());
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
     Event::assertNotDispatched(NfseQueried::class);
@@ -234,7 +234,7 @@ it('dispatches NfseFailed on consultar NfseException', function () {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
-        $client->consultar()->nfse('CHAVE123');
+        $client->consultar()->nfse(makeChaveAcesso());
     } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
         // expected
     }

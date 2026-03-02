@@ -11,5 +11,8 @@ final readonly class EventosResponse
         public bool $sucesso,
         public ?string $xml = null,
         public array $erros = [],
+        public ?int $tipoAmbiente = null,
+        public ?string $versaoAplicativo = null,
+        public ?string $dataHoraProcessamento = null,
     ) {}
 }

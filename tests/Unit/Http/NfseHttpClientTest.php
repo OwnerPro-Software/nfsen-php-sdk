@@ -115,6 +115,49 @@ it('throws NfseException and closes second handle when first tmpfile fails', fun
         ->toThrow(NfseException::class, 'arquivos temporários');
 });
 
+it('head returns 200 status code', function () {
+    Http::fake(['*' => Http::response('', 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $status = $client->head('https://example.com/dps/DPS123');
+
+    expect($status)->toBe(200);
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://example.com/dps/DPS123' &&
+        $req->method() === 'HEAD'
+    );
+});
+
+it('head returns 404 status code', function () {
+    Http::fake(['*' => Http::response('', 404)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $status = $client->head('https://example.com/dps/NONEXISTENT');
+
+    expect($status)->toBe(404);
+});
+
+it('head throws HttpException on 5xx', function () {
+    Http::fake(['*' => Http::response('Server Error', 500)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->head('https://example.com/dps/DPS123'))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+});
+
+it('head throws NfseException when tmpfile fails', function () {
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturn(false);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    expect(fn () => $client->head('https://example.com/dps/DPS123'))
+        ->toThrow(NfseException::class, 'arquivos temporários');
+});
+
 it('throws NfseException when fwrite fails on read-only handle', function () {
     $factory = Mockery::mock(TempFileFactory::class);
     $factory->shouldReceive('__invoke')->andReturnUsing(fn () => fopen('php://memory', 'r'));

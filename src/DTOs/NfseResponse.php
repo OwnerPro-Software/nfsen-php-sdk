@@ -17,5 +17,8 @@ final readonly class NfseResponse
         public ?string $idDps = null,
         public array $alertas = [],
         public array $erros = [],
+        public ?int $tipoAmbiente = null,
+        public ?string $versaoAplicativo = null,
+        public ?string $dataHoraProcessamento = null,
     ) {}
 }

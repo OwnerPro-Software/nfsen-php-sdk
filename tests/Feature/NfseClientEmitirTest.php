@@ -26,6 +26,9 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
     expect($response->xml)->toContain('<NFSe');
     expect($response->idDps)->toBe('DPS001');
     expect($response->alertas)->not->toBeEmpty();
+    expect($response->tipoAmbiente)->toBe(2);
+    expect($response->versaoAplicativo)->toBe('1.0.0');
+    expect($response->dataHoraProcessamento)->toBe('2026-03-02T12:00:00-03:00');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
         $req->method() === 'POST' &&
@@ -34,17 +37,18 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
 })->with('dpsData');
 
 it('consultar()->nfse returns success NfseResponse', function () {
+    $chave = makeChaveAcesso();
     $xmlB64 = base64_encode(gzencode('<NFSe/>'));
-    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64, 'chaveAcesso' => 'CHAVE123'], 200)]);
+    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64, 'chaveAcesso' => $chave], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->consultar()->nfse('CHAVE123');
+    $response = $client->consultar()->nfse($chave);
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe('CHAVE123');
+    expect($response->chave)->toBe($chave);
     expect($response->xml)->toContain('<NFSe');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/CHAVE123' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/'.$chave &&
         $req->method() === 'GET'
     );
 });
@@ -53,13 +57,13 @@ it('consultar()->dps returns success NfseResponse with chaveAcesso', function ()
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DPS_OK', 'idDps' => 'DPS001'], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->consultar()->dps('CHAVE123');
+    $response = $client->consultar()->dps('DPS123');
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('CHAVE_DPS_OK');
     expect($response->xml)->toBeNull();
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/dps/CHAVE123' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/dps/DPS123' &&
         $req->method() === 'GET'
     );
 });
@@ -68,7 +72,7 @@ it('consultar()->dps returns null chave when response has no chaveAcesso', funct
     Http::fake(['*' => Http::response(['idDps' => 'DPS001'], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->consultar()->dps('CHAVE123');
+    $response = $client->consultar()->dps('DPS123');
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBeNull();
@@ -102,6 +106,10 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
     expect($response->erros)->toBeArray();
     expect($response->erros[0])->toBeInstanceOf(\Pulsar\NfseNacional\DTOs\MensagemProcessamento::class);
     expect($response->erros[0]->descricao)->toContain('CNPJ');
+    expect($response->idDps)->toBe('DPS_ERR_001');
+    expect($response->tipoAmbiente)->toBe(2);
+    expect($response->versaoAplicativo)->toBe('1.0.0');
+    expect($response->dataHoraProcessamento)->toBe('2026-03-02T12:00:00-03:00');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
         isset($req['dpsXmlGZipB64'])

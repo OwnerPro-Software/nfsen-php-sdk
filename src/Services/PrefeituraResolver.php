@@ -29,10 +29,12 @@ final class PrefeituraResolver
 
     private const DEFAULT_OPERATIONS = [
         'consultar_nfse' => 'nfse/{chave}',
-        'consultar_dps' => 'dps/{chave}',
+        'consultar_dps' => 'dps/{id}',
+        'verificar_dps' => 'dps/{id}',
         'consultar_eventos' => 'nfse/{chave}/eventos/{tipoEvento}/{nSequencial}',
         'consultar_danfse' => 'danfse/{chave}',
         'emitir_nfse' => 'nfse',
+        'emitir_decisao_judicial' => 'decisao-judicial/nfse',
         'cancelar_nfse' => 'nfse/{chave}/eventos',
         'substituir_nfse' => 'nfse/{chave}/eventos',
     ];

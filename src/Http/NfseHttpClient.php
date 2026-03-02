@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Http;
 
+use Closure;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Exceptions\HttpException;
@@ -35,11 +36,64 @@ final readonly class NfseHttpClient
         return $this->request('get', $url, []);
     }
 
+    public function head(string $url): int
+    {
+        return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): int {
+            $response = Http::connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
+                ->withOptions([
+                    'verify' => $this->sslVerify,
+                    'cert' => $certPath,
+                    'ssl_key' => $keyPath,
+                ])
+                ->head($url);
+
+            if ($response->serverError()) {
+                throw HttpException::fromResponse($response->status(), $response->body());
+            }
+
+            return $response->status();
+        });
+    }
+
     /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
     private function request(string $method, string $url, array $payload): array
+    {
+        return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($method, $url, $payload): array {
+            $pending = Http::connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
+                ->acceptJson()
+                ->withOptions([
+                    'verify' => $this->sslVerify,
+                    'cert' => $certPath,
+                    'ssl_key' => $keyPath,
+                ]);
+
+            $response = $method === 'post'
+                ? $pending->post($url, $payload)
+                : $pending->get($url);
+
+            if ($response->serverError()) {
+                throw HttpException::fromResponse($response->status(), $response->body());
+            }
+
+            /** @var array<string, mixed> $json */
+            $json = (array) ($response->json() ?? []);
+
+            return $json;
+        });
+    }
+
+    /**
+     * @template T
+     *
+     * @param  Closure(string, string): T  $callback
+     * @return T
+     */
+    private function withCertificateFiles(Closure $callback): mixed
     {
         $certHandle = ($this->tempFileFactory)();
         $keyHandle = ($this->tempFileFactory)();
@@ -72,27 +126,7 @@ final readonly class NfseHttpClient
             chmod($certPath, 0600);
             chmod($keyPath, 0600);
 
-            $pending = Http::connectTimeout($this->connectTimeout)
-                ->timeout($this->timeout)
-                ->acceptJson()
-                ->withOptions([
-                    'verify' => $this->sslVerify,
-                    'cert' => $certPath,
-                    'ssl_key' => $keyPath,
-                ]);
-
-            $response = $method === 'post'
-                ? $pending->post($url, $payload)
-                : $pending->get($url);
-
-            if ($response->serverError()) {
-                throw HttpException::fromResponse($response->status(), $response->body());
-            }
-
-            /** @var array<string, mixed> $json */
-            $json = (array) ($response->json() ?? []);
-
-            return $json;
+            return $callback($certPath, $keyPath);
         } finally {
             fclose($certHandle);
             fclose($keyHandle);

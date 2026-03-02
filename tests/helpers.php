@@ -93,6 +93,11 @@ function makeServicoMinimo(?string $cLocPrestacao = null): Servico
     );
 }
 
+function makeChaveAcesso(): string
+{
+    return '12345678901234567890123456789012345678901234567890';
+}
+
 function makeValoresMinimo(?string $vServ = null): Valores
 {
     return new Valores(

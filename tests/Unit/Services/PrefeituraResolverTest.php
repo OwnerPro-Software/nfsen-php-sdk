@@ -40,6 +40,22 @@ it('resolves operation path with substitution', function () use ($jsonPath) {
     expect($path)->toBe('nfse/ABC123');
 });
 
+it('resolves emitir_decisao_judicial operation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    $path = $resolver->resolveOperation('9999999', 'emitir_decisao_judicial');
+
+    expect($path)->toBe('decisao-judicial/nfse');
+});
+
+it('resolves verificar_dps operation with id substitution', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    $path = $resolver->resolveOperation('9999999', 'verificar_dps', ['id' => 'DPS123']);
+
+    expect($path)->toBe('dps/DPS123');
+});
+
 it('resolves custom operation for known prefeitura', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 

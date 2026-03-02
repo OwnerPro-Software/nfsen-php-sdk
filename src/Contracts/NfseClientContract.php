@@ -10,6 +10,8 @@ interface NfseClientContract
 {
     public function executeGet(string $url): NfseResponse;
 
+    public function executeHead(string $url): int;
+
     /**
      * Retorna JSON cru da API.
      *
@@ -20,6 +22,9 @@ interface NfseClientContract
      *     idDps?: string,
      *     danfseUrl?: string,
      *     eventoXmlGZipB64?: string,
+     *     tipoAmbiente?: int,
+     *     versaoAplicativo?: string,
+     *     dataHoraProcessamento?: string,
      * }
      */
     public function executeGetRaw(string $url): array;

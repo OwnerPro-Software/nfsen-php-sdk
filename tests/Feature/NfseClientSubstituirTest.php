@@ -119,6 +119,14 @@ it('substituir uses Americana custom URL without operation path', function () {
     );
 });
 
+it('substituir throws InvalidArgumentException for invalid chaveAcesso', function () {
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+
+    expect(fn () => $client->substituir('INVALID_CHAVE', $chaveSub, CodigoJustificativaSubstituicao::Outros, 'Outro motivo'))
+        ->toThrow(\InvalidArgumentException::class, 'chaveAcesso inválida');
+});
+
 it('substituir throws NfseException when gzip compression fails', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 

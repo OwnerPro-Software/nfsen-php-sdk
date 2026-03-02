@@ -22,6 +22,7 @@ use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Events\NfseSubstituted;
+use InvalidArgumentException;
 use Pulsar\NfseNacional\Exceptions\HttpException;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
@@ -137,8 +138,27 @@ final class NfseClient implements NfseClientContract
         }
     }
 
+    private function validateChaveAcesso(string $chave): void
+    {
+        if (! preg_match('/^\d{50}$/', $chave)) {
+            throw new InvalidArgumentException(sprintf("chaveAcesso inválida: '%s'. Esperado: exatamente 50 dígitos numéricos.", $chave));
+        }
+    }
+
     /** @phpstan-param DpsData|DpsDataArray $data */
     public function emitir(DpsData|array $data): NfseResponse
+    {
+        return $this->doEmitir($data, 'emitir', 'emitir_nfse', 'dpsXmlGZipB64');
+    }
+
+    /** @phpstan-param DpsData|DpsDataArray $data */
+    public function emitirDecisaoJudicial(DpsData|array $data): NfseResponse
+    {
+        return $this->doEmitir($data, 'emitir_decisao_judicial', 'emitir_decisao_judicial', 'xmlGZipB64');
+    }
+
+    /** @phpstan-param DpsData|DpsDataArray $data */
+    private function doEmitir(DpsData|array $data, string $operacao, string $operationKey, string $payloadKey): NfseResponse
     {
         $this->ensureConfigured();
 
@@ -150,7 +170,6 @@ final class NfseClient implements NfseClientContract
         $certificate = $this->certManager->getCertificate();
         $httpClient = $this->httpClient;
 
-        $operacao = 'emitir';
         $this->dispatchEvent(new NfseRequested($operacao, []));
 
         try {
@@ -162,13 +181,26 @@ final class NfseClient implements NfseClientContract
                 throw new NfseException('Falha ao comprimir XML.');
             }
 
-            $payload = ['dpsXmlGZipB64' => base64_encode($compressed)];
+            $payload = [$payloadKey => base64_encode($compressed)];
 
             $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
-            $opPath = $this->prefeituraResolver->resolveOperation($prefeitura, 'emitir_nfse');
+            $opPath = $this->prefeituraResolver->resolveOperation($prefeitura, $operationKey);
             $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
-            /** @var array{erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>, erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}, chaveAcesso?: string, nfseXmlGZipB64?: string, idDps?: string, alertas?: list<array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}>} $result */
+            /**
+             * @var array{
+             *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
+             *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+             *     chaveAcesso?: string,
+             *     nfseXmlGZipB64?: string,
+             *     idDps?: string,
+             *     idDPS?: string,
+             *     alertas?: list<array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}>,
+             *     tipoAmbiente?: int,
+             *     versaoAplicativo?: string,
+             *     dataHoraProcessamento?: string,
+             * } $result
+             */
             $result = $httpClient->post($url, $payload);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
@@ -176,7 +208,14 @@ final class NfseClient implements NfseClientContract
                 $codigo = $erros[0]->codigo ?? 'UNKNOWN';
                 $this->dispatchEvent(new NfseRejected($operacao, $codigo));
 
-                return new NfseResponse(sucesso: false, erros: $erros);
+                return new NfseResponse(
+                    sucesso: false,
+                    erros: $erros,
+                    idDps: $result['idDPS'] ?? $result['idDps'] ?? null,
+                    tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                    versaoAplicativo: $result['versaoAplicativo'] ?? null,
+                    dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+                );
             }
 
             $chave = $result['chaveAcesso'] ?? null;
@@ -198,6 +237,9 @@ final class NfseClient implements NfseClientContract
                 xml: GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null),
                 idDps: $result['idDps'] ?? null,
                 alertas: MensagemProcessamento::fromArrayList($result['alertas'] ?? []),
+                tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                versaoAplicativo: $result['versaoAplicativo'] ?? null,
+                dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
             );
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
@@ -210,6 +252,7 @@ final class NfseClient implements NfseClientContract
 
     public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1): NfseResponse
     {
+        $this->validateChaveAcesso($chave);
         $this->ensureConfigured();
 
         if (is_string($codigoMotivo)) {
@@ -255,6 +298,7 @@ final class NfseClient implements NfseClientContract
 
     public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1): NfseResponse
     {
+        $this->validateChaveAcesso($chave);
         $this->ensureConfigured();
 
         if (is_string($codigoMotivo)) {
@@ -316,7 +360,16 @@ final class NfseClient implements NfseClientContract
         );
         $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
-        /** @var array{erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>, erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}, eventoXmlGZipB64?: string} $result */
+        /**
+         * @var array{
+         *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
+         *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+         *     eventoXmlGZipB64?: string,
+         *     tipoAmbiente?: int,
+         *     versaoAplicativo?: string,
+         *     dataHoraProcessamento?: string,
+         * } $result
+         */
         $result = $httpClient->post($url, $payload);
 
         if (! empty($result['erros']) || isset($result['erro'])) {
@@ -324,7 +377,13 @@ final class NfseClient implements NfseClientContract
             $codigo = $erros[0]->codigo ?? 'UNKNOWN';
             $this->dispatchEvent(new NfseRejected($operacao, $codigo));
 
-            return new NfseResponse(sucesso: false, erros: $erros);
+            return new NfseResponse(
+                sucesso: false,
+                erros: $erros,
+                tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                versaoAplicativo: $result['versaoAplicativo'] ?? null,
+                dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+            );
         }
 
         $this->dispatchEvent($successEvent);
@@ -333,6 +392,9 @@ final class NfseClient implements NfseClientContract
             sucesso: true,
             chave: $chave,
             xml: GzipCompressor::decompressB64($result['eventoXmlGZipB64'] ?? null),
+            tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+            versaoAplicativo: $result['versaoAplicativo'] ?? null,
+            dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
         );
     }
 
@@ -357,14 +419,30 @@ final class NfseClient implements NfseClientContract
         $this->dispatchEvent(new NfseRequested($operacao));
 
         try {
-            /** @var array{erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>, erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}, nfseXmlGZipB64?: string, chaveAcesso?: string} $result */
+            /**
+             * @var array{
+             *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
+             *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+             *     nfseXmlGZipB64?: string,
+             *     chaveAcesso?: string,
+             *     tipoAmbiente?: int,
+             *     versaoAplicativo?: string,
+             *     dataHoraProcessamento?: string,
+             * } $result
+             */
             $result = $httpClient->get($url);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
                 $erros = MensagemProcessamento::fromApiResult($result);
                 $this->dispatchEvent(new NfseRejected($operacao, $erros[0]->codigo ?? 'UNKNOWN'));
 
-                return new NfseResponse(sucesso: false, erros: $erros);
+                return new NfseResponse(
+                    sucesso: false,
+                    erros: $erros,
+                    tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                    versaoAplicativo: $result['versaoAplicativo'] ?? null,
+                    dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+                );
             }
 
             $this->dispatchEvent(new NfseQueried('consultar'));
@@ -373,6 +451,9 @@ final class NfseClient implements NfseClientContract
                 sucesso: true,
                 chave: $result['chaveAcesso'] ?? null,
                 xml: GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null),
+                tipoAmbiente: isset($result['tipoAmbiente']) ? (int) $result['tipoAmbiente'] : null,
+                versaoAplicativo: $result['versaoAplicativo'] ?? null,
+                dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
             );
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
@@ -391,6 +472,9 @@ final class NfseClient implements NfseClientContract
      *     idDps?: string,
      *     danfseUrl?: string,
      *     eventoXmlGZipB64?: string,
+     *     tipoAmbiente?: int,
+     *     versaoAplicativo?: string,
+     *     dataHoraProcessamento?: string,
      * }
      */
     public function executeGetRaw(string $url): array
@@ -402,7 +486,19 @@ final class NfseClient implements NfseClientContract
         $this->dispatchEvent(new NfseRequested($operacao));
 
         try {
-            /** @var array{erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>, erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}, chaveAcesso?: string, idDps?: string, danfseUrl?: string, eventoXmlGZipB64?: string} $result */
+            /**
+             * @var array{
+             *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
+             *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+             *     chaveAcesso?: string,
+             *     idDps?: string,
+             *     danfseUrl?: string,
+             *     eventoXmlGZipB64?: string,
+             *     tipoAmbiente?: int,
+             *     versaoAplicativo?: string,
+             *     dataHoraProcessamento?: string,
+             * } $result
+             */
             $result = $httpClient->get($url);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
@@ -412,6 +508,29 @@ final class NfseClient implements NfseClientContract
             }
 
             return $result;
+        } catch (HttpException $httpException) {
+            $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
+            throw $httpException;
+        } catch (Throwable $e) {
+            $this->dispatchEvent(new NfseFailed($operacao, $e->getMessage()));
+            throw $e;
+        }
+    }
+
+    public function executeHead(string $url): int
+    {
+        $this->ensureConfigured();
+        $httpClient = $this->httpClient;
+
+        $operacao = 'consultar';
+        $this->dispatchEvent(new NfseRequested($operacao));
+
+        try {
+            $status = $httpClient->head($url);
+
+            $this->dispatchEvent(new NfseQueried($operacao));
+
+            return $status;
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;

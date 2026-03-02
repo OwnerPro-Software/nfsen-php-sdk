@@ -38,5 +38,23 @@ it('defaults all optional fields', function () {
 
     expect($response)
         ->xml->toBeNull()
-        ->erros->toBeEmpty();
+        ->erros->toBeEmpty()
+        ->tipoAmbiente->toBeNull()
+        ->versaoAplicativo->toBeNull()
+        ->dataHoraProcessamento->toBeNull();
+});
+
+it('carries metadata fields', function () {
+    $response = new EventosResponse(
+        sucesso: true,
+        xml: '<Evento/>',
+        tipoAmbiente: 2,
+        versaoAplicativo: '1.0.0',
+        dataHoraProcessamento: '2026-03-02T12:00:00-03:00',
+    );
+
+    expect($response)
+        ->tipoAmbiente->toBe(2)
+        ->versaoAplicativo->toBe('1.0.0')
+        ->dataHoraProcessamento->toBe('2026-03-02T12:00:00-03:00');
 });

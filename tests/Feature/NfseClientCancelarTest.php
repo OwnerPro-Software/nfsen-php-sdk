@@ -29,6 +29,9 @@ it('cancelar returns success NfseResponse', function () {
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('12345678901234567890123456789012345678901234567890');
     expect($response->xml)->not->toBeNull();
+    expect($response->tipoAmbiente)->toBe(2);
+    expect($response->versaoAplicativo)->toBe('1.0.0');
+    expect($response->dataHoraProcessamento)->toBe('2026-03-02T12:00:00-03:00');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         $req->method() === 'POST' &&
@@ -188,6 +191,16 @@ it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', functio
     Http::assertSent(fn (Request $req) => $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
         isset($req['pedidoRegistroEventoXmlGZipB64'])
     );
+});
+
+it('cancelar throws InvalidArgumentException for invalid chaveAcesso', function () {
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->cancelar(
+        'INVALID_CHAVE',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
+    ))->toThrow(\InvalidArgumentException::class, 'chaveAcesso inválida');
 });
 
 it('cancelar throws NfseException when gzip compression fails', function () {
