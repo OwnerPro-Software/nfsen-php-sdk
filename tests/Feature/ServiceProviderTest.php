@@ -35,7 +35,7 @@ it('configures client when cert path, senha and prefeitura are set', function ()
 });
 
 it('facade emitir works directly when config is set', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_FACADE'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_FACADE'], 200)]);
 
     config([
         'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
@@ -50,7 +50,7 @@ it('facade emitir works directly when config is set', function (DpsData $data) {
 })->with('dpsData');
 
 it('facade for() returns configured NfseClient without double resolution', function () {
-    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_FOR'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_FOR'], 200)]);
 
     $client = NfseNacional::for(makePfxContent(), 'secret', '9999999');
 

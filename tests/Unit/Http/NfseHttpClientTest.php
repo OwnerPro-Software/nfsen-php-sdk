@@ -39,13 +39,15 @@ it('throws HttpException on 5xx response with body in message', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'Server Error');
 });
 
-it('throws HttpException on 4xx response with body in message', function () {
-    Http::fake(['*' => Http::response(['message' => 'Unauthorized'], 401)]);
+it('returns parsed JSON on 4xx response instead of throwing', function () {
+    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Unauthorized', 'codigo' => 'E401']], 401)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
-    expect(fn () => $client->post('https://example.com/nfse', []))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'Unauthorized');
+    $result = $client->post('https://example.com/nfse', []);
+
+    expect($result)->toHaveKey('erro');
+    expect($result['erro']['descricao'])->toBe('Unauthorized');
 });
 
 it('passes mTLS options and payload to HTTP client', function () {

@@ -15,7 +15,8 @@ interface NfseClientContract
      *
      * @return array{
      *     erros?: list<array{descricao?: string, codigo?: string}>,
-     *     erro?: string,
+     *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+     *     chaveAcesso?: string,
      *     danfseUrl?: string,
      *     eventos?: array<int, array<string, mixed>>,
      * }

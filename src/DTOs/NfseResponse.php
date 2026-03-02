@@ -11,6 +11,5 @@ final readonly class NfseResponse
         public ?string $chave,
         public ?string $xml,
         public ?string $erro,
-        public ?string $protocolo = null,
     ) {}
 }

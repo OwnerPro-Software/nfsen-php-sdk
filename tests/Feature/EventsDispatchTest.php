@@ -16,7 +16,7 @@ use Pulsar\NfseNacional\NfseClient;
 
 it('dispatches NfseRequested and NfseEmitted on successful emitir', function (DpsData $data) {
     Event::fake();
-    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE123'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123'], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitir($data);
@@ -27,7 +27,7 @@ it('dispatches NfseRequested and NfseEmitted on successful emitir', function (Dp
 
 it('dispatches NfseCancelled on successful cancelar', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE123'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
     $client = NfseClient::for($pfx, 'secret', '9999999');
@@ -38,7 +38,7 @@ it('dispatches NfseCancelled on successful cancelar', function () {
 
 it('dispatches NfseSubstituted on successful substituir', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_OK'], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => 'compressed'], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -60,7 +60,7 @@ it('dispatches NfseQueried on successful consultar', function () {
     Event::assertDispatched(NfseQueried::class);
 });
 
-it('dispatches NfseRejected on emitir when response has no chNFSe', function (DpsData $data) {
+it('dispatches NfseRejected on emitir when response has no chaveAcesso', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response(['status' => 'ok'], 200)]);
 
@@ -158,18 +158,18 @@ it('dispatches NfseRejected on consultar eventos rejection', function () {
 
 it('dispatches NfseRejected on executeGetRaw with singular erro field', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['erro' => 'Erro genérico'], 200)]);
+    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Erro genérico', 'codigo' => 'E999']], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->executeGetRaw('https://fake.url/test');
 
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'UNKNOWN');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E999');
     Event::assertNotDispatched(NfseQueried::class);
 });
 
 it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
     Event::fake();
-    Http::fake(['*' => Http::response(['chNFSe' => 'X'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 200)]);
 
     $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
@@ -199,7 +199,7 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
 
 it('dispatches NfseFailed on cancelar NfseException', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['chNFSe' => 'X'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 200)]);
 
     $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);

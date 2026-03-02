@@ -41,13 +41,37 @@ it('calls executeGet with nfse url for nfse query', function () {
     expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/CHAVE123');
 });
 
-it('calls executeGet with dps url', function () {
+it('calls executeGetRaw with dps url', function () {
     $fakeClient = new FakeNfseClientForConsulta;
     $builder = makeConsultaBuilder($fakeClient);
 
     $builder->dps('CHAVE456');
 
     expect($fakeClient->calls[0])->toBe('https://sefin.base/dps/CHAVE456');
+});
+
+it('dps returns failure when erros key present', function () {
+    $fakeClient = new class implements NfseClientContract
+    {
+        public function executeGet(string $url): NfseResponse
+        {
+            return new NfseResponse(true, null, null, null);
+        }
+
+        /** @return array{erros: list<array{descricao: string}>} */
+        public function executeGetRaw(string $url): array
+        {
+            return ['erros' => [['descricao' => 'DPS não encontrada']]];
+        }
+    };
+
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new ConsultaBuilder($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+
+    $response = $builder->dps('CHAVE123');
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erro)->toBe('DPS não encontrada');
 });
 
 it('danfse returns failure when erros key present', function () {
@@ -106,10 +130,10 @@ it('eventos returns failure when erro key present', function () {
             return new NfseResponse(true, null, null, null);
         }
 
-        /** @return array{erro: string} */
+        /** @return array{erro: array{descricao: string}} */
         public function executeGetRaw(string $url): array
         {
-            return ['erro' => 'Evento não encontrado'];
+            return ['erro' => ['descricao' => 'Evento não encontrado']];
         }
     };
 

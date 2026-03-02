@@ -30,8 +30,15 @@ final readonly class ConsultaBuilder
     public function dps(string $chave): NfseResponse
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_dps', ['chave' => $chave]);
+        $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
-        return $this->client->executeGet($this->buildUrl($this->seFinBaseUrl, $path));
+        if (! empty($result['erros']) || isset($result['erro'])) {
+            $erro = $result['erros'][0]['descricao'] ?? $result['erro']['descricao'] ?? 'Erro';
+
+            return new NfseResponse(false, null, null, $erro);
+        }
+
+        return new NfseResponse(true, $result['chaveAcesso'] ?? null, null, null);
     }
 
     public function danfse(string $chave): DanfseResponse
@@ -42,7 +49,7 @@ final readonly class ConsultaBuilder
         $result = $this->client->executeGetRaw($this->buildUrl($baseUrl, $path));
 
         if (! empty($result['erros']) || isset($result['erro'])) {
-            $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
+            $erro = $result['erros'][0]['descricao'] ?? $result['erro']['descricao'] ?? 'Erro';
 
             return new DanfseResponse(false, null, $erro);
         }
@@ -61,7 +68,7 @@ final readonly class ConsultaBuilder
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
         if (! empty($result['erros']) || isset($result['erro'])) {
-            $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
+            $erro = $result['erros'][0]['descricao'] ?? $result['erro']['descricao'] ?? 'Erro';
 
             return new EventosResponse(false, [], $erro);
         }

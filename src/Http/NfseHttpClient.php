@@ -80,7 +80,7 @@ final readonly class NfseHttpClient
                 ? $pending->post($url, $payload)
                 : $pending->get($url);
 
-            if ($response->serverError() || $response->clientError()) {
+            if ($response->serverError()) {
                 $body = substr($response->body(), 0, 500);
                 $message = 'HTTP error: '.$response->status();
 
