@@ -4,3 +4,6 @@ vendor/
 exemples/certs/
 exemples/local/
 todo.txt
+*.pfx
+*.p12
+*.pem

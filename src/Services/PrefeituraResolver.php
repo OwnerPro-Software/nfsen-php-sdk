@@ -96,7 +96,7 @@ final class PrefeituraResolver
             ?? throw new InvalidArgumentException(sprintf("Operação desconhecida: '%s'.", $operacao));
 
         foreach ($params as $key => $value) {
-            $template = str_replace('{'.$key.'}', (string) $value, $template);
+            $template = str_replace('{'.$key.'}', rawurlencode((string) $value), $template);
         }
 
         if (preg_match('/\{(\w+)\}/', $template, $matches)) {

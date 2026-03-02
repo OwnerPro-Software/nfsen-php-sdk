@@ -240,6 +240,20 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
     );
 })->with('dpsData');
 
+it('configure enforces sslVerify true when ambiente is PRODUCAO even if config says false', function () {
+    $client = NfseClient::forStandalone(
+        makePfxContent(), 'secret', '9999999',
+        ambiente: NfseAmbiente::PRODUCAO,
+        sslVerify: false,
+    );
+
+    $httpClientProp = new ReflectionProperty($client, 'httpClient');
+    $httpClient = $httpClientProp->getValue($client);
+
+    $sslVerifyProp = new ReflectionProperty($httpClient, 'sslVerify');
+    expect($sslVerifyProp->getValue($httpClient))->toBeTrue();
+});
+
 it('emitir accepts array and coerces to DpsData', function () {
     Http::fake(['*' => Http::response(['chNFSe' => 'CHAVE_ARRAY'], 200)]);
 

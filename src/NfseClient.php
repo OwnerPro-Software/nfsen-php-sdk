@@ -100,7 +100,8 @@ final class NfseClient implements NfseClientContract
         $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
         $this->certManager = new CertificateManager($pfxContent, $senha);
         $this->prefeitura = $prefeitura;
-        $this->httpClient = new NfseHttpClient($this->certManager->getCertificate(), $this->timeout, $this->sslVerify);
+        $effectiveSslVerify = $this->ambiente === NfseAmbiente::PRODUCAO || $this->sslVerify;
+        $this->httpClient = new NfseHttpClient($this->certManager->getCertificate(), $this->timeout, $effectiveSslVerify);
 
         return $this;
     }

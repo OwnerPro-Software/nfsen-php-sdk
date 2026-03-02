@@ -81,6 +81,14 @@ it('throws InvalidArgumentException for non-7-digit ibge code', function () use 
         ->toThrow(\InvalidArgumentException::class, 'IBGE');
 });
 
+it('url-encodes special characters in template parameter values', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    $path = $resolver->resolveOperation('9999999', 'consultar_nfse', ['chave' => 'ABC/../../admin']);
+
+    expect($path)->toBe('nfse/ABC%2F..%2F..%2Fadmin');
+});
+
 it('throws InvalidArgumentException for missing template parameter', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
