@@ -102,7 +102,8 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
             $result = $this->httpClient->get($url);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
-                $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? $result['erro']['codigo'] ?? 'UNKNOWN'));
+                $erros = MensagemProcessamento::fromApiResult($result);
+                $this->dispatchEvent(new NfseRejected($operacao, $erros[0]->codigo ?? 'UNKNOWN'));
             } else {
                 $this->dispatchEvent(new NfseQueried($operacao));
             }
