@@ -35,7 +35,7 @@ final class NfseNacionalServiceProvider extends ServiceProvider
             $certSenha = (string) $config['certificado']['senha'];
             $prefeitura = (string) $config['prefeitura'];
 
-            if (! $certPath || ! $certSenha || ! $prefeitura || ! file_exists($certPath)) {
+            if (! $certPath || ! $certSenha || ! $prefeitura || ! is_file($certPath)) {
                 throw new NfseException(
                     'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
                 );

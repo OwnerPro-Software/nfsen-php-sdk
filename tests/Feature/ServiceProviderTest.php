@@ -70,15 +70,21 @@ it('facade for() returns configured NfseClient without double resolution', funct
     expect($client)->toBeInstanceOf(NfseClient::class);
 });
 
-it('throws RuntimeException when cert file exists but cannot be read', function () {
-    config([
-        'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs',
-        'nfse-nacional.certificado.senha' => 'secret',
-        'nfse-nacional.prefeitura' => '3501608',
-    ]);
+it('throws RuntimeException when cert file is empty', function () {
+    $emptyFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
 
-    expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
-        ->toThrow(\RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
+    try {
+        config([
+            'nfse-nacional.certificado.path' => $emptyFile,
+            'nfse-nacional.certificado.senha' => 'secret',
+            'nfse-nacional.prefeitura' => '3501608',
+        ]);
+
+        expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
+            ->toThrow(\RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
+    } finally {
+        unlink($emptyFile);
+    }
 });
 
 it('throws NfseException when cert config is incomplete', function () {
