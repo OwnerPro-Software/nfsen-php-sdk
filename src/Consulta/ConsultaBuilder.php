@@ -11,7 +11,7 @@ use Pulsar\NfseNacional\DTOs\EventosResponse;
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class ConsultaBuilder
@@ -20,7 +20,7 @@ final readonly class ConsultaBuilder
         private ExecutesNfseRequests $client,
         private string $seFinBaseUrl,
         private string $adnBaseUrl,
-        private PrefeituraResolver $resolver,
+        private ResolvesPrefeituras $resolver,
         private string $codigoIbge,
     ) {}
 

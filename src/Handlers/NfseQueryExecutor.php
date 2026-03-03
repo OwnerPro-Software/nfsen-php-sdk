@@ -11,7 +11,7 @@ use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Handlers\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Http\NfseHttpClient;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseQueryExecutor implements ExecutesNfseRequests
@@ -19,7 +19,7 @@ final readonly class NfseQueryExecutor implements ExecutesNfseRequests
     use DispatchesEvents;
 
     public function __construct(
-        private NfseHttpClient $httpClient,
+        private SendsHttpRequests $httpClient,
     ) {}
 
     public function executeGet(string $url): NfseResponse

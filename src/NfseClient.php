@@ -21,6 +21,7 @@ use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
 use Pulsar\NfseNacional\Handlers\NfseRequestPipeline;
 use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 use Pulsar\NfseNacional\Signing\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
@@ -39,7 +40,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         private NfseCanceller $canceller,
         private NfseSubstitutor $substitutor,
         private NfseQueryExecutor $queryExecutor,
-        private PrefeituraResolver $prefeituraResolver,
+        private ResolvesPrefeituras $prefeituraResolver,
         private NfseAmbiente $ambiente,
         private string $prefeitura,
     ) {}
