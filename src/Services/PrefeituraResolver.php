@@ -48,17 +48,17 @@ final class PrefeituraResolver
     ) {
         if (! isset(self::$cache[$jsonPath])) {
             if (! file_exists($jsonPath)) {
-                throw new InvalidArgumentException(sprintf("Arquivo de prefeituras não encontrado: '%s'.", $jsonPath));
+                throw new InvalidArgumentException('Arquivo de prefeituras não encontrado.');
             }
 
             $contents = ($this->fileReader)($jsonPath);
             if ($contents === false) {
-                throw new InvalidArgumentException(sprintf("Falha ao ler arquivo de prefeituras: '%s'.", $jsonPath));
+                throw new InvalidArgumentException('Falha ao ler arquivo de prefeituras.');
             }
 
             $decoded = json_decode($contents, true);
             if (! is_array($decoded)) {
-                throw new InvalidArgumentException(sprintf("JSON inválido no arquivo de prefeituras: '%s'. Erro: %s.", $jsonPath, json_last_error_msg()));
+                throw new InvalidArgumentException(sprintf('JSON inválido no arquivo de prefeituras. Erro: %s.', json_last_error_msg()));
             }
 
             /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> $decoded */

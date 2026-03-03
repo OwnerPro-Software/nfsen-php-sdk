@@ -18,7 +18,7 @@ final readonly class XsdValidator
     {
         $xsdPath = $this->schemesPath.'/'.$xsdFilename;
         if (! file_exists($xsdPath)) {
-            throw new NfseException('Schema XSD não encontrado: '.$xsdPath);
+            throw new NfseException(sprintf("Schema XSD não encontrado: '%s'.", $xsdFilename));
         }
 
         $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>'.$xmlFragment;
