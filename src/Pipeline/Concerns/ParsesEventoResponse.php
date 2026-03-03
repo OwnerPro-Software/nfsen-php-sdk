@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Handlers\Concerns;
+namespace Pulsar\NfseNacional\Pipeline\Concerns;
 
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 use Pulsar\NfseNacional\DTOs\NfseResponse;

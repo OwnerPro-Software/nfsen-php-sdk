@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Handlers;
+namespace Pulsar\NfseNacional\Pipeline;
 
 use Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity;
 use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;

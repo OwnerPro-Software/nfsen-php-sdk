@@ -18,6 +18,12 @@ arch('handlers do not depend on infrastructure adapters')
         'Pulsar\NfseNacional\Adapters',
     ]);
 
+arch('pipeline does not depend on infrastructure adapters')
+    ->expect('Pulsar\NfseNacional\Pipeline')
+    ->not->toUse([
+        'Pulsar\NfseNacional\Adapters',
+    ]);
+
 arch('consulta does not depend on infrastructure adapters')
     ->expect('Pulsar\NfseNacional\Consulta')
     ->not->toUse([

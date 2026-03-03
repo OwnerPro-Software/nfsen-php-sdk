@@ -10,9 +10,10 @@ use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Events\NfseCancelled;
 use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Handlers\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Handlers\Concerns\ParsesEventoResponse;
-use Pulsar\NfseNacional\Handlers\Concerns\ValidatesChaveAcesso;
+use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
+use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
+use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
+use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
 
 final readonly class NfseCanceller implements CancelsNfse

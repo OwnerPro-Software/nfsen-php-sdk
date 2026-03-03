@@ -11,7 +11,7 @@ use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Handlers\Concerns\DispatchesEvents;
+use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseQueryExecutor implements ExecutesNfseRequests

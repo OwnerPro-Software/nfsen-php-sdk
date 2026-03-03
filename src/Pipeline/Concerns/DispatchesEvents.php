@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Handlers\Concerns;
+namespace Pulsar\NfseNacional\Pipeline\Concerns;
 
 use Closure;
 use Pulsar\NfseNacional\Events\NfseFailed;

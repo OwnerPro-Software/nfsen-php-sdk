@@ -21,7 +21,7 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Handlers\NfseCanceller;
 use Pulsar\NfseNacional\Handlers\NfseEmitter;
 use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
-use Pulsar\NfseNacional\Handlers\NfseRequestPipeline;
+use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
 use Pulsar\NfseNacional\Adapters\NfseHttpClient;
 use Pulsar\NfseNacional\NfseClient;

@@ -10,9 +10,10 @@ use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Events\NfseSubstituted;
-use Pulsar\NfseNacional\Handlers\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Handlers\Concerns\ParsesEventoResponse;
-use Pulsar\NfseNacional\Handlers\Concerns\ValidatesChaveAcesso;
+use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
+use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
+use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
+use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
 
 final readonly class NfseSubstitutor implements SubstitutesNfse

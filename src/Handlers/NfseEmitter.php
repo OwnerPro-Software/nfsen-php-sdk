@@ -11,7 +11,8 @@ use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Events\NfseEmitted;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Handlers\Concerns\DispatchesEvents;
+use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
+use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
