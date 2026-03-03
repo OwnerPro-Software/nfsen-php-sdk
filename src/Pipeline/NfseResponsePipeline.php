@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
-final readonly class NfseQueryExecutor implements ExecutesNfseRequests
+final readonly class NfseResponsePipeline implements ExecutesNfseRequests
 {
     use DispatchesEvents;
 

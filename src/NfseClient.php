@@ -21,8 +21,8 @@ use Pulsar\NfseNacional\Operations\NfseCanceller;
 use Pulsar\NfseNacional\Operations\NfseConsulter;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
-use Pulsar\NfseNacional\Pipeline\NfseQueryExecutor;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
+use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
@@ -39,7 +39,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         private NfseEmitter $emitter,
         private NfseCanceller $canceller,
         private NfseSubstitutor $substitutor,
-        private NfseQueryExecutor $queryExecutor,
+        private NfseResponsePipeline $queryExecutor,
         private ResolvesPrefeituras $prefeituraResolver,
         private NfseAmbiente $ambiente,
         private string $prefeitura,
@@ -105,7 +105,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
             emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
             canceller: new NfseCanceller($pipeline, new CancelamentoBuilder($xsdValidator), $ambiente),
             substitutor: new NfseSubstitutor($pipeline, new SubstituicaoBuilder($xsdValidator), $ambiente),
-            queryExecutor: new NfseQueryExecutor($httpClient),
+            queryExecutor: new NfseResponsePipeline($httpClient),
             prefeituraResolver: $prefeituraResolver,
             ambiente: $ambiente,
             prefeitura: $prefeitura,

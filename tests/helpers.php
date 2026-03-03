@@ -25,8 +25,8 @@ use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Operations\NfseCanceller;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
-use Pulsar\NfseNacional\Pipeline\NfseQueryExecutor;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
+use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
@@ -152,7 +152,7 @@ function makeNfseClient(
         emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
         canceller: new NfseCanceller($pipeline, new CancelamentoBuilder($xsdValidator), $ambiente),
         substitutor: new NfseSubstitutor($pipeline, new SubstituicaoBuilder($xsdValidator), $ambiente),
-        queryExecutor: new NfseQueryExecutor($httpClient),
+        queryExecutor: new NfseResponsePipeline($httpClient),
         prefeituraResolver: $prefeituraResolver,
         ambiente: $ambiente,
         prefeitura: $prefeitura,
