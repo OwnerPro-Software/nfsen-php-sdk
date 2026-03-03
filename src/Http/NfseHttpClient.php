@@ -45,6 +45,7 @@ final readonly class NfseHttpClient
                     'verify' => $this->sslVerify,
                     'cert' => $certPath,
                     'ssl_key' => $keyPath,
+                    'allow_redirects' => false,
                 ])
                 ->head($url);
 
@@ -70,6 +71,7 @@ final readonly class NfseHttpClient
                     'verify' => $this->sslVerify,
                     'cert' => $certPath,
                     'ssl_key' => $keyPath,
+                    'allow_redirects' => false,
                 ]);
 
             $response = $method === 'post'

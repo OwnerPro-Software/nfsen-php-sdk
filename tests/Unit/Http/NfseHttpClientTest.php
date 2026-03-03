@@ -169,6 +169,42 @@ it('head throws NfseException when tmpfile fails', function () {
         ->toThrow(NfseException::class, 'arquivos temporários');
 });
 
+it('does not follow redirects on post', function () {
+    Http::fake(['*' => Http::response(null, 302, ['Location' => 'https://attacker.com/capture'])]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $response = $client->post('https://example.com/nfse', ['dps' => 'xml']);
+
+    expect($response)->toBe([]);
+
+    Http::assertSentCount(1);
+});
+
+it('does not follow redirects on get', function () {
+    Http::fake(['*' => Http::response(null, 302, ['Location' => 'https://attacker.com/capture'])]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $response = $client->get('https://example.com/nfse/CHAVE123');
+
+    expect($response)->toBe([]);
+
+    Http::assertSentCount(1);
+});
+
+it('does not follow redirects on head', function () {
+    Http::fake(['*' => Http::response('', 302, ['Location' => 'https://attacker.com/capture'])]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $status = $client->head('https://example.com/dps/DPS123');
+
+    expect($status)->toBe(302);
+
+    Http::assertSentCount(1);
+});
+
 it('throws NfseException when fwrite fails on read-only handle', function () {
     $factory = Mockery::mock(TempFileFactory::class);
     $factory->shouldReceive('__invoke')->andReturnUsing(fn () => fopen('php://memory', 'r'));
