@@ -1,5 +1,6 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\Parts\PrestadorBuilder;
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
@@ -10,7 +11,6 @@ use Pulsar\NfseNacional\Dps\Enums\Prestador\RegApTribSN;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
 use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Builders\Xml\Parts\PrestadorBuilder;
 
 function makeRegTrib(): RegTrib
 {

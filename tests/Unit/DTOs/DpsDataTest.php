@@ -1,11 +1,11 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 it('exposes all five groups as readonly properties', function () {
     $infDps = makeInfDps();

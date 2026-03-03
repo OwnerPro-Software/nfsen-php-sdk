@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Operations;
 
+use Pulsar\NfseNacional\Builders\Xml\Parts\SubstituicaoBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\SubstitutesNfse;
-use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Events\NfseRequested;
@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
 use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Builders\Xml\Parts\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 
 final readonly class NfseSubstitutor implements SubstitutesNfse
 {

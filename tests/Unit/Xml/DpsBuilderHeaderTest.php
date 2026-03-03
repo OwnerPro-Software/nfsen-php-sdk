@@ -1,5 +1,6 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
@@ -7,7 +8,6 @@ use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 function buildDps(DpsData $data): string
 {

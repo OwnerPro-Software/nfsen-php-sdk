@@ -1,10 +1,10 @@
 <?php
 
+use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Builders\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
-use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 
 class FakeNfseClientForConsulta implements ExecutesNfseRequests
 {

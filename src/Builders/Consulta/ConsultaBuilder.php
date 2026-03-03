@@ -7,11 +7,11 @@ namespace Pulsar\NfseNacional\Builders\Consulta;
 use InvalidArgumentException;
 use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
+use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Responses\DanfseResponse;
 use Pulsar\NfseNacional\Responses\EventosResponse;
 use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class ConsultaBuilder

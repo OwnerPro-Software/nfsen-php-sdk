@@ -6,12 +6,12 @@ namespace Pulsar\NfseNacional\Builders\Consulta;
 
 use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
-use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
+use Pulsar\NfseNacional\Responses\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseQueryExecutor implements ExecutesNfseRequests

@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Builders\Xml;
 
 use DOMDocument;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
-use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Builders\Xml\Parts\CreatesTextElements;
 use Pulsar\NfseNacional\Builders\Xml\Parts\IBSCBSBuilder;
 use Pulsar\NfseNacional\Builders\Xml\Parts\PrestadorBuilder;
 use Pulsar\NfseNacional\Builders\Xml\Parts\ServicoBuilder;
 use Pulsar\NfseNacional\Builders\Xml\Parts\TomadorBuilder;
 use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
+use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Support\XsdValidator;
 
 final readonly class DpsBuilder
 {

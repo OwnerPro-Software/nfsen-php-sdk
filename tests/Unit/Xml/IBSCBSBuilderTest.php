@@ -1,5 +1,7 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\IBSCBSBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
@@ -21,8 +23,6 @@ use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TipoChaveDFe;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpReeRepRes;
-use Pulsar\NfseNacional\Builders\Xml\Parts\IBSCBSBuilder;
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 function makeMinimalIBSCBS(): InfoIBSCBS
 {

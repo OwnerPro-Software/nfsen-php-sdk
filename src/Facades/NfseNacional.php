@@ -7,10 +7,10 @@ namespace Pulsar\NfseNacional\Facades;
 use Illuminate\Support\Facades\Facade;
 use Pulsar\NfseNacional\Builders\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\NfseClient;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData

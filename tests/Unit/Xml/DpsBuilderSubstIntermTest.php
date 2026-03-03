@@ -1,11 +1,11 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\TomadorBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Builders\Xml\Parts\TomadorBuilder;
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 it('builds DPS with subst element that validates against XSD', function () {
     $data = new DpsData(

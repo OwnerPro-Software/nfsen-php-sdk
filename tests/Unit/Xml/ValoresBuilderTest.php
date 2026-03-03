@@ -1,5 +1,6 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 use Pulsar\NfseNacional\Dps\DTO\Valores\BeneficioMunicipal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DescontoCondIncond;
 use Pulsar\NfseNacional\Dps\DTO\Valores\ExigibilidadeSuspensa;
@@ -18,7 +19,6 @@ use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetPisCofins;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TipoSuspensao;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 
 function makeTribMunMinimo(): TributacaoMunicipal
 {

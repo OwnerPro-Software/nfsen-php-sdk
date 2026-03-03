@@ -1,5 +1,7 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
@@ -8,8 +10,6 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
 use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
-use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 it('builds vDedRed with pDR choice', function () {
     $builder = new ValoresBuilder;

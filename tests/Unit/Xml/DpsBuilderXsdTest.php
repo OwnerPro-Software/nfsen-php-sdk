@@ -1,5 +1,6 @@
 <?php
 
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
 use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
@@ -14,7 +15,6 @@ use Pulsar\NfseNacional\Dps\Enums\Servico\ObjetoLocacao;
 use Pulsar\NfseNacional\Dps\Enums\Servico\TipoRodagem;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data) {
     $builder = new DpsBuilder(makeXsdValidator());

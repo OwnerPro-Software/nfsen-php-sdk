@@ -2,8 +2,8 @@
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Adapters\NfseHttpClient;
+use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\TempFileFactory;
 
 it('posts json payload to given url', function () {
