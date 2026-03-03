@@ -46,7 +46,7 @@ it('consultar()->eventos returns null xml when no eventoXmlGZipB64', function ()
 
 it('consultar()->nfse returns rejection on erros response', function () {
     $chave = makeChaveAcesso();
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => '404']]], 200)]);
+    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'NFSe não encontrada', 'codigo' => '404']], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->nfse($chave);

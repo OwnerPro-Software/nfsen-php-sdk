@@ -62,7 +62,7 @@ it('substituir throws ValueError for invalid string codigoMotivo', function () {
 });
 
 it('substituir returns rejection NfseResponse', function () {
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
+    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';

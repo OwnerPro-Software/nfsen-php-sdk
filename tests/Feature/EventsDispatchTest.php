@@ -84,7 +84,7 @@ it('dispatches NfseRejected on emitir rejection', function (DpsData $data) {
 
 it('dispatches NfseRejected on cancelar rejection', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
+    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
@@ -95,7 +95,7 @@ it('dispatches NfseRejected on cancelar rejection', function () {
 
 it('dispatches NfseRejected on substituir rejection', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']]], 200)]);
+    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']], 200)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -147,7 +147,7 @@ it('dispatches NfseRejected on consultar danfse rejection', function () {
 
 it('dispatches NfseRejected on consultar eventos rejection', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Eventos não encontrados', 'codigo' => 'E404']]], 200)]);
+    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Eventos não encontrados', 'codigo' => 'E404']], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->eventos(makeChaveAcesso());
