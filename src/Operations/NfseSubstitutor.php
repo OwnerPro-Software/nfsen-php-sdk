@@ -70,7 +70,7 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
                 $xml, 'infPedReg', 'pedRegEvento', 'pedidoRegistroEventoXmlGZipB64', 'substitute_nfse', ['chave' => $chave]
             );
 
-            return $this->parseEventoResponse($result, $chave, $operacao, new NfseSubstituted($chave, $chaveSubstituta));
+            return $this->parseEventResponse($result, $chave, $operacao, new NfseSubstituted($chave, $chaveSubstituta));
         });
     }
 }

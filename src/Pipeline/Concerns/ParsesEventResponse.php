@@ -10,7 +10,7 @@ use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 /**
- * Shared evento response parsing for cancelar/substituir operations.
+ * Shared event response parsing for cancelar/substituir operations.
  *
  * @requires DispatchesEvents
  */
@@ -26,7 +26,7 @@ trait ParsesEventResponse
      *     dataHoraProcessamento?: string,
      * }  $result
      */
-    private function parseEventoResponse(array $result, string $chave, string $operacao, object $successEvent): NfseResponse
+    private function parseEventResponse(array $result, string $chave, string $operacao, object $successEvent): NfseResponse
     {
         if (! empty($result['erros']) || isset($result['erro'])) {
             $erros = ProcessingMessage::fromApiResult($result);

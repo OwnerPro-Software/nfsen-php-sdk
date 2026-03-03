@@ -68,7 +68,7 @@ final readonly class NfseCanceller implements CancelsNfse
                 $xml, 'infPedReg', 'pedRegEvento', 'pedidoRegistroEventoXmlGZipB64', 'cancel_nfse', ['chave' => $chave]
             );
 
-            return $this->parseEventoResponse($result, $chave, $operacao, new NfseCancelled($chave));
+            return $this->parseEventResponse($result, $chave, $operacao, new NfseCancelled($chave));
         });
     }
 }
