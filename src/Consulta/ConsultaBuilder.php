@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Consulta;
 
 use InvalidArgumentException;
-use Pulsar\NfseNacional\Contracts\ExecutesNfseRequests;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\DanfseResponse;
 use Pulsar\NfseNacional\DTOs\EventosResponse;
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;

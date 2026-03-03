@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Handlers;
 
-use Pulsar\NfseNacional\Contracts\EmitsNfse;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\EmitsNfse;
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 use Pulsar\NfseNacional\DTOs\NfseResponse;

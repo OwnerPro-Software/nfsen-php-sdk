@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Handlers;
 
-use Pulsar\NfseNacional\Contracts\ExecutesNfseRequests;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Events\NfseQueried;

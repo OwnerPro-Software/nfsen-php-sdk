@@ -6,10 +6,10 @@ namespace Pulsar\NfseNacional;
 
 use Pulsar\NfseNacional\Certificates\CertificateManager;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
-use Pulsar\NfseNacional\Contracts\CancelsNfse;
-use Pulsar\NfseNacional\Contracts\EmitsNfse;
-use Pulsar\NfseNacional\Contracts\QueriesNfse;
-use Pulsar\NfseNacional\Contracts\SubstitutesNfse;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\CancelsNfse;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\EmitsNfse;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\QueriesNfse;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\SubstitutesNfse;
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;

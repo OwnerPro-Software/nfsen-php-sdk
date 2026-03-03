@@ -1,7 +1,7 @@
 <?php
 
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
-use Pulsar\NfseNacional\Contracts\ExecutesNfseRequests;
+use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
