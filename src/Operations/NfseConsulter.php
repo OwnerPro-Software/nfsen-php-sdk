@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Operations;
 
-use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
+use Pulsar\NfseNacional\Contracts\Driven\ResolvesOperations;
 use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
 use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Enums\TipoEvento;
@@ -23,7 +23,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         private ExecutesNfseRequests $client,
         private string $seFinBaseUrl,
         private string $adnBaseUrl,
-        private ResolvesPrefeituras $resolver,
+        private ResolvesOperations $resolver,
         private string $codigoIbge,
     ) {}
 
