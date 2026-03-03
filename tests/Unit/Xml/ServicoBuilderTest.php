@@ -22,7 +22,7 @@ use Pulsar\NfseNacional\Enums\Dps\Servico\ObjetoLocacao;
 use Pulsar\NfseNacional\Enums\Dps\Servico\TipoRodagem;
 use Pulsar\NfseNacional\Enums\Dps\Servico\VinculoPrestacao;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\ServicoBuilder;
 
 function makeServMinimo(): Servico
 {

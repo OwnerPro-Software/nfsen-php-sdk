@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
 use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\CancelamentoBuilder;
 
 final readonly class NfseCanceller implements CancelsNfse
 {

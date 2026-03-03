@@ -6,7 +6,7 @@ use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional;
 use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\TomadorBuilder;
 
 it('builds toma element with CNPJ', function () {
     $builder = new TomadorBuilder;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
+use Pulsar\NfseNacional\Builders\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;

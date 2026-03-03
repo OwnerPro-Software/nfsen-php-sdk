@@ -18,7 +18,7 @@ use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
+use Pulsar\NfseNacional\Builders\Consulta\NfseQueryExecutor;
 use Pulsar\NfseNacional\Operations\NfseCanceller;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
@@ -29,9 +29,9 @@ use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
-use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\CancelamentoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 function makePfxContent(): string
 {

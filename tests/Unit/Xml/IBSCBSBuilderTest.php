@@ -21,8 +21,8 @@ use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TipoChaveDFe;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpEnteGov;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpOper;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpReeRepRes;
-use Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\IBSCBSBuilder;
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 function makeMinimalIBSCBS(): InfoIBSCBS
 {

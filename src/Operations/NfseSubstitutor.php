@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
 use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\SubstituicaoBuilder;
 
 final readonly class NfseSubstitutor implements SubstitutesNfse
 {

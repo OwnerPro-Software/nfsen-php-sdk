@@ -44,7 +44,7 @@ it('configures client when cert path, senha and prefeitura are set', function ()
     $client = app(\Pulsar\NfseNacional\NfseClient::class);
 
     // If configured, consultar() returns a ConsultaBuilder without throwing
-    expect($client->consultar())->toBeInstanceOf(\Pulsar\NfseNacional\Consulta\ConsultaBuilder::class);
+    expect($client->consultar())->toBeInstanceOf(\Pulsar\NfseNacional\Builders\Consulta\ConsultaBuilder::class);
 });
 
 it('facade emitir works directly when config is set', function (DpsData $data) {

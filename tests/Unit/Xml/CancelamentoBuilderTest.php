@@ -3,7 +3,7 @@
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\CancelamentoBuilder;
 
 function parseCancelamentoXml(string $xml): DOMXPath
 {

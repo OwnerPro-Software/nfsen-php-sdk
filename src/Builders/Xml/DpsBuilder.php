@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml;
+namespace Pulsar\NfseNacional\Builders\Xml;
 
 use DOMDocument;
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
@@ -11,12 +11,12 @@ use Pulsar\NfseNacional\DTOs\Dps\InfDPS\SubstituicaoData;
 use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
-use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
-use Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder;
-use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
-use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
-use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
-use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\CreatesTextElements;
+use Pulsar\NfseNacional\Builders\Xml\Parts\IBSCBSBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\PrestadorBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\ServicoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\TomadorBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 
 final readonly class DpsBuilder
 {

@@ -18,7 +18,7 @@ use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetPisCofins;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoSuspensao;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 
 function makeTribMunMinimo(): TributacaoMunicipal
 {

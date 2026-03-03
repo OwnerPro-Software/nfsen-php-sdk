@@ -3,7 +3,7 @@
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
-use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\SubstituicaoBuilder;
 
 function parseSubstituicaoXml(string $xml): DOMXPath
 {

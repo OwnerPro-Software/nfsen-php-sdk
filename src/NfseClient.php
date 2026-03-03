@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional;
 
 use Pulsar\NfseNacional\Adapters\CertificateManager;
-use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
+use Pulsar\NfseNacional\Builders\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\CancelsNfse;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\EmitsNfse;
@@ -16,7 +16,7 @@ use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
+use Pulsar\NfseNacional\Builders\Consulta\NfseQueryExecutor;
 use Pulsar\NfseNacional\Operations\NfseCanceller;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
@@ -26,9 +26,9 @@ use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
-use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\CancelamentoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData

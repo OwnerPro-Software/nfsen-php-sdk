@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Support\GzipCompressor;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 /** @phpstan-import-type DpsDataArray from DpsData */
 final readonly class NfseEmitter implements EmitsNfse

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace Pulsar\NfseNacional\Builders\Xml\Parts;
 
 use DOMDocument;
 use DOMElement;

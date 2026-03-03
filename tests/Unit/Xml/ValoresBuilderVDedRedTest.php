@@ -8,8 +8,8 @@ use Pulsar\NfseNacional\DTOs\Dps\Valores\DocOutNFSe;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\InfoDedRed;
 use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoDedRed;
-use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 it('builds vDedRed with pDR choice', function () {
     $builder = new ValoresBuilder;

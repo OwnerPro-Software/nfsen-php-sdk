@@ -24,8 +24,8 @@ arch('pipeline does not depend on infrastructure adapters')
         'Pulsar\NfseNacional\Adapters',
     ]);
 
-arch('consulta does not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Consulta')
+arch('builders do not depend on infrastructure adapters')
+    ->expect('Pulsar\NfseNacional\Builders')
     ->not->toUse([
         'Pulsar\NfseNacional\Adapters',
     ]);

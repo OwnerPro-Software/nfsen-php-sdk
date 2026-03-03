@@ -7,7 +7,7 @@ use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 function buildDps(DpsData $data): string
 {

@@ -10,7 +10,7 @@ use Pulsar\NfseNacional\Enums\Dps\Prestador\RegApTribSN;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
 use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
+use Pulsar\NfseNacional\Builders\Xml\Parts\PrestadorBuilder;
 
 function makeRegTrib(): RegTrib
 {

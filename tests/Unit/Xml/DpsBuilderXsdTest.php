@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Enums\Dps\Servico\ObjetoLocacao;
 use Pulsar\NfseNacional\Enums\Dps\Servico\TipoRodagem;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data) {
     $builder = new DpsBuilder(makeXsdValidator());
