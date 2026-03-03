@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] - 2026-03-03
+## [Unreleased]
 
 ### Breaking Changes
 - Requisito mínimo de PHP alterado de 8.1 para **8.2**
