@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
 
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TipoChaveDFe;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TipoChaveDFe;
 
 /**
  * @phpstan-type ListaDocDFeArray array{tipoChaveDFe: string, chaveDFe: string, xTipoChaveDFe?: string}

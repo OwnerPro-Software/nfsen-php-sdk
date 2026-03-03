@@ -10,11 +10,11 @@ use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocDFe;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFornec;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\FinNFSe;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndDest;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TipoChaveDFe;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpReeRepRes;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TipoChaveDFe;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpReeRepRes;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('throws when InfoIBSCBS refNFSe is empty array', function () {

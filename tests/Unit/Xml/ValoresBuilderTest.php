@@ -11,12 +11,12 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoCST;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoImunidadeISSQN;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetPisCofins;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoSuspensao;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoCST;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoImunidadeISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetPisCofins;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoSuspensao;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 

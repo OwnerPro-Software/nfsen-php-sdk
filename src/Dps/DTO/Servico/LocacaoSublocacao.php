@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Servico;
 
-use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaServico;
-use Pulsar\NfseNacional\Enums\Dps\Servico\ObjetoLocacao;
+use Pulsar\NfseNacional\Dps\Enums\Servico\CategoriaServico;
+use Pulsar\NfseNacional\Dps\Enums\Servico\ObjetoLocacao;
 
 /**
  * @phpstan-type LocacaoSublocacaoArray array{categ: string, objeto: string, extensao: string, nPostes: string}

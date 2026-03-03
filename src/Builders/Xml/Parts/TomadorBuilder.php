@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
 
 final class TomadorBuilder
 {

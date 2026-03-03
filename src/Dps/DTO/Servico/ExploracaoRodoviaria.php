@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Servico;
 
-use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaVeiculo;
-use Pulsar\NfseNacional\Enums\Dps\Servico\TipoRodagem;
+use Pulsar\NfseNacional\Dps\Enums\Servico\CategoriaVeiculo;
+use Pulsar\NfseNacional\Dps\Enums\Servico\TipoRodagem;
 
 /**
  * @phpstan-type ExploracaoRodoviariaArray array{categVeic: string, nEixos: string, rodagem: string, sentido: string, placa: string, codAcessoPed: string, codContrato: string}

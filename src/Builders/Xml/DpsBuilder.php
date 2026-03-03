@@ -9,7 +9,7 @@ use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Builders\Xml\Parts\CreatesTextElements;
 use Pulsar\NfseNacional\Builders\Xml\Parts\IBSCBSBuilder;

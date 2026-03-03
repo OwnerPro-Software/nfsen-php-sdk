@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoCST;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetPisCofins;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoCST;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetPisCofins;
 
 /**
  * @phpstan-type PisCofinsArray array{CST: string, vBCPisCofins?: string, pAliqPis?: string, pAliqCofins?: string, vPis?: string, vCofins?: string, tpRetPisCofins?: string}

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
 
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\FinNFSe;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndDest;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpEnteGov;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpOper;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 /**

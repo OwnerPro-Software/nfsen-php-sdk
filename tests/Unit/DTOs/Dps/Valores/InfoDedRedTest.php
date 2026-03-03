@@ -2,7 +2,7 @@
 
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoDedRed;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('creates InfoDedRed with pDR', function () {

@@ -7,7 +7,7 @@ namespace Pulsar\NfseNacional\Dps\DTO\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
 
 /**
  * @phpstan-import-type RegTribArray from RegTrib

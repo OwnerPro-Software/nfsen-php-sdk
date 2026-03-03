@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\InfDPS;
 
-use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
-use Pulsar\NfseNacional\Enums\Dps\InfDPS\TipoEmitente;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\TipoEmitente;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 /**

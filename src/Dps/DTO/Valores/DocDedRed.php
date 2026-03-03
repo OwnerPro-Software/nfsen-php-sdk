@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Dps\DTO\Valores;
 
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoDedRed;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
 
 /**
  * @phpstan-import-type DocOutNFSeArray from DocOutNFSe

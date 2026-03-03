@@ -22,9 +22,9 @@ use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpEnteGov;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpOper;
-use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
 
 final class IBSCBSBuilder
 {

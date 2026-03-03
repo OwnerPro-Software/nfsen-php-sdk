@@ -20,8 +20,8 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribValor;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
 use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoImunidadeISSQN;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetPisCofins;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoImunidadeISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetPisCofins;
 
 final class ValoresBuilder
 {

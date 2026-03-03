@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Shared;
 
-use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
-use Pulsar\NfseNacional\Enums\Dps\Prestador\RegApTribSN;
-use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
+use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
+use Pulsar\NfseNacional\Dps\Enums\Prestador\RegApTribSN;
+use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
 
 /**
  * @phpstan-type RegTribArray array{opSimpNac: string, regEspTrib: string, regApTribSN?: string}

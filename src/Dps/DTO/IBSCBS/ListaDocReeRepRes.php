@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
 
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpReeRepRes;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpReeRepRes;
 
 /**
  * @phpstan-import-type ListaDocDFeArray from ListaDocDFe

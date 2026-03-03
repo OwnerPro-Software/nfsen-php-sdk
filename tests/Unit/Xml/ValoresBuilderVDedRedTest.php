@@ -7,7 +7,7 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
 use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoDedRed;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
 use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
@@ -19,8 +19,8 @@ it('builds vDedRed with pDR choice', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -42,8 +42,8 @@ it('builds vDedRed with vDR choice', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -65,8 +65,8 @@ it('builds vDedRed with documentos containing chNFSe', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -102,8 +102,8 @@ it('builds vDedRed with NFSeMun document', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -135,8 +135,8 @@ it('builds vDedRed with NFNFS document', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -168,8 +168,8 @@ it('builds vDedRed with fornec', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -201,8 +201,8 @@ it('builds vDedRed with chNFe document', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -229,8 +229,8 @@ it('builds vDedRed with nDocFisc document', function () {
         vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -262,8 +262,8 @@ it('builds DPS with vDedRed pDR that validates against XSD', function () {
             vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
             trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
                 tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                    tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                    tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                    tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                    tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
                 ),
                 indTotTrib: '0',
             ),
@@ -286,8 +286,8 @@ it('builds DPS with vDedRed documentos that validates against XSD', function () 
             vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '1000.00'),
             trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
                 tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
-                    tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
-                    tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
+                    tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                    tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
                 ),
                 indTotTrib: '0',
             ),

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Servico;
 
-use Pulsar\NfseNacional\Enums\Dps\Servico\MDIC;
-use Pulsar\NfseNacional\Enums\Dps\Servico\MecAFComexP;
-use Pulsar\NfseNacional\Enums\Dps\Servico\MecAFComexT;
-use Pulsar\NfseNacional\Enums\Dps\Servico\ModoPrestacao;
-use Pulsar\NfseNacional\Enums\Dps\Servico\MovTempBens;
-use Pulsar\NfseNacional\Enums\Dps\Servico\VinculoPrestacao;
+use Pulsar\NfseNacional\Dps\Enums\Servico\MDIC;
+use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexP;
+use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexT;
+use Pulsar\NfseNacional\Dps\Enums\Servico\ModoPrestacao;
+use Pulsar\NfseNacional\Dps\Enums\Servico\MovTempBens;
+use Pulsar\NfseNacional\Dps\Enums\Servico\VinculoPrestacao;
 
 /**
  * @phpstan-type ComercioExteriorArray array{mdPrestacao: string, vincPrest: string, tpMoeda: string, vServMoeda: string, mecAFComexP: string, mecAFComexT: string, movTempBens: string, mdic: string, nDI?: string, nRE?: string}

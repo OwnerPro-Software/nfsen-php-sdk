@@ -14,13 +14,13 @@ use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocDFe;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFornec;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocOutro;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\FinNFSe;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndDest;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TipoChaveDFe;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpEnteGov;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpOper;
-use Pulsar\NfseNacional\Enums\Dps\IBSCBS\TpReeRepRes;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TipoChaveDFe;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpReeRepRes;
 use Pulsar\NfseNacional\Builders\Xml\Parts\IBSCBSBuilder;
 use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
@@ -306,7 +306,7 @@ it('builds IBSCBS with dest cNaoNIF', function () {
                 gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new InfoDest(xNome: 'Sem NIF', cNaoNIF: \Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF::Dispensado),
+        dest: new InfoDest(xNome: 'Sem NIF', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF::Dispensado),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -489,7 +489,7 @@ it('builds IBSCBS with fornec NIF and cNaoNIF', function () {
                     dtEmiDoc: '2026-01-01', dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis, vlrReeRepRes: '100.00',
                     docOutro: new ListaDocOutro(nDoc: 'D2', xDoc: 'Doc2'),
-                    fornec: new ListaDocFornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF::NaoInformado),
+                    fornec: new ListaDocFornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF::NaoInformado),
                 ),
             ]),
         ),

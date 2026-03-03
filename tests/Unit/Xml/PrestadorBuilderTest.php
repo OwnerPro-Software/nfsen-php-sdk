@@ -5,10 +5,10 @@ use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
-use Pulsar\NfseNacional\Enums\Dps\Prestador\RegApTribSN;
-use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
-use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
+use Pulsar\NfseNacional\Dps\Enums\Prestador\RegApTribSN;
+use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Builders\Xml\Parts\PrestadorBuilder;
 

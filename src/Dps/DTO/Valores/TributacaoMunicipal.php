@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoImunidadeISSQN;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;
-use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoImunidadeISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 
 /**
  * @phpstan-import-type ExigibilidadeSuspensaArray from ExigibilidadeSuspensa
