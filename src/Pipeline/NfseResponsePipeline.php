@@ -120,7 +120,9 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
         return $this->withFailureEvent($operacao, function () use ($url, $operacao): int {
             $status = $this->httpClient->head($url);
 
-            $this->dispatchEvent(new NfseQueried($operacao));
+            if ($status === 200) {
+                $this->dispatchEvent(new NfseQueried($operacao));
+            }
 
             return $status;
         });
