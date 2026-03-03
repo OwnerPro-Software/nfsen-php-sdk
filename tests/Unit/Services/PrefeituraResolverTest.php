@@ -79,7 +79,7 @@ it('resolves default sefin url for unknown prefeitura in producao', function () 
 
     $url = $resolver->resolveSeFinUrl('9999999', NfseAmbiente::PRODUCAO);
 
-    expect($url)->toBe('https://sefin.nfse.gov.br/sefinnacional');
+    expect($url)->toBe('https://sefin.nfse.gov.br/SefinNacional');
 });
 
 it('resolves default adn url for unknown prefeitura in homologacao', function () use ($jsonPath) {

@@ -22,7 +22,7 @@ final class PrefeituraResolver
 
     private const DEFAULT_URLS = [
         'sefin_homologacao' => 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional',
-        'sefin_producao' => 'https://sefin.nfse.gov.br/sefinnacional',
+        'sefin_producao' => 'https://sefin.nfse.gov.br/SefinNacional',
         'adn_homologacao' => 'https://adn.producaorestrita.nfse.gov.br',
         'adn_producao' => 'https://adn.nfse.gov.br',
     ];

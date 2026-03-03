@@ -258,7 +258,7 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('CHAVE_PROD');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.nfse.gov.br/sefinnacional/nfse' &&
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.nfse.gov.br/SefinNacional/nfse' &&
         $req->method() === 'POST'
     );
 })->with('dpsData');
