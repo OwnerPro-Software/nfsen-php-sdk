@@ -127,6 +127,14 @@ it('substituir throws InvalidArgumentException for invalid chaveAcesso', functio
         ->toThrow(\InvalidArgumentException::class, 'chaveAcesso inválida');
 });
 
+it('substituir throws InvalidArgumentException for invalid chaveSubstituta', function () {
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $chave = '12345678901234567890123456789012345678901234567890';
+
+    expect(fn () => $client->substituir($chave, 'INVALID_CHAVE_SUB', CodigoJustificativaSubstituicao::Outros, 'Outro motivo'))
+        ->toThrow(\InvalidArgumentException::class, 'chaveAcesso inválida');
+});
+
 it('substituir throws NfseException when gzip compression fails', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 

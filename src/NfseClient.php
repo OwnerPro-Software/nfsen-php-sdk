@@ -299,6 +299,7 @@ final class NfseClient implements NfseClientContract
     public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1): NfseResponse
     {
         $this->validateChaveAcesso($chave);
+        $this->validateChaveAcesso($chaveSubstituta);
         $this->ensureConfigured();
 
         if (is_string($codigoMotivo)) {
