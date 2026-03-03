@@ -25,23 +25,23 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 - Extensões: `curl`, `dom`, `zlib`, `openssl`, `mbstring`, `libxml`
 - Laravel 11 ou 12 (opcional — funciona standalone)
 
-## Instalacao
+## Instalação
 
 ```bash
 composer require jonathanpmartins/nfse-nacional
 ```
 
-## Configuracao
+## Configuração
 
 ### Laravel
 
-Publique o arquivo de configuracao:
+Publique o arquivo de configuração:
 
 ```bash
 php artisan vendor:publish --tag=nfse-nacional-config
 ```
 
-Adicione as variaveis de ambiente no `.env`:
+Adicione as variáveis de ambiente no `.env`:
 
 ```env
 NFSE_AMBIENTE=2                   # 1 = Producao, 2 = Homologacao
@@ -127,8 +127,8 @@ $response = $client->emitir([
 ]);
 
 if ($response->sucesso) {
-    echo "Chave: {$response->chave}";
-    echo "XML: {$response->xml}";
+    echo "Chave: {$response->chave}\n";
+    echo "XML: {$response->xml}\n";
 } else {
     foreach ($response->erros as $erro) {
         echo "[{$erro->codigo}] {$erro->mensagem} - {$erro->descricao}";
@@ -166,6 +166,8 @@ $response = $client->substituir(
 ### Consultas
 
 ```php
+use Pulsar\NfseNacional\Enums\TipoEvento;
+
 // Consultar NFSe por chave de acesso
 $response = $client->consultar()->nfse($chave);
 
@@ -177,8 +179,6 @@ $response = $client->consultar()->danfse($chave);
 // $response->url contém a URL do PDF
 
 // Consultar eventos
-use Pulsar\NfseNacional\Enums\TipoEvento;
-
 $response = $client->consultar()->eventos(
     chave: $chave,
     tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
@@ -211,21 +211,21 @@ $response = $client->emitir($dps);
 
 ## Eventos
 
-O pacote dispara eventos Laravel que podem ser escutados na sua aplicacao:
+O pacote dispara eventos Laravel que podem ser escutados na sua aplicação:
 
 | Evento | Propriedades | Descricao |
 |--------|-------------|-----------|
 | `NfseEmitted` | `chave` | NFSe emitida com sucesso |
 | `NfseCancelled` | `chave` | NFSe cancelada com sucesso |
-| `NfseSubstituted` | `chave`, `chaveSubstituta` | NFSe substituida com sucesso |
+| `NfseSubstituted` | `chave`, `chaveSubstituta` | NFSe substituída com sucesso |
 | `NfseQueried` | `operacao` | Consulta realizada |
-| `NfseRequested` | `operacao`, `metadata` | Operacao iniciada |
-| `NfseRejected` | `operacao`, `codigoErro` | Operacao rejeitada pela API |
-| `NfseFailed` | `operacao`, `message` | Falha na operacao |
+| `NfseRequested` | `operacao`, `metadata` | Operação iniciada |
+| `NfseRejected` | `operacao`, `codigoErro` | Operação rejeitada pela API |
+| `NfseFailed` | `operacao`, `message` | Falha na operação |
 
 ## Exemplos
 
-Exemplos completos de cada operacao estao disponiveis no diretorio [`examples/`](examples/).
+Exemplos completos de cada operação estão disponíveis no diretório [`examples/`](examples/).
 
 ## Testes
 
@@ -233,7 +233,7 @@ Exemplos completos de cada operacao estao disponiveis no diretorio [`examples/`]
 composer test
 ```
 
-Para executar todas as verificacoes de qualidade:
+Para executar todas as verificações de qualidade:
 
 ```bash
 composer quality
@@ -243,12 +243,12 @@ composer quality
 
 Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes.
 
-## Creditos
+## Créditos
 
-Este pacote teve como base o trabalho do projeto original [nfse-nacional](https://github.com/Rainzart/nfse-nacional) de **Fernando Friedrich**, que por sua vez foi construido sobre o [NFePHP](https://github.com/nfephp-org) de **Roberto L. Machado**.
+Este pacote teve como base o trabalho do projeto original [nfse-nacional](https://github.com/Rainzart/nfse-nacional) de **Fernando Friedrich**, que por sua vez foi construído sobre o [NFePHP](https://github.com/nfephp-org) de **Roberto L. Machado**.
 
 Agradecimento a todos os contribuidores que ajudaram a evoluir este projeto.
 
-## Licenca
+## Licença
 
 MIT. Veja [LICENSE](LICENSE).
