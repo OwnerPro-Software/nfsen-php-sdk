@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Handlers;
 
+use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
@@ -11,7 +12,6 @@ use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Handlers\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseQueryExecutor implements ExecutesNfseRequests

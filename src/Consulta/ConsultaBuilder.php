@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Consulta;
 
 use InvalidArgumentException;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\DanfseResponse;
 use Pulsar\NfseNacional\DTOs\EventosResponse;
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class ConsultaBuilder

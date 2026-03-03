@@ -6,6 +6,7 @@ namespace Pulsar\NfseNacional;
 
 use Pulsar\NfseNacional\Certificates\CertificateManager;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\CancelsNfse;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\EmitsNfse;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\QueriesNfse;
@@ -21,7 +22,6 @@ use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
 use Pulsar\NfseNacional\Handlers\NfseRequestPipeline;
 use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 use Pulsar\NfseNacional\Signing\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
