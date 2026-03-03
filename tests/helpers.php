@@ -26,6 +26,7 @@ use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Signing\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
@@ -135,7 +136,7 @@ function makeNfseClient(
     $prefeituraResolver = new PrefeituraResolver(__DIR__.'/../storage/prefeituras.json');
     $xsdValidator = makeXsdValidator();
     $httpClient = new NfseHttpClient($certManager->getCertificate(), 30, 10, true);
-    $signer = new \Pulsar\NfseNacional\Signing\XmlSigner($certManager->getCertificate(), 'sha1');
+    $signer = new XmlSigner($certManager->getCertificate(), 'sha1');
 
     $pipeline = new NfseRequestPipeline(
         ambiente: $ambiente,
