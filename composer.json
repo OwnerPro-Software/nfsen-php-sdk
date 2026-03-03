@@ -24,7 +24,8 @@
     "driftingly/rector-laravel": "^2.1",
     "larastan/larastan": "^3.9",
     "laravel/pint": "^1.27",
-    "roave/security-advisories": "dev-latest"
+    "roave/security-advisories": "dev-latest",
+    "vimeo/psalm": "^6.15"
   },
   "autoload": {
     "psr-4": {
