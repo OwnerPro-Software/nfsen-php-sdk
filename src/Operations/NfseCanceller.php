@@ -10,21 +10,21 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Events\NfseCancelled;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
+use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventResponse;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
 
 final readonly class NfseCanceller implements CancelsNfse
 {
     use DispatchesEvents;
-    use ParsesEventoResponse;
+    use ParsesEventResponse;
     use ValidatesChaveAcesso;
 
     public function __construct(
         private NfseRequestPipeline $pipeline,
-        private CancelamentoBuilder $cancelamentoBuilder,
+        private CancellationBuilder $cancellationBuilder,
         private NfseAmbiente $ambiente,
     ) {}
 
@@ -42,7 +42,7 @@ final readonly class NfseCanceller implements CancelsNfse
         return $this->withFailureEvent($operacao, function () use ($chave, $codigoMotivo, $descricao, $nPedRegEvento, $operacao): NfseResponse {
             $identity = $this->pipeline->extractAuthorIdentity('cancelar');
 
-            $xml = $this->cancelamentoBuilder->buildAndValidate(
+            $xml = $this->cancellationBuilder->buildAndValidate(
                 tpAmb: $this->ambiente->value,
                 verAplic: '1.0',
                 dhEvento: date('c'),
@@ -65,7 +65,7 @@ final readonly class NfseCanceller implements CancelsNfse
              * } $result
              */
             $result = $this->pipeline->signCompressSend(
-                $xml, 'infPedReg', 'pedRegEvento', 'pedidoRegistroEventoXmlGZipB64', 'cancelar_nfse', ['chave' => $chave]
+                $xml, 'infPedReg', 'pedRegEvento', 'pedidoRegistroEventoXmlGZipB64', 'cancel_nfse', ['chave' => $chave]
             );
 
             return $this->parseEventoResponse($result, $chave, $operacao, new NfseCancelled($chave));

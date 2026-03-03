@@ -1,10 +1,10 @@
 <?php
 
-use Pulsar\NfseNacional\Responses\EventosResponse;
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\EventsResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 
 it('success response carries xml and no erros', function () {
-    $response = new EventosResponse(true, '<Evento/>');
+    $response = new EventsResponse(true, '<Evento/>');
 
     expect($response)
         ->sucesso->toBeTrue()
@@ -13,7 +13,7 @@ it('success response carries xml and no erros', function () {
 });
 
 it('success response with null xml', function () {
-    $response = new EventosResponse(true);
+    $response = new EventsResponse(true);
 
     expect($response)
         ->sucesso->toBeTrue()
@@ -22,9 +22,9 @@ it('success response with null xml', function () {
 });
 
 it('failure response carries erros and null xml', function () {
-    $erros = [new MensagemProcessamento(descricao: 'NFSe não encontrada', codigo: 'E404')];
+    $erros = [new ProcessingMessage(descricao: 'NFSe não encontrada', codigo: 'E404')];
 
-    $response = new EventosResponse(false, erros: $erros);
+    $response = new EventsResponse(false, erros: $erros);
 
     expect($response)
         ->sucesso->toBeFalse()
@@ -34,7 +34,7 @@ it('failure response carries erros and null xml', function () {
 });
 
 it('defaults all optional fields', function () {
-    $response = new EventosResponse(true);
+    $response = new EventsResponse(true);
 
     expect($response)
         ->xml->toBeNull()
@@ -45,7 +45,7 @@ it('defaults all optional fields', function () {
 });
 
 it('carries metadata fields', function () {
-    $response = new EventosResponse(
+    $response = new EventsResponse(
         sucesso: true,
         xml: '<Evento/>',
         tipoAmbiente: 2,

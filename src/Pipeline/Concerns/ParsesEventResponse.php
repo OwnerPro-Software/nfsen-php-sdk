@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Pipeline\Concerns;
 
 use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 /**
@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Support\GzipCompressor;
  *
  * @requires DispatchesEvents
  */
-trait ParsesEventoResponse
+trait ParsesEventResponse
 {
     /**
      * @param  array{
@@ -29,7 +29,7 @@ trait ParsesEventoResponse
     private function parseEventoResponse(array $result, string $chave, string $operacao, object $successEvent): NfseResponse
     {
         if (! empty($result['erros']) || isset($result['erro'])) {
-            $erros = MensagemProcessamento::fromApiResult($result);
+            $erros = ProcessingMessage::fromApiResult($result);
             $codigo = $erros[0]->codigo ?? 'UNKNOWN';
             $this->dispatchEvent(new NfseRejected($operacao, $codigo));
 

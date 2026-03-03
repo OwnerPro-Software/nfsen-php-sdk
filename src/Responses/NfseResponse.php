@@ -7,8 +7,8 @@ namespace Pulsar\NfseNacional\Responses;
 final readonly class NfseResponse
 {
     /**
-     * @param  list<MensagemProcessamento>  $alertas
-     * @param  list<MensagemProcessamento>  $erros
+     * @param  list<ProcessingMessage>  $alertas
+     * @param  list<ProcessingMessage>  $erros
      */
     public function __construct(
         public bool $sucesso,

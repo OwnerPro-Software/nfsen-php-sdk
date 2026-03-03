@@ -26,8 +26,8 @@ use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
-use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
+use Pulsar\NfseNacional\Xml\Builders\SubstitutionBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 /**
@@ -102,8 +102,8 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
 
         return new self(
             emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
-            canceller: new NfseCanceller($pipeline, new CancelamentoBuilder($xsdValidator), $ambiente),
-            substitutor: new NfseSubstitutor($pipeline, new SubstituicaoBuilder($xsdValidator), $ambiente),
+            canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
+            substitutor: new NfseSubstitutor($pipeline, new SubstitutionBuilder($xsdValidator), $ambiente),
             consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
         );
     }

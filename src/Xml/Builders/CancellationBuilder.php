@@ -10,7 +10,7 @@ use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XsdValidator;
 
-final readonly class CancelamentoBuilder
+final readonly class CancellationBuilder
 {
     use CreatesTextElements;
 

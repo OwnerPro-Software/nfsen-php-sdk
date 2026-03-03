@@ -277,7 +277,7 @@ it('eventos returns success with decompressed xml', function () {
 it('buildUrl returns baseUrl when path is empty', function () {
     $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
     file_put_contents($tmpJson, json_encode([
-        '9999998' => ['operations' => ['consultar_nfse' => '']],
+        '9999998' => ['operations' => ['query_nfse' => '']],
     ]));
 
     $innerClient = new class implements ExecutesNfseRequests

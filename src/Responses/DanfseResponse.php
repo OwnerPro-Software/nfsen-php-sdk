@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Responses;
 
 final readonly class DanfseResponse
 {
-    /** @param list<MensagemProcessamento> $erros */
+    /** @param list<ProcessingMessage> $erros */
     public function __construct(
         public bool $sucesso,
         public ?string $url = null,

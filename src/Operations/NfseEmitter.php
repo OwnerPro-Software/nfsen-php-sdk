@@ -11,8 +11,8 @@ use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
@@ -29,13 +29,13 @@ final readonly class NfseEmitter implements EmitsNfse
     /** @phpstan-param DpsData|DpsDataArray $data */
     public function emitir(DpsData|array $data): NfseResponse
     {
-        return $this->doEmitir($data, 'emitir', 'emitir_nfse', 'dpsXmlGZipB64');
+        return $this->doEmitir($data, 'emitir', 'emit_nfse', 'dpsXmlGZipB64');
     }
 
     /** @phpstan-param DpsData|DpsDataArray $data */
     public function emitirDecisaoJudicial(DpsData|array $data): NfseResponse
     {
-        return $this->doEmitir($data, 'emitir_decisao_judicial', 'emitir_decisao_judicial', 'xmlGZipB64');
+        return $this->doEmitir($data, 'emitir_decisao_judicial', 'emit_court_order', 'xmlGZipB64');
     }
 
     /** @phpstan-param DpsData|DpsDataArray $data */
@@ -67,7 +67,7 @@ final readonly class NfseEmitter implements EmitsNfse
             $result = $this->pipeline->signCompressSend($xml, 'infDPS', 'DPS', $payloadKey, $operationKey);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
-                $erros = MensagemProcessamento::fromApiResult($result);
+                $erros = ProcessingMessage::fromApiResult($result);
                 $codigo = $erros[0]->codigo ?? 'UNKNOWN';
                 $this->dispatchEvent(new NfseRejected($operacao, $codigo));
 
@@ -88,7 +88,7 @@ final readonly class NfseEmitter implements EmitsNfse
 
                 return new NfseResponse(
                     sucesso: false,
-                    erros: [new MensagemProcessamento(descricao: 'Resposta da API não contém chaveAcesso.')],
+                    erros: [new ProcessingMessage(descricao: 'Resposta da API não contém chaveAcesso.')],
                 );
             }
 
@@ -99,7 +99,7 @@ final readonly class NfseEmitter implements EmitsNfse
                 chave: $chave,
                 xml: GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null),
                 idDps: $result['idDps'] ?? null,
-                alertas: MensagemProcessamento::fromArrayList($result['alertas'] ?? []),
+                alertas: ProcessingMessage::fromArrayList($result['alertas'] ?? []),
                 tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,

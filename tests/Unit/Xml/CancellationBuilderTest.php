@@ -3,7 +3,7 @@
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
 
 function parseCancelamentoXml(string $xml): DOMXPath
 {
@@ -16,7 +16,7 @@ function parseCancelamentoXml(string $xml): DOMXPath
 }
 
 it('builds valid cancelamento xml with CNPJ author', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
 
     $xml = $builder->build(
@@ -51,7 +51,7 @@ it('builds valid cancelamento xml with CNPJ author', function (): void {
 });
 
 it('builds valid cancelamento xml with CPF author', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
 
     $xml = $builder->build(
@@ -73,7 +73,7 @@ it('builds valid cancelamento xml with CPF author', function (): void {
 });
 
 it('generates correct Id with padded nPedRegEvento', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
 
     $xml = $builder->build(
@@ -97,7 +97,7 @@ it('generates correct Id with padded nPedRegEvento', function (): void {
 });
 
 it('validates against pedRegEvento XSD', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
 
     $xml = $builder->buildAndValidate(
@@ -115,7 +115,7 @@ it('validates against pedRegEvento XSD', function (): void {
 });
 
 it('throws when both cnpjAutor and cpfAutor are set', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
 
     expect(fn () => $builder->build(
         tpAmb: 2,
@@ -130,7 +130,7 @@ it('throws when both cnpjAutor and cpfAutor are set', function (): void {
 });
 
 it('throws when neither cnpjAutor nor cpfAutor is set', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
 
     expect(fn () => $builder->build(
         tpAmb: 2,
@@ -145,7 +145,7 @@ it('throws when neither cnpjAutor nor cpfAutor is set', function (): void {
 });
 
 it('throws NfseException when descricao is too short', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate(
         tpAmb: 2,
@@ -160,7 +160,7 @@ it('throws NfseException when descricao is too short', function (): void {
 });
 
 it('throws NfseException when descricao is too long', function (): void {
-    $builder = new CancelamentoBuilder(makeXsdValidator());
+    $builder = new CancellationBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate(
         tpAmb: 2,
@@ -175,7 +175,7 @@ it('throws NfseException when descricao is too long', function (): void {
 });
 
 it('throws NfseException when scheme file does not exist', function (): void {
-    $builder = new CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator('/nonexistent/path'));
+    $builder = new CancellationBuilder(new \Pulsar\NfseNacional\Support\XsdValidator('/nonexistent/path'));
     $chave = '12345678901234567890123456789012345678901234567890';
 
     expect(fn () => $builder->buildAndValidate(
@@ -194,7 +194,7 @@ it('throws NfseException when XML loading fails', function (): void {
     $loader = Mockery::mock(XmlDocumentLoader::class);
     $loader->shouldReceive('__invoke')->andReturn(false);
 
-    $builder = new CancelamentoBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
+    $builder = new CancellationBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
     $chave = '12345678901234567890123456789012345678901234567890';
 
     expect(fn () => $builder->buildAndValidate(

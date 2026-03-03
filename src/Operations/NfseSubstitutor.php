@@ -10,21 +10,21 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Events\NfseSubstituted;
 use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
+use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventResponse;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\SubstitutionBuilder;
 
 final readonly class NfseSubstitutor implements SubstitutesNfse
 {
     use DispatchesEvents;
-    use ParsesEventoResponse;
+    use ParsesEventResponse;
     use ValidatesChaveAcesso;
 
     public function __construct(
         private NfseRequestPipeline $pipeline,
-        private SubstituicaoBuilder $substituicaoBuilder,
+        private SubstitutionBuilder $substitutionBuilder,
         private NfseAmbiente $ambiente,
     ) {}
 
@@ -43,7 +43,7 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
         return $this->withFailureEvent($operacao, function () use ($chave, $chaveSubstituta, $codigoMotivo, $descricao, $nPedRegEvento, $operacao): NfseResponse {
             $identity = $this->pipeline->extractAuthorIdentity('substituir');
 
-            $xml = $this->substituicaoBuilder->buildAndValidate(
+            $xml = $this->substitutionBuilder->buildAndValidate(
                 tpAmb: $this->ambiente->value,
                 verAplic: '1.0',
                 dhEvento: date('c'),
@@ -67,7 +67,7 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
              * } $result
              */
             $result = $this->pipeline->signCompressSend(
-                $xml, 'infPedReg', 'pedRegEvento', 'pedidoRegistroEventoXmlGZipB64', 'substituir_nfse', ['chave' => $chave]
+                $xml, 'infPedReg', 'pedRegEvento', 'pedidoRegistroEventoXmlGZipB64', 'substitute_nfse', ['chave' => $chave]
             );
 
             return $this->parseEventoResponse($result, $chave, $operacao, new NfseSubstituted($chave, $chaveSubstituta));

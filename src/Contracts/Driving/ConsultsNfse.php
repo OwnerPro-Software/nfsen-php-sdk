@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Contracts\Driving;
 
 use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Responses\DanfseResponse;
-use Pulsar\NfseNacional\Responses\EventosResponse;
+use Pulsar\NfseNacional\Responses\EventsResponse;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 
 interface ConsultsNfse
@@ -17,7 +17,7 @@ interface ConsultsNfse
 
     public function danfse(string $chave): DanfseResponse;
 
-    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventosResponse;
+    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventsResponse;
 
     public function verificarDps(string $id): bool;
 }

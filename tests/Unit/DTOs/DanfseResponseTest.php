@@ -1,7 +1,7 @@
 <?php
 
 use Pulsar\NfseNacional\Responses\DanfseResponse;
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 
 it('success response carries danfse url and no erros', function () {
     $response = new DanfseResponse(true, 'https://danfse.exemplo.com/CHAVE123');
@@ -13,7 +13,7 @@ it('success response carries danfse url and no erros', function () {
 });
 
 it('failure response carries erros and no url', function () {
-    $erros = [new MensagemProcessamento(descricao: 'NFSe não encontrada', codigo: 'E404')];
+    $erros = [new ProcessingMessage(descricao: 'NFSe não encontrada', codigo: 'E404')];
 
     $response = new DanfseResponse(false, erros: $erros);
 

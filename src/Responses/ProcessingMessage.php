@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Responses;
 
-final readonly class MensagemProcessamento
+final readonly class ProcessingMessage
 {
     public function __construct(
         public ?string $mensagem = null,

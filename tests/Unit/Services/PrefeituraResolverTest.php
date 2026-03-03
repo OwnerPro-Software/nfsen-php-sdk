@@ -35,7 +35,7 @@ it('resolves default adn url for unknown prefeitura in producao', function () us
 it('resolves operation path with substitution', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
-    $path = $resolver->resolveOperation('9999999', 'consultar_nfse', ['chave' => 'ABC123']);
+    $path = $resolver->resolveOperation('9999999', 'query_nfse', ['chave' => 'ABC123']);
 
     expect($path)->toBe('nfse/ABC123');
 });
@@ -43,7 +43,7 @@ it('resolves operation path with substitution', function () use ($jsonPath) {
 it('resolves emitir_decisao_judicial operation', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
-    $path = $resolver->resolveOperation('9999999', 'emitir_decisao_judicial');
+    $path = $resolver->resolveOperation('9999999', 'emit_court_order');
 
     expect($path)->toBe('decisao-judicial/nfse');
 });
@@ -51,7 +51,7 @@ it('resolves emitir_decisao_judicial operation', function () use ($jsonPath) {
 it('resolves verificar_dps operation with id substitution', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
-    $path = $resolver->resolveOperation('9999999', 'verificar_dps', ['id' => 'DPS123']);
+    $path = $resolver->resolveOperation('9999999', 'verify_dps', ['id' => 'DPS123']);
 
     expect($path)->toBe('dps/DPS123');
 });
@@ -60,7 +60,7 @@ it('resolves custom operation for known prefeitura', function () use ($jsonPath)
     $resolver = new PrefeituraResolver($jsonPath);
 
     // 3547304 (Santa Ana de Parnaiba) tem consultar_danfse customizado
-    $path = $resolver->resolveOperation('3547304', 'consultar_danfse', ['chave' => 'ABC']);
+    $path = $resolver->resolveOperation('3547304', 'query_danfse', ['chave' => 'ABC']);
 
     expect($path)->toContain('ABC');
 });
@@ -69,7 +69,7 @@ it('returns empty string for empty operation override', function () use ($jsonPa
     $resolver = new PrefeituraResolver($jsonPath);
 
     // Americana (3501608) tem emitir_nfse: "" — URL já é completa
-    $path = $resolver->resolveOperation('3501608', 'emitir_nfse');
+    $path = $resolver->resolveOperation('3501608', 'emit_nfse');
 
     expect($path)->toBe('');
 });
@@ -100,7 +100,7 @@ it('throws InvalidArgumentException for non-7-digit ibge code', function () use 
 it('url-encodes special characters in template parameter values', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
-    $path = $resolver->resolveOperation('9999999', 'consultar_nfse', ['chave' => 'ABC/../../admin']);
+    $path = $resolver->resolveOperation('9999999', 'query_nfse', ['chave' => 'ABC/../../admin']);
 
     expect($path)->toBe('nfse/ABC%2F..%2F..%2Fadmin');
 });
@@ -108,7 +108,7 @@ it('url-encodes special characters in template parameter values', function () us
 it('throws InvalidArgumentException for missing template parameter', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
-    expect(fn () => $resolver->resolveOperation('9999999', 'consultar_eventos', ['chave' => 'ABC']))
+    expect(fn () => $resolver->resolveOperation('9999999', 'query_events', ['chave' => 'ABC']))
         ->toThrow(\InvalidArgumentException::class, "'{tipoEvento}'");
 });
 

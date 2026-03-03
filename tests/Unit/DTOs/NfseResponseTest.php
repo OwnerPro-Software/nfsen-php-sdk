@@ -1,7 +1,7 @@
 <?php
 
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 
 it('success response carries chave and empty erros', function () {
     $response = new NfseResponse(true, 'chave123', '<NFSe/>');
@@ -16,7 +16,7 @@ it('success response carries chave and empty erros', function () {
 });
 
 it('failure response carries erros and no chave', function () {
-    $erros = [new MensagemProcessamento(descricao: 'E001 - Erro', codigo: 'E001')];
+    $erros = [new ProcessingMessage(descricao: 'E001 - Erro', codigo: 'E001')];
 
     $response = new NfseResponse(false, erros: $erros);
 
@@ -68,8 +68,8 @@ it('success response carries idDps', function () {
 
 it('success response carries alertas', function () {
     $alertas = [
-        new MensagemProcessamento(codigo: 'A001', descricao: 'Alerta de teste'),
-        new MensagemProcessamento(codigo: 'A002', descricao: 'Outro alerta'),
+        new ProcessingMessage(codigo: 'A001', descricao: 'Alerta de teste'),
+        new ProcessingMessage(codigo: 'A002', descricao: 'Outro alerta'),
     ];
 
     $response = new NfseResponse(true, 'CHAVE123', alertas: $alertas);
@@ -81,8 +81,8 @@ it('success response carries alertas', function () {
 
 it('failure response carries multiple erros', function () {
     $erros = [
-        new MensagemProcessamento(codigo: 'E001', descricao: 'Primeiro erro'),
-        new MensagemProcessamento(codigo: 'E002', descricao: 'Segundo erro'),
+        new ProcessingMessage(codigo: 'E001', descricao: 'Primeiro erro'),
+        new ProcessingMessage(codigo: 'E002', descricao: 'Segundo erro'),
     ];
 
     $response = new NfseResponse(false, erros: $erros);

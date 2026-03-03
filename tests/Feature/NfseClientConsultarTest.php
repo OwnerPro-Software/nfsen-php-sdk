@@ -19,7 +19,7 @@ it('consultar()->danfse returns DanfseResponse with url', function () {
     );
 });
 
-it('consultar()->eventos returns EventosResponse', function () {
+it('consultar()->eventos returns EventsResponse', function () {
     $chave = makeChaveAcesso();
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 

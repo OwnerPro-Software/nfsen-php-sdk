@@ -10,7 +10,7 @@ use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XsdValidator;
 
-final readonly class SubstituicaoBuilder
+final readonly class SubstitutionBuilder
 {
     use CreatesTextElements;
 

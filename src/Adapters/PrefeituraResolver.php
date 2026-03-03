@@ -22,22 +22,22 @@ final class PrefeituraResolver implements ResolvesPrefeituras
     private static array $cache = [];
 
     private const DEFAULT_URLS = [
-        'sefin_homologacao' => 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional',
-        'sefin_producao' => 'https://sefin.nfse.gov.br/SefinNacional',
-        'adn_homologacao' => 'https://adn.producaorestrita.nfse.gov.br',
-        'adn_producao' => 'https://adn.nfse.gov.br',
+        'sefin_staging' => 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional',
+        'sefin_production' => 'https://sefin.nfse.gov.br/SefinNacional',
+        'adn_staging' => 'https://adn.producaorestrita.nfse.gov.br',
+        'adn_production' => 'https://adn.nfse.gov.br',
     ];
 
     private const DEFAULT_OPERATIONS = [
-        'consultar_nfse' => 'nfse/{chave}',
-        'consultar_dps' => 'dps/{id}',
-        'verificar_dps' => 'dps/{id}',
-        'consultar_eventos' => 'nfse/{chave}/eventos/{tipoEvento}/{nSequencial}',
-        'consultar_danfse' => 'danfse/{chave}',
-        'emitir_nfse' => 'nfse',
-        'emitir_decisao_judicial' => 'decisao-judicial/nfse',
-        'cancelar_nfse' => 'nfse/{chave}/eventos',
-        'substituir_nfse' => 'nfse/{chave}/eventos',
+        'query_nfse' => 'nfse/{chave}',
+        'query_dps' => 'dps/{id}',
+        'verify_dps' => 'dps/{id}',
+        'query_events' => 'nfse/{chave}/eventos/{tipoEvento}/{nSequencial}',
+        'query_danfse' => 'danfse/{chave}',
+        'emit_nfse' => 'nfse',
+        'emit_court_order' => 'decisao-judicial/nfse',
+        'cancel_nfse' => 'nfse/{chave}/eventos',
+        'substitute_nfse' => 'nfse/{chave}/eventos',
     ];
 
     /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> */
@@ -77,7 +77,7 @@ final class PrefeituraResolver implements ResolvesPrefeituras
     public function resolveSeFinUrl(string $codigoIbge, NfseAmbiente $ambiente): string
     {
         $this->validateIbge($codigoIbge);
-        $key = $ambiente === NfseAmbiente::PRODUCAO ? 'sefin_producao' : 'sefin_homologacao';
+        $key = $ambiente === NfseAmbiente::PRODUCAO ? 'sefin_production' : 'sefin_staging';
 
         return $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
     }
@@ -85,7 +85,7 @@ final class PrefeituraResolver implements ResolvesPrefeituras
     public function resolveAdnUrl(string $codigoIbge, NfseAmbiente $ambiente): string
     {
         $this->validateIbge($codigoIbge);
-        $key = $ambiente === NfseAmbiente::PRODUCAO ? 'adn_producao' : 'adn_homologacao';
+        $key = $ambiente === NfseAmbiente::PRODUCAO ? 'adn_production' : 'adn_staging';
 
         return $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
     }

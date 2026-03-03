@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Responses;
 
-final readonly class EventosResponse
+final readonly class EventsResponse
 {
-    /** @param list<MensagemProcessamento> $erros */
+    /** @param list<ProcessingMessage> $erros */
     public function __construct(
         public bool $sucesso,
         public ?string $xml = null,

@@ -10,8 +10,8 @@ use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;
 use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseResponsePipeline implements ExecutesNfseRequests
@@ -42,7 +42,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
             $result = $this->httpClient->get($url);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
-                $erros = MensagemProcessamento::fromApiResult($result);
+                $erros = ProcessingMessage::fromApiResult($result);
                 $this->dispatchEvent(new NfseRejected($operacao, $erros[0]->codigo ?? 'UNKNOWN'));
 
                 return new NfseResponse(
@@ -102,7 +102,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
             $result = $this->httpClient->get($url);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
-                $erros = MensagemProcessamento::fromApiResult($result);
+                $erros = ProcessingMessage::fromApiResult($result);
                 $this->dispatchEvent(new NfseRejected($operacao, $erros[0]->codigo ?? 'UNKNOWN'));
             } else {
                 $this->dispatchEvent(new NfseQueried($operacao));

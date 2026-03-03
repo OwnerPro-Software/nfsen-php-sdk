@@ -1,30 +1,30 @@
 {
     "3501608": {
         "urls": {
-            "sefin_producao": "https://nfse.americana.sp.gov.br/api/adn/dps/recepcao",
-            "sefin_homologacao": "https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao"
+            "sefin_production": "https://nfse.americana.sp.gov.br/api/adn/dps/recepcao",
+            "sefin_staging": "https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao"
         },
         "operations":{
-            "emitir_nfse" : "",
-            "cancelar_nfse" : "",
-            "substituir_nfse" : "",
-            "consultar_nfse" : "",
-            "consultar_dps" : "",
-            "consultar_eventos" : "",
-            "consultar_danfse" : ""
+            "emit_nfse" : "",
+            "cancel_nfse" : "",
+            "substitute_nfse" : "",
+            "query_nfse" : "",
+            "query_dps" : "",
+            "query_events" : "",
+            "query_danfse" : ""
         }
     },
     "3547304": {
         "urls": {
-            "sefin_producao": "https://nfsesantanadeparnaiba.simplissweb.com.br",
-            "sefin_homologacao": "https://producaorestrita.simplissweb.com.br",
-            "adn_producao": "https://nfsesantanadeparnaiba.simplissweb.com.br",
-            "adn_homologacao": "https://producaorestrita.simplissweb.com.br"
+            "sefin_production": "https://nfsesantanadeparnaiba.simplissweb.com.br",
+            "sefin_staging": "https://producaorestrita.simplissweb.com.br",
+            "adn_production": "https://nfsesantanadeparnaiba.simplissweb.com.br",
+            "adn_staging": "https://producaorestrita.simplissweb.com.br"
         },
         "operations":{
-            "emitir_nfse" : "nfse",
-            "cancelar_nfse" : "nfse/{chave}/eventos",
-            "consultar_danfse": "nfse/{chave}"
+            "emit_nfse" : "nfse",
+            "cancel_nfse" : "nfse/{chave}/eventos",
+            "query_danfse": "nfse/{chave}"
         }
     }
 }

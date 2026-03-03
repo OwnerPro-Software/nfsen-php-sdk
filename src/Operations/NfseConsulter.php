@@ -10,9 +10,9 @@ use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Responses\DanfseResponse;
-use Pulsar\NfseNacional\Responses\EventosResponse;
-use Pulsar\NfseNacional\Responses\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\EventsResponse;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseConsulter implements ConsultsNfse
@@ -30,14 +30,14 @@ final readonly class NfseConsulter implements ConsultsNfse
     public function nfse(string $chave): NfseResponse
     {
         $this->validateChaveAcesso($chave);
-        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_nfse', ['chave' => $chave]);
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'query_nfse', ['chave' => $chave]);
 
         return $this->client->executeGet($this->buildUrl($this->seFinBaseUrl, $path));
     }
 
     public function dps(string $id): NfseResponse
     {
-        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_dps', ['id' => $id]);
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'query_dps', ['id' => $id]);
         $result = $this->client->executeGetRaw($this->buildUrl($this->seFinBaseUrl, $path));
 
         $tipoAmbiente = $result['tipoAmbiente'] ?? null;
@@ -47,7 +47,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         if (! empty($result['erros']) || isset($result['erro'])) {
             return new NfseResponse(
                 sucesso: false,
-                erros: MensagemProcessamento::fromApiResult($result),
+                erros: ProcessingMessage::fromApiResult($result),
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
@@ -68,7 +68,7 @@ final readonly class NfseConsulter implements ConsultsNfse
     {
         $this->validateChaveAcesso($chave);
         $baseUrl = $this->adnBaseUrl ?: $this->seFinBaseUrl;
-        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_danfse', ['chave' => $chave]);
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'query_danfse', ['chave' => $chave]);
 
         $result = $this->client->executeGetRaw($this->buildUrl($baseUrl, $path));
 
@@ -79,7 +79,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         if (! empty($result['erros']) || isset($result['erro'])) {
             return new DanfseResponse(
                 sucesso: false,
-                erros: MensagemProcessamento::fromApiResult($result),
+                erros: ProcessingMessage::fromApiResult($result),
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
@@ -95,7 +95,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         );
     }
 
-    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventosResponse
+    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventsResponse
     {
         $this->validateChaveAcesso($chave);
 
@@ -103,7 +103,7 @@ final readonly class NfseConsulter implements ConsultsNfse
             $tipoEvento = TipoEvento::from($tipoEvento);
         }
 
-        $path = $this->resolver->resolveOperation($this->codigoIbge, 'consultar_eventos', [
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'query_events', [
             'chave' => $chave,
             'tipoEvento' => $tipoEvento->value,
             'nSequencial' => $nSequencial,
@@ -116,16 +116,16 @@ final readonly class NfseConsulter implements ConsultsNfse
         $dataHoraProcessamento = $result['dataHoraProcessamento'] ?? null;
 
         if (! empty($result['erros']) || isset($result['erro'])) {
-            return new EventosResponse(
+            return new EventsResponse(
                 sucesso: false,
-                erros: MensagemProcessamento::fromApiResult($result),
+                erros: ProcessingMessage::fromApiResult($result),
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
             );
         }
 
-        return new EventosResponse(
+        return new EventsResponse(
             sucesso: true,
             xml: GzipCompressor::decompressB64($result['eventoXmlGZipB64'] ?? null),
             tipoAmbiente: $tipoAmbiente,
@@ -136,7 +136,7 @@ final readonly class NfseConsulter implements ConsultsNfse
 
     public function verificarDps(string $id): bool
     {
-        $path = $this->resolver->resolveOperation($this->codigoIbge, 'verificar_dps', ['id' => $id]);
+        $path = $this->resolver->resolveOperation($this->codigoIbge, 'verify_dps', ['id' => $id]);
         $status = $this->client->executeHead($this->buildUrl($this->seFinBaseUrl, $path));
 
         return $status === 200;

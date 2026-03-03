@@ -112,7 +112,7 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros)->toBeArray();
-    expect($response->erros[0])->toBeInstanceOf(\Pulsar\NfseNacional\Responses\MensagemProcessamento::class);
+    expect($response->erros[0])->toBeInstanceOf(\Pulsar\NfseNacional\Responses\ProcessingMessage::class);
     expect($response->erros[0]->descricao)->toContain('CNPJ');
     expect($response->idDps)->toBe('DPS_ERR_001');
     expect($response->tipoAmbiente)->toBe(2);
