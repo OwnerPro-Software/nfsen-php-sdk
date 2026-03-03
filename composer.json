@@ -1,5 +1,5 @@
 {
-  "name": "pulsar/nfse-nacional",
+  "name": "jonathanpmartins/nfse-nacional",
   "description": "Pacote Laravel para emissão de NFSe Nacional",
   "license": "MIT",
   "require": {

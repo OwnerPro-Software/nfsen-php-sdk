@@ -1,9 +1,9 @@
 # NFSe Nacional
 
 [![CI](https://github.com/jonathanpmartins/nfse-nacional/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jonathanpmartins/nfse-nacional/actions)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/pulsar/nfse-nacional.svg)](https://packagist.org/packages/pulsar/nfse-nacional)
-[![PHP Version](https://img.shields.io/packagist/php-v/pulsar/nfse-nacional.svg)](https://packagist.org/packages/pulsar/nfse-nacional)
-[![License](https://img.shields.io/packagist/l/pulsar/nfse-nacional.svg)](LICENSE)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/jonathanpmartins/nfse-nacional.svg)](https://packagist.org/packages/jonathanpmartins/nfse-nacional)
+[![PHP Version](https://img.shields.io/packagist/php-v/jonathanpmartins/nfse-nacional.svg)](https://packagist.org/packages/jonathanpmartins/nfse-nacional)
+[![License](https://img.shields.io/packagist/l/jonathanpmartins/nfse-nacional.svg)](LICENSE)
 
 Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padrão Nacional** ([nfse.gov.br](https://www.nfse.gov.br/)) via API REST. Funciona com Laravel 11/12 ou standalone (sem framework).
 
@@ -28,7 +28,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 ## Instalacao
 
 ```bash
-composer require pulsar/nfse-nacional
+composer require jonathanpmartins/nfse-nacional
 ```
 
 ## Configuracao
