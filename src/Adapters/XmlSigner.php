@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Signing;
+namespace Pulsar\NfseNacional\Adapters;
 
 use InvalidArgumentException;
 use NFePHP\Common\Certificate;

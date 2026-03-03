@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Http;
+namespace Pulsar\NfseNacional\Adapters;
 
 use Closure;
 use Illuminate\Support\Facades\Http;

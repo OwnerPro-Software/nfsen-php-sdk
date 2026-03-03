@@ -2,7 +2,7 @@
 
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Exception\CertificateException;
-use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Adapters\CertificateManager;
 use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
 
 it('loads certificate from pfx content and exposes it via getter', function () {

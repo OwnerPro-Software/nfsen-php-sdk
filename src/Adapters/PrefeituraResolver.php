@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Services;
+namespace Pulsar\NfseNacional\Adapters;
 
 use InvalidArgumentException;
 use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;

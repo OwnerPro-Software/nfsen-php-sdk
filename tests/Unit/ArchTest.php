@@ -15,17 +15,11 @@ arch()->preset()->strict()
 arch('handlers do not depend on infrastructure adapters')
     ->expect('Pulsar\NfseNacional\Handlers')
     ->not->toUse([
-        'Pulsar\NfseNacional\Http',
-        'Pulsar\NfseNacional\Signing',
-        'Pulsar\NfseNacional\Services',
-        'Pulsar\NfseNacional\Certificates',
+        'Pulsar\NfseNacional\Adapters',
     ]);
 
 arch('consulta does not depend on infrastructure adapters')
     ->expect('Pulsar\NfseNacional\Consulta')
     ->not->toUse([
-        'Pulsar\NfseNacional\Http',
-        'Pulsar\NfseNacional\Signing',
-        'Pulsar\NfseNacional\Services',
-        'Pulsar\NfseNacional\Certificates',
+        'Pulsar\NfseNacional\Adapters',
     ]);

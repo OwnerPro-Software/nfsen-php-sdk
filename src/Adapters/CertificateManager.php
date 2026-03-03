@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Certificates;
+namespace Pulsar\NfseNacional\Adapters;
 
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity;

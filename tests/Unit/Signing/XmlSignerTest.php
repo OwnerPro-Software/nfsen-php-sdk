@@ -1,6 +1,6 @@
 <?php
 
-use Pulsar\NfseNacional\Signing\XmlSigner;
+use Pulsar\NfseNacional\Adapters\XmlSigner;
 
 function parseSignedXml(string $signed): DOMDocument
 {

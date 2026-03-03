@@ -1,7 +1,7 @@
 <?php
 
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Adapters\CertificateManager;
 use Pulsar\NfseNacional\DTOs\Dps\InfDPS\InfDPS;
 use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
 use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
@@ -23,10 +23,10 @@ use Pulsar\NfseNacional\Handlers\NfseEmitter;
 use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
 use Pulsar\NfseNacional\Handlers\NfseRequestPipeline;
 use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
-use Pulsar\NfseNacional\Http\NfseHttpClient;
+use Pulsar\NfseNacional\Adapters\NfseHttpClient;
 use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
-use Pulsar\NfseNacional\Signing\XmlSigner;
+use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
+use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;

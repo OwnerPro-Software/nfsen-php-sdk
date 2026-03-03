@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional;
 
-use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Adapters\CertificateManager;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\CancelsNfse;
@@ -21,9 +21,9 @@ use Pulsar\NfseNacional\Handlers\NfseEmitter;
 use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
 use Pulsar\NfseNacional\Handlers\NfseRequestPipeline;
 use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
-use Pulsar\NfseNacional\Http\NfseHttpClient;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
-use Pulsar\NfseNacional\Signing\XmlSigner;
+use Pulsar\NfseNacional\Adapters\NfseHttpClient;
+use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
+use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;

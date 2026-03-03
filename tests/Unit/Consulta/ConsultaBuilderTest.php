@@ -4,7 +4,7 @@ use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 
 class FakeNfseClientForConsulta implements ExecutesNfseRequests
 {
