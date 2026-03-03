@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Builders\Xml\Parts;
+namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use InvalidArgumentException;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
+use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XsdValidator;
 
-final readonly class CancelamentoBuilder
+final readonly class SubstituicaoBuilder
 {
     use CreatesTextElements;
 
@@ -29,15 +29,18 @@ final readonly class CancelamentoBuilder
         ?string $cnpjAutor,
         ?string $cpfAutor,
         string $chNFSe,
-        CodigoJustificativaCancelamento $codigoMotivo,
-        string $descricao,
+        CodigoJustificativaSubstituicao $codigoMotivo,
+        string $chSubstituta,
+        string $descricao = '',
         int $nPedRegEvento = 1,
     ): string {
-        $this->validateDescricao($descricao);
+        if ($descricao !== '') {
+            $this->validateDescricao($descricao);
+        }
 
         $xml = $this->build(
             $tpAmb, $verAplic, $dhEvento, $cnpjAutor, $cpfAutor,
-            $chNFSe, $codigoMotivo, $descricao, $nPedRegEvento,
+            $chNFSe, $codigoMotivo, $chSubstituta, $descricao, $nPedRegEvento,
         );
         $this->xsdValidator->validate($xml, 'pedRegEvento_v1.01.xsd');
 
@@ -51,8 +54,9 @@ final readonly class CancelamentoBuilder
         ?string $cnpjAutor,
         ?string $cpfAutor,
         string $chNFSe,
-        CodigoJustificativaCancelamento $codigoMotivo,
-        string $descricao,
+        CodigoJustificativaSubstituicao $codigoMotivo,
+        string $chSubstituta,
+        string $descricao = '',
         int $nPedRegEvento = 1,
     ): string {
         $doc = new DOMDocument('1.0', 'UTF-8');
@@ -85,10 +89,15 @@ final readonly class CancelamentoBuilder
         $infPedReg->appendChild($this->text($doc, 'chNFSe', $chNFSe));
         $infPedReg->appendChild($this->text($doc, 'nPedRegEvento', (string) $nPedRegEvento));
 
-        $evento = $doc->createElement('e101101');
-        $evento->appendChild($this->text($doc, 'xDesc', 'Cancelamento de NFS-e'));
+        $evento = $doc->createElement('e105102');
+        $evento->appendChild($this->text($doc, 'xDesc', 'Cancelamento de NFS-e por Substituicao'));
         $evento->appendChild($this->text($doc, 'cMotivo', $codigoMotivo->value));
-        $evento->appendChild($this->text($doc, 'xMotivo', $descricao));
+
+        if ($descricao !== '') {
+            $evento->appendChild($this->text($doc, 'xMotivo', $descricao));
+        }
+
+        $evento->appendChild($this->text($doc, 'chSubstituta', $chSubstituta));
 
         $infPedReg->appendChild($evento);
 
@@ -109,6 +118,6 @@ final readonly class CancelamentoBuilder
 
     private function generateId(string $chNFSe, int $nPedRegEvento): string
     {
-        return 'PRE'.$chNFSe.'101101'.str_pad((string) $nPedRegEvento, 3, '0', STR_PAD_LEFT);
+        return 'PRE'.$chNFSe.'105102'.str_pad((string) $nPedRegEvento, 3, '0', STR_PAD_LEFT);
     }
 }

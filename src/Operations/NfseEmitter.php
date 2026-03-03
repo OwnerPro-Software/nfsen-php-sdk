@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Operations;
 
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\EmitsNfse;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Events\NfseEmitted;
@@ -15,6 +14,7 @@ use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
+use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 /** @phpstan-import-type DpsDataArray from DpsData */
 final readonly class NfseEmitter implements EmitsNfse

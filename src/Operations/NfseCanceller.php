@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Operations;
 
-use Pulsar\NfseNacional\Builders\Xml\Parts\CancelamentoBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\CancelsNfse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
@@ -15,6 +14,7 @@ use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventoResponse;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
 
 final readonly class NfseCanceller implements CancelsNfse
 {

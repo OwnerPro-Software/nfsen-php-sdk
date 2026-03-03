@@ -1,6 +1,5 @@
 <?php
 
-use Pulsar\NfseNacional\Builders\Xml\Parts\ServicoBuilder;
 use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
 use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
 use Pulsar\NfseNacional\Dps\DTO\Servico\ComercioExterior;
@@ -23,6 +22,7 @@ use Pulsar\NfseNacional\Dps\Enums\Servico\ObjetoLocacao;
 use Pulsar\NfseNacional\Dps\Enums\Servico\TipoRodagem;
 use Pulsar\NfseNacional\Dps\Enums\Servico\VinculoPrestacao;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 
 function makeServMinimo(): Servico
 {

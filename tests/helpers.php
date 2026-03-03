@@ -5,10 +5,6 @@ use Pulsar\NfseNacional\Adapters\CertificateManager;
 use Pulsar\NfseNacional\Adapters\NfseHttpClient;
 use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Adapters\XmlSigner;
-use Pulsar\NfseNacional\Builders\Consulta\NfseQueryExecutor;
-use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
-use Pulsar\NfseNacional\Builders\Xml\Parts\CancelamentoBuilder;
-use Pulsar\NfseNacional\Builders\Xml\Parts\SubstituicaoBuilder;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
@@ -28,10 +24,14 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Operations\NfseCanceller;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
+use Pulsar\NfseNacional\Operations\NfseQueryExecutor;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
+use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function makePfxContent(): string
 {

@@ -1,9 +1,9 @@
 <?php
 
-use Pulsar\NfseNacional\Builders\Xml\Parts\CancelamentoBuilder;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
+use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
 
 function parseCancelamentoXml(string $xml): DOMXPath
 {

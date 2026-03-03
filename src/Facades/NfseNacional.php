@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Pulsar\NfseNacional\Builders\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\NfseClient;
+use Pulsar\NfseNacional\Operations\ConsultaBuilder;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 
 /**

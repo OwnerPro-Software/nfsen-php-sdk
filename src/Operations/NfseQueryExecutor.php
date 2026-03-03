@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Builders\Consulta;
+namespace Pulsar\NfseNacional\Operations;
 
 use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
