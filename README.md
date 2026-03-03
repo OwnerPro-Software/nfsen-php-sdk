@@ -1,6 +1,6 @@
 # NFSe Nacional
 
-[![CI](https://github.com/jonathanpmartins/nfse-nacional/actions/workflows/ci.yml/badge.svg)](https://github.com/jonathanpmartins/nfse-nacional/actions)
+[![CI](https://github.com/jonathanpmartins/nfse-nacional/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jonathanpmartins/nfse-nacional/actions)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/pulsar/nfse-nacional.svg)](https://packagist.org/packages/pulsar/nfse-nacional)
 [![PHP Version](https://img.shields.io/packagist/php-v/pulsar/nfse-nacional.svg)](https://packagist.org/packages/pulsar/nfse-nacional)
 [![License](https://img.shields.io/packagist/l/pulsar/nfse-nacional.svg)](LICENSE)
