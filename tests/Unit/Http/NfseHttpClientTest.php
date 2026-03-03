@@ -30,8 +30,19 @@ it('performs GET request', function () {
     expect($response)->toHaveKey('nfseXmlGZipB64');
 });
 
-it('throws HttpException on 5xx response without body in message', function () {
-    Http::fake(['*' => Http::response(['message' => 'Server Error'], 500)]);
+it('returns parsed JSON on 5xx when response has JSON body', function () {
+    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Falha', 'codigo' => 'E500']]], 500)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $result = $client->post('https://example.com/nfse', []);
+
+    expect($result)->toHaveKey('erros')
+        ->and($result['erros'][0]['codigo'])->toBe('E500');
+});
+
+it('throws HttpException on 5xx when response has no JSON body', function () {
+    Http::fake(['*' => Http::response('Server Error', 500)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 

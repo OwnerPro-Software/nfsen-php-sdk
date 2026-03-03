@@ -76,12 +76,12 @@ final readonly class NfseHttpClient
                 ? $pending->post($url, $payload)
                 : $pending->get($url);
 
-            if ($response->serverError()) {
-                throw HttpException::fromResponse($response->status(), $response->body());
-            }
-
             /** @var array<string, mixed> $json */
             $json = (array) ($response->json() ?? []);
+
+            if ($json === [] && $response->serverError()) {
+                throw HttpException::fromResponse($response->status(), $response->body());
+            }
 
             return $json;
         });
