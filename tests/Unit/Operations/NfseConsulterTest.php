@@ -303,13 +303,15 @@ it('buildUrl returns baseUrl when path is empty', function () {
         }
     };
 
-    $resolver = new PrefeituraResolver($tmpJson);
-    $builder = new NfseConsulter($innerClient, 'https://sefin.base', '', $resolver, '9999998');
-    $builder->nfse(makeChaveAcesso());
+    try {
+        $resolver = new PrefeituraResolver($tmpJson);
+        $builder = new NfseConsulter($innerClient, 'https://sefin.base', '', $resolver, '9999998');
+        $builder->nfse(makeChaveAcesso());
 
-    expect($innerClient->lastUrl)->toBe('https://sefin.base');
-
-    unlink($tmpJson);
+        expect($innerClient->lastUrl)->toBe('https://sefin.base');
+    } finally {
+        unlink($tmpJson);
+    }
 });
 
 it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
