@@ -23,6 +23,7 @@ use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Operations\NfseCanceller;
+use Pulsar\NfseNacional\Operations\NfseConsulter;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
@@ -148,13 +149,14 @@ function makeNfseClient(
         httpClient: $httpClient,
     );
 
+    $queryExecutor = new NfseResponsePipeline($httpClient);
+    $seFinUrl = $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
+    $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
+
     return new NfseClient(
         emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
         canceller: new NfseCanceller($pipeline, new CancelamentoBuilder($xsdValidator), $ambiente),
         substitutor: new NfseSubstitutor($pipeline, new SubstituicaoBuilder($xsdValidator), $ambiente),
-        queryExecutor: new NfseResponsePipeline($httpClient),
-        prefeituraResolver: $prefeituraResolver,
-        ambiente: $ambiente,
-        prefeitura: $prefeitura,
+        consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
     );
 }

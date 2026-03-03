@@ -248,7 +248,8 @@ it('configure enforces sslVerify true when ambiente is PRODUCAO even if config s
         sslVerify: false,
     );
 
-    $queryExecutor = (new ReflectionProperty($client, 'queryExecutor'))->getValue($client);
+    $consulter = (new ReflectionProperty($client, 'consulter'))->getValue($client);
+    $queryExecutor = (new ReflectionProperty($consulter, 'client'))->getValue($consulter);
     $httpClient = (new ReflectionProperty($queryExecutor, 'httpClient'))->getValue($queryExecutor);
     $sslVerify = (new ReflectionProperty($httpClient, 'sslVerify'))->getValue($httpClient);
 

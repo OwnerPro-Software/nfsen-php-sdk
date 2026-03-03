@@ -8,11 +8,9 @@ use Pulsar\NfseNacional\Adapters\CertificateManager;
 use Pulsar\NfseNacional\Adapters\NfseHttpClient;
 use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Adapters\XmlSigner;
-use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Driving\CancelsNfse;
 use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
 use Pulsar\NfseNacional\Contracts\Driving\EmitsNfse;
-use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Contracts\Driving\QueriesNfse;
 use Pulsar\NfseNacional\Contracts\Driving\SubstitutesNfse;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
@@ -41,10 +39,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         private EmitsNfse $emitter,
         private CancelsNfse $canceller,
         private SubstitutesNfse $substitutor,
-        private ExecutesNfseRequests $queryExecutor,
-        private ResolvesPrefeituras $prefeituraResolver,
-        private NfseAmbiente $ambiente,
-        private string $prefeitura,
+        private ConsultsNfse $consulter,
     ) {}
 
     public static function for(string $pfxContent, string $senha, string $prefeitura): self
@@ -84,8 +79,6 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         $schemasPath = $schemesPath ?? __DIR__.'/../storage/schemes';
 
         $prefeituraResolver = new PrefeituraResolver($jsonPath);
-        $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
-
         $xsdValidator = new XsdValidator($schemasPath);
         $certManager = new CertificateManager($pfxContent, $senha);
         $effectiveSslVerify = $ambiente === NfseAmbiente::PRODUCAO || $sslVerify;
@@ -103,14 +96,15 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
             httpClient: $httpClient,
         );
 
+        $queryExecutor = new NfseResponsePipeline($httpClient);
+        $seFinUrl = $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
+        $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
+
         return new self(
             emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
             canceller: new NfseCanceller($pipeline, new CancelamentoBuilder($xsdValidator), $ambiente),
             substitutor: new NfseSubstitutor($pipeline, new SubstituicaoBuilder($xsdValidator), $ambiente),
-            queryExecutor: new NfseResponsePipeline($httpClient),
-            prefeituraResolver: $prefeituraResolver,
-            ambiente: $ambiente,
-            prefeitura: $prefeitura,
+            consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
         );
     }
 
@@ -138,12 +132,6 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
 
     public function consultar(): ConsultsNfse
     {
-        $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
-        $adnUrl = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
-
-        return new NfseConsulter(
-            $this->queryExecutor, $seFinUrl, $adnUrl,
-            $this->prefeituraResolver, $this->prefeitura,
-        );
+        return $this->consulter;
     }
 }
