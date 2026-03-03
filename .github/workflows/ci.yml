@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+        laravel: ['11.*', '12.*']
+
+    name: PHP ${{ matrix.php }} — Laravel ${{ matrix.laravel }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, zlib, openssl, mbstring, libxml
+          coverage: xdebug
+
+      - name: Install dependencies
+        run: |
+          composer require "illuminate/http:${{ matrix.laravel }}" "illuminate/support:${{ matrix.laravel }}" "illuminate/contracts:${{ matrix.laravel }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: ./vendor/bin/pest --coverage --min=100
+
+      - name: Run type coverage
+        run: ./vendor/bin/pest --type-coverage --min=100
+
+  quality:
+    runs-on: ubuntu-latest
+    name: Quality Checks
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, zlib, openssl, mbstring, libxml
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: PHPStan
+        run: ./vendor/bin/phpstan analyse
+
+      - name: Psalm
+        run: ./vendor/bin/psalm --taint-analysis
+
+      - name: Rector
+        run: ./vendor/bin/rector --dry-run
+
+      - name: Pint
+        run: ./vendor/bin/pint --test

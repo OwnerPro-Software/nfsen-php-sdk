@@ -3,6 +3,7 @@ composer.lock
 vendor/
 exemples/certs/
 exemples/local/
+examples/certs/
 todo.txt
 *.pfx
 *.p12

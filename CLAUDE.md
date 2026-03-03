@@ -26,6 +26,10 @@ Always run before considering the work done:
 
 Type coverage must remain at 100%. Any new or changed code must include complete type hints.
 
+## Documentation
+
+Whenever the public API changes (new methods, renamed parameters, changed behavior), update `README.md` to reflect those changes.
+
 ## Git
 
 Never commit the `composer.lock` file.

@@ -1,87 +1,254 @@
-# NFSe Padrão Nacional
+# NFSe Nacional
 
-Pacote para geração de NFSe Padrão Nacional (https://www.nfse.gov.br/) usando componentes NFePHP (https://github.com/nfephp-org).
+[![CI](https://github.com/jonathanpmartins/nfse-nacional/actions/workflows/ci.yml/badge.svg)](https://github.com/jonathanpmartins/nfse-nacional/actions)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/pulsar/nfse-nacional.svg)](https://packagist.org/packages/pulsar/nfse-nacional)
+[![PHP Version](https://img.shields.io/packagist/php-v/pulsar/nfse-nacional.svg)](https://packagist.org/packages/pulsar/nfse-nacional)
+[![License](https://img.shields.io/packagist/l/pulsar/nfse-nacional.svg)](LICENSE)
 
-Este pacote foi desenvolvido para atender algumas das minhas necessidades, implementei o que utilizei e a toque de caixa. Se quiser colaborar envie seu PR.
+Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padrão Nacional** ([nfse.gov.br](https://www.nfse.gov.br/)) via API REST. Funciona com Laravel 11/12 ou standalone (sem framework).
 
-**Em desenvolvimento. Use por sua conta e risco.**
+## Funcionalidades
 
-## ⚠️⚠️⚠️ AVISOS ⚠️⚠️⚠️
+- Emissão de NFSe (`emitir`) e emissão por decisão judicial (`emitirDecisaoJudicial`)
+- Cancelamento de NFSe (`cancelar`)
+- Substituição de NFSe (`substituir`)
+- Consulta por chave de acesso, DPS, DANFSE (URL do PDF), eventos e verificação de DPS
+- Assinatura digital XML com certificado A1 (PFX/P12)
+- Validação XSD dos documentos
+- Eventos Laravel opcionais (`NfseEmitted`, `NfseCancelled`, `NfseRejected`, etc.)
+- mTLS sem escrita nomeada em disco
+- 100% de cobertura de testes e tipos
 
-###  Configuração da Prefeitura
-
-Na configuração do sistema, a variável `prefeitura` pode receber atualmente dois tipos de valores:
-
-- Um identificador textual, por exemplo: `americana-sp`
-- O código IBGE do município
-
-⚠️ **Importante:** no momento, ambos os formatos são aceitos por compatibilidade.  
-Porém, **futuramente o padrão adotado será exclusivamente o código IBGE**.  
-Recomenda-se desde já utilizar o código IBGE para evitar ajustes em versões futuras.
-
-### Método consultarNfseChave() e encoding
-
-O arquivo XML após o gz_decode está vindo em ISO-8859-1. O método vai passar pelo mb_convert_encoding mantendo ISO, caso você tenha problemas utilize o segundo parâmetro como false como exemplo abaixo:
-
-```
-//Retorna ISO, padrão.
-$tools->consultarNfseChave('CHAVE_NFSE');
-
-//Retorna XML cru, sem passar por mb_convert_enconding
-$tools->consultarNfseChave('CHAVE_NFSE', false);
-```
-
-## Install
-
-**Este pacote é desenvolvido para uso do [Composer](https://getcomposer.org/), então não terá nenhuma explicação de instalação alternativa.**
-
-```bash
-composer require hadder/nfse-nacional
-```
-
-### Serviços implementados
-
-- consultarNfseChave
-- consultarDpsChave
-- consultarNfseEventos
-- consultarDanfse
-- enviaDps
-- cancelaNfse
-
-## Requerimentos
+## Requisitos
 
 - PHP 8.2+
-- ext-dom
-- ext-curl
-- ext-zlib
-- ext-openssl
-- ext-mbstring
+- Extensões: `curl`, `dom`, `zlib`, `openssl`, `mbstring`, `libxml`
+- Laravel 11 ou 12 (opcional — funciona standalone)
 
-## FAQ - E999 - Erro não catalogado
+## Instalacao
 
-Podem existir diversos motivos para esse erro ocorrer, já que ele se refere a uma falha não catalogada pela própria Receita, incluindo erros de servidor (500) e outros problemas aleatórios.
+```bash
+composer require pulsar/nfse-nacional
+```
 
-Vale mencionar que, no ambiente de **homologação**, esses erros costumam aparecer sem motivo algum, enquanto no ambiente de **produção** a nota normalmente é emitida sem problemas.
+## Configuracao
 
-Como a Receita só atualiza suas APIs quando está inspirada, listamos abaixo as causas mais comuns com base nos relatos que já recebemos:
+### Laravel
 
-- CPF/CNPJ do **prestador** não existente/cadastrado/habilitado na NFSe Nacional/Prefeitura;
+Publique o arquivo de configuracao:
 
-# CRÉDITOS (por Fernando Friedrich)
+```bash
+php artisan vendor:publish --tag=nfse-nacional-config
+```
 
-Este pacote **não caiu do céu**, **não apareceu por geração espontânea** e muito menos foi escrito do zero em um surto de genialidade de minha parte.
+Adicione as variaveis de ambiente no `.env`:
 
-Ele foi **copiado, clonado, analisado, desmontado, reaproveitado, adaptado e por fim ajustado por mim**, tendo como base pacotes de emissão de **NFSe** que eram disponibilizados como **Open Source** pelo Sr. **[Roberto L. Machado](https://github.com/robmachado)** e que, atualmente, não se encontram mais disponíveis publicamente.
+```env
+NFSE_AMBIENTE=2                   # 1 = Producao, 2 = Homologacao
+NFSE_PREFEITURA=3550308           # Codigo IBGE do municipio (7 digitos)
+NFSE_CERT_PATH=/caminho/cert.pfx  # Caminho do certificado PFX/P12
+NFSE_CERT_SENHA=senha             # Senha do certificado
+NFSE_TIMEOUT=30
+NFSE_CONNECT_TIMEOUT=10
+NFSE_SIGNING_ALGORITHM=sha1
+NFSE_SSL_VERIFY=true
+```
 
-Sim, **variáveis, métodos, classes, estruturas e ideias de arquitetura** foram utilizadas como referência (copiadas) — algumas foram alteradas, outras melhoradas, outras apenas sobreviveram ao tempo — sempre tendo como principal base o projeto **[NFePHP](https://github.com/robmachado/sped-nfse)**.
+### Standalone (sem Laravel)
 
-Na época da criação deste repositório, o cenário era simples:
-eu precisava **emitir notas fiscais para meus clientes**.  
-Não existia nenhuma alternativa Open Source ativa e funcional em PHP, e depender de **APIs pagas** definitivamente não era uma opção para mim (principalmente considerando a realidade financeira do momento).
+```php
+use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\NfseClient;
 
-Diante disso, fica aqui meu agradecimento **mais do que merecido** ao **Roberto**, por criar, manter e disponibilizar gratuitamente projetos como o **NFePHP**, além de sempre contribuir com a comunidade.
+$client = NfseClient::forStandalone(
+    pfxContent: file_get_contents('/caminho/certificado.pfx'),
+    senha: 'senha_certificado',
+    prefeitura: '3550308',
+    ambiente: NfseAmbiente::HOMOLOGACAO,
+);
+```
 
-Sem esse trabalho prévio, este repositório **muito provavelmente não existiria** — ou, no mínimo, teria me dado muito mais dor de cabeça.
+## Uso
 
-Por fim, meu agradecimento também a todas as pessoas que contribuem com este repositório seja enviando PRs, sugerindo melhorias, corrigindo bugs ou apontando problemas.  
-A lista de contribuidores pode ser vista em: https://github.com/Rainzart/nfse-nacional/graphs/contributors
+### Emitir NFSe
+
+```php
+$response = $client->emitir([
+    'infDPS' => [
+        'tpAmb'    => '2',                          // 1 = Producao, 2 = Homologacao
+        'dhEmi'    => date('Y-m-d\TH:i:sP'),       // Data/hora emissao
+        'verAplic' => 'MeuSistema_v1.0',
+        'serie'    => '1',
+        'nDPS'     => '1',
+        'dCompet'  => date('Y-m-d'),                // Data de competencia
+        'tpEmit'   => '1',                          // 1 = Prestador
+        'cLocEmi'  => '3550308',                    // Codigo IBGE 7 digitos
+    ],
+    'prest' => [
+        'CNPJ'    => '00000000000000',
+        'fone'    => '11999999999',
+        'regTrib' => [
+            'opSimpNac'   => '2',                   // 1 = Nao Optante, 2 = MEI, 3 = ME/EPP
+            'regEspTrib'  => '0',                   // 0 = Nenhum
+        ],
+    ],
+    'toma' => [
+        'xNome' => 'Tomador Exemplo Ltda',
+        'CPF'   => '00000000000',
+        'end'   => [
+            'xLgr'   => 'Rua Exemplo',
+            'nro'    => '100',
+            'xBairro' => 'Centro',
+            'endNac' => [
+                'cMun' => '3550308',
+                'CEP'  => '01001000',
+            ],
+        ],
+    ],
+    'serv' => [
+        'cLocPrestacao' => '3550308',
+        'cServ' => [
+            'cTribNac'    => '010101',
+            'xDescServ'   => 'Desenvolvimento de software sob encomenda',
+            'cNBS'        => '116030000',
+            'cIntContrib' => '1234',
+        ],
+    ],
+    'valores' => [
+        'vServPrest' => ['vServ' => '1000.00'],
+        'trib' => [
+            'tribMun' => [
+                'tribISSQN'  => '1',               // 1 = Operacao tributavel
+                'tpRetISSQN' => '1',               // 1 = Nao retido
+            ],
+            'indTotTrib' => '0',
+        ],
+    ],
+]);
+
+if ($response->sucesso) {
+    echo "Chave: {$response->chave}";
+    echo "XML: {$response->xml}";
+} else {
+    foreach ($response->erros as $erro) {
+        echo "[{$erro->codigo}] {$erro->mensagem} - {$erro->descricao}";
+    }
+}
+```
+
+### Cancelar NFSe
+
+```php
+use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
+
+$response = $client->cancelar(
+    chave: '00000000000000000000000000000000000000000000000000',
+    codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+    descricao: 'Erro na emissao da nota fiscal',
+);
+```
+
+Codigos de cancelamento: `ErroEmissao`, `ServicoNaoPrestado`, `Outros`.
+
+### Substituir NFSe
+
+```php
+use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
+
+$response = $client->substituir(
+    chave: '00000000000000000000000000000000000000000000000000',
+    chaveSubstituta: '11111111111111111111111111111111111111111111111111',
+    codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+    descricao: 'Substituicao por correcao de dados',
+);
+```
+
+### Consultas
+
+```php
+// Consultar NFSe por chave de acesso
+$response = $client->consultar()->nfse($chave);
+
+// Consultar DPS por ID
+$response = $client->consultar()->dps($idDps);
+
+// Obter URL do DANFSE (PDF)
+$response = $client->consultar()->danfse($chave);
+// $response->url contém a URL do PDF
+
+// Consultar eventos
+use Pulsar\NfseNacional\Enums\TipoEvento;
+
+$response = $client->consultar()->eventos(
+    chave: $chave,
+    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+    nSequencial: 1,
+);
+
+// Verificar se DPS foi processada
+$processada = $client->consultar()->verificarDps($idDps); // true ou false
+```
+
+### Laravel Facade
+
+```php
+use Pulsar\NfseNacional\Facades\NfseNacional;
+
+// Emitir
+$response = NfseNacional::emitir($dps);
+
+// Cancelar
+$response = NfseNacional::cancelar($chave, $motivo, $descricao);
+
+// Consultar
+$response = NfseNacional::consultar()->nfse($chave);
+$danfse   = NfseNacional::consultar()->danfse($chave);
+
+// Usar certificado diferente por requisicao
+$client = NfseNacional::for($pfxContent, $senha, '3550308');
+$response = $client->emitir($dps);
+```
+
+## Eventos
+
+O pacote dispara eventos Laravel que podem ser escutados na sua aplicacao:
+
+| Evento | Propriedades | Descricao |
+|--------|-------------|-----------|
+| `NfseEmitted` | `chave` | NFSe emitida com sucesso |
+| `NfseCancelled` | `chave` | NFSe cancelada com sucesso |
+| `NfseSubstituted` | `chave`, `chaveSubstituta` | NFSe substituida com sucesso |
+| `NfseQueried` | `operacao` | Consulta realizada |
+| `NfseRequested` | `operacao`, `metadata` | Operacao iniciada |
+| `NfseRejected` | `operacao`, `codigoErro` | Operacao rejeitada pela API |
+| `NfseFailed` | `operacao`, `message` | Falha na operacao |
+
+## Exemplos
+
+Exemplos completos de cada operacao estao disponiveis no diretorio [`examples/`](examples/).
+
+## Testes
+
+```bash
+composer test
+```
+
+Para executar todas as verificacoes de qualidade:
+
+```bash
+composer quality
+```
+
+## Contribuindo
+
+Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes.
+
+## Creditos
+
+Este pacote teve como base o trabalho do projeto original [nfse-nacional](https://github.com/Rainzart/nfse-nacional) de **Fernando Friedrich**, que por sua vez foi construido sobre o [NFePHP](https://github.com/nfephp-org) de **Roberto L. Machado**.
+
+Agradecimento a todos os contribuidores que ajudaram a evoluir este projeto.
+
+## Licenca
+
+MIT. Veja [LICENSE](LICENSE).

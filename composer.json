@@ -40,6 +40,22 @@
       "tests/helpers.php"
     ]
   },
+  "scripts": {
+    "test": "./vendor/bin/pest --coverage --min=100",
+    "test:types": "./vendor/bin/pest --type-coverage --min=100",
+    "analyse": "./vendor/bin/phpstan analyse",
+    "psalm": "./vendor/bin/psalm --taint-analysis",
+    "rector": "./vendor/bin/rector --dry-run",
+    "format": "./vendor/bin/pint",
+    "quality": [
+      "@test",
+      "@test:types",
+      "@analyse",
+      "@psalm",
+      "@rector",
+      "@format"
+    ]
+  },
   "config": {
     "optimize-autoloader": true,
     "allow-plugins": {
