@@ -12,8 +12,8 @@ arch()->preset()->strict()
     ->ignoring('Pulsar\NfseNacional\Support\XmlDocumentLoader');
 
 // Hexagonal boundary: core must not depend on infrastructure adapters
-arch('handlers do not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Handlers')
+arch('operations do not depend on infrastructure adapters')
+    ->expect('Pulsar\NfseNacional\Operations')
     ->not->toUse([
         'Pulsar\NfseNacional\Adapters',
     ]);
