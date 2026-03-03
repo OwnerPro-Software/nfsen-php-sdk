@@ -53,5 +53,5 @@ it('implements ExtractsAuthorIdentity interface', function () {
     $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
     $manager = new CertificateManager($pfxContent, 'secret');
 
-    expect($manager)->toBeInstanceOf(\Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity::class);
+    expect($manager)->toBeInstanceOf(\Pulsar\NfseNacional\Contracts\Driven\ExtractsAuthorIdentity::class);
 });

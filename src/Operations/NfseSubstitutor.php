@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Operations;
 
-use Pulsar\NfseNacional\Contracts\Ports\Driving\SubstitutesNfse;
+use Pulsar\NfseNacional\Contracts\Driving\SubstitutesNfse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Events\NfseRequested;

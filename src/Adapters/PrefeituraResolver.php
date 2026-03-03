@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Adapters;
 
 use InvalidArgumentException;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
+use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Support\FileReader;
 

@@ -7,7 +7,7 @@ namespace Pulsar\NfseNacional\Adapters;
 use Closure;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
+use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
 use Pulsar\NfseNacional\Exceptions\HttpException;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\TempFileFactory;

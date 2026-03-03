@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Pipeline;
 
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
+use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
+use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Events\NfseQueried;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;

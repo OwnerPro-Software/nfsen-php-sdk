@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Operations;
 
 use InvalidArgumentException;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
-use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
+use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
+use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Responses\DanfseResponse;
 use Pulsar\NfseNacional\Responses\EventosResponse;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Operations;
 
-use Pulsar\NfseNacional\Contracts\Ports\Driving\CancelsNfse;
+use Pulsar\NfseNacional\Contracts\Driving\CancelsNfse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Events\NfseCancelled;

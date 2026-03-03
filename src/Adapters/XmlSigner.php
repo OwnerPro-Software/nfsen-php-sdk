@@ -7,7 +7,7 @@ namespace Pulsar\NfseNacional\Adapters;
 use InvalidArgumentException;
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Signer;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SignsXml;
+use Pulsar\NfseNacional\Contracts\Driven\SignsXml;
 
 final class XmlSigner implements SignsXml
 {

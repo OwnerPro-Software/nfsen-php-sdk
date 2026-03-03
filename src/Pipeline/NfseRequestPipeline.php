@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Pipeline;
 
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SignsXml;
+use Pulsar\NfseNacional\Contracts\Driven\ExtractsAuthorIdentity;
+use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
+use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
+use Pulsar\NfseNacional\Contracts\Driven\SignsXml;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\GzipCompressor;
