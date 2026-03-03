@@ -7,11 +7,12 @@ namespace Pulsar\NfseNacional\Http;
 use Closure;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
 use Pulsar\NfseNacional\Exceptions\HttpException;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\TempFileFactory;
 
-final readonly class NfseHttpClient
+final readonly class NfseHttpClient implements SendsHttpRequests
 {
     public function __construct(
         private Certificate $certificate,

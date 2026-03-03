@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Services;
 
 use InvalidArgumentException;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Support\FileReader;
 
-final class PrefeituraResolver
+final class PrefeituraResolver implements ResolvesPrefeituras
 {
     /**
      * Cache estático por path — evita re-leitura em lote.
