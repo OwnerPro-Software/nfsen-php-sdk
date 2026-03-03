@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Operations;
 
-use InvalidArgumentException;
 use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Enums\TipoEvento;
+use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Responses\DanfseResponse;
 use Pulsar\NfseNacional\Responses\EventosResponse;
 use Pulsar\NfseNacional\Responses\MensagemProcessamento;
@@ -16,6 +16,8 @@ use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseConsulter
 {
+    use ValidatesChaveAcesso;
+
     public function __construct(
         private ExecutesNfseRequests $client,
         private string $seFinBaseUrl,
@@ -137,13 +139,6 @@ final readonly class NfseConsulter
         $status = $this->client->executeHead($this->buildUrl($this->seFinBaseUrl, $path));
 
         return $status === 200;
-    }
-
-    private function validateChaveAcesso(string $chave): void
-    {
-        if (! preg_match('/^\d{50}$/', $chave)) {
-            throw new InvalidArgumentException(sprintf("chaveAcesso inválida: '%s'. Esperado: exatamente 50 dígitos numéricos.", $chave));
-        }
     }
 
     private function buildUrl(string $baseUrl, string $path): string
