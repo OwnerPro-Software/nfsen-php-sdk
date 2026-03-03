@@ -8,8 +8,6 @@ use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
-// makePfxContent() definida em tests/helpers.php (criado na Task 8)
-
 it('emitir returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/emitir_sucesso.json'), true),
