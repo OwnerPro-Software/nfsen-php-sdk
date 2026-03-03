@@ -11,6 +11,7 @@ use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Driving\CancelsNfse;
 use Pulsar\NfseNacional\Contracts\Driving\EmitsNfse;
+use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Contracts\Driving\QueriesNfse;
 use Pulsar\NfseNacional\Contracts\Driving\SubstitutesNfse;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
@@ -36,10 +37,10 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, SubstitutesNfse
 {
     public function __construct(
-        private NfseEmitter $emitter,
-        private NfseCanceller $canceller,
-        private NfseSubstitutor $substitutor,
-        private NfseResponsePipeline $queryExecutor,
+        private EmitsNfse $emitter,
+        private CancelsNfse $canceller,
+        private SubstitutesNfse $substitutor,
+        private ExecutesNfseRequests $queryExecutor,
         private ResolvesPrefeituras $prefeituraResolver,
         private NfseAmbiente $ambiente,
         private string $prefeitura,
