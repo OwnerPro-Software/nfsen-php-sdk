@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Certificates;
 
 use NFePHP\Common\Certificate;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity;
 use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
 
-final readonly class CertificateManager
+final readonly class CertificateManager implements ExtractsAuthorIdentity
 {
     private Certificate $certificate;
 
@@ -23,5 +24,14 @@ final readonly class CertificateManager
     public function getCertificate(): Certificate
     {
         return $this->certificate;
+    }
+
+    /** @return array{cnpj: ?string, cpf: ?string} */
+    public function extract(): array
+    {
+        $cnpj = $this->certificate->getCnpj() ?: null;
+        $cpf = $this->certificate->getCpf() ?: null;
+
+        return ['cnpj' => $cnpj, 'cpf' => $cpf];
     }
 }

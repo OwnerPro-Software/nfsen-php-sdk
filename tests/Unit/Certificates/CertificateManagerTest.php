@@ -38,3 +38,20 @@ it('throws CertificateException for empty pfx content', function () {
     expect(fn () => new CertificateManager('', 'secret'))
         ->toThrow(CertificateException::class);
 });
+
+it('extracts CNPJ from certificate via ExtractsAuthorIdentity port', function () {
+    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
+    $manager = new CertificateManager($pfxContent, 'secret');
+
+    $identity = $manager->extract();
+
+    expect($identity)->toBeArray()
+        ->toHaveKeys(['cnpj', 'cpf']);
+});
+
+it('implements ExtractsAuthorIdentity interface', function () {
+    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
+    $manager = new CertificateManager($pfxContent, 'secret');
+
+    expect($manager)->toBeInstanceOf(\Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity::class);
+});
