@@ -3,14 +3,9 @@
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
 use Pulsar\NfseNacional\Support\GzipCompressor;
-use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
-use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('substituir returns success NfseResponse', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
@@ -141,18 +136,7 @@ it('substituir throws NfseException when gzip compression fails', function () {
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = new NfseClient(
-        ambiente: NfseAmbiente::HOMOLOGACAO,
-        timeout: 30,
-        signingAlgorithm: 'sha1',
-        sslVerify: true,
-        prefeituraResolver: new PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new DpsBuilder(makeXsdValidator()),
-        cancelamentoBuilder: new CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new SubstituicaoBuilder(makeXsdValidator()),
-        gzipCompressor: $compressor,
-    );
-    $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = makeNfseClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
 
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';

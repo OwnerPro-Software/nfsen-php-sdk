@@ -63,25 +63,6 @@ it('emitirDecisaoJudicial throws HttpException on server error', function (DpsDa
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 })->with('dpsData');
 
-it('emitirDecisaoJudicial throws NfseException when not configured', function (DpsData $data) {
-    $resolver = new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json');
-    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator());
-
-    $client = new NfseClient(
-        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
-        timeout: 30,
-        signingAlgorithm: 'sha1',
-        sslVerify: true,
-        prefeituraResolver: $resolver,
-        dpsBuilder: $dpsBuilder,
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
-    );
-
-    expect(fn () => $client->emitirDecisaoJudicial($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'não configurado');
-})->with('dpsData');
-
 it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 201)]);
 

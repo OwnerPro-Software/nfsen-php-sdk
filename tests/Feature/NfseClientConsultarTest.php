@@ -106,25 +106,6 @@ it('consultar()->eventos throws HttpException on server error', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
-it('consultar throws NfseException when client is not configured', function () {
-    $resolver = new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json');
-    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator());
-
-    $client = new NfseClient(
-        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
-        timeout: 30,
-        signingAlgorithm: 'sha1',
-        sslVerify: true,
-        prefeituraResolver: $resolver,
-        dpsBuilder: $dpsBuilder,
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
-    );
-
-    expect(fn () => $client->consultar())
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'não configurado');
-});
-
 it('consultar()->nfse throws NfseException on invalid base64 response', function () {
     Http::fake(['*' => Http::response(['nfseXmlGZipB64' => '!!!invalid-base64!!!'], 200)]);
 

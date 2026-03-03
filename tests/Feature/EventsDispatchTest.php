@@ -174,18 +174,7 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
     $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = new NfseClient(
-        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
-        timeout: 30,
-        signingAlgorithm: 'sha1',
-        sslVerify: true,
-        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator()),
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
-        gzipCompressor: $compressor,
-    );
-    $client->configure(makePfxContent(), 'secret', '9999999');
+    $client = makeNfseClient(gzipCompressor: $compressor);
 
     try {
         $client->emitir($data);
@@ -204,18 +193,7 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
     $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = new NfseClient(
-        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
-        timeout: 30,
-        signingAlgorithm: 'sha1',
-        sslVerify: true,
-        prefeituraResolver: new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator()),
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
-        gzipCompressor: $compressor,
-    );
-    $client->configure(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = makeNfseClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
 
     try {
         $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional;
 
-use Illuminate\Container\Container;
 use InvalidArgumentException;
-use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Certificates\CertificateManager;
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\NfseClientContract;
@@ -36,33 +34,37 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 use Throwable;
 
 /** @phpstan-import-type DpsDataArray from DpsData */
-final class NfseClient implements NfseClientContract
+final readonly class NfseClient implements NfseClientContract
 {
-    private ?CertificateManager $certManager = null;
-
-    private ?string $prefeitura = null;
-
-    private ?NfseHttpClient $httpClient = null;
-
     public function __construct(
-        private readonly NfseAmbiente $ambiente,
-        private readonly int $timeout,
-        private readonly string $signingAlgorithm,
-        private readonly bool $sslVerify,
-        private readonly PrefeituraResolver $prefeituraResolver,
-        private readonly DpsBuilder $dpsBuilder,
-        private readonly CancelamentoBuilder $cancelamentoBuilder,
-        private readonly SubstituicaoBuilder $substituicaoBuilder,
-        private readonly GzipCompressor $gzipCompressor = new GzipCompressor,
-        private readonly int $connectTimeout = 10,
+        private NfseAmbiente $ambiente,
+        private string $signingAlgorithm,
+        private PrefeituraResolver $prefeituraResolver,
+        private DpsBuilder $dpsBuilder,
+        private CancelamentoBuilder $cancelamentoBuilder,
+        private SubstituicaoBuilder $substituicaoBuilder,
+        private GzipCompressor $gzipCompressor,
+        private CertificateManager $certManager,
+        private string $prefeitura,
+        private NfseHttpClient $httpClient,
     ) {}
 
     public static function for(string $pfxContent, string $senha, string $prefeitura): self
     {
-        if (class_exists(Container::class)
-            && Container::getInstance()->bound(self::class)
-        ) {
-            return app(self::class)->configure($pfxContent, $senha, $prefeitura);
+        if (function_exists('config') && config('nfse-nacional') !== null) {
+            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool} $config */
+            $config = config('nfse-nacional');
+
+            return self::forStandalone(
+                pfxContent: $pfxContent,
+                senha: $senha,
+                prefeitura: $prefeitura,
+                ambiente: NfseAmbiente::fromConfig($config['ambiente']),
+                timeout: $config['timeout'],
+                signingAlgorithm: $config['signing_algorithm'],
+                sslVerify: $config['ssl_verify'],
+                connectTimeout: $config['connect_timeout'],
+            );
         }
 
         return self::forStandalone($pfxContent, $senha, $prefeitura);
@@ -83,46 +85,26 @@ final class NfseClient implements NfseClientContract
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
         $schemasPath = $schemesPath ?? __DIR__.'/../storage/schemes';
 
-        $xsdValidator = new XsdValidator($schemasPath);
+        $prefeituraResolver = new PrefeituraResolver($jsonPath);
+        $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
 
-        $instance = new self(
+        $xsdValidator = new XsdValidator($schemasPath);
+        $certManager = new CertificateManager($pfxContent, $senha);
+        $effectiveSslVerify = $ambiente === NfseAmbiente::PRODUCAO || $sslVerify;
+        $httpClient = new NfseHttpClient($certManager->getCertificate(), $timeout, $connectTimeout, $effectiveSslVerify);
+
+        return new self(
             ambiente: $ambiente,
-            timeout: $timeout,
             signingAlgorithm: $signingAlgorithm,
-            sslVerify: $sslVerify,
-            prefeituraResolver: new PrefeituraResolver($jsonPath),
+            prefeituraResolver: $prefeituraResolver,
             dpsBuilder: new DpsBuilder($xsdValidator),
             cancelamentoBuilder: new CancelamentoBuilder($xsdValidator),
             substituicaoBuilder: new SubstituicaoBuilder($xsdValidator),
-            connectTimeout: $connectTimeout,
+            gzipCompressor: new GzipCompressor,
+            certManager: $certManager,
+            prefeitura: $prefeitura,
+            httpClient: $httpClient,
         );
-
-        return $instance->configure($pfxContent, $senha, $prefeitura);
-    }
-
-    public function configure(string $pfxContent, string $senha, string $prefeitura): self
-    {
-        $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
-        $this->certManager = new CertificateManager($pfxContent, $senha);
-        $this->prefeitura = $prefeitura;
-        $effectiveSslVerify = $this->ambiente === NfseAmbiente::PRODUCAO || $this->sslVerify;
-        $this->httpClient = new NfseHttpClient($this->certManager->getCertificate(), $this->timeout, $this->connectTimeout, $effectiveSslVerify);
-
-        return $this;
-    }
-
-    /**
-     * @phpstan-assert !null $this->certManager
-     * @phpstan-assert !null $this->prefeitura
-     * @phpstan-assert !null $this->httpClient
-     */
-    private function ensureConfigured(): void
-    {
-        if (! $this->certManager instanceof CertificateManager || $this->prefeitura === null || ! $this->httpClient instanceof NfseHttpClient) {
-            throw new NfseException(
-                'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
-            );
-        }
     }
 
     private function dispatchEvent(object $event): void
@@ -160,21 +142,15 @@ final class NfseClient implements NfseClientContract
     /** @phpstan-param DpsData|DpsDataArray $data */
     private function doEmitir(DpsData|array $data, string $operacao, string $operationKey, string $payloadKey): NfseResponse
     {
-        $this->ensureConfigured();
-
         if (is_array($data)) {
             $data = DpsData::fromArray($data);
         }
-
-        $prefeitura = $this->prefeitura;
-        $certificate = $this->certManager->getCertificate();
-        $httpClient = $this->httpClient;
 
         $this->dispatchEvent(new NfseRequested($operacao, []));
 
         try {
             $xml = $this->dpsBuilder->buildAndValidate($data);
-            $signer = new XmlSigner($certificate, $this->signingAlgorithm);
+            $signer = new XmlSigner($this->certManager->getCertificate(), $this->signingAlgorithm);
             $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$signer->sign($xml, 'infDPS', 'DPS');
             $compressed = ($this->gzipCompressor)($signed);
             if ($compressed === false) {
@@ -183,8 +159,8 @@ final class NfseClient implements NfseClientContract
 
             $payload = [$payloadKey => base64_encode($compressed)];
 
-            $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
-            $opPath = $this->prefeituraResolver->resolveOperation($prefeitura, $operationKey);
+            $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
+            $opPath = $this->prefeituraResolver->resolveOperation($this->prefeitura, $operationKey);
             $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
             /**
@@ -201,7 +177,7 @@ final class NfseClient implements NfseClientContract
              *     dataHoraProcessamento?: string,
              * } $result
              */
-            $result = $httpClient->post($url, $payload);
+            $result = $this->httpClient->post($url, $payload);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
                 $erros = MensagemProcessamento::fromApiResult($result);
@@ -253,20 +229,16 @@ final class NfseClient implements NfseClientContract
     public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1): NfseResponse
     {
         $this->validateChaveAcesso($chave);
-        $this->ensureConfigured();
 
         if (is_string($codigoMotivo)) {
             $codigoMotivo = CodigoJustificativaCancelamento::from($codigoMotivo);
         }
 
-        $prefeitura = $this->prefeitura;
-        $certificate = $this->certManager->getCertificate();
-        $httpClient = $this->httpClient;
-
         $operacao = 'cancelar';
         $this->dispatchEvent(new NfseRequested($operacao, ['chave' => $chave]));
 
         try {
+            $certificate = $this->certManager->getCertificate();
             $cnpj = $certificate->getCnpj() ?: null;
             $cpf = $certificate->getCpf() ?: null;
 
@@ -286,7 +258,7 @@ final class NfseClient implements NfseClientContract
                 nPedRegEvento: $nPedRegEvento,
             );
 
-            return $this->sendEvento($xml, $chave, $prefeitura, $certificate, $httpClient, $operacao, 'cancelar_nfse', new NfseCancelled($chave));
+            return $this->sendEvento($xml, $chave, $operacao, 'cancelar_nfse', new NfseCancelled($chave));
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;
@@ -300,20 +272,16 @@ final class NfseClient implements NfseClientContract
     {
         $this->validateChaveAcesso($chave);
         $this->validateChaveAcesso($chaveSubstituta);
-        $this->ensureConfigured();
 
         if (is_string($codigoMotivo)) {
             $codigoMotivo = CodigoJustificativaSubstituicao::from($codigoMotivo);
         }
 
-        $prefeitura = $this->prefeitura;
-        $certificate = $this->certManager->getCertificate();
-        $httpClient = $this->httpClient;
-
         $operacao = 'substituir';
         $this->dispatchEvent(new NfseRequested($operacao, ['chave' => $chave]));
 
         try {
+            $certificate = $this->certManager->getCertificate();
             $cnpj = $certificate->getCnpj() ?: null;
             $cpf = $certificate->getCpf() ?: null;
 
@@ -334,7 +302,7 @@ final class NfseClient implements NfseClientContract
                 nPedRegEvento: $nPedRegEvento,
             );
 
-            return $this->sendEvento($xml, $chave, $prefeitura, $certificate, $httpClient, $operacao, 'substituir_nfse', new NfseSubstituted($chave, $chaveSubstituta));
+            return $this->sendEvento($xml, $chave, $operacao, 'substituir_nfse', new NfseSubstituted($chave, $chaveSubstituta));
         } catch (HttpException $httpException) {
             $this->dispatchEvent(new NfseFailed($operacao, $httpException->getMessage()));
             throw $httpException;
@@ -344,9 +312,9 @@ final class NfseClient implements NfseClientContract
         }
     }
 
-    private function sendEvento(string $xml, string $chave, string $prefeitura, Certificate $certificate, NfseHttpClient $httpClient, string $operacao, string $operationKey, NfseCancelled|NfseSubstituted $successEvent): NfseResponse
+    private function sendEvento(string $xml, string $chave, string $operacao, string $operationKey, NfseCancelled|NfseSubstituted $successEvent): NfseResponse
     {
-        $signer = new XmlSigner($certificate, $this->signingAlgorithm);
+        $signer = new XmlSigner($this->certManager->getCertificate(), $this->signingAlgorithm);
         $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$signer->sign($xml, 'infPedReg', 'pedRegEvento');
         $compressed = ($this->gzipCompressor)($signed);
         if ($compressed === false) {
@@ -355,9 +323,9 @@ final class NfseClient implements NfseClientContract
 
         $payload = ['pedidoRegistroEventoXmlGZipB64' => base64_encode($compressed)];
 
-        $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($prefeitura, $this->ambiente);
+        $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
         $opPath = $this->prefeituraResolver->resolveOperation(
-            $prefeitura, $operationKey, ['chave' => $chave]
+            $this->prefeitura, $operationKey, ['chave' => $chave]
         );
         $url = $opPath !== '' ? rtrim($seFinUrl, '/').'/'.ltrim($opPath, '/') : $seFinUrl;
 
@@ -371,7 +339,7 @@ final class NfseClient implements NfseClientContract
          *     dataHoraProcessamento?: string,
          * } $result
          */
-        $result = $httpClient->post($url, $payload);
+        $result = $this->httpClient->post($url, $payload);
 
         if (! empty($result['erros']) || isset($result['erro'])) {
             $erros = MensagemProcessamento::fromApiResult($result);
@@ -401,7 +369,6 @@ final class NfseClient implements NfseClientContract
 
     public function consultar(): ConsultaBuilder
     {
-        $this->ensureConfigured();
         $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
         $adnUrl = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
 
@@ -413,9 +380,6 @@ final class NfseClient implements NfseClientContract
 
     public function executeGet(string $url): NfseResponse
     {
-        $this->ensureConfigured();
-        $httpClient = $this->httpClient;
-
         $operacao = 'consultar';
         $this->dispatchEvent(new NfseRequested($operacao));
 
@@ -431,7 +395,7 @@ final class NfseClient implements NfseClientContract
              *     dataHoraProcessamento?: string,
              * } $result
              */
-            $result = $httpClient->get($url);
+            $result = $this->httpClient->get($url);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
                 $erros = MensagemProcessamento::fromApiResult($result);
@@ -480,9 +444,6 @@ final class NfseClient implements NfseClientContract
      */
     public function executeGetRaw(string $url): array
     {
-        $this->ensureConfigured();
-        $httpClient = $this->httpClient;
-
         $operacao = 'consultar';
         $this->dispatchEvent(new NfseRequested($operacao));
 
@@ -500,7 +461,7 @@ final class NfseClient implements NfseClientContract
              *     dataHoraProcessamento?: string,
              * } $result
              */
-            $result = $httpClient->get($url);
+            $result = $this->httpClient->get($url);
 
             if (! empty($result['erros']) || isset($result['erro'])) {
                 $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? $result['erro']['codigo'] ?? 'UNKNOWN'));
@@ -520,14 +481,11 @@ final class NfseClient implements NfseClientContract
 
     public function executeHead(string $url): int
     {
-        $this->ensureConfigured();
-        $httpClient = $this->httpClient;
-
         $operacao = 'consultar';
         $this->dispatchEvent(new NfseRequested($operacao));
 
         try {
-            $status = $httpClient->head($url);
+            $status = $this->httpClient->head($url);
 
             $this->dispatchEvent(new NfseQueried($operacao));
 

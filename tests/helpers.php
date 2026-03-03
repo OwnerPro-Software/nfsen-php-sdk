@@ -18,7 +18,14 @@ use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\Http\NfseHttpClient;
+use Pulsar\NfseNacional\NfseClient;
+use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
+use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
+use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
+use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function makePfxContent(): string
 {
@@ -109,5 +116,27 @@ function makeValoresMinimo(?string $vServ = null): Valores
             ),
             indTotTrib: '0',
         ),
+    );
+}
+
+function makeNfseClient(
+    ?GzipCompressor $gzipCompressor = null,
+    ?string $pfxContent = null,
+    string $prefeitura = '9999999',
+): NfseClient {
+    $pfxContent ??= makePfxContent();
+    $certManager = new CertificateManager($pfxContent, 'secret');
+
+    return new NfseClient(
+        ambiente: NfseAmbiente::HOMOLOGACAO,
+        signingAlgorithm: 'sha1',
+        prefeituraResolver: new PrefeituraResolver(__DIR__.'/../storage/prefeituras.json'),
+        dpsBuilder: new DpsBuilder(makeXsdValidator()),
+        cancelamentoBuilder: new CancelamentoBuilder(makeXsdValidator()),
+        substituicaoBuilder: new SubstituicaoBuilder(makeXsdValidator()),
+        gzipCompressor: $gzipCompressor ?? new GzipCompressor,
+        certManager: $certManager,
+        prefeitura: $prefeitura,
+        httpClient: new NfseHttpClient($certManager->getCertificate(), 30, 10, true),
     );
 }

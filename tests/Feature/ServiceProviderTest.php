@@ -2,15 +2,28 @@
 
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Facades\NfseNacional;
 use Pulsar\NfseNacional\NfseClient;
 
 it('resolves NfseClient from container', function () {
+    config([
+        'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura' => '3501608',
+    ]);
+
     $client = app(NfseClient::class);
     expect($client)->toBeInstanceOf(NfseClient::class);
 });
 
 it('NfseNacional facade resolves NfseClient', function () {
+    config([
+        'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura' => '3501608',
+    ]);
+
     expect(NfseNacional::getFacadeRoot())->toBeInstanceOf(NfseClient::class);
 });
 
@@ -66,4 +79,9 @@ it('throws RuntimeException when cert file exists but cannot be read', function 
 
     expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
         ->toThrow(\RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
+});
+
+it('throws NfseException when cert config is incomplete', function () {
+    expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
+        ->toThrow(NfseException::class, 'NfseClient não configurado');
 });

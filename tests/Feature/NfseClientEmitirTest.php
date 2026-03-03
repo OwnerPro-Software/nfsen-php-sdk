@@ -6,9 +6,7 @@ use Pulsar\NfseNacional\DTOs\Dps\DpsData;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
 use Pulsar\NfseNacional\Support\GzipCompressor;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 // makePfxContent() definida em tests/helpers.php (criado na Task 8)
 
@@ -93,6 +91,18 @@ it('forStandalone creates client without Laravel container', function (DpsData $
     expect($response->chave)->toBe('CHAVE_STANDALONE');
 })->with('dpsData');
 
+it('for() falls back to forStandalone when config is null', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'STANDALONE_CHAVE'], 201)]);
+
+    config()->offsetUnset('nfse-nacional');
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('STANDALONE_CHAVE');
+})->with('dpsData');
+
 it('emitir returns rejection with erros array', function (DpsData $data) {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/emitir_rejeicao.json'), true),
@@ -133,38 +143,6 @@ it('emitir throws HttpException on server error', function (DpsData $data) {
 
     expect(fn () => $client->emitir($data))
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
-})->with('dpsData');
-
-it('throws NfseException when not configured', function (DpsData $data) {
-    $resolver = new \Pulsar\NfseNacional\Services\PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json');
-    $dpsBuilder = new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator());
-
-    $client = new NfseClient(
-        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
-        timeout: 30,
-        signingAlgorithm: 'sha1',
-        sslVerify: true,
-        prefeituraResolver: $resolver,
-        dpsBuilder: $dpsBuilder,
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
-    );
-
-    expect(fn () => $client->emitir($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'não configurado');
-})->with('dpsData');
-
-it('for() falls back to forStandalone when container has no binding', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'STANDALONE_CHAVE'], 201)]);
-
-    // Temporarily remove the binding
-    app()->offsetUnset(NfseClient::class);
-
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->emitir($data);
-
-    expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe('STANDALONE_CHAVE');
 })->with('dpsData');
 
 it('emitir succeeds and reports error when event listener throws', function (DpsData $data) {
@@ -389,18 +367,7 @@ it('emitir throws NfseException when gzip compression fails', function (DpsData 
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = new NfseClient(
-        ambiente: NfseAmbiente::HOMOLOGACAO,
-        timeout: 30,
-        signingAlgorithm: 'sha1',
-        sslVerify: true,
-        prefeituraResolver: new PrefeituraResolver(__DIR__.'/../../storage/prefeituras.json'),
-        dpsBuilder: new DpsBuilder(makeXsdValidator()),
-        cancelamentoBuilder: new \Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new \Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder(makeXsdValidator()),
-        gzipCompressor: $compressor,
-    );
-    $client->configure(makePfxContent(), 'secret', '9999999');
+    $client = makeNfseClient(gzipCompressor: $compressor);
 
     expect(fn () => $client->emitir($data))
         ->toThrow(NfseException::class, 'comprimir XML');
