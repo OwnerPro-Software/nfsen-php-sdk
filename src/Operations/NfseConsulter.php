@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Operations;
 
 use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
+use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
 use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
@@ -14,7 +15,7 @@ use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
-final readonly class NfseConsulter
+final readonly class NfseConsulter implements ConsultsNfse
 {
     use ValidatesChaveAcesso;
 

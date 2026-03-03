@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Facades;
 
 use Illuminate\Support\Facades\Facade;
+use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Operations\NfseConsulter;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 
 /**
@@ -19,7 +19,7 @@ use Pulsar\NfseNacional\Responses\NfseResponse;
  * @method static NfseResponse emitirDecisaoJudicial(DpsData|DpsDataArray $data)
  * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1)
  * @method static NfseResponse substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1)
- * @method static NfseConsulter consultar()
+ * @method static ConsultsNfse consultar()
  */
 final class NfseNacional extends Facade
 {

@@ -10,6 +10,7 @@ use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
 use Pulsar\NfseNacional\Contracts\Driving\CancelsNfse;
+use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
 use Pulsar\NfseNacional\Contracts\Driving\EmitsNfse;
 use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Contracts\Driving\QueriesNfse;
@@ -135,7 +136,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         return $this->substitutor->substituir($chave, $chaveSubstituta, $codigoMotivo, $descricao, $nPedRegEvento);
     }
 
-    public function consultar(): NfseConsulter
+    public function consultar(): ConsultsNfse
     {
         $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
         $adnUrl = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
