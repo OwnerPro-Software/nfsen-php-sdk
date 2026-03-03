@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Handlers;
 
-use Pulsar\NfseNacional\Certificates\CertificateManager;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
+use Pulsar\NfseNacional\Contracts\Ports\Driven\SignsXml;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Http\NfseHttpClient;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
-use Pulsar\NfseNacional\Signing\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
 final readonly class NfseRequestPipeline
 {
     public function __construct(
         private NfseAmbiente $ambiente,
-        private string $signingAlgorithm,
-        private PrefeituraResolver $prefeituraResolver,
+        private ResolvesPrefeituras $prefeituraResolver,
         private GzipCompressor $gzipCompressor,
-        private CertificateManager $certManager,
+        private SignsXml $signer,
+        private ExtractsAuthorIdentity $authorIdentity,
         private string $prefeitura,
-        private NfseHttpClient $httpClient,
+        private SendsHttpRequests $httpClient,
     ) {}
 
     /**
@@ -30,8 +30,7 @@ final readonly class NfseRequestPipeline
      */
     public function signCompressSend(string $xml, string $signTagName, string $signRootName, string $payloadKey, string $operationKey, array $operationParams = []): array
     {
-        $signer = new XmlSigner($this->certManager->getCertificate(), $this->signingAlgorithm);
-        $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$signer->sign($xml, $signTagName, $signRootName);
+        $signed = '<?xml version="1.0" encoding="UTF-8"?>'.$this->signer->sign($xml, $signTagName, $signRootName);
         $compressed = ($this->gzipCompressor)($signed);
         if ($compressed === false) {
             throw new NfseException('Falha ao comprimir XML.');
@@ -52,14 +51,12 @@ final readonly class NfseRequestPipeline
      */
     public function extractAuthorIdentity(string $operacao): array
     {
-        $certificate = $this->certManager->getCertificate();
-        $cnpj = $certificate->getCnpj() ?: null;
-        $cpf = $certificate->getCpf() ?: null;
+        $identity = $this->authorIdentity->extract();
 
-        if ($cnpj === null && $cpf === null) {
+        if ($identity['cnpj'] === null && $identity['cpf'] === null) {
             throw new NfseException(sprintf('Certificado não contém CNPJ nem CPF. É necessário ao menos um para %s a NFS-e.', $operacao));
         }
 
-        return ['cnpj' => $cnpj, 'cpf' => $cpf];
+        return $identity;
     }
 }

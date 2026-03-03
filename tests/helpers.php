@@ -135,13 +135,14 @@ function makeNfseClient(
     $prefeituraResolver = new PrefeituraResolver(__DIR__.'/../storage/prefeituras.json');
     $xsdValidator = makeXsdValidator();
     $httpClient = new NfseHttpClient($certManager->getCertificate(), 30, 10, true);
+    $signer = new \Pulsar\NfseNacional\Signing\XmlSigner($certManager->getCertificate(), 'sha1');
 
     $pipeline = new NfseRequestPipeline(
         ambiente: $ambiente,
-        signingAlgorithm: 'sha1',
         prefeituraResolver: $prefeituraResolver,
         gzipCompressor: $gzipCompressor ?? new GzipCompressor,
-        certManager: $certManager,
+        signer: $signer,
+        authorIdentity: $certManager,
         prefeitura: $prefeitura,
         httpClient: $httpClient,
     );

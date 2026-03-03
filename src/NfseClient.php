@@ -22,6 +22,7 @@ use Pulsar\NfseNacional\Handlers\NfseRequestPipeline;
 use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use Pulsar\NfseNacional\Signing\XmlSigner;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancelamentoBuilder;
@@ -87,12 +88,14 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         $effectiveSslVerify = $ambiente === NfseAmbiente::PRODUCAO || $sslVerify;
         $httpClient = new NfseHttpClient($certManager->getCertificate(), $timeout, $connectTimeout, $effectiveSslVerify);
 
+        $signer = new XmlSigner($certManager->getCertificate(), $signingAlgorithm);
+
         $pipeline = new NfseRequestPipeline(
             ambiente: $ambiente,
-            signingAlgorithm: $signingAlgorithm,
             prefeituraResolver: $prefeituraResolver,
             gzipCompressor: new GzipCompressor,
-            certManager: $certManager,
+            signer: $signer,
+            authorIdentity: $certManager,
             prefeitura: $prefeitura,
             httpClient: $httpClient,
         );
