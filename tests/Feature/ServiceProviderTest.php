@@ -65,5 +65,5 @@ it('throws RuntimeException when cert file exists but cannot be read', function 
     ]);
 
     expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
-        ->toThrow(\RuntimeException::class, 'Falha ao ler certificado');
+        ->toThrow(\RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
 });

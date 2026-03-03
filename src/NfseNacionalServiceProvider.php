@@ -59,7 +59,7 @@ final class NfseNacionalServiceProvider extends ServiceProvider
                 $certContent = @file_get_contents($certPath);
 
                 if ($certContent === false || $certContent === '') {
-                    throw new RuntimeException('Falha ao ler certificado: '.$certPath);
+                    throw new RuntimeException('Falha ao ler arquivo de certificado digital.');
                 }
 
                 $client->configure($certContent, $certSenha, $prefeitura);
