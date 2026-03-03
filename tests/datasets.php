@@ -1,8 +1,8 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
+use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
 
 dataset('dpsData', [
     'basico' => function (): DpsData {

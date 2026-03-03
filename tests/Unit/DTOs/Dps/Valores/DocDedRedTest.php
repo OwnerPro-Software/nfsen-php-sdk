@@ -1,8 +1,8 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DocDedRed;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DocNFNFS;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DocOutNFSe;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoDedRed;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 

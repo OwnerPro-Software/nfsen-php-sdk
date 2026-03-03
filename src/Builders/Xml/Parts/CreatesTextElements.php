@@ -6,9 +6,9 @@ namespace Pulsar\NfseNacional\Builders\Xml\Parts;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoExterior;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
 
 trait CreatesTextElements
 {

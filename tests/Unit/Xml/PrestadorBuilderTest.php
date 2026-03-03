@@ -1,10 +1,10 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoExterior;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\RegTrib;
+use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
+use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\RegApTribSN;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;

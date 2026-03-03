@@ -2,15 +2,15 @@
 
 use NFePHP\Common\Certificate;
 use Pulsar\NfseNacional\Adapters\CertificateManager;
-use Pulsar\NfseNacional\DTOs\Dps\InfDPS\InfDPS;
-use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\RegTrib;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
+use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
+use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
+use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
+use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\TipoEmitente;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;

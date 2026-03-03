@@ -6,16 +6,16 @@ namespace Pulsar\NfseNacional\Builders\Xml\Parts;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\AtividadeEvento;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\ComercioExterior;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoExteriorObra;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoObra;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\ExploracaoRodoviaria;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\InfoComplementar;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\LocacaoSublocacao;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\Obra;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
+use Pulsar\NfseNacional\Dps\DTO\Servico\ComercioExterior;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
+use Pulsar\NfseNacional\Dps\DTO\Servico\ExploracaoRodoviaria;
+use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
+use Pulsar\NfseNacional\Dps\DTO\Servico\LocacaoSublocacao;
+use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
+use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
 
 final class ServicoBuilder
 {

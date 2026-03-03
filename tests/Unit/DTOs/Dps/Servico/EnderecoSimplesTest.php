@@ -1,7 +1,7 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoExteriorObra;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoSimples;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('throws when both CEP and endExt are set', function () {

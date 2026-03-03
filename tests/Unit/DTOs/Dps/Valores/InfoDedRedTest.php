@@ -1,7 +1,7 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DocDedRed;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\InfoDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoDedRed;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 

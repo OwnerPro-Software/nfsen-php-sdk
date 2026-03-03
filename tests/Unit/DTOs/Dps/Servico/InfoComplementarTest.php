@@ -1,6 +1,6 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Servico\InfoComplementar;
+use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('throws when xItemPed is empty array', function () {

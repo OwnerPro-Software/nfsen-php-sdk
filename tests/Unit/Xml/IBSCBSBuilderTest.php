@@ -1,19 +1,19 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoDest;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoImovel;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoReeRepRes;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosDif;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosIBSCBS;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosSitClas;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosTribRegular;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoValoresIBSCBS;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocDFe;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocFornec;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocOutro;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocReeRepRes;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoImovel;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoReeRepRes;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosDif;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosSitClas;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosTribRegular;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoValoresIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocDFe;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFornec;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocOutro;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\FinNFSe;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndDest;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndFinal;
@@ -250,11 +250,11 @@ it('builds IBSCBS with dest CPF, fone and email', function () {
         dest: new InfoDest(
             xNome: 'Pessoa Física',
             CPF: '12345678901',
-            end: new \Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco(
+            end: new \Pulsar\NfseNacional\Dps\DTO\Shared\Endereco(
                 xLgr: 'Rua Teste',
                 nro: '100',
                 xBairro: 'Centro',
-                endNac: new \Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional(cMun: '3501608', CEP: '01001000'),
+                endNac: new \Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional(cMun: '3501608', CEP: '01001000'),
             ),
             fone: '11999998888',
             email: 'dest@test.com',
@@ -329,7 +329,7 @@ it('builds IBSCBS with imovel end using CEP', function () {
         ),
         imovel: new InfoImovel(
             inscImobFisc: '12345',
-            end: new \Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoObra(
+            end: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra(
                 xLgr: 'Rua Imovel', nro: '50', xBairro: 'Centro',
                 CEP: '01001000', xCpl: 'Apto 1',
             ),
@@ -362,9 +362,9 @@ it('builds IBSCBS with imovel end using endExt', function () {
             ),
         ),
         imovel: new InfoImovel(
-            end: new \Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoObra(
+            end: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra(
                 xLgr: '5th Avenue', nro: '200', xBairro: 'Manhattan',
-                endExt: new \Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoExteriorObra(
+                endExt: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra(
                     cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY',
                 ),
             ),
@@ -400,7 +400,7 @@ it('builds IBSCBS with docFiscalOutro', function () {
                     dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::Outros,
                     vlrReeRepRes: '200.00',
-                    docFiscalOutro: new \Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocFiscalOutro(
+                    docFiscalOutro: new \Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFiscalOutro(
                         cMunDocFiscal: '3501608', nDocFiscal: 'NF-001', xDocFiscal: 'Nota fiscal municipal',
                     ),
                     xTpReeRepRes: 'Outro tipo de reembolso de teste',

@@ -1,6 +1,6 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Servico\Obra;
+use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('throws when no choice is set', function () {

@@ -1,9 +1,9 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\RegTrib;
-use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
+use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
+use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
@@ -105,8 +105,8 @@ it('throws NfseException when scheme file does not exist', function (DpsData $da
 })->with('dpsData');
 
 it('throws NfseException on invalid XSD', function () {
-    $servico = new \Pulsar\NfseNacional\DTOs\Dps\Servico\Servico(
-        cServ: new \Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico(
+    $servico = new \Pulsar\NfseNacional\Dps\DTO\Servico\Servico(
+        cServ: new \Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH',
             xDescServ: 'Serviço',
             cNBS: '123456789',

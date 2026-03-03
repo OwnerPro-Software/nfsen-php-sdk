@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Builders\Xml;
 
 use DOMDocument;
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\DTOs\Dps\InfDPS\SubstituicaoData;
-use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
+use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Builders\Xml\Parts\CreatesTextElements;

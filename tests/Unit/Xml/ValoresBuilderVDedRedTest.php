@@ -1,12 +1,12 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DocDedRed;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DocNFNFS;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DocOutNFSe;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\InfoDedRed;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
+use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoDedRed;
 use Pulsar\NfseNacional\Builders\Xml\Parts\ValoresBuilder;
 use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
@@ -16,9 +16,9 @@ it('builds vDedRed with pDR choice', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -39,9 +39,9 @@ it('builds vDedRed with vDR choice', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -62,9 +62,9 @@ it('builds vDedRed with documentos containing chNFSe', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -99,9 +99,9 @@ it('builds vDedRed with NFSeMun document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -132,9 +132,9 @@ it('builds vDedRed with NFNFS document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -165,9 +165,9 @@ it('builds vDedRed with fornec', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -198,9 +198,9 @@ it('builds vDedRed with chNFe document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -226,9 +226,9 @@ it('builds vDedRed with nDocFisc document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-        trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-            tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                 tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
             ),
@@ -259,9 +259,9 @@ it('builds DPS with vDedRed pDR that validates against XSD', function () {
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: new Valores(
-            vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '100.00'),
-            trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-                tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+            vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+            trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+                tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                     tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                     tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
                 ),
@@ -283,9 +283,9 @@ it('builds DPS with vDedRed documentos that validates against XSD', function () 
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: new Valores(
-            vServPrest: new \Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado(vServ: '1000.00'),
-            trib: new \Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao(
-                tribMun: new \Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal(
+            vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '1000.00'),
+            trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+                tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                     tribISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN::Tributavel,
                     tpRetISSQN: \Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN::NaoRetido,
                 ),

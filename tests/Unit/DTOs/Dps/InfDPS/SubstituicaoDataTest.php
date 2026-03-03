@@ -1,6 +1,6 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\InfDPS\SubstituicaoData;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 
 it('creates SubstituicaoData with all fields', function () {

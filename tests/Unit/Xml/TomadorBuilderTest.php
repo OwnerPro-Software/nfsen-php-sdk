@@ -1,9 +1,9 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoExterior;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional;
-use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Builders\Xml\Parts\TomadorBuilder;

@@ -11,7 +11,7 @@ use Pulsar\NfseNacional\Contracts\Ports\Driving\CancelsNfse;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\EmitsNfse;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\QueriesNfse;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\SubstitutesNfse;
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;

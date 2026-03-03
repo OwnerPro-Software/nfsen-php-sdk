@@ -1,13 +1,13 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\AtividadeEvento;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\ExploracaoRodoviaria;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\InfoComplementar;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\LocacaoSublocacao;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
+use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
+use Pulsar\NfseNacional\Dps\DTO\Servico\ExploracaoRodoviaria;
+use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
+use Pulsar\NfseNacional\Dps\DTO\Servico\LocacaoSublocacao;
+use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
 use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaServico;
 use Pulsar\NfseNacional\Enums\Dps\Servico\CategoriaVeiculo;
 use Pulsar\NfseNacional\Enums\Dps\Servico\ObjetoLocacao;
@@ -137,7 +137,7 @@ it('validates DPS with atvEvento (end with endExt) against XSD', function () {
                     xLgr: 'Broadway',
                     nro: '500',
                     xBairro: 'Midtown',
-                    endExt: new \Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoExteriorObra(
+                    endExt: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra(
                         cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY',
                     ),
                 ),

@@ -1,8 +1,8 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\InfDPS\SubstituicaoData;
-use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
+use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Builders\Xml\Parts\TomadorBuilder;
 use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;

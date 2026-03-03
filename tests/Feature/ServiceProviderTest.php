@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Facades\NfseNacional;
 use Pulsar\NfseNacional\NfseClient;

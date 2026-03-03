@@ -1,10 +1,10 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
-use Pulsar\NfseNacional\DTOs\Dps\InfDPS\InfDPS;
-use Pulsar\NfseNacional\DTOs\Dps\Prestador\Prestador;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\Servico;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
+use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
+use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Builders\Xml\DpsBuilder;
 
 it('exposes all five groups as readonly properties', function () {

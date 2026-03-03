@@ -1,15 +1,15 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoDest;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoImovel;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosIBSCBS;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoTributosSitClas;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\InfoValoresIBSCBS;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocDFe;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocFornec;
-use Pulsar\NfseNacional\DTOs\Dps\IBSCBS\ListaDocReeRepRes;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoObra;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoImovel;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosSitClas;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoValoresIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocDFe;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFornec;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\FinNFSe;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndDest;
 use Pulsar\NfseNacional\Enums\Dps\IBSCBS\IndFinal;

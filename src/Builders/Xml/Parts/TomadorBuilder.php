@@ -6,8 +6,8 @@ namespace Pulsar\NfseNacional\Builders\Xml\Parts;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
-use Pulsar\NfseNacional\DTOs\Dps\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
+use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Enums\Dps\Shared\CodNaoNIF;
 
 final class TomadorBuilder

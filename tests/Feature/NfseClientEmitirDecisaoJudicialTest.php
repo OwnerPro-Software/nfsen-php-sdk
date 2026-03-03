@@ -3,7 +3,7 @@
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Events\NfseEmitted;
 use Pulsar\NfseNacional\Events\NfseFailed;
 use Pulsar\NfseNacional\Events\NfseRejected;

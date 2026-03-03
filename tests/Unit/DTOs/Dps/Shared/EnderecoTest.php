@@ -1,8 +1,8 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Shared\Endereco;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoExterior;
-use Pulsar\NfseNacional\DTOs\Dps\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('throws when both endNac and endExt are set', function () {

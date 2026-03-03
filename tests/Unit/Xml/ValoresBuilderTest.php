@@ -1,16 +1,16 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Valores\BeneficioMunicipal;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\DescontoCondIncond;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\ExigibilidadeSuspensa;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\PisCofins;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\TotTribPercentual;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\TotTribValor;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\Tributacao;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoFederal;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\TributacaoMunicipal;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\Valores;
-use Pulsar\NfseNacional\DTOs\Dps\Valores\ValorServicoPrestado;
+use Pulsar\NfseNacional\Dps\DTO\Valores\BeneficioMunicipal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\DescontoCondIncond;
+use Pulsar\NfseNacional\Dps\DTO\Valores\ExigibilidadeSuspensa;
+use Pulsar\NfseNacional\Dps\DTO\Valores\PisCofins;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribPercentual;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribValor;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
+use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoCST;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoImunidadeISSQN;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;

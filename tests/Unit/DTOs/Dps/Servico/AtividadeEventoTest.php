@@ -1,7 +1,7 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\Dps\Servico\AtividadeEvento;
-use Pulsar\NfseNacional\DTOs\Dps\Servico\EnderecoSimples;
+use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
+use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('throws when both idAtvEvt and end are set', function () {

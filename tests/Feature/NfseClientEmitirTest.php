@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\DTOs\Dps\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\NfseClient;
@@ -316,8 +316,8 @@ it('emitir throws when array is missing required keys', function () {
 it('emitir validates XML against XSD before sending', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'SHOULD_NOT_REACH'], 201)]);
 
-    $servico = new \Pulsar\NfseNacional\DTOs\Dps\Servico\Servico(
-        cServ: new \Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico(
+    $servico = new \Pulsar\NfseNacional\Dps\DTO\Servico\Servico(
+        cServ: new \Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD',
             xDescServ: 'Serviço',
             cNBS: '123456789',
