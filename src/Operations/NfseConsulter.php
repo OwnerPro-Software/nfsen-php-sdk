@@ -14,7 +14,7 @@ use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
-final readonly class ConsultaBuilder
+final readonly class NfseConsulter
 {
     public function __construct(
         private ExecutesNfseRequests $client,

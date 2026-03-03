@@ -17,11 +17,11 @@ use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Operations\ConsultaBuilder;
 use Pulsar\NfseNacional\Operations\NfseCanceller;
+use Pulsar\NfseNacional\Operations\NfseConsulter;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
-use Pulsar\NfseNacional\Operations\NfseQueryExecutor;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
+use Pulsar\NfseNacional\Pipeline\NfseQueryExecutor;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
@@ -134,12 +134,12 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         return $this->substitutor->substituir($chave, $chaveSubstituta, $codigoMotivo, $descricao, $nPedRegEvento);
     }
 
-    public function consultar(): ConsultaBuilder
+    public function consultar(): NfseConsulter
     {
         $seFinUrl = $this->prefeituraResolver->resolveSeFinUrl($this->prefeitura, $this->ambiente);
         $adnUrl = $this->prefeituraResolver->resolveAdnUrl($this->prefeitura, $this->ambiente);
 
-        return new ConsultaBuilder(
+        return new NfseConsulter(
             $this->queryExecutor, $seFinUrl, $adnUrl,
             $this->prefeituraResolver, $this->prefeitura,
         );
