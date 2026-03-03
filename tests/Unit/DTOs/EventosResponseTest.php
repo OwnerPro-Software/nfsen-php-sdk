@@ -1,7 +1,7 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\EventosResponse;
-use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\EventosResponse;
+use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 
 it('success response carries xml and no erros', function () {
     $response = new EventosResponse(true, '<Evento/>');

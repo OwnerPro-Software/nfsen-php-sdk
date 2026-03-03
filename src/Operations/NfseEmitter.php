@@ -6,8 +6,8 @@ namespace Pulsar\NfseNacional\Operations;
 
 use Pulsar\NfseNacional\Contracts\Ports\Driving\EmitsNfse;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Responses\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Events\NfseEmitted;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Events\NfseRequested;

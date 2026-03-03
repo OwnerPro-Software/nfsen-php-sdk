@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Pipeline\Concerns;
 
-use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Responses\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Events\NfseRejected;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 

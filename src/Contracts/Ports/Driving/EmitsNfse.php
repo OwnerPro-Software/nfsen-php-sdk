@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Contracts\Ports\Driving;
 
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 
 /** @phpstan-import-type DpsDataArray from DpsData */
 interface EmitsNfse

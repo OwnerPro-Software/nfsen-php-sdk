@@ -1,6 +1,6 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 
 it('constructs with all fields', function () {
     $msg = new MensagemProcessamento(

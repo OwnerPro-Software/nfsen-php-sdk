@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\DTOs;
+namespace Pulsar\NfseNacional\Responses;
 
 final readonly class DanfseResponse
 {

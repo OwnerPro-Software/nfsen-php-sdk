@@ -1,7 +1,7 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Responses\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 
 it('success response carries chave and empty erros', function () {
     $response = new NfseResponse(true, 'chave123', '<NFSe/>');

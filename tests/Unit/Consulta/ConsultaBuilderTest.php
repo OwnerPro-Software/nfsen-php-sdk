@@ -2,7 +2,7 @@
 
 use Pulsar\NfseNacional\Builders\Consulta\ConsultaBuilder;
 use Pulsar\NfseNacional\Contracts\Ports\Driving\ExecutesNfseRequests;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
+use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 

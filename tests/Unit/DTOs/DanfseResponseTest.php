@@ -1,7 +1,7 @@
 <?php
 
-use Pulsar\NfseNacional\DTOs\DanfseResponse;
-use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
+use Pulsar\NfseNacional\Responses\DanfseResponse;
+use Pulsar\NfseNacional\Responses\MensagemProcessamento;
 
 it('success response carries danfse url and no erros', function () {
     $response = new DanfseResponse(true, 'https://danfse.exemplo.com/CHAVE123');
