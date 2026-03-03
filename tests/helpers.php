@@ -18,6 +18,11 @@ use Pulsar\NfseNacional\Enums\Dps\Prestador\RegEspTrib;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TipoRetISSQN;
 use Pulsar\NfseNacional\Enums\Dps\Valores\TribISSQN;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\Handlers\NfseCanceller;
+use Pulsar\NfseNacional\Handlers\NfseEmitter;
+use Pulsar\NfseNacional\Handlers\NfseQueryExecutor;
+use Pulsar\NfseNacional\Handlers\NfseRequestPipeline;
+use Pulsar\NfseNacional\Handlers\NfseSubstitutor;
 use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
@@ -126,17 +131,28 @@ function makeNfseClient(
 ): NfseClient {
     $pfxContent ??= makePfxContent();
     $certManager = new CertificateManager($pfxContent, 'secret');
+    $ambiente = NfseAmbiente::HOMOLOGACAO;
+    $prefeituraResolver = new PrefeituraResolver(__DIR__.'/../storage/prefeituras.json');
+    $xsdValidator = makeXsdValidator();
+    $httpClient = new NfseHttpClient($certManager->getCertificate(), 30, 10, true);
 
-    return new NfseClient(
-        ambiente: NfseAmbiente::HOMOLOGACAO,
+    $pipeline = new NfseRequestPipeline(
+        ambiente: $ambiente,
         signingAlgorithm: 'sha1',
-        prefeituraResolver: new PrefeituraResolver(__DIR__.'/../storage/prefeituras.json'),
-        dpsBuilder: new DpsBuilder(makeXsdValidator()),
-        cancelamentoBuilder: new CancelamentoBuilder(makeXsdValidator()),
-        substituicaoBuilder: new SubstituicaoBuilder(makeXsdValidator()),
+        prefeituraResolver: $prefeituraResolver,
         gzipCompressor: $gzipCompressor ?? new GzipCompressor,
         certManager: $certManager,
         prefeitura: $prefeitura,
-        httpClient: new NfseHttpClient($certManager->getCertificate(), 30, 10, true),
+        httpClient: $httpClient,
+    );
+
+    return new NfseClient(
+        emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
+        canceller: new NfseCanceller($pipeline, new CancelamentoBuilder($xsdValidator), $ambiente),
+        substitutor: new NfseSubstitutor($pipeline, new SubstituicaoBuilder($xsdValidator), $ambiente),
+        queryExecutor: new NfseQueryExecutor($httpClient),
+        prefeituraResolver: $prefeituraResolver,
+        ambiente: $ambiente,
+        prefeitura: $prefeitura,
     );
 }

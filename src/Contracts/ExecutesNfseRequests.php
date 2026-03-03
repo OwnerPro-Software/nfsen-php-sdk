@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Contracts;
 
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 
-interface NfseClientContract
+interface ExecutesNfseRequests
 {
     public function executeGet(string $url): NfseResponse;
 

@@ -156,12 +156,12 @@ it('dispatches NfseRejected on consultar eventos rejection', function () {
     Event::assertNotDispatched(NfseQueried::class);
 });
 
-it('dispatches NfseRejected on executeGetRaw with singular erro field', function () {
+it('dispatches NfseRejected on consultar dps with singular erro field', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Erro genérico', 'codigo' => 'E999']], 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
-    $client->executeGetRaw('https://fake.url/test');
+    $client->consultar()->dps('DPS123');
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E999');
     Event::assertNotDispatched(NfseQueried::class);
@@ -221,7 +221,7 @@ it('dispatches NfseFailed on consultar NfseException', function () {
     Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
 });
 
-it('dispatches NfseFailed on executeGetRaw non-HTTP exception', function () {
+it('dispatches NfseFailed on consultar dps non-HTTP exception', function () {
     Event::fake();
     Http::fake(['*' => function (): never {
         throw new \RuntimeException('Connection reset');
@@ -230,7 +230,7 @@ it('dispatches NfseFailed on executeGetRaw non-HTTP exception', function () {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
-        $client->executeGetRaw('https://fake.url/test');
+        $client->consultar()->dps('DPS123');
     } catch (\RuntimeException) {
         // expected
     }

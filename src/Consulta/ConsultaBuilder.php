@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Consulta;
 
 use InvalidArgumentException;
-use Pulsar\NfseNacional\Contracts\NfseClientContract;
+use Pulsar\NfseNacional\Contracts\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\DanfseResponse;
 use Pulsar\NfseNacional\DTOs\EventosResponse;
 use Pulsar\NfseNacional\DTOs\MensagemProcessamento;
@@ -17,7 +17,7 @@ use Pulsar\NfseNacional\Support\GzipCompressor;
 final readonly class ConsultaBuilder
 {
     public function __construct(
-        private NfseClientContract $client,
+        private ExecutesNfseRequests $client,
         private string $seFinBaseUrl,
         private string $adnBaseUrl,
         private PrefeituraResolver $resolver,

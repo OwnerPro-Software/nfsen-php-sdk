@@ -1,12 +1,12 @@
 <?php
 
 use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
-use Pulsar\NfseNacional\Contracts\NfseClientContract;
+use Pulsar\NfseNacional\Contracts\ExecutesNfseRequests;
 use Pulsar\NfseNacional\DTOs\NfseResponse;
 use Pulsar\NfseNacional\Enums\TipoEvento;
 use Pulsar\NfseNacional\Services\PrefeituraResolver;
 
-class FakeNfseClientForConsulta implements NfseClientContract
+class FakeNfseClientForConsulta implements ExecutesNfseRequests
 {
     public array $calls = [];
 
@@ -62,7 +62,7 @@ it('calls executeGetRaw with dps url', function () {
 });
 
 it('dps returns failure when erros key present', function () {
-    $fakeClient = new class implements NfseClientContract
+    $fakeClient = new class implements ExecutesNfseRequests
     {
         public function executeGet(string $url): NfseResponse
         {
@@ -92,7 +92,7 @@ it('dps returns failure when erros key present', function () {
 });
 
 it('dps returns success with idDps', function () {
-    $fakeClient = new class implements NfseClientContract
+    $fakeClient = new class implements ExecutesNfseRequests
     {
         public function executeGet(string $url): NfseResponse
         {
@@ -122,7 +122,7 @@ it('dps returns success with idDps', function () {
 });
 
 it('danfse returns failure when erros key present', function () {
-    $fakeClient = new class implements NfseClientContract
+    $fakeClient = new class implements ExecutesNfseRequests
     {
         public function executeGet(string $url): NfseResponse
         {
@@ -152,7 +152,7 @@ it('danfse returns failure when erros key present', function () {
 });
 
 it('danfse returns success with danfseUrl', function () {
-    $fakeClient = new class implements NfseClientContract
+    $fakeClient = new class implements ExecutesNfseRequests
     {
         public function executeGet(string $url): NfseResponse
         {
@@ -181,7 +181,7 @@ it('danfse returns success with danfseUrl', function () {
 });
 
 it('eventos returns failure when erros key present', function () {
-    $fakeClient = new class implements NfseClientContract
+    $fakeClient = new class implements ExecutesNfseRequests
     {
         public function executeGet(string $url): NfseResponse
         {
@@ -211,7 +211,7 @@ it('eventos returns failure when erros key present', function () {
 });
 
 it('eventos returns failure when singular erro key present', function () {
-    $fakeClient = new class implements NfseClientContract
+    $fakeClient = new class implements ExecutesNfseRequests
     {
         public function executeGet(string $url): NfseResponse
         {
@@ -244,7 +244,7 @@ it('eventos returns success with decompressed xml', function () {
     $originalXml = '<Evento/>';
     $gzipB64 = base64_encode((string) gzencode($originalXml));
 
-    $fakeClient = new class($gzipB64) implements NfseClientContract
+    $fakeClient = new class($gzipB64) implements ExecutesNfseRequests
     {
         public function __construct(private readonly string $gzipB64) {}
 
@@ -280,7 +280,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
         '9999998' => ['operations' => ['consultar_nfse' => '']],
     ]));
 
-    $innerClient = new class implements NfseClientContract
+    $innerClient = new class implements ExecutesNfseRequests
     {
         public string $lastUrl = '';
 

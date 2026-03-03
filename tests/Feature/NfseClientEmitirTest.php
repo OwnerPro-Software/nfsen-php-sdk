@@ -248,11 +248,11 @@ it('configure enforces sslVerify true when ambiente is PRODUCAO even if config s
         sslVerify: false,
     );
 
-    $httpClientProp = new ReflectionProperty($client, 'httpClient');
-    $httpClient = $httpClientProp->getValue($client);
+    $queryExecutor = (new ReflectionProperty($client, 'queryExecutor'))->getValue($client);
+    $httpClient = (new ReflectionProperty($queryExecutor, 'httpClient'))->getValue($queryExecutor);
+    $sslVerify = (new ReflectionProperty($httpClient, 'sslVerify'))->getValue($httpClient);
 
-    $sslVerifyProp = new ReflectionProperty($httpClient, 'sslVerify');
-    expect($sslVerifyProp->getValue($httpClient))->toBeTrue();
+    expect($sslVerify)->toBeTrue();
 });
 
 it('emitir accepts array and coerces to DpsData', function () {
