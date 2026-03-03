@@ -15,7 +15,7 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 it('emitir returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/emitir_sucesso.json'), true),
-        200
+        201
     )]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
@@ -84,7 +84,7 @@ it('throws InvalidArgumentException for invalid IBGE code', function () {
 });
 
 it('forStandalone creates client without Laravel container', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_STANDALONE'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_STANDALONE'], 201)]);
 
     $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
@@ -155,7 +155,7 @@ it('throws NfseException when not configured', function (DpsData $data) {
 })->with('dpsData');
 
 it('for() falls back to forStandalone when container has no binding', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'STANDALONE_CHAVE'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'STANDALONE_CHAVE'], 201)]);
 
     // Temporarily remove the binding
     app()->offsetUnset(NfseClient::class);
@@ -168,7 +168,7 @@ it('for() falls back to forStandalone when container has no binding', function (
 })->with('dpsData');
 
 it('emitir succeeds and reports error when event listener throws', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_OK'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_OK'], 201)]);
 
     $reported = [];
     $this->app->bind(\Illuminate\Contracts\Debug\ExceptionHandler::class, function () use (&$reported) {
@@ -204,7 +204,7 @@ it('emitir succeeds and reports error when event listener throws', function (Dps
 })->with('dpsData');
 
 it('emitir uses Americana custom URL without operation path', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_AM'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_AM'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
     $client->emitir($data);
@@ -215,7 +215,7 @@ it('emitir uses Americana custom URL without operation path', function (DpsData 
 })->with('dpsData');
 
 it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_SP'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_SP'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '3547304');
     $client->emitir($data);
@@ -226,7 +226,7 @@ it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function 
 })->with('dpsData');
 
 it('emitir returns rejection when response has no chaveAcesso', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['status' => 'ok'], 200)]);
+    Http::fake(['*' => Http::response(['status' => 'ok'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
@@ -247,7 +247,7 @@ it('emitir returns rejection with singular erro field', function (DpsData $data)
 })->with('dpsData');
 
 it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_PROD'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_PROD'], 201)]);
 
     $client = NfseClient::forStandalone(
         makePfxContent(), 'secret', '9999999',
@@ -278,7 +278,7 @@ it('configure enforces sslVerify true when ambiente is PRODUCAO even if config s
 });
 
 it('emitir accepts array and coerces to DpsData', function () {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir([
@@ -336,7 +336,7 @@ it('emitir throws when array is missing required keys', function () {
 });
 
 it('emitir validates XML against XSD before sending', function () {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'SHOULD_NOT_REACH'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'SHOULD_NOT_REACH'], 201)]);
 
     $servico = new \Pulsar\NfseNacional\DTOs\Dps\Servico\Servico(
         cServ: new \Pulsar\NfseNacional\DTOs\Dps\Servico\CodigoServico(
@@ -366,7 +366,7 @@ it('emitir validates XML against XSD before sending', function () {
 });
 
 it('emitir throws NfseException on invalid base64 in nfseXmlGZipB64', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => '!!!invalid!!!'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => '!!!invalid!!!'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
@@ -375,7 +375,7 @@ it('emitir throws NfseException on invalid base64 in nfseXmlGZipB64', function (
 })->with('dpsData');
 
 it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => base64_encode('not-gzip-data')], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => base64_encode('not-gzip-data')], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
@@ -384,7 +384,7 @@ it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (Dp
 })->with('dpsData');
 
 it('emitir throws NfseException when gzip compression fails', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 201)]);
 
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);

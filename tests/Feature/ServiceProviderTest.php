@@ -35,7 +35,7 @@ it('configures client when cert path, senha and prefeitura are set', function ()
 });
 
 it('facade emitir works directly when config is set', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_FACADE'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_FACADE'], 201)]);
 
     config([
         'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',

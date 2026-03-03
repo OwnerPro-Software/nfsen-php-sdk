@@ -13,7 +13,7 @@ use Pulsar\NfseNacional\Xml\Builders\SubstituicaoBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 it('substituir returns success NfseResponse', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -36,7 +36,7 @@ it('substituir returns success NfseResponse', function () {
 });
 
 it('substituir accepts string codigoMotivo and coerces to enum', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -96,7 +96,7 @@ it('substituir throws HttpException on server error', function () {
 });
 
 it('substituir works without descricao', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
@@ -107,7 +107,7 @@ it('substituir works without descricao', function () {
 });
 
 it('substituir uses Americana custom URL without operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
     $chave = '12345678901234567890123456789012345678901234567890';

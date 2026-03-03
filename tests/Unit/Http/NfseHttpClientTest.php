@@ -7,7 +7,7 @@ use Pulsar\NfseNacional\Http\NfseHttpClient;
 use Pulsar\NfseNacional\Support\TempFileFactory;
 
 it('posts json payload to given url', function () {
-    Http::fake(['*' => Http::response(['sucesso' => true], 200)]);
+    Http::fake(['*' => Http::response(['sucesso' => true], 201)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
@@ -67,7 +67,7 @@ it('returns parsed JSON on 4xx response instead of throwing', function () {
 });
 
 it('passes mTLS options and payload to HTTP client', function () {
-    Http::fake(['*' => Http::response(['sucesso' => true], 200)]);
+    Http::fake(['*' => Http::response(['sucesso' => true], 201)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, sslVerify: false);
     $client->post('https://example.com/nfse', ['dps' => 'xml']);

@@ -13,7 +13,7 @@ use Pulsar\NfseNacional\NfseClient;
 it('emitirDecisaoJudicial returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/emitir_sucesso.json'), true),
-        200
+        201
     )]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
@@ -45,7 +45,7 @@ it('emitirDecisaoJudicial returns rejection with erros array', function (DpsData
 })->with('dpsData');
 
 it('emitirDecisaoJudicial returns rejection when response has no chaveAcesso', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['status' => 'ok'], 200)]);
+    Http::fake(['*' => Http::response(['status' => 'ok'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitirDecisaoJudicial($data);
@@ -83,7 +83,7 @@ it('emitirDecisaoJudicial throws NfseException when not configured', function (D
 })->with('dpsData');
 
 it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitirDecisaoJudicial([
@@ -134,7 +134,7 @@ it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
 });
 
 it('emitirDecisaoJudicial uses xmlGZipB64 payload key', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitirDecisaoJudicial($data);
@@ -143,7 +143,7 @@ it('emitirDecisaoJudicial uses xmlGZipB64 payload key', function (DpsData $data)
 })->with('dpsData');
 
 it('emitirDecisaoJudicial posts to decisao-judicial/nfse URL', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitirDecisaoJudicial($data);
@@ -153,7 +153,7 @@ it('emitirDecisaoJudicial posts to decisao-judicial/nfse URL', function (DpsData
 
 it('dispatches NfseRequested and NfseEmitted on successful emitirDecisaoJudicial', function (DpsData $data) {
     Event::fake();
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 200)]);
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitirDecisaoJudicial($data);

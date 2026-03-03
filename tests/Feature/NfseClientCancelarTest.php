@@ -15,7 +15,7 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 it('cancelar returns success NfseResponse', function () {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
-        200
+        201
     )]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
@@ -42,7 +42,7 @@ it('cancelar returns success NfseResponse', function () {
 it('cancelar accepts string codigoMotivo and coerces to enum', function () {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
-        200
+        201
     )]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
@@ -131,7 +131,7 @@ it('cancelar throws HttpException on server error', function () {
 it('cancelar succeeds and reports error when event listener throws', function () {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
-        200
+        201
     )]);
 
     $reported = [];
@@ -172,7 +172,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
 });
 
 it('cancelar uses Americana custom URL without operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
@@ -183,7 +183,7 @@ it('cancelar uses Americana custom URL without operation path', function () {
 });
 
 it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3547304');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
