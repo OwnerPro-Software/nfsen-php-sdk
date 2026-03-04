@@ -9,6 +9,7 @@ use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
+use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Responses\NfseResponse;
 
@@ -28,8 +29,8 @@ final class NfseNacional extends Facade
         return NfseClient::class;
     }
 
-    public static function for(string $pfxContent, string $senha, string $prefeitura): NfseClient
+    public static function for(string $pfxContent, string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): NfseClient
     {
-        return NfseClient::for($pfxContent, $senha, $prefeitura);
+        return NfseClient::for($pfxContent, $senha, $prefeitura, $ambiente);
     }
 }

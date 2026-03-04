@@ -452,3 +452,40 @@ it('emitir throws NfseException when gzip compression fails', function (DpsData 
     expect(fn () => $client->emitir($data))
         ->toThrow(NfseException::class, 'comprimir XML');
 })->with('dpsData');
+
+it('for() uses ambiente override instead of config value', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_OVERRIDE'], 201)]);
+
+    // Config is HOMOLOGACAO by default, but we override to PRODUCAO
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::PRODUCAO);
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue();
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.nfse.gov.br/SefinNacional/nfse' &&
+        $req->method() === 'POST'
+    );
+})->with('dpsData');
+
+it('for() ambiente override takes precedence over config', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_HOMO'], 201)]);
+
+    config()->set('nfse-nacional.ambiente', NfseAmbiente::PRODUCAO->value);
+
+    // Config says PRODUCAO, but we override to HOMOLOGACAO
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::HOMOLOGACAO);
+    $client->emitir($data);
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse');
+})->with('dpsData');
+
+it('for() uses ambiente override even when config is absent', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_NO_CONFIG'], 201)]);
+
+    config()->offsetUnset('nfse-nacional');
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::PRODUCAO);
+    $client->emitir($data);
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.nfse.gov.br/SefinNacional/nfse');
+})->with('dpsData');

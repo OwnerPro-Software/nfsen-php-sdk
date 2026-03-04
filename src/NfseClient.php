@@ -42,7 +42,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         private ConsultsNfse $consulter,
     ) {}
 
-    public static function for(string $pfxContent, string $senha, string $prefeitura): self
+    public static function for(string $pfxContent, string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): self
     {
         if (function_exists('config') && config('nfse-nacional') !== null) {
             /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool} $config */
@@ -52,7 +52,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
                 pfxContent: $pfxContent,
                 senha: $senha,
                 prefeitura: $prefeitura,
-                ambiente: NfseAmbiente::fromConfig($config['ambiente']),
+                ambiente: $ambiente ?? NfseAmbiente::fromConfig($config['ambiente']),
                 timeout: $config['timeout'],
                 signingAlgorithm: $config['signing_algorithm'],
                 sslVerify: $config['ssl_verify'],
@@ -60,7 +60,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
             );
         }
 
-        return self::forStandalone($pfxContent, $senha, $prefeitura);
+        return self::forStandalone($pfxContent, $senha, $prefeitura, $ambiente ?? NfseAmbiente::HOMOLOGACAO);
     }
 
     public static function forStandalone(

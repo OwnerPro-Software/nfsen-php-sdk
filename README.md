@@ -207,6 +207,12 @@ $danfse   = NfseNacional::consultar()->danfse($chave);
 // Usar certificado diferente por requisicao
 $client = NfseNacional::for($pfxContent, $senha, '3550308');
 $response = $client->emitir($dps);
+
+// Sobrescrever ambiente (ignorar config)
+use Pulsar\NfseNacional\Enums\NfseAmbiente;
+
+$client = NfseNacional::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
+$response = $client->emitir($dps);
 ```
 
 ## Eventos
