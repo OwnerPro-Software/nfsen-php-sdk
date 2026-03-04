@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\Servico\Obra::class);
 use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 

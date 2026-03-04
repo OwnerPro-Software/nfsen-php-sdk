@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Responses\DanfseResponse::class);
+
 use Pulsar\NfseNacional\Responses\DanfseResponse;
 use Pulsar\NfseNacional\Responses\ProcessingMessage;
 

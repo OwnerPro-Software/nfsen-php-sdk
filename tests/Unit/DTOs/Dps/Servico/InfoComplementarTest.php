@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar::class);
 use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 

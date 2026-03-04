@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\Shared\Endereco::class);
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;

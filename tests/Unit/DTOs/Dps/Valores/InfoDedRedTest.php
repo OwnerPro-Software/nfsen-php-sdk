@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed::class);
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;

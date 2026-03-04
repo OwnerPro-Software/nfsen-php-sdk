@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Responses\ProcessingMessage::class);
+
 use Pulsar\NfseNacional\Responses\ProcessingMessage;
 
 it('constructs with all fields', function () {

@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed::class);
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;

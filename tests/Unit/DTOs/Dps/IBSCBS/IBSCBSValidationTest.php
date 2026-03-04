@@ -1,5 +1,10 @@
 <?php
 
+covers(
+    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest::class,
+    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS::class,
+    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoImovel::class,
+);
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoImovel;

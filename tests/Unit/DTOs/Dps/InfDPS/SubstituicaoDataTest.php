@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData::class);
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 

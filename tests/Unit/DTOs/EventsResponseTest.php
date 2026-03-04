@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Responses\EventsResponse::class);
+
 use Pulsar\NfseNacional\Responses\EventsResponse;
 use Pulsar\NfseNacional\Responses\ProcessingMessage;
 

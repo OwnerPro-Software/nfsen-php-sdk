@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples::class);
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;

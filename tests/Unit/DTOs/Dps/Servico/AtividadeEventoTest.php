@@ -1,5 +1,6 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento::class);
 use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
