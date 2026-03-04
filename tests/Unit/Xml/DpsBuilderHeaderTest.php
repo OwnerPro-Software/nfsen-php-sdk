@@ -1,9 +1,18 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\DpsBuilder::class);
+
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosSitClas;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoValoresIBSCBS;
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
 use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
@@ -194,4 +203,53 @@ it('generates Id truncating cLocEmi to 7 chars', function () {
     // Only first 7 chars of cLocEmi used
     $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
     expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000001');
+});
+
+it('builds xml without whitespace or formatting', function (DpsData $data) {
+    $xml = buildDps($data);
+
+    expect($xml)->not->toContain("\n");
+})->with('dpsData');
+
+it('includes IBSCBS element when provided', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+        IBSCBS: new InfoIBSCBS(
+            finNFSe: FinNFSe::Regular,
+            indFinal: IndFinal::Nao,
+            cIndOp: '010101',
+            indDest: IndDest::Tomador,
+            valores: new InfoValoresIBSCBS(
+                trib: new InfoTributosIBSCBS(
+                    gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+                ),
+            ),
+        ),
+    );
+
+    $xml = buildDps($data);
+    $xpath = parseDpsXml($xml);
+
+    expect($xpath->query('//n:IBSCBS')->length)->toBe(1);
+});
+
+it('generates Id with padded zeros when prestador has NIF', function () {
+    $prestador = new Prestador(
+        NIF: 'ABC123',
+        cNaoNIF: null,
+        regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
+        xNome: 'Estrangeiro',
+    );
+
+    $data = new DpsData(infDPS: makeInfDps(), prest: $prestador, serv: makeServicoMinimo(), valores: makeValoresMinimo());
+
+    $xml = buildDps($data);
+    $xpath = parseDpsXml($xml);
+
+    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
+    // tipo=1 (not CNPJ), inscricao='' padded to 14 zeros
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160810000000000000000001000000000000001');
 });

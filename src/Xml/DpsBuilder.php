@@ -41,7 +41,7 @@ final readonly class DpsBuilder
     public function build(DpsData $data): string
     {
         $doc = new DOMDocument('1.0', 'UTF-8');
-        $doc->preserveWhiteSpace = false;
+        $doc->preserveWhiteSpace = false; // @pest-mutate-ignore FalseToTrue: only affects XML parsing, not serialization
         $doc->formatOutput = false;
 
         $dps = $doc->createElement('DPS');
@@ -107,7 +107,7 @@ final readonly class DpsBuilder
         $dps->appendChild($infDps);
         $doc->appendChild($dps);
 
-        return (string) $doc->saveXML($doc->documentElement);
+        return (string) $doc->saveXML($doc->documentElement); // @pest-mutate-ignore RemoveStringCast: saveXML returns string|false, cast is type-safety guard
     }
 
     private function generateId(DpsData $data): string

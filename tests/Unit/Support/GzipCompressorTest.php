@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Support\GzipCompressor::class);
+
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 

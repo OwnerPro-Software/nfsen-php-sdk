@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\Builders\SubstitutionBuilder::class);
+
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
@@ -95,7 +97,7 @@ it('generates correct Id with tipo 105102 and padded nPedRegEvento', function ()
         ->and($xpath->query('//n:CNPJAutor')->length)->toBe(0);
 });
 
-it('validates against pedRegEvento XSD', function (): void {
+it('validates against pedRegEvento XSD with default nPedRegEvento and empty descricao', function (): void {
     $builder = new SubstitutionBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
@@ -109,10 +111,15 @@ it('validates against pedRegEvento XSD', function (): void {
         chNFSe: $chave,
         codigoMotivo: CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional,
         chSubstituta: $chaveSub,
-        descricao: 'Desenquadramento do Simples Nacional',
     );
 
-    expect($xml)->toContain('<pedRegEvento');
+    $xpath = parseSubstituicaoXml($xml);
+
+    expect($xml)->toContain('<pedRegEvento')
+        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('1')
+        ->and($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
+        ->toBe('PRE'.$chave.'105102001')
+        ->and($xpath->query('//n:e105102/n:xMotivo')->length)->toBe(0);
 });
 
 it('throws when both cnpjAutor and cpfAutor are set', function (): void {
@@ -147,7 +154,61 @@ it('throws when neither cnpjAutor nor cpfAutor is set', function (): void {
     ))->toThrow(InvalidArgumentException::class, 'obrigatório');
 });
 
-it('throws NfseException when descricao is too short', function (): void {
+it('builds xml without formatting or newlines', function (): void {
+    $builder = new SubstitutionBuilder(makeXsdValidator());
+
+    $xml = $builder->build(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+        chSubstituta: '98765432109876543210987654321098765432109876543210',
+        descricao: 'Outro motivo para substituicao',
+    );
+
+    expect($xml)->not->toContain("\n");
+});
+
+it('accepts descricao with exactly 15 characters', function (): void {
+    $builder = new SubstitutionBuilder(makeXsdValidator());
+
+    $xml = $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+        chSubstituta: '98765432109876543210987654321098765432109876543210',
+        descricao: str_repeat('A', 15),
+    );
+
+    expect($xml)->toContain('<pedRegEvento');
+});
+
+it('accepts descricao with exactly 255 characters', function (): void {
+    $builder = new SubstitutionBuilder(makeXsdValidator());
+
+    $xml = $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+        chSubstituta: '98765432109876543210987654321098765432109876543210',
+        descricao: str_repeat('A', 255),
+    );
+
+    expect($xml)->toContain('<pedRegEvento');
+});
+
+it('throws NfseException when descricao has 14 characters', function (): void {
     $builder = new SubstitutionBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate(
@@ -159,11 +220,11 @@ it('throws NfseException when descricao is too short', function (): void {
         chNFSe: '12345678901234567890123456789012345678901234567890',
         codigoMotivo: CodigoJustificativaSubstituicao::Outros,
         chSubstituta: '98765432109876543210987654321098765432109876543210',
-        descricao: 'curto',
+        descricao: str_repeat('A', 14),
     ))->toThrow(NfseException::class, 'O campo descricao deve ter entre 15 e 255 caracteres.');
 });
 
-it('throws NfseException when descricao is too long', function (): void {
+it('throws NfseException when descricao has 256 characters', function (): void {
     $builder = new SubstitutionBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate(

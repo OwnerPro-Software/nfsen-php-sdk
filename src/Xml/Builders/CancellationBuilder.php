@@ -56,7 +56,7 @@ final readonly class CancellationBuilder
         int $nPedRegEvento = 1,
     ): string {
         $doc = new DOMDocument('1.0', 'UTF-8');
-        $doc->preserveWhiteSpace = false;
+        $doc->preserveWhiteSpace = false; // @pest-mutate-ignore FalseToTrue: only affects XML parsing, not serialization
         $doc->formatOutput = false;
 
         $root = $doc->createElement('pedRegEvento');
@@ -95,7 +95,7 @@ final readonly class CancellationBuilder
         $root->appendChild($infPedReg);
         $doc->appendChild($root);
 
-        return (string) $doc->saveXML($doc->documentElement);
+        return (string) $doc->saveXML($doc->documentElement); // @pest-mutate-ignore RemoveStringCast: saveXML returns string|false, cast is type-safety guard
     }
 
     private function validateDescricao(string $descricao): void

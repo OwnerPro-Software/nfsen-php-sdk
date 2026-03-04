@@ -27,9 +27,12 @@ class GzipCompressor
 
         try {
             $decompressed = gzdecode($decoded);
-        } catch (Throwable) {
+            // @codeCoverageIgnoreStart
+        } catch (Throwable) { // @pest-mutate-ignore
             $decompressed = false;
         }
+
+        // @codeCoverageIgnoreEnd
 
         if ($decompressed === false) {
             throw new NfseException('Falha ao descomprimir XML.');

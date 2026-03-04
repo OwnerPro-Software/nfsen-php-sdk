@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\Builders\CancellationBuilder::class);
+
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
@@ -96,7 +98,7 @@ it('generates correct Id with padded nPedRegEvento', function (): void {
         ->and($xpath->evaluate('string(//n:e101101/n:cMotivo)'))->toBe('9');
 });
 
-it('validates against pedRegEvento XSD', function (): void {
+it('validates against pedRegEvento XSD with default nPedRegEvento', function (): void {
     $builder = new CancellationBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
 
@@ -111,7 +113,12 @@ it('validates against pedRegEvento XSD', function (): void {
         descricao: 'Erro na emissao da nota fiscal',
     );
 
-    expect($xml)->toContain('<pedRegEvento');
+    $xpath = parseCancelamentoXml($xml);
+
+    expect($xml)->toContain('<pedRegEvento')
+        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('1')
+        ->and($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
+        ->toBe('PRE'.$chave.'101101001');
 });
 
 it('throws when both cnpjAutor and cpfAutor are set', function (): void {
@@ -144,7 +151,58 @@ it('throws when neither cnpjAutor nor cpfAutor is set', function (): void {
     ))->toThrow(InvalidArgumentException::class, 'obrigatório');
 });
 
-it('throws NfseException when descricao is too short', function (): void {
+it('builds xml without formatting or newlines', function (): void {
+    $builder = new CancellationBuilder(makeXsdValidator());
+
+    $xml = $builder->build(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+        descricao: 'Erro na emissao da nota fiscal',
+    );
+
+    expect($xml)->not->toContain("\n");
+});
+
+it('accepts descricao with exactly 15 characters', function (): void {
+    $builder = new CancellationBuilder(makeXsdValidator());
+
+    $xml = $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+        descricao: str_repeat('A', 15),
+    );
+
+    expect($xml)->toContain('<pedRegEvento');
+});
+
+it('accepts descricao with exactly 255 characters', function (): void {
+    $builder = new CancellationBuilder(makeXsdValidator());
+
+    $xml = $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: '12345678901234567890123456789012345678901234567890',
+        codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+        descricao: str_repeat('A', 255),
+    );
+
+    expect($xml)->toContain('<pedRegEvento');
+});
+
+it('throws NfseException when descricao has 14 characters', function (): void {
     $builder = new CancellationBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate(
@@ -155,11 +213,11 @@ it('throws NfseException when descricao is too short', function (): void {
         cpfAutor: null,
         chNFSe: '12345678901234567890123456789012345678901234567890',
         codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
-        descricao: 'curto',
+        descricao: str_repeat('A', 14),
     ))->toThrow(NfseException::class, 'O campo descricao deve ter entre 15 e 255 caracteres.');
 });
 
-it('throws NfseException when descricao is too long', function (): void {
+it('throws NfseException when descricao has 256 characters', function (): void {
     $builder = new CancellationBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate(

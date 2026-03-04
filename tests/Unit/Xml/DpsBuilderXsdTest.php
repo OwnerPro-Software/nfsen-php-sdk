@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\DpsBuilder::class);
+
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
 use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
