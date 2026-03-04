@@ -12,7 +12,7 @@ Always run before considering the work done:
 
 # quality checks
 
-./vendor/bin/pest --type-coverage --min=100 --parallel # runs type coverage tests
+./vendor/bin/pest --type-coverage --min=100 # runs type coverage tests
 ./vendor/bin/rector --dry-run # runs rector quality checks
 ./vendor/bin/phpstan analyse # run static analysis check
 ./vendor/bin/psalm --taint-analysis # security analysis
