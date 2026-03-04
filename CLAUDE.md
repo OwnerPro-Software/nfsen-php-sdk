@@ -5,18 +5,22 @@
 Always run before considering the work done:
 
 ```bash
-./vendor/bin/pest --coverage --min=100 # runs the complete suite test
+# tests
+
+./vendor/bin/pest --coverage --min=100 --parallel # runs the complete suite test
+./vendor/bin/pest --mutate --min=100 --parallel # mutation tests
 
 # quality checks
 
-./vendor/bin/pest --type-coverage --min=100 # runs type coverage tests
+./vendor/bin/pest --type-coverage --min=100 --parallel # runs type coverage tests
 ./vendor/bin/rector --dry-run # runs rector quality checks
 ./vendor/bin/phpstan analyse # run static analysis check
 ./vendor/bin/psalm --taint-analysis # security analysis
 ./vendor/bin/pint -p # runs the pint format rules
 
 # if any quality checks changed any file, full suite need to be run again!
-./vendor/bin/pest --coverage --min=100 # runs the complete suite test
+./vendor/bin/pest --coverage --min=100 --parallel # runs the complete suite test
+# mutation
 # type-coverage
 # rector
 # phpstan
