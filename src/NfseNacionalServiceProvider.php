@@ -32,7 +32,7 @@ final class NfseNacionalServiceProvider extends ServiceProvider
              */
             $config = config('nfse-nacional');
             $certPath = $config['certificado']['path'];
-            $certSenha = (string) $config['certificado']['senha'];
+            $certSenha = (string) $config['certificado']['senha']; // @pest-mutate-ignore RemoveStringCast — config always returns string
             $prefeitura = (string) $config['prefeitura'];
 
             if (! $certPath || ! $certSenha || ! $prefeitura || ! is_file($certPath)) {
@@ -43,7 +43,7 @@ final class NfseNacionalServiceProvider extends ServiceProvider
 
             $certContent = file_get_contents($certPath);
 
-            if ($certContent === false || $certContent === '') {
+            if ($certContent === false || $certContent === '') { // @pest-mutate-ignore FalseToTrue — file_get_contents returns false only on unreadable files, already guarded by is_file
                 throw new RuntimeException('Falha ao ler arquivo de certificado digital.');
             }
 

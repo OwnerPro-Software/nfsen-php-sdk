@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao::class);
+
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 
 it('has desenquadramento simples nacional value', function (): void {

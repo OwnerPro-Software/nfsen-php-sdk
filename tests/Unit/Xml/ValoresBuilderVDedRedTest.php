@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\Builders\ValoresBuilder::class);
+
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
@@ -251,6 +253,41 @@ it('builds vDedRed with nDocFisc document', function () {
     expect($xml)
         ->toContain('<nDocFisc>DOC-FISCAL-001</nDocFisc>')
         ->toContain('<xDescOutDed>Descricao de outra deducao</xDescOutDed>');
+});
+
+it('builds vDedRed with nDoc document', function () {
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $valores = new Valores(
+        vServPrest: new \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado(vServ: '100.00'),
+        trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
+            tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
+                tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+            ),
+            indTotTrib: '0',
+        ),
+        vDedRed: new InfoDedRed(documentos: [
+            new DocDedRed(
+                tpDedRed: TipoDedRed::OutrasDeducoes,
+                dtEmiDoc: '2026-01-15',
+                vDedutivelRedutivel: '100.00',
+                vDeducaoReducao: '50.00',
+                nDoc: 'DOC-GENERICO-001',
+            ),
+        ]),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $valores));
+
+    expect($xml)
+        ->toContain('<nDoc>DOC-GENERICO-001</nDoc>')
+        ->not->toContain('<nDocFisc>')
+        ->not->toContain('<chNFSe>')
+        ->not->toContain('<chNFe>')
+        ->not->toContain('<NFSeMun>')
+        ->not->toContain('<NFNFS>');
 });
 
 it('builds DPS with vDedRed pDR that validates against XSD', function () {

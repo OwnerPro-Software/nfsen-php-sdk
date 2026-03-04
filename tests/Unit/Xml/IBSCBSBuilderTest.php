@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder::class);
+
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
@@ -57,7 +59,13 @@ it('builds minimal IBSCBS element', function () {
         ->toContain('<trib>')
         ->toContain('<gIBSCBS>')
         ->toContain('<CST>100</CST>')
-        ->toContain('<cClassTrib>010101</cClassTrib>');
+        ->toContain('<cClassTrib>010101</cClassTrib>')
+        ->not->toContain('<dest>')
+        ->not->toContain('<imovel>')
+        ->not->toContain('<tpOper>')
+        ->not->toContain('<tpEnteGov>')
+        ->not->toContain('<gRefNFSe>')
+        ->not->toContain('<gReeRepRes>');
 });
 
 it('builds IBSCBS with tpOper', function () {
@@ -602,5 +610,6 @@ it('builds DPS with full IBSCBS that validates against XSD', function () {
         ->toContain('<dest>')
         ->toContain('<gReeRepRes>')
         ->toContain('<gTribRegular>')
-        ->toContain('<gDif>');
+        ->toContain('<gDif>')
+        ->toContain('<tpEnteGov>');
 });

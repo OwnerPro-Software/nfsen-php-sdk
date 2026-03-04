@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\Builders\ServicoBuilder::class);
+
 use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
 use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
 use Pulsar\NfseNacional\Dps\DTO\Servico\ComercioExterior;
@@ -47,6 +49,12 @@ it('builds serv element with locPrest and cServ', function () {
     expect($xml)->toContain('<cTribNac>01.01.01.000</cTribNac>');
     expect($xml)->toContain('<xDescServ>Serviço X</xDescServ>');
     expect($xml)->toContain('<cNBS>123456789</cNBS>');
+    expect($xml)->not->toContain('<obra>');
+    expect($xml)->not->toContain('<comExt>');
+    expect($xml)->not->toContain('<lsadppu>');
+    expect($xml)->not->toContain('<atvEvento>');
+    expect($xml)->not->toContain('<explRod>');
+    expect($xml)->not->toContain('<infoCompl>');
 });
 
 it('uses cPaisPrestacao when cLocPrestacao is not set', function () {

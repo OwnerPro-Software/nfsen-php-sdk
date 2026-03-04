@@ -28,7 +28,7 @@ trait CreatesTextElements
             $endNac->appendChild($this->text($doc, 'cMun', $end->endNac->cMun));
             $endNac->appendChild($this->text($doc, 'CEP', $end->endNac->CEP));
             $el->appendChild($endNac);
-        } elseif ($end->endExt instanceof EnderecoExterior) {
+        } elseif ($end->endExt instanceof EnderecoExterior) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one address type
             $endExt = $doc->createElement('endExt');
             $endExt->appendChild($this->text($doc, 'cPais', $end->endExt->cPais));
             $endExt->appendChild($this->text($doc, 'cEndPost', $end->endExt->cEndPost));

@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Enums\TipoEvento::class);
+
 use Pulsar\NfseNacional\Enums\TipoEvento;
 
 it('has all 18 expected values', function () {

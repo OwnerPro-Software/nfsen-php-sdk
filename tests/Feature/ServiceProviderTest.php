@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\NfseNacionalServiceProvider::class);
+
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Exceptions\NfseException;
@@ -90,4 +92,73 @@ it('throws RuntimeException when cert file is empty', function () {
 it('throws NfseException when cert config is incomplete', function () {
     expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
         ->toThrow(NfseException::class, 'NfseClient não configurado');
+});
+
+it('throws NfseException when only certPath is missing', function () {
+    config([
+        'nfse-nacional.certificado.path' => null,
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura' => '3501608',
+    ]);
+
+    expect(fn () => app(NfseClient::class))
+        ->toThrow(NfseException::class, 'NfseClient não configurado');
+});
+
+it('throws NfseException when only senha is missing', function () {
+    config([
+        'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfse-nacional.certificado.senha' => '',
+        'nfse-nacional.prefeitura' => '3501608',
+    ]);
+
+    expect(fn () => app(NfseClient::class))
+        ->toThrow(NfseException::class, 'NfseClient não configurado');
+});
+
+it('throws NfseException when only prefeitura is missing', function () {
+    config([
+        'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura' => '',
+    ]);
+
+    expect(fn () => app(NfseClient::class))
+        ->toThrow(NfseException::class, 'NfseClient não configurado');
+});
+
+it('throws NfseException when certPath does not exist as file', function () {
+    config([
+        'nfse-nacional.certificado.path' => '/nonexistent/path/cert.pfx',
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura' => '3501608',
+    ]);
+
+    expect(fn () => app(NfseClient::class))
+        ->toThrow(NfseException::class, 'NfseClient não configurado');
+});
+
+it('casts integer prefeitura config to string', function () {
+    config([
+        'nfse-nacional.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfse-nacional.certificado.senha' => 'secret',
+        'nfse-nacional.prefeitura' => 3501608,
+    ]);
+
+    $client = app(NfseClient::class);
+    expect($client)->toBeInstanceOf(NfseClient::class);
+});
+
+it('publishes config file in console', function () {
+    $paths = \Illuminate\Support\ServiceProvider::pathsToPublish(
+        \Pulsar\NfseNacional\NfseNacionalServiceProvider::class,
+        'nfse-nacional-config',
+    );
+
+    expect($paths)->toBeArray()->not->toBeEmpty();
+
+    $sourcePath = array_key_first($paths);
+    expect($sourcePath)->toEndWith('config/nfse-nacional.php');
+    expect(file_exists($sourcePath))->toBeTrue();
+    expect($paths[$sourcePath])->toContain('nfse-nacional.php');
 });

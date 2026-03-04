@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Enums\NfseAmbiente::class);
+
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 it('has producao value of 1', function () {
@@ -43,4 +45,14 @@ it('fromConfig throws InvalidArgumentException on invalid numeric value', functi
 
     expect(fn () => NfseAmbiente::fromConfig('3'))
         ->toThrow(\InvalidArgumentException::class, 'Ambiente NFSe inválido');
+});
+
+it('fromConfig normalizes leading zeros via integer cast', function () {
+    expect(NfseAmbiente::fromConfig('01'))->toBe(NfseAmbiente::PRODUCAO);
+    expect(NfseAmbiente::fromConfig('02'))->toBe(NfseAmbiente::HOMOLOGACAO);
+});
+
+it('fromConfig accepts uppercase string values', function () {
+    expect(NfseAmbiente::fromConfig('PRODUCAO'))->toBe(NfseAmbiente::PRODUCAO);
+    expect(NfseAmbiente::fromConfig('HOMOLOGACAO'))->toBe(NfseAmbiente::HOMOLOGACAO);
 });

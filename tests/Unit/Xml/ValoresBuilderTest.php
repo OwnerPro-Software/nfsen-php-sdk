@@ -1,5 +1,10 @@
 <?php
 
+covers(
+    \Pulsar\NfseNacional\Xml\Builders\ValoresBuilder::class,
+    \Pulsar\NfseNacional\Xml\Builders\CreatesTextElements::class,
+);
+
 use Pulsar\NfseNacional\Dps\DTO\Valores\BeneficioMunicipal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DescontoCondIncond;
 use Pulsar\NfseNacional\Dps\DTO\Valores\ExigibilidadeSuspensa;
@@ -55,6 +60,9 @@ it('builds valores element with vServPrest', function () {
     expect($xml)->toContain('<tpRetISSQN>1</tpRetISSQN>');
     expect($xml)->toContain('<totTrib>');
     expect($xml)->toContain('<indTotTrib>0</indTotTrib>');
+    expect($xml)->not->toContain('<vDescCondIncond>');
+    expect($xml)->not->toContain('<vDedRed>');
+    expect($xml)->not->toContain('<tribFed>');
 });
 
 it('includes vReceb in vServPrest when set', function () {
@@ -309,4 +317,48 @@ it('throws when multiple totTrib choices are set', function () {
 it('throws when no totTrib choice is set', function () {
     expect(fn () => new Tributacao(tribMun: makeTribMunMinimo()))
         ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+});
+
+it('builds tribFed without piscofins', function () {
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: makeTribMunMinimo(),
+            indTotTrib: '0',
+            tribFed: new TributacaoFederal(vRetCP: '11.00'),
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $valores));
+
+    expect($xml)
+        ->toContain('<tribFed>')
+        ->toContain('<vRetCP>11.00</vRetCP>')
+        ->not->toContain('<piscofins>');
+});
+
+it('builds piscofins without tpRetPisCofins', function () {
+    $builder = new ValoresBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $valores = new Valores(
+        vServPrest: makeVServPrestMinimo(),
+        trib: new Tributacao(
+            tribMun: makeTribMunMinimo(),
+            indTotTrib: '0',
+            tribFed: new TributacaoFederal(
+                piscofins: new PisCofins(CST: TipoCST::AliqBasica),
+            ),
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $valores));
+
+    expect($xml)
+        ->toContain('<piscofins>')
+        ->toContain('<CST>01</CST>')
+        ->not->toContain('<tpRetPisCofins>');
 });

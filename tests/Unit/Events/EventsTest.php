@@ -1,5 +1,15 @@
 <?php
 
+covers(
+    \Pulsar\NfseNacional\Events\NfseRequested::class,
+    \Pulsar\NfseNacional\Events\NfseEmitted::class,
+    \Pulsar\NfseNacional\Events\NfseCancelled::class,
+    \Pulsar\NfseNacional\Events\NfseSubstituted::class,
+    \Pulsar\NfseNacional\Events\NfseQueried::class,
+    \Pulsar\NfseNacional\Events\NfseFailed::class,
+    \Pulsar\NfseNacional\Events\NfseRejected::class,
+);
+
 use Pulsar\NfseNacional\Events\NfseCancelled;
 use Pulsar\NfseNacional\Events\NfseEmitted;
 use Pulsar\NfseNacional\Events\NfseFailed;

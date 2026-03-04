@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Support\FileReader::class);
+
 use Pulsar\NfseNacional\Support\FileReader;
 
 it('reads file contents via invocation', function () {

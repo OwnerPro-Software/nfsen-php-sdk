@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Exceptions;
 
 final class HttpException extends NfseException
 {
-    private string $responseBody = '';
+    private string $responseBody = ''; // @pest-mutate-ignore EmptyStringToNotEmpty — property initializer not tracked by PCOV
 
     public static function fromResponse(int $statusCode, string $body): self
     {

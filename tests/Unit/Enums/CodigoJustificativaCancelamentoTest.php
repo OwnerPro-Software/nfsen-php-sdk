@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento::class);
+
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
 
 it('has erro emissao value', function (): void {

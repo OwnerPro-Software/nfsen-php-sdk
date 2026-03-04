@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder::class);
+
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
@@ -26,10 +28,15 @@ it('builds prest element with CNPJ', function () {
     $element = $builder->build($doc, $prest);
     $doc->appendChild($element);
 
-    expect($doc->saveXML($element))->toContain('<CNPJ>12345678000195</CNPJ>');
-    expect($doc->saveXML($element))->toContain('<xNome>Empresa Teste</xNome>');
-    expect($doc->saveXML($element))->toContain('<regTrib>');
-    expect($doc->saveXML($element))->toContain('<opSimpNac>1</opSimpNac>');
+    $xml = $doc->saveXML($element);
+    expect($xml)->toContain('<CNPJ>12345678000195</CNPJ>');
+    expect($xml)->toContain('<xNome>Empresa Teste</xNome>');
+    expect($xml)->toContain('<regTrib>');
+    expect($xml)->toContain('<opSimpNac>1</opSimpNac>');
+    expect($xml)->toContain('<regEspTrib>0</regEspTrib>');
+    expect($xml)->not->toContain('<end>');
+    expect($xml)->not->toContain('<fone>');
+    expect($xml)->not->toContain('<email>');
 });
 
 it('builds prest element with CPF when no CNPJ', function () {

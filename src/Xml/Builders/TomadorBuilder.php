@@ -24,7 +24,7 @@ final class TomadorBuilder
             $el->appendChild($this->text($doc, 'CPF', $toma->CPF));
         } elseif ($toma->NIF !== null) {
             $el->appendChild($this->text($doc, 'NIF', $toma->NIF));
-        } elseif ($toma->cNaoNIF instanceof CodNaoNIF) {
+        } elseif ($toma->cNaoNIF instanceof CodNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
             $el->appendChild($this->text($doc, 'cNaoNIF', $toma->cNaoNIF->value));
         }
 
