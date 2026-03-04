@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Operations\NfseConsulter::class);
+
 use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
 use Pulsar\NfseNacional\Enums\TipoEvento;
@@ -99,10 +101,10 @@ it('dps returns success with idDps', function () {
             return new NfseResponse(true);
         }
 
-        /** @return array{chaveAcesso: string, idDps: string} */
+        /** @return array{chaveAcesso: string, idDps: string, tipoAmbiente: int, versaoAplicativo: string, dataHoraProcessamento: string} */
         public function executeGetRaw(string $url): array
         {
-            return ['chaveAcesso' => 'CHAVE_DPS', 'idDps' => 'DPS001'];
+            return ['chaveAcesso' => 'CHAVE_DPS', 'idDps' => 'DPS001', 'tipoAmbiente' => 2, 'versaoAplicativo' => '1.0.0', 'dataHoraProcessamento' => '2026-01-01T00:00:00'];
         }
 
         public function executeHead(string $url): int
@@ -119,6 +121,9 @@ it('dps returns success with idDps', function () {
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('CHAVE_DPS');
     expect($response->idDps)->toBe('DPS001');
+    expect($response->tipoAmbiente)->toBe(2);
+    expect($response->versaoAplicativo)->toBe('1.0.0');
+    expect($response->dataHoraProcessamento)->toBe('2026-01-01T00:00:00');
 });
 
 it('danfse returns failure when erros key present', function () {
@@ -159,10 +164,10 @@ it('danfse returns success with danfseUrl', function () {
             return new NfseResponse(true);
         }
 
-        /** @return array{danfseUrl: string} */
+        /** @return array{danfseUrl: string, tipoAmbiente: int, versaoAplicativo: string, dataHoraProcessamento: string} */
         public function executeGetRaw(string $url): array
         {
-            return ['danfseUrl' => 'https://danfse.url/PDF'];
+            return ['danfseUrl' => 'https://danfse.url/PDF', 'tipoAmbiente' => 2, 'versaoAplicativo' => '1.0.0', 'dataHoraProcessamento' => '2026-01-01T00:00:00'];
         }
 
         public function executeHead(string $url): int
@@ -178,6 +183,9 @@ it('danfse returns success with danfseUrl', function () {
 
     expect($response->sucesso)->toBeTrue();
     expect($response->url)->toBe('https://danfse.url/PDF');
+    expect($response->tipoAmbiente)->toBe(2);
+    expect($response->versaoAplicativo)->toBe('1.0.0');
+    expect($response->dataHoraProcessamento)->toBe('2026-01-01T00:00:00');
 });
 
 it('eventos returns failure when erros key present', function () {
@@ -253,10 +261,10 @@ it('eventos returns success with decompressed xml', function () {
             return new NfseResponse(true);
         }
 
-        /** @return array{eventoXmlGZipB64: string} */
+        /** @return array{eventoXmlGZipB64: string, tipoAmbiente: int, versaoAplicativo: string, dataHoraProcessamento: string} */
         public function executeGetRaw(string $url): array
         {
-            return ['eventoXmlGZipB64' => $this->gzipB64];
+            return ['eventoXmlGZipB64' => $this->gzipB64, 'tipoAmbiente' => 2, 'versaoAplicativo' => '1.0.0', 'dataHoraProcessamento' => '2026-01-01T00:00:00'];
         }
 
         public function executeHead(string $url): int
@@ -272,6 +280,9 @@ it('eventos returns success with decompressed xml', function () {
 
     expect($response->sucesso)->toBeTrue();
     expect($response->xml)->toBe('<Evento/>');
+    expect($response->tipoAmbiente)->toBe(2);
+    expect($response->versaoAplicativo)->toBe('1.0.0');
+    expect($response->dataHoraProcessamento)->toBe('2026-01-01T00:00:00');
 });
 
 it('buildUrl returns baseUrl when path is empty', function () {
@@ -312,6 +323,16 @@ it('buildUrl returns baseUrl when path is empty', function () {
     } finally {
         unlink($tmpJson);
     }
+});
+
+it('eventos uses default nSequencial = 1 in URL', function () {
+    $fakeClient = new FakeNfseClientForConsulta;
+    $builder = makeNfseConsulter($fakeClient);
+    $chave = makeChaveAcesso();
+
+    $builder->eventos($chave);
+
+    expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/'.$chave.'/eventos/101101/1');
 });
 
 it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
@@ -402,4 +423,34 @@ it('throws InvalidArgumentException for invalid chaveAcesso on eventos', functio
 
     expect(fn () => $builder->eventos('INVALID'))
         ->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
+});
+
+it('buildUrl trims trailing slash from baseUrl', function () {
+    $fakeClient = new FakeNfseClientForConsulta;
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base/', '', $resolver, '9999999');
+
+    $builder->dps('DPS123');
+
+    expect($fakeClient->calls[0])->toBe('https://sefin.base/dps/DPS123');
+});
+
+it('buildUrl trims leading slash from path', function () {
+    $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
+    file_put_contents($tmpJson, json_encode([
+        '9999998' => ['operations' => ['query_nfse' => '/nfse/{chave}']],
+    ]));
+
+    $fakeClient = new FakeNfseClientForConsulta;
+
+    try {
+        $resolver = new PrefeituraResolver($tmpJson);
+        $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999998');
+        $chave = makeChaveAcesso();
+        $builder->nfse($chave);
+
+        expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/'.$chave);
+    } finally {
+        unlink($tmpJson);
+    }
 });

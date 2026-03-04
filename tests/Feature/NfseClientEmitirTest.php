@@ -1,7 +1,10 @@
 <?php
 
+covers(\Pulsar\NfseNacional\NfseClient::class);
+
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\Exceptions\NfseException;
@@ -99,6 +102,47 @@ it('for() falls back to forStandalone when config is null', function (DpsData $d
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('STANDALONE_CHAVE');
+})->with('dpsData');
+
+it('for() uses config values when config is present', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'PROD_CHAVE'], 201)]);
+
+    config()->set('nfse-nacional.ambiente', NfseAmbiente::PRODUCAO->value);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue();
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.nfse.gov.br/SefinNacional/nfse' &&
+        $req->method() === 'POST'
+    );
+})->with('dpsData');
+
+it('forStandalone uses custom prefeiturasJsonPath', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CUSTOM_PATH'], 201)]);
+
+    $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
+    file_put_contents($tmpJson, json_encode([
+        '9999999' => ['urls' => ['sefin_staging' => 'https://custom.sefin.test']],
+    ]));
+
+    try {
+        PrefeituraResolver::clearCache();
+        $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', prefeiturasJsonPath: $tmpJson);
+        $client->emitir($data);
+
+        Http::assertSent(fn (Request $req) => $req->url() === 'https://custom.sefin.test/nfse');
+    } finally {
+        PrefeituraResolver::clearCache();
+        unlink($tmpJson);
+    }
+})->with('dpsData');
+
+it('forStandalone uses custom schemesPath', function (DpsData $data) {
+    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', schemesPath: '/nonexistent/schemas');
+
+    expect(fn () => $client->emitir($data))->toThrow(NfseException::class);
 })->with('dpsData');
 
 it('emitir returns rejection with erros array', function (DpsData $data) {
@@ -238,6 +282,30 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
         $req->method() === 'POST'
     );
 })->with('dpsData');
+
+it('forStandalone defaults to sslVerify true', function () {
+    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999');
+
+    $consulter = (new ReflectionProperty($client, 'consulter'))->getValue($client);
+    $queryExecutor = (new ReflectionProperty($consulter, 'client'))->getValue($consulter);
+    $httpClient = (new ReflectionProperty($queryExecutor, 'httpClient'))->getValue($queryExecutor);
+    $sslVerify = (new ReflectionProperty($httpClient, 'sslVerify'))->getValue($httpClient);
+
+    expect($sslVerify)->toBeTrue();
+});
+
+it('forStandalone uses default timeout and connectTimeout', function () {
+    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999');
+
+    $consulter = (new ReflectionProperty($client, 'consulter'))->getValue($client);
+    $queryExecutor = (new ReflectionProperty($consulter, 'client'))->getValue($consulter);
+    $httpClient = (new ReflectionProperty($queryExecutor, 'httpClient'))->getValue($queryExecutor);
+    $timeout = (new ReflectionProperty($httpClient, 'timeout'))->getValue($httpClient);
+    $connectTimeout = (new ReflectionProperty($httpClient, 'connectTimeout'))->getValue($httpClient);
+
+    expect($timeout)->toBe(30);
+    expect($connectTimeout)->toBe(10);
+});
 
 it('configure enforces sslVerify true when ambiente is PRODUCAO even if config says false', function () {
     $client = NfseClient::forStandalone(

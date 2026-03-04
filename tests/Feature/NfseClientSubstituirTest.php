@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\NfseClient::class);
+
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
@@ -90,7 +92,7 @@ it('substituir throws HttpException on server error', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
-it('substituir works without descricao', function () {
+it('substituir uses default nPedRegEvento and descricao', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
@@ -99,6 +101,13 @@ it('substituir works without descricao', function () {
     $response = $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::EnquadramentoSimplesNacional);
 
     expect($response->sucesso)->toBeTrue();
+
+    Http::assertSent(function (Request $req) {
+        $xml = gzdecode(base64_decode($req['pedidoRegistroEventoXmlGZipB64']));
+
+        return str_contains($xml, '<nPedRegEvento>1</nPedRegEvento>') &&
+            ! str_contains($xml, '<xMotivo>');
+    });
 });
 
 it('substituir uses Americana custom URL without operation path', function () {

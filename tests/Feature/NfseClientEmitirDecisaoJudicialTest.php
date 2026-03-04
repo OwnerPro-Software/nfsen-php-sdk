@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\NfseClient::class);
+
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;

@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\NfseClient::class);
+
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
@@ -28,10 +30,13 @@ it('cancelar returns success NfseResponse', function () {
     expect($response->versaoAplicativo)->toBe('1.0.0');
     expect($response->dataHoraProcessamento)->toBe('2026-03-02T12:00:00-03:00');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
-        $req->method() === 'POST' &&
-        isset($req['pedidoRegistroEventoXmlGZipB64'])
-    );
+    Http::assertSent(function (Request $req) {
+        $xml = gzdecode(base64_decode($req['pedidoRegistroEventoXmlGZipB64']));
+
+        return $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
+            $req->method() === 'POST' &&
+            str_contains($xml, '<nPedRegEvento>1</nPedRegEvento>');
+    });
 });
 
 it('cancelar accepts string codigoMotivo and coerces to enum', function () {

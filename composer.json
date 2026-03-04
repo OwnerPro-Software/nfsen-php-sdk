@@ -43,6 +43,7 @@
   "scripts": {
     "test": "./vendor/bin/pest --coverage --min=100",
     "test:types": "./vendor/bin/pest --type-coverage --min=100",
+    "test:mutate": "./vendor/bin/pest --mutate",
     "analyse": "./vendor/bin/phpstan analyse",
     "psalm": "./vendor/bin/psalm --taint-analysis",
     "rector": "./vendor/bin/rector --dry-run",
