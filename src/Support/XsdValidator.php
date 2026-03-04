@@ -21,7 +21,7 @@ final readonly class XsdValidator
             throw new NfseException(sprintf("Schema XSD não encontrado: '%s'.", $xsdFilename));
         }
 
-        $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>'.$xmlFragment;
+        $xmlWithDecl = '<?xml version="1.0" encoding="UTF-8"?>'.$xmlFragment; // @pest-mutate-ignore ConcatRemoveLeft: declaration is defensive, loadXML handles fragments without it
         $doc = ($this->xmlDocumentLoader)($xmlWithDecl);
 
         if ($doc === false) {
