@@ -41,7 +41,7 @@ final class ValoresBuilder
         $el->appendChild($vServPrest);
 
         // vDescCondIncond (opcional)
-        if ($valores->vDescCondIncond instanceof DescontoCondIncond) { // @pest-mutate-ignore InstanceOfToTrue — PCOV parallel coverage tracking limitation
+        if ($valores->vDescCondIncond instanceof DescontoCondIncond) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where vDescCondIncond is set
             $vDesc = $doc->createElement('vDescCondIncond');
             if ($valores->vDescCondIncond->vDescIncond !== null) {
                 $vDesc->appendChild($this->text($doc, 'vDescIncond', $valores->vDescCondIncond->vDescIncond));
@@ -169,7 +169,7 @@ final class ValoresBuilder
         $el->appendChild($tribMun);
 
         // tribFed (opcional)
-        if ($trib->tribFed instanceof TributacaoFederal) { // @pest-mutate-ignore InstanceOfToTrue — PCOV parallel coverage tracking limitation
+        if ($trib->tribFed instanceof TributacaoFederal) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where tribFed is set
             $tribFed = $doc->createElement('tribFed');
             if ($trib->tribFed->piscofins instanceof PisCofins) {
                 $piscofins = $doc->createElement('piscofins');

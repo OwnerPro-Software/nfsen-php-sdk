@@ -111,11 +111,11 @@ final class IBSCBSBuilder
 
         if ($imovel->cCIB !== null) {
             $el->appendChild($this->text($doc, 'cCIB', $imovel->cCIB));
-        } elseif ($imovel->end instanceof EnderecoObra) { // @pest-mutate-ignore InstanceOfToTrue — tested via cCIB path, PCOV tracking limitation
+        } elseif ($imovel->end instanceof EnderecoObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EnderecoObra when reached
             $endEl = $doc->createElement('end');
             if ($imovel->end->CEP !== null) {
                 $endEl->appendChild($this->text($doc, 'CEP', $imovel->end->CEP));
-            } elseif ($imovel->end->endExt instanceof EnderecoExteriorObra) { // @pest-mutate-ignore InstanceOfToTrue — tested via CEP path, PCOV tracking limitation
+            } elseif ($imovel->end->endExt instanceof EnderecoExteriorObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
                 $endExt = $doc->createElement('endExt');
                 $endExt->appendChild($this->text($doc, 'cEndPost', $imovel->end->endExt->cEndPost));
                 $endExt->appendChild($this->text($doc, 'xCidade', $imovel->end->endExt->xCidade));
@@ -124,12 +124,12 @@ final class IBSCBSBuilder
             }
 
             $endEl->appendChild($this->text($doc, 'xLgr', $imovel->end->xLgr));
-            $endEl->appendChild($this->text($doc, 'nro', $imovel->end->nro)); // @pest-mutate-ignore RemoveMethodCall — PCOV parallel coverage tracking limitation
+            $endEl->appendChild($this->text($doc, 'nro', $imovel->end->nro));
             if ($imovel->end->xCpl !== null) {
                 $endEl->appendChild($this->text($doc, 'xCpl', $imovel->end->xCpl));
             }
 
-            $endEl->appendChild($this->text($doc, 'xBairro', $imovel->end->xBairro)); // @pest-mutate-ignore RemoveMethodCall — PCOV parallel coverage tracking limitation
+            $endEl->appendChild($this->text($doc, 'xBairro', $imovel->end->xBairro));
             $el->appendChild($endEl);
         }
 
@@ -173,7 +173,7 @@ final class IBSCBSBuilder
             $docFisc->appendChild($this->text($doc, 'nDocFiscal', $documento->docFiscalOutro->nDocFiscal));
             $docFisc->appendChild($this->text($doc, 'xDocFiscal', $documento->docFiscalOutro->xDocFiscal));
             $el->appendChild($docFisc);
-        } elseif ($documento->docOutro instanceof ListaDocOutro) { // @pest-mutate-ignore InstanceOfToTrue — tested via dFeNacional path, PCOV tracking limitation
+        } elseif ($documento->docOutro instanceof ListaDocOutro) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already ListaDocOutro when reached
             $docOutro = $doc->createElement('docOutro');
             $docOutro->appendChild($this->text($doc, 'nDoc', $documento->docOutro->nDoc));
             $docOutro->appendChild($this->text($doc, 'xDoc', $documento->docOutro->xDoc));
@@ -192,7 +192,7 @@ final class IBSCBSBuilder
                 $fornec->appendChild($this->text($doc, 'cNaoNIF', $documento->fornec->cNaoNIF->value));
             }
 
-            $fornec->appendChild($this->text($doc, 'xNome', $documento->fornec->xNome)); // @pest-mutate-ignore RemoveMethodCall — PCOV parallel coverage tracking limitation
+            $fornec->appendChild($this->text($doc, 'xNome', $documento->fornec->xNome));
             $el->appendChild($fornec);
         }
 

@@ -237,6 +237,7 @@ it('builds IBSCBS with gReeRepRes', function () {
         ->toContain('<chaveDFe>12345678901234567890123456789012345678901234567890</chaveDFe>')
         ->toContain('<fornec>')
         ->toContain('<CNPJ>98765432000111</CNPJ>')
+        ->toContain('<xNome>Fornecedor</xNome>')
         ->toContain('<tpReeRepRes>01</tpReeRepRes>')
         ->toContain('<vlrReeRepRes>500.00</vlrReeRepRes>');
 });
@@ -352,7 +353,9 @@ it('builds IBSCBS with imovel end using CEP', function () {
         ->toContain('<end>')
         ->toContain('<CEP>01001000</CEP>')
         ->toContain('<xLgr>Rua Imovel</xLgr>')
-        ->toContain('<xCpl>Apto 1</xCpl>');
+        ->toContain('<nro>50</nro>')
+        ->toContain('<xCpl>Apto 1</xCpl>')
+        ->toContain('<xBairro>Centro</xBairro>');
 });
 
 it('builds IBSCBS with imovel end using endExt', function () {
@@ -386,7 +389,9 @@ it('builds IBSCBS with imovel end using endExt', function () {
         ->toContain('<endExt>')
         ->toContain('<cEndPost>10001</cEndPost>')
         ->toContain('<xCidade>New York</xCidade>')
-        ->toContain('<xEstProvReg>NY</xEstProvReg>');
+        ->toContain('<xEstProvReg>NY</xEstProvReg>')
+        ->toContain('<nro>200</nro>')
+        ->toContain('<xBairro>Manhattan</xBairro>');
 });
 
 it('builds IBSCBS with docFiscalOutro', function () {

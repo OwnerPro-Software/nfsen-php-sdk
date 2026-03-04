@@ -1,6 +1,6 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseNacionalServiceProvider::class);
+covers(\Pulsar\NfseNacional\NfseNacionalServiceProvider::class, \Pulsar\NfseNacional\Facades\NfseNacional::class);
 
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
