@@ -144,6 +144,40 @@ it('throws InvalidArgumentException for invalid json content with parse error de
     }
 });
 
+it('throws InvalidArgumentException for invalid ibge code on resolveAdnUrl', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    expect(fn () => $resolver->resolveAdnUrl('123', NfseAmbiente::HOMOLOGACAO))
+        ->toThrow(\InvalidArgumentException::class, 'IBGE');
+});
+
+it('resolves custom adn url for known prefeitura', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    $url = $resolver->resolveAdnUrl('3547304', NfseAmbiente::PRODUCAO);
+
+    expect($url)->toBe('https://nfsesantanadeparnaiba.simplissweb.com.br');
+});
+
+it('throws InvalidArgumentException for invalid ibge code on resolveOperation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    expect(fn () => $resolver->resolveOperation('abc', 'query_nfse', ['chave' => 'X']))
+        ->toThrow(\InvalidArgumentException::class, 'IBGE');
+});
+
+it('casts integer parameter values to string in template', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+
+    $path = $resolver->resolveOperation('9999999', 'query_events', [
+        'chave' => 'ABC123',
+        'tipoEvento' => 101101,
+        'nSequencial' => 1,
+    ]);
+
+    expect($path)->toBe('nfse/ABC123/eventos/101101/1');
+});
+
 it('clearCache resets the static cache', function () use ($jsonPath) {
     // Load data into cache
     $resolver = new PrefeituraResolver($jsonPath);

@@ -214,3 +214,156 @@ it('throws NfseException when fwrite fails on read-only handle', function () {
     expect(fn () => @$client->post('https://example.com/nfse', []))
         ->toThrow(NfseException::class, 'escrever certificado');
 });
+
+it('throws when only one fwrite fails', function () {
+    $callCount = 0;
+
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$callCount) {
+        $callCount++;
+
+        return $callCount === 1 ? tmpfile() : fopen('php://memory', 'r');
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    expect(fn () => @$client->post('https://example.com/nfse', []))
+        ->toThrow(NfseException::class, 'escrever certificado');
+});
+
+it('casts non-array json response to array', function () {
+    Http::fake(['*' => Http::response('123', 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $result = $client->post('https://example.com/nfse', []);
+
+    expect($result)->toBeArray();
+});
+
+it('closes first handle when second tmpfile fails', function () {
+    $realHandle = tmpfile();
+    $callCount = 0;
+
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$callCount, $realHandle) {
+        return ++$callCount === 1 ? $realHandle : false;
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    try {
+        $client->post('https://example.com/nfse', []);
+    } catch (NfseException) {
+        // expected
+    }
+
+    expect(is_resource($realHandle))->toBeFalse();
+});
+
+it('closes second handle when first tmpfile fails', function () {
+    $realHandle = tmpfile();
+    $callCount = 0;
+
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$callCount, $realHandle) {
+        return ++$callCount === 1 ? false : $realHandle;
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+
+    try {
+        $client->post('https://example.com/nfse', []);
+    } catch (NfseException) {
+        // expected
+    }
+
+    expect(is_resource($realHandle))->toBeFalse();
+});
+
+it('closes certificate handles after successful request', function () {
+    Http::fake(['*' => Http::response(['ok' => true])]);
+
+    $handles = [];
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$handles) {
+        $handle = tmpfile();
+        $handles[] = $handle;
+
+        return $handle;
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+    $client->post('https://example.com/nfse', []);
+
+    expect(is_resource($handles[0]))->toBeFalse()
+        ->and(is_resource($handles[1]))->toBeFalse();
+});
+
+it('sets certificate file permissions to 0600', function () {
+    $paths = [];
+    $tempFiles = [];
+    $factory = Mockery::mock(TempFileFactory::class);
+    $factory->shouldReceive('__invoke')->andReturnUsing(function () use (&$paths, &$tempFiles) {
+        $path = tempnam(sys_get_temp_dir(), 'nfse_perm_');
+        chmod($path, 0644);
+        $handle = fopen($path, 'w+b');
+        $paths[] = $path;
+        $tempFiles[] = $path;
+
+        return $handle;
+    });
+
+    $certPerms = null;
+    $keyPerms = null;
+    Http::fake(function () use (&$paths, &$certPerms, &$keyPerms) {
+        $certPerms = fileperms($paths[0]) & 0777;
+        $keyPerms = fileperms($paths[1]) & 0777;
+
+        return Http::response(['ok' => true]);
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, tempFileFactory: $factory);
+    $client->post('https://example.com/nfse', []);
+
+    foreach ($tempFiles as $f) {
+        @unlink($f);
+    }
+
+    expect($certPerms)->toBe(0600)
+        ->and($keyPerms)->toBe(0600);
+});
+
+it('passes ssl verify and certificate options for post requests', function () {
+    $capturedOptions = null;
+    Http::fake(function ($request, $options) use (&$capturedOptions) {
+        $capturedOptions = $options;
+
+        return Http::response(['ok' => true]);
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, sslVerify: false);
+    $client->post('https://example.com/nfse', []);
+
+    expect($capturedOptions)
+        ->toHaveKey('verify', false)
+        ->toHaveKey('cert')
+        ->toHaveKey('ssl_key');
+});
+
+it('passes ssl verify and certificate options for head requests', function () {
+    $capturedOptions = null;
+    Http::fake(function ($request, $options) use (&$capturedOptions) {
+        $capturedOptions = $options;
+
+        return Http::response('', 200);
+    });
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, sslVerify: false);
+    $client->head('https://example.com/dps/DPS123');
+
+    expect($capturedOptions)
+        ->toHaveKey('verify', false)
+        ->toHaveKey('cert')
+        ->toHaveKey('ssl_key');
+});

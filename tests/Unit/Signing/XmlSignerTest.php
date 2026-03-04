@@ -1,5 +1,7 @@
 <?php
 
+covers(\Pulsar\NfseNacional\Adapters\XmlSigner::class);
+
 use Pulsar\NfseNacional\Adapters\XmlSigner;
 
 function parseSignedXml(string $signed): DOMDocument
@@ -109,6 +111,23 @@ it('produces a DigestValue and SignatureValue that are non-empty base64', functi
     $signatureValue = $doc->getElementsByTagNameNS($dsNs, 'SignatureValue')->item(0);
     expect($signatureValue->textContent)->not->toBeEmpty();
     expect(base64_decode($signatureValue->textContent, true))->not->toBeFalse();
+});
+
+it('uses exclusive canonicalization without comments', function () {
+    $cert = makeTestCertificate();
+    $signer = new XmlSigner($cert, 'sha1');
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>'
+        .'<DPS xmlns="http://www.sped.fazenda.gov.br/nfse" xmlns:extra="http://extra.example.com">'
+        .'<infDPS Id="DPS00000000000000000000000000000000000000001"><!-- comment --></infDPS>'
+        .'</DPS>';
+
+    $signed = $signer->sign($xml, 'infDPS', 'DPS');
+    $doc = parseSignedXml($signed);
+    $dsNs = 'http://www.w3.org/2000/09/xmldsig#';
+
+    $digestValue = $doc->getElementsByTagNameNS($dsNs, 'DigestValue')->item(0);
+    expect($digestValue->textContent)->toBe('j3wPx3/3kJb/fU4F3NFQXzN8T2w=');
 });
 
 it('signs pedRegEvento xml for cancelar workflow', function () {

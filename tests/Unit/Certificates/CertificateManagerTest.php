@@ -40,13 +40,29 @@ it('throws CertificateException for empty pfx content', function () {
 });
 
 it('extracts CNPJ from certificate via ExtractsAuthorIdentity port', function () {
-    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
+    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake-icpbr.pfx');
     $manager = new CertificateManager($pfxContent, 'secret');
 
     $identity = $manager->extract();
 
-    expect($identity)->toBeArray()
-        ->toHaveKeys(['cnpj', 'cpf']);
+    expect($identity)
+        ->toHaveKey('cnpj')
+        ->toHaveKey('cpf')
+        ->and($identity['cnpj'])->toBe('12345678000195')
+        ->and($identity['cpf'])->toBeNull();
+});
+
+it('extracts CPF from certificate when present', function () {
+    $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake-icpbr-cpf.pfx');
+    $manager = new CertificateManager($pfxContent, 'secret');
+
+    $identity = $manager->extract();
+
+    expect($identity)
+        ->toHaveKey('cnpj')
+        ->toHaveKey('cpf')
+        ->and($identity['cpf'])->toBe('12345678901')
+        ->and($identity['cnpj'])->toBeNull();
 });
 
 it('implements ExtractsAuthorIdentity interface', function () {

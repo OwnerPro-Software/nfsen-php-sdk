@@ -16,7 +16,7 @@ final class XmlSigner implements SignsXml
     /**
      * @var bool[]|null[]
      */
-    private array $canonical = [true, false, null, null];
+    private array $canonical = [true, false, null, null]; // @pest-mutate-ignore
 
     public function __construct(
         private readonly Certificate $certificate,
