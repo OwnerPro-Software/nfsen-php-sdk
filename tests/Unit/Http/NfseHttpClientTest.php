@@ -367,3 +367,55 @@ it('passes ssl verify and certificate options for head requests', function () {
         ->toHaveKey('cert')
         ->toHaveKey('ssl_key');
 });
+
+it('getBytes returns raw response body', function () {
+    Http::fake(['*' => Http::response('PDF-BINARY-CONTENT', 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $result = $client->getBytes('https://example.com/danfse/CHAVE123');
+
+    expect($result)->toBe('PDF-BINARY-CONTENT');
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://example.com/danfse/CHAVE123' &&
+        $req->method() === 'GET'
+    );
+});
+
+it('getBytes throws HttpException on 4xx', function () {
+    Http::fake(['*' => Http::response('Not Found', 404)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->getBytes('https://example.com/danfse/INVALID'))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'HTTP error: 404');
+});
+
+it('getBytes throws HttpException on 5xx', function () {
+    Http::fake(['*' => Http::response('Server Error', 500)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->getBytes('https://example.com/danfse/CHAVE123'))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'HTTP error: 500');
+});
+
+it('getBytes does not follow redirects', function () {
+    Http::fake(['*' => Http::response('', 302, ['Location' => 'https://attacker.com/capture'])]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->getBytes('https://example.com/danfse/CHAVE123'))
+        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+
+    Http::assertSentCount(1);
+});
+
+it('getBytes does not send Accept: application/json header', function () {
+    Http::fake(['*' => Http::response('PDF-CONTENT', 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+    $client->getBytes('https://example.com/danfse/CHAVE123');
+
+    Http::assertSent(fn (Request $req) => ! str_contains($req->header('Accept')[0] ?? '', 'application/json'));
+});

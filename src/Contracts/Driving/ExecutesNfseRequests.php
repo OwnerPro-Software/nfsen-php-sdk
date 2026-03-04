@@ -8,7 +8,7 @@ use Pulsar\NfseNacional\Responses\NfseResponse;
 
 interface ExecutesNfseRequests
 {
-    public function executeGet(string $url): NfseResponse;
+    public function executeAndDecompress(string $url): NfseResponse;
 
     public function executeHead(string $url): int;
 
@@ -20,12 +20,13 @@ interface ExecutesNfseRequests
      *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
      *     chaveAcesso?: string,
      *     idDps?: string,
-     *     danfseUrl?: string,
      *     eventoXmlGZipB64?: string,
      *     tipoAmbiente?: int,
      *     versaoAplicativo?: string,
      *     dataHoraProcessamento?: string,
      * }
      */
-    public function executeGetRaw(string $url): array;
+    public function execute(string $url): array;
+
+    public function executeAndDownload(string $url): string;
 }

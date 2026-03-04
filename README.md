@@ -174,9 +174,10 @@ $response = $client->consultar()->nfse($chave);
 // Consultar DPS por ID
 $response = $client->consultar()->dps($idDps);
 
-// Obter URL do DANFSE (PDF)
+// Obter PDF do DANFSE
 $response = $client->consultar()->danfse($chave);
-// $response->url contém a URL do PDF
+// $response->pdf contém o conteúdo binário do PDF
+file_put_contents('danfse.pdf', $response->pdf);
 
 // Consultar eventos
 $response = $client->consultar()->eventos(

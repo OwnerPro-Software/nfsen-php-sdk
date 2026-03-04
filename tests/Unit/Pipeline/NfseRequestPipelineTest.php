@@ -90,6 +90,11 @@ function buildRequestPipeline(
             return [];
         }
 
+        public function getBytes(string $url): string
+        {
+            return '';
+        }
+
         public function head(string $url): int
         {
             return 200;

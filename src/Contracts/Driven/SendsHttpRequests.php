@@ -15,5 +15,7 @@ interface SendsHttpRequests
     /** @return array<string, mixed> */
     public function get(string $url): array;
 
+    public function getBytes(string $url): string;
+
     public function head(string $url): int;
 }

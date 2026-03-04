@@ -8,7 +8,7 @@ use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\NfseClient;
 
 // -------------------------------------------------------------------
-// Consultar DANFSE – URL do PDF (Standalone – sem Laravel)
+// Consultar DANFSE – PDF binário (Standalone – sem Laravel)
 // -------------------------------------------------------------------
 
 $pfxContent = file_get_contents(__DIR__.'/certificado.pfx');
@@ -27,8 +27,8 @@ $chaveNfse = '00000000000000000000000000000000000000000000000000';
 $response = $client->consultar()->danfse($chaveNfse);
 
 if ($response->sucesso) {
-    echo "DANFSE disponível!\n";
-    echo "URL do PDF: {$response->url}\n";
+    file_put_contents('danfse.pdf', $response->pdf);
+    echo "DANFSE salvo em danfse.pdf\n";
 } else {
     echo "Falha na consulta do DANFSE:\n";
     foreach ($response->erros as $erro) {

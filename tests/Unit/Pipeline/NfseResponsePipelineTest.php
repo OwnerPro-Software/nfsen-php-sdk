@@ -18,14 +18,18 @@ function buildResponsePipeline(
     ?int $headResult = null,
     ?\Throwable $throwOnGet = null,
     ?\Throwable $throwOnHead = null,
+    ?string $getBytesResult = null,
+    ?\Throwable $throwOnGetBytes = null,
 ): NfseResponsePipeline {
-    $httpClient = new class($getResult ?? [], $headResult ?? 200, $throwOnGet, $throwOnHead) implements SendsHttpRequests
+    $httpClient = new class($getResult ?? [], $headResult ?? 200, $throwOnGet, $throwOnHead, $getBytesResult, $throwOnGetBytes) implements SendsHttpRequests
     {
         public function __construct(
             private readonly array $getResult,
             private readonly int $headResult,
             private readonly ?\Throwable $throwOnGet,
             private readonly ?\Throwable $throwOnHead,
+            private readonly ?string $getBytesResult,
+            private readonly ?\Throwable $throwOnGetBytes,
         ) {}
 
         /** @param array<string, string> $payload */
@@ -43,6 +47,15 @@ function buildResponsePipeline(
             return $this->getResult;
         }
 
+        public function getBytes(string $url): string
+        {
+            if ($this->throwOnGetBytes) {
+                throw $this->throwOnGetBytes;
+            }
+
+            return $this->getBytesResult ?? '';
+        }
+
         public function head(string $url): int
         {
             if ($this->throwOnHead) {
@@ -56,9 +69,9 @@ function buildResponsePipeline(
     return new NfseResponsePipeline($httpClient);
 }
 
-// --- executeGet ---
+// --- executeAndDecompress ---
 
-it('returns successful response with decompressed xml and metadata on executeGet', function (): void {
+it('returns successful response with decompressed xml and metadata on executeAndDecompress', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
@@ -69,7 +82,7 @@ it('returns successful response with decompressed xml and metadata on executeGet
         'dataHoraProcessamento' => '2024-01-01T00:00:00',
     ]);
 
-    $response = $pipeline->executeGet('https://example.com/nfse');
+    $response = $pipeline->executeAndDecompress('https://example.com/nfse');
 
     expect($response)
         ->sucesso->toBeTrue()
@@ -80,18 +93,18 @@ it('returns successful response with decompressed xml and metadata on executeGet
         ->dataHoraProcessamento->toBe('2024-01-01T00:00:00');
 });
 
-it('dispatches NfseRequested and NfseQueried on successful executeGet', function (): void {
+it('dispatches NfseRequested and NfseQueried on successful executeAndDecompress', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: ['chaveAcesso' => 'ABC']);
 
-    $pipeline->executeGet('https://example.com/nfse');
+    $pipeline->executeAndDecompress('https://example.com/nfse');
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e): bool => $e->operacao === 'consultar');
     Event::assertDispatched(NfseQueried::class, fn (NfseQueried $e): bool => $e->operacao === 'consultar');
 });
 
-it('returns error response when erros key is present on executeGet', function (): void {
+it('returns error response when erros key is present on executeAndDecompress', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
@@ -101,7 +114,7 @@ it('returns error response when erros key is present on executeGet', function ()
         'dataHoraProcessamento' => '2024-06-15',
     ]);
 
-    $response = $pipeline->executeGet('https://example.com/nfse');
+    $response = $pipeline->executeAndDecompress('https://example.com/nfse');
 
     expect($response)
         ->sucesso->toBeFalse()
@@ -111,53 +124,53 @@ it('returns error response when erros key is present on executeGet', function ()
         ->dataHoraProcessamento->toBe('2024-06-15');
 });
 
-it('returns error response when singular erro key is present on executeGet', function (): void {
+it('returns error response when singular erro key is present on executeAndDecompress', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
         'erro' => ['codigo' => 'E02', 'mensagem' => 'Single error'],
     ]);
 
-    $response = $pipeline->executeGet('https://example.com/nfse');
+    $response = $pipeline->executeAndDecompress('https://example.com/nfse');
 
     expect($response)
         ->sucesso->toBeFalse()
         ->erros->toHaveCount(1);
 });
 
-it('dispatches NfseRejected with error code on executeGet error', function (): void {
+it('dispatches NfseRejected with error code on executeAndDecompress error', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
         'erros' => [['codigo' => 'ERR_42']],
     ]);
 
-    $pipeline->executeGet('https://example.com/nfse');
+    $pipeline->executeAndDecompress('https://example.com/nfse');
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->operacao === 'consultar' && $e->codigoErro === 'ERR_42');
 });
 
-it('uses UNKNOWN as fallback error code when codigo is missing on executeGet', function (): void {
+it('uses UNKNOWN as fallback error code when codigo is missing on executeAndDecompress', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
         'erros' => [['mensagem' => 'Error without code']],
     ]);
 
-    $pipeline->executeGet('https://example.com/nfse');
+    $pipeline->executeAndDecompress('https://example.com/nfse');
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN');
 });
 
-// --- executeGetRaw ---
+// --- execute ---
 
-it('returns raw result and dispatches NfseQueried on successful executeGetRaw', function (): void {
+it('returns raw result and dispatches NfseQueried on successful execute', function (): void {
     Event::fake();
 
     $expected = ['chaveAcesso' => 'CHAVE123', 'idDps' => 'DPS456'];
     $pipeline = buildResponsePipeline(getResult: $expected);
 
-    $result = $pipeline->executeGetRaw('https://example.com/dps');
+    $result = $pipeline->execute('https://example.com/dps');
 
     expect($result)->toBe($expected);
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e): bool => $e->operacao === 'consultar');
@@ -165,27 +178,27 @@ it('returns raw result and dispatches NfseQueried on successful executeGetRaw', 
     Event::assertNotDispatched(NfseRejected::class);
 });
 
-it('returns raw result and dispatches NfseRejected on executeGetRaw error', function (): void {
+it('returns raw result and dispatches NfseRejected on execute error', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
         'erros' => [['codigo' => 'RAW_ERR', 'mensagem' => 'Raw error']],
     ]);
 
-    $pipeline->executeGetRaw('https://example.com/dps');
+    $pipeline->execute('https://example.com/dps');
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'RAW_ERR');
     Event::assertNotDispatched(NfseQueried::class);
 });
 
-it('uses UNKNOWN as fallback error code on executeGetRaw error without codigo', function (): void {
+it('uses UNKNOWN as fallback error code on execute error without codigo', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
         'erros' => [['mensagem' => 'No code']],
     ]);
 
-    $pipeline->executeGetRaw('https://example.com/dps');
+    $pipeline->execute('https://example.com/dps');
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN');
 });
@@ -218,13 +231,13 @@ it('returns non-200 status without dispatching NfseQueried on executeHead', func
 
 // --- Exception propagation ---
 
-it('dispatches NfseFailed when executeGet throws', function (): void {
+it('dispatches NfseFailed when executeAndDecompress throws', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(throwOnGet: new RuntimeException('Connection failed'));
 
     try {
-        $pipeline->executeGet('https://example.com/nfse');
+        $pipeline->executeAndDecompress('https://example.com/nfse');
     } catch (RuntimeException) {
         // expected
     }
@@ -244,4 +257,32 @@ it('dispatches NfseFailed when executeHead throws', function (): void {
     }
 
     Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->message === 'Timeout');
+});
+
+// --- executeAndDownload ---
+
+it('returns raw bytes and dispatches events on successful executeAndDownload', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(getBytesResult: 'PDF-BINARY-CONTENT');
+
+    $result = $pipeline->executeAndDownload('https://example.com/danfse/CHAVE');
+
+    expect($result)->toBe('PDF-BINARY-CONTENT');
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e): bool => $e->operacao === 'consultar');
+    Event::assertDispatched(NfseQueried::class);
+});
+
+it('dispatches NfseFailed when executeAndDownload throws', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(throwOnGetBytes: new RuntimeException('Connection failed'));
+
+    try {
+        $pipeline->executeAndDownload('https://example.com/danfse/CHAVE');
+    } catch (RuntimeException) {
+        // expected
+    }
+
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->message === 'Connection failed');
 });

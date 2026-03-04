@@ -58,6 +58,27 @@ final readonly class NfseHttpClient implements SendsHttpRequests
         });
     }
 
+    public function getBytes(string $url): string
+    {
+        return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): string {
+            $response = Http::connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
+                ->withOptions([
+                    'verify' => $this->sslVerify,
+                    'cert' => $certPath,
+                    'ssl_key' => $keyPath,
+                    'allow_redirects' => false,
+                ])
+                ->get($url);
+
+            if (! $response->successful()) {
+                throw HttpException::fromResponse($response->status(), $response->body());
+            }
+
+            return $response->body();
+        });
+    }
+
     /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>

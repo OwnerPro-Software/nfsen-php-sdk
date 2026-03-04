@@ -6,15 +6,15 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\NfseClient;
 
-it('consultar()->danfse returns DanfseResponse with url', function () {
+it('consultar()->danfse returns DanfseResponse with pdf', function () {
     $chave = makeChaveAcesso();
-    Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/'.$chave], 200)]);
+    Http::fake(['*' => Http::response('PDF-BINARY-CONTENT', 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->danfse($chave);
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->url)->toBe('https://danfse.url/'.$chave);
+    expect($response->pdf)->toBe('PDF-BINARY-CONTENT');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://adn.producaorestrita.nfse.gov.br/danfse/'.$chave &&
         $req->method() === 'GET'
@@ -70,14 +70,15 @@ it('consultar()->nfse throws HttpException on server error', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
-it('consultar()->danfse returns failure on erros response', function () {
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => '404']]], 200)]);
+it('consultar()->danfse returns failure on HTTP error', function () {
+    Http::fake(['*' => Http::response('Not Found', 404)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->danfse(makeChaveAcesso());
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erros[0]->descricao)->toBe('DANFSe não encontrada');
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->codigo)->toBe('404');
 });
 
 it('consultar()->eventos throws HttpException on server error', function () {
@@ -151,7 +152,7 @@ it('consultar()->verificarDps throws on non-HTTP exception', function () {
 
 it('consultar()->danfse uses Santa Ana de Parnaiba custom operation path', function () {
     $chave = makeChaveAcesso();
-    Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/PDF'], 200)]);
+    Http::fake(['*' => Http::response('PDF-CONTENT', 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '3547304');
     $response = $client->consultar()->danfse($chave);

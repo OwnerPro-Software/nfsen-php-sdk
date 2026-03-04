@@ -117,7 +117,7 @@ it('dispatches NfseRejected on substituir rejection', function () {
 
 it('dispatches NfseRequested and NfseQueried on consultar danfse', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/test'], 200)]);
+    Http::fake(['*' => Http::response('PDF-CONTENT', 200)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->danfse(makeChaveAcesso());
@@ -142,14 +142,15 @@ it('dispatches NfseFailed on consultar HttpException', function () {
     Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
 });
 
-it('dispatches NfseRejected on consultar danfse rejection', function () {
+it('dispatches NfseFailed on consultar danfse HTTP error', function () {
     Event::fake();
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => 'E404']]], 200)]);
+    Http::fake(['*' => Http::response('Not Found', 404)]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->danfse(makeChaveAcesso());
 
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
     Event::assertNotDispatched(NfseQueried::class);
 });
 

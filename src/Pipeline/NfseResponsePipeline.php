@@ -22,7 +22,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
         private SendsHttpRequests $httpClient,
     ) {}
 
-    public function executeGet(string $url): NfseResponse
+    public function executeAndDecompress(string $url): NfseResponse
     {
         $operacao = 'consultar';
         $this->dispatchEvent(new NfseRequested($operacao));
@@ -73,14 +73,13 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
      *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
      *     chaveAcesso?: string,
      *     idDps?: string,
-     *     danfseUrl?: string,
      *     eventoXmlGZipB64?: string,
      *     tipoAmbiente?: int,
      *     versaoAplicativo?: string,
      *     dataHoraProcessamento?: string,
      * }
      */
-    public function executeGetRaw(string $url): array
+    public function execute(string $url): array
     {
         $operacao = 'consultar';
         $this->dispatchEvent(new NfseRequested($operacao));
@@ -92,7 +91,6 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
              *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
              *     chaveAcesso?: string,
              *     idDps?: string,
-             *     danfseUrl?: string,
              *     eventoXmlGZipB64?: string,
              *     tipoAmbiente?: int,
              *     versaoAplicativo?: string,
@@ -107,6 +105,19 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
             } else {
                 $this->dispatchEvent(new NfseQueried($operacao));
             }
+
+            return $result;
+        });
+    }
+
+    public function executeAndDownload(string $url): string
+    {
+        $operacao = 'consultar';
+        $this->dispatchEvent(new NfseRequested($operacao));
+
+        return $this->withFailureEvent($operacao, function () use ($url, $operacao): string {
+            $result = $this->httpClient->getBytes($url);
+            $this->dispatchEvent(new NfseQueried($operacao));
 
             return $result;
         });
