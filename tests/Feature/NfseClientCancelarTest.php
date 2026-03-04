@@ -1,6 +1,6 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseClient::class);
+covers(\Pulsar\NfseNacional\NfseClient::class, \Pulsar\NfseNacional\Operations\NfseCanceller::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;

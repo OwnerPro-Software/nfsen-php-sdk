@@ -1,5 +1,11 @@
 <?php
 
+covers(
+    \Pulsar\NfseNacional\Operations\NfseCanceller::class,
+    \Pulsar\NfseNacional\Operations\NfseEmitter::class,
+    \Pulsar\NfseNacional\Operations\NfseSubstitutor::class,
+);
+
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
@@ -31,8 +37,10 @@ it('dispatches NfseCancelled on successful cancelar', function () {
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
     $client = NfseClient::for($pfx, 'secret', '9999999');
-    $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $client->cancelar($chave, CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'cancelar' && $e->metadata === ['chave' => $chave]);
     Event::assertDispatched(NfseCancelled::class);
 });
 
@@ -102,7 +110,7 @@ it('dispatches NfseRejected on substituir rejection', function () {
     $chaveSub = '98765432109876543210987654321098765432109876543210';
     $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::Outros, 'Outro motivo para substituicao');
 
-    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'substituir');
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'substituir' && $e->metadata === ['chave' => $chave]);
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
     Event::assertNotDispatched(NfseSubstituted::class);
 });

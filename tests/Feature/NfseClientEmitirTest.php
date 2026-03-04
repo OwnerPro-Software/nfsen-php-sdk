@@ -1,6 +1,6 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseClient::class);
+covers(\Pulsar\NfseNacional\NfseClient::class, \Pulsar\NfseNacional\Operations\NfseEmitter::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -166,6 +166,19 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
         isset($req['dpsXmlGZipB64'])
     );
+})->with('dpsData');
+
+it('emitir returns idDps from lowercase key on rejection', function (DpsData $data) {
+    Http::fake(['*' => Http::response([
+        'idDps' => 'DPS_LOWER',
+        'erros' => [['descricao' => 'Erro', 'codigo' => 'E001']],
+    ], 200)]);
+
+    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->idDps)->toBe('DPS_LOWER');
 })->with('dpsData');
 
 it('emitir returns rejection on 4xx response with erro body', function (DpsData $data) {
