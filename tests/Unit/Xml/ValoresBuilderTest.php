@@ -224,7 +224,7 @@ it('builds tribFed with piscofins and retencoes', function () {
                     pAliqCofins: '3.00',
                     vPis: '0.65',
                     vCofins: '3.00',
-                    tpRetPisCofins: TipoRetPisCofins::Retido,
+                    tpRetPisCofins: TipoRetPisCofins::PisCofinsRetidos,
                 ),
                 vRetCP: '11.00',
                 vRetIRRF: '1.50',

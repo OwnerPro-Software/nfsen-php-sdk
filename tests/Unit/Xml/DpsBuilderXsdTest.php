@@ -6,14 +6,8 @@ use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
 use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\Dps\DTO\Servico\ExploracaoRodoviaria;
 use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
-use Pulsar\NfseNacional\Dps\DTO\Servico\LocacaoSublocacao;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
-use Pulsar\NfseNacional\Dps\Enums\Servico\CategoriaServico;
-use Pulsar\NfseNacional\Dps\Enums\Servico\CategoriaVeiculo;
-use Pulsar\NfseNacional\Dps\Enums\Servico\ObjetoLocacao;
-use Pulsar\NfseNacional\Dps\Enums\Servico\TipoRodagem;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
@@ -49,29 +43,6 @@ it('buildAndValidate throws NfseException when XML loading fails', function (Dps
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(NfseException::class, 'falha ao carregar documento');
 })->with('dpsData');
-
-it('validates DPS with lsadppu against XSD', function () {
-    $data = new DpsData(
-        infDPS: makeInfDps(),
-        prest: makePrestadorCnpj(),
-        serv: new Servico(
-            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
-            cLocPrestacao: '3501608',
-            lsadppu: new LocacaoSublocacao(
-                categ: CategoriaServico::Locacao,
-                objeto: ObjetoLocacao::Ferrovia,
-                extensao: '12345',
-                nPostes: '100',
-            ),
-        ),
-        valores: makeValoresMinimo(),
-    );
-
-    $builder = new DpsBuilder(makeXsdValidator());
-    $xml = $builder->buildAndValidate($data);
-
-    expect($xml)->toContain('<lsadppu>');
-});
 
 it('validates DPS with atvEvento (idAtvEvt) against XSD', function () {
     $data = new DpsData(
@@ -154,32 +125,6 @@ it('validates DPS with atvEvento (end with endExt) against XSD', function () {
     expect($xml)
         ->toContain('<atvEvento>')
         ->toContain('<endExt>');
-});
-
-it('validates DPS with explRod against XSD', function () {
-    $data = new DpsData(
-        infDPS: makeInfDps(),
-        prest: makePrestadorCnpj(),
-        serv: new Servico(
-            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
-            cLocPrestacao: '3501608',
-            explRod: new ExploracaoRodoviaria(
-                categVeic: CategoriaVeiculo::AutomovelCaminhonete,
-                nEixos: '2',
-                rodagem: TipoRodagem::Simples,
-                sentido: '180',
-                placa: 'ABC1234',
-                codAcessoPed: 'ABCDEF0123',
-                codContrato: 'AB01',
-            ),
-        ),
-        valores: makeValoresMinimo(),
-    );
-
-    $builder = new DpsBuilder(makeXsdValidator());
-    $xml = $builder->buildAndValidate($data);
-
-    expect($xml)->toContain('<explRod>');
 });
 
 it('validates DPS with infoCompl against XSD', function () {

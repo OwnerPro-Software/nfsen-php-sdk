@@ -18,8 +18,8 @@ use Pulsar\NfseNacional\Responses\NfseResponse;
  *
  * @method static NfseResponse emitir(DpsData|DpsDataArray $data)
  * @method static NfseResponse emitirDecisaoJudicial(DpsData|DpsDataArray $data)
- * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1)
- * @method static NfseResponse substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1)
+ * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao)
+ * @method static NfseResponse substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '')
  * @method static ConsultsNfse consultar()
  */
 final class NfseNacional extends Facade

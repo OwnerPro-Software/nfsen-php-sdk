@@ -120,14 +120,14 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         return $this->emitter->emitirDecisaoJudicial($data);
     }
 
-    public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1): NfseResponse
+    public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao): NfseResponse
     {
-        return $this->canceller->cancelar($chave, $codigoMotivo, $descricao, $nPedRegEvento);
+        return $this->canceller->cancelar($chave, $codigoMotivo, $descricao);
     }
 
-    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1): NfseResponse
+    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): NfseResponse
     {
-        return $this->substitutor->substituir($chave, $chaveSubstituta, $codigoMotivo, $descricao, $nPedRegEvento);
+        return $this->substitutor->substituir($chave, $chaveSubstituta, $codigoMotivo, $descricao);
     }
 
     public function consultar(): ConsultsNfse

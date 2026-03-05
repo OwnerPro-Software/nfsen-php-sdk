@@ -13,4 +13,5 @@ enum VinculoPrestacao: string
     case Matriz = '4';
     case FilialSucursal = '5';
     case OutroVinculo = '6';
+    case Desconhecido = '9';
 }

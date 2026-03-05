@@ -2,7 +2,6 @@
 
 covers(\Pulsar\NfseNacional\Operations\NfseCanceller::class);
 
-use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Pulsar\NfseNacional\Adapters\CertificateManager;
 use Pulsar\NfseNacional\Adapters\NfseHttpClient;
@@ -36,7 +35,7 @@ function makeNfseCanceller(): NfseCanceller
     return new NfseCanceller($pipeline, new CancellationBuilder(makeXsdValidator()), $ambiente);
 }
 
-it('cancelar uses default nPedRegEvento = 1', function () {
+it('cancelar sends signed XML via pipeline', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $canceller = makeNfseCanceller();
@@ -47,10 +46,4 @@ it('cancelar uses default nPedRegEvento = 1', function () {
     );
 
     expect($response->sucesso)->toBeTrue();
-
-    Http::assertSent(function (Request $req) {
-        $xml = gzdecode(base64_decode($req['pedidoRegistroEventoXmlGZipB64']));
-
-        return str_contains($xml, '<nPedRegEvento>1</nPedRegEvento>');
-    });
 });

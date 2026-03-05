@@ -10,12 +10,10 @@ use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
  * @phpstan-import-type CodigoServicoArray from CodigoServico
  * @phpstan-import-type ComercioExteriorArray from ComercioExterior
  * @phpstan-import-type ObraArray from Obra
- * @phpstan-import-type LocacaoSublocacaoArray from LocacaoSublocacao
  * @phpstan-import-type AtividadeEventoArray from AtividadeEvento
- * @phpstan-import-type ExploracaoRodoviariaArray from ExploracaoRodoviaria
  * @phpstan-import-type InfoComplementarArray from InfoComplementar
  *
- * @phpstan-type ServicoArray array{cServ: CodigoServicoArray, cLocPrestacao?: string, cPaisPrestacao?: string, comExt?: ComercioExteriorArray, obra?: ObraArray, lsadppu?: LocacaoSublocacaoArray, atvEvento?: AtividadeEventoArray, explRod?: ExploracaoRodoviariaArray, infoCompl?: InfoComplementarArray}
+ * @phpstan-type ServicoArray array{cServ: CodigoServicoArray, cLocPrestacao?: string, cPaisPrestacao?: string, comExt?: ComercioExteriorArray, obra?: ObraArray, atvEvento?: AtividadeEventoArray, infoCompl?: InfoComplementarArray}
  */
 final readonly class Servico
 {
@@ -27,9 +25,7 @@ final readonly class Servico
         public ?string $cPaisPrestacao = null,
         public ?ComercioExterior $comExt = null,
         public ?Obra $obra = null,
-        public ?LocacaoSublocacao $lsadppu = null,
         public ?AtividadeEvento $atvEvento = null,
-        public ?ExploracaoRodoviaria $explRod = null,
         public ?InfoComplementar $infoCompl = null,
     ) {
         self::validateChoice(
@@ -48,9 +44,7 @@ final readonly class Servico
             cPaisPrestacao: $data['cPaisPrestacao'] ?? null,
             comExt: isset($data['comExt']) ? ComercioExterior::fromArray($data['comExt']) : null,
             obra: isset($data['obra']) ? Obra::fromArray($data['obra']) : null,
-            lsadppu: isset($data['lsadppu']) ? LocacaoSublocacao::fromArray($data['lsadppu']) : null,
             atvEvento: isset($data['atvEvento']) ? AtividadeEvento::fromArray($data['atvEvento']) : null,
-            explRod: isset($data['explRod']) ? ExploracaoRodoviaria::fromArray($data['explRod']) : null,
             infoCompl: isset($data['infoCompl']) ? InfoComplementar::fromArray($data['infoCompl']) : null,
         );
     }

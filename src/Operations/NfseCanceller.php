@@ -28,7 +28,7 @@ final readonly class NfseCanceller implements CancelsNfse
         private NfseAmbiente $ambiente,
     ) {}
 
-    public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao, int $nPedRegEvento = 1): NfseResponse
+    public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao): NfseResponse
     {
         $this->validateChaveAcesso($chave);
 
@@ -39,7 +39,7 @@ final readonly class NfseCanceller implements CancelsNfse
         $operacao = 'cancelar';
         $this->dispatchEvent(new NfseRequested($operacao, ['chave' => $chave]));
 
-        return $this->withFailureEvent($operacao, function () use ($chave, $codigoMotivo, $descricao, $nPedRegEvento, $operacao): NfseResponse {
+        return $this->withFailureEvent($operacao, function () use ($chave, $codigoMotivo, $descricao, $operacao): NfseResponse {
             $identity = $this->pipeline->extractAuthorIdentity('cancelar');
 
             $xml = $this->cancellationBuilder->buildAndValidate(
@@ -51,7 +51,6 @@ final readonly class NfseCanceller implements CancelsNfse
                 chNFSe: $chave,
                 codigoMotivo: $codigoMotivo,
                 descricao: $descricao,
-                nPedRegEvento: $nPedRegEvento,
             );
 
             /**

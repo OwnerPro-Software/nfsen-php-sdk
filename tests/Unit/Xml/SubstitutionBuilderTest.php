@@ -38,11 +38,10 @@ it('builds valid substituicao xml with chSubstituta', function (): void {
 
     expect($xpath->query('//n:pedRegEvento')->length)->toBe(1)
         ->and($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
-        ->toBe('PRE'.$chave.'105102001')
+        ->toBe('PRE'.$chave.'105102')
         ->and($xpath->evaluate('string(//n:chNFSe)'))->toBe($chave)
-        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('1')
         ->and($xpath->query('//n:e105102')->length)->toBe(1)
-        ->and($xpath->evaluate('string(//n:e105102/n:xDesc)'))->toBe('Cancelamento de NFS-e por Substituicao')
+        ->and($xpath->evaluate('string(//n:e105102/n:xDesc)'))->toBe('Cancelamento de NFS-e por Substituição')
         ->and($xpath->evaluate('string(//n:e105102/n:cMotivo)'))->toBe('01')
         ->and($xpath->evaluate('string(//n:e105102/n:xMotivo)'))->toBe('Desenquadramento do Simples Nacional')
         ->and($xpath->evaluate('string(//n:e105102/n:chSubstituta)'))->toBe($chaveSub);
@@ -70,34 +69,7 @@ it('omits xMotivo when descricao is empty', function (): void {
         ->and($xpath->evaluate('string(//n:e105102/n:cMotivo)'))->toBe('99');
 });
 
-it('generates correct Id with tipo 105102 and padded nPedRegEvento', function (): void {
-    $builder = new SubstitutionBuilder(makeXsdValidator());
-    $chave = '12345678901234567890123456789012345678901234567890';
-    $chaveSub = '98765432109876543210987654321098765432109876543210';
-
-    $xml = $builder->build(
-        tpAmb: 1,
-        verAplic: '1.0',
-        dhEvento: '2026-03-01T10:00:00-03:00',
-        cnpjAutor: null,
-        cpfAutor: '12345678901',
-        chNFSe: $chave,
-        codigoMotivo: CodigoJustificativaSubstituicao::EnquadramentoSimplesNacional,
-        chSubstituta: $chaveSub,
-        descricao: 'Enquadramento do Simples Nacional',
-        nPedRegEvento: 12,
-    );
-
-    $xpath = parseSubstituicaoXml($xml);
-
-    expect($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
-        ->toBe('PRE'.$chave.'105102012')
-        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('12')
-        ->and($xpath->evaluate('string(//n:CPFAutor)'))->toBe('12345678901')
-        ->and($xpath->query('//n:CNPJAutor')->length)->toBe(0);
-});
-
-it('validates against pedRegEvento XSD with default nPedRegEvento and empty descricao', function (): void {
+it('validates against pedRegEvento XSD with empty descricao', function (): void {
     $builder = new SubstitutionBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
@@ -116,10 +88,32 @@ it('validates against pedRegEvento XSD with default nPedRegEvento and empty desc
     $xpath = parseSubstituicaoXml($xml);
 
     expect($xml)->toContain('<pedRegEvento')
-        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('1')
         ->and($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
-        ->toBe('PRE'.$chave.'105102001')
+        ->toBe('PRE'.$chave.'105102')
         ->and($xpath->query('//n:e105102/n:xMotivo')->length)->toBe(0);
+});
+
+it('builds valid substituicao xml with CPF author', function (): void {
+    $builder = new SubstitutionBuilder(makeXsdValidator());
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+
+    $xml = $builder->build(
+        tpAmb: 1,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: null,
+        cpfAutor: '12345678901',
+        chNFSe: $chave,
+        codigoMotivo: CodigoJustificativaSubstituicao::EnquadramentoSimplesNacional,
+        chSubstituta: $chaveSub,
+        descricao: 'Enquadramento do Simples Nacional',
+    );
+
+    $xpath = parseSubstituicaoXml($xml);
+
+    expect($xpath->evaluate('string(//n:CPFAutor)'))->toBe('12345678901')
+        ->and($xpath->query('//n:CNPJAutor')->length)->toBe(0);
 });
 
 it('throws when both cnpjAutor and cpfAutor are set', function (): void {

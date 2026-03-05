@@ -35,7 +35,7 @@ it('cancelar returns success NfseResponse', function () {
 
         return $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
             $req->method() === 'POST' &&
-            str_contains($xml, '<nPedRegEvento>1</nPedRegEvento>');
+            ! str_contains($xml, '<nPedRegEvento>');
     });
 });
 

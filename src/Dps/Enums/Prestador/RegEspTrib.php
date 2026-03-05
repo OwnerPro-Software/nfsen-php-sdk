@@ -13,4 +13,5 @@ enum RegEspTrib: string
     case NotarioRegistrador = '4';
     case ProfissionalAutonomo = '5';
     case SociedadeProfissionais = '6';
+    case Outros = '9';
 }

@@ -31,13 +31,12 @@ final readonly class CancellationBuilder
         string $chNFSe,
         CodigoJustificativaCancelamento $codigoMotivo,
         string $descricao,
-        int $nPedRegEvento = 1,
     ): string {
         $this->validateDescricao($descricao);
 
         $xml = $this->build(
             $tpAmb, $verAplic, $dhEvento, $cnpjAutor, $cpfAutor,
-            $chNFSe, $codigoMotivo, $descricao, $nPedRegEvento,
+            $chNFSe, $codigoMotivo, $descricao,
         );
         $this->xsdValidator->validate($xml, 'pedRegEvento_v1.01.xsd');
 
@@ -53,7 +52,6 @@ final readonly class CancellationBuilder
         string $chNFSe,
         CodigoJustificativaCancelamento $codigoMotivo,
         string $descricao,
-        int $nPedRegEvento = 1,
     ): string {
         $doc = new DOMDocument('1.0', 'UTF-8');
         $doc->preserveWhiteSpace = false; // @pest-mutate-ignore FalseToTrue: only affects XML parsing, not serialization
@@ -64,7 +62,7 @@ final readonly class CancellationBuilder
         $root->setAttribute('xmlns', self::XMLNS);
 
         $infPedReg = $doc->createElement('infPedReg');
-        $infPedReg->setAttribute('Id', $this->generateId($chNFSe, $nPedRegEvento));
+        $infPedReg->setAttribute('Id', $this->generateId($chNFSe));
 
         $infPedReg->appendChild($this->text($doc, 'tpAmb', $tpAmb));
         $infPedReg->appendChild($this->text($doc, 'verAplic', $verAplic));
@@ -83,7 +81,6 @@ final readonly class CancellationBuilder
         }
 
         $infPedReg->appendChild($this->text($doc, 'chNFSe', $chNFSe));
-        $infPedReg->appendChild($this->text($doc, 'nPedRegEvento', (string) $nPedRegEvento));
 
         $evento = $doc->createElement('e101101');
         $evento->appendChild($this->text($doc, 'xDesc', 'Cancelamento de NFS-e'));
@@ -107,8 +104,8 @@ final readonly class CancellationBuilder
         }
     }
 
-    private function generateId(string $chNFSe, int $nPedRegEvento): string
+    private function generateId(string $chNFSe): string
     {
-        return 'PRE'.$chNFSe.'101101'.str_pad((string) $nPedRegEvento, 3, '0', STR_PAD_LEFT);
+        return 'PRE'.$chNFSe.'101101';
     }
 }

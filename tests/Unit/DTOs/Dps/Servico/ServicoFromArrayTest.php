@@ -8,9 +8,7 @@ covers(
     \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra::class,
     \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra::class,
     \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples::class,
-    \Pulsar\NfseNacional\Dps\DTO\Servico\LocacaoSublocacao::class,
     \Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento::class,
-    \Pulsar\NfseNacional\Dps\DTO\Servico\ExploracaoRodoviaria::class,
     \Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar::class,
 );
 
@@ -20,9 +18,7 @@ use Pulsar\NfseNacional\Dps\DTO\Servico\ComercioExterior;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\Dps\DTO\Servico\ExploracaoRodoviaria;
 use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
-use Pulsar\NfseNacional\Dps\DTO\Servico\LocacaoSublocacao;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
@@ -169,17 +165,6 @@ it('EnderecoSimples::fromArray creates instance from array', function () {
         ->and($dto->xCpl)->toBe('Bloco B');
 });
 
-it('LocacaoSublocacao::fromArray creates instance from array', function () {
-    $dto = LocacaoSublocacao::fromArray([
-        'categ' => '1',
-        'objeto' => '1',
-        'extensao' => '100',
-        'nPostes' => '10',
-    ]);
-
-    expect($dto)->toBeInstanceOf(LocacaoSublocacao::class);
-});
-
 it('AtividadeEvento::fromArray creates instance from array', function () {
     $dto = AtividadeEvento::fromArray([
         'xNome' => 'Evento Teste',
@@ -189,20 +174,6 @@ it('AtividadeEvento::fromArray creates instance from array', function () {
     ]);
 
     expect($dto)->toBeInstanceOf(AtividadeEvento::class);
-});
-
-it('ExploracaoRodoviaria::fromArray creates instance from array', function () {
-    $dto = ExploracaoRodoviaria::fromArray([
-        'categVeic' => '00',
-        'nEixos' => '2',
-        'rodagem' => '1',
-        'sentido' => 'Norte',
-        'placa' => 'ABC1234',
-        'codAcessoPed' => '123456',
-        'codContrato' => '789012',
-    ]);
-
-    expect($dto)->toBeInstanceOf(ExploracaoRodoviaria::class);
 });
 
 it('InfoComplementar::fromArray creates instance from array', function () {

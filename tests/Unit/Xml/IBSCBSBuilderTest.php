@@ -44,6 +44,31 @@ function makeMinimalIBSCBS(): InfoIBSCBS
     );
 }
 
+it('builds IBSCBS without optional indFinal', function () {
+    $builder = new IBSCBSBuilder;
+    $doc = new DOMDocument('1.0', 'UTF-8');
+
+    $ibscbs = new InfoIBSCBS(
+        finNFSe: FinNFSe::Regular,
+        cIndOp: '010101',
+        indDest: IndDest::Tomador,
+        valores: new InfoValoresIBSCBS(
+            trib: new InfoTributosIBSCBS(
+                gIBSCBS: new InfoTributosSitClas(
+                    CST: '100',
+                    cClassTrib: '010101',
+                ),
+            ),
+        ),
+    );
+
+    $xml = $doc->saveXML($builder->build($doc, $ibscbs));
+
+    expect($xml)
+        ->toContain('<finNFSe>0</finNFSe>')
+        ->not->toContain('<indFinal>');
+});
+
 it('builds minimal IBSCBS element', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');

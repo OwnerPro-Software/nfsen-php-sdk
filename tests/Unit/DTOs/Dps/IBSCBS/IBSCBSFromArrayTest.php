@@ -206,3 +206,13 @@ it('InfoIBSCBS::fromArray creates instance from array', function () {
     expect($dto)->toBeInstanceOf(InfoIBSCBS::class)
         ->and($dto->refNFSe)->toBe(['CHAVE1', 'CHAVE2']);
 });
+
+it('InfoIBSCBS::fromArray creates instance without optional indFinal', function () {
+    $dto = InfoIBSCBS::fromArray([
+        'finNFSe' => '0', 'cIndOp' => '001', 'indDest' => '0',
+        'valores' => ['trib' => ['gIBSCBS' => ['CST' => '00', 'cClassTrib' => '001']]],
+    ]);
+
+    expect($dto)->toBeInstanceOf(InfoIBSCBS::class)
+        ->and($dto->indFinal)->toBeNull();
+});

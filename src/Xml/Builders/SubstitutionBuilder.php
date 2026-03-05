@@ -32,7 +32,6 @@ final readonly class SubstitutionBuilder
         CodigoJustificativaSubstituicao $codigoMotivo,
         string $chSubstituta,
         string $descricao = '',
-        int $nPedRegEvento = 1,
     ): string {
         if ($descricao !== '') {
             $this->validateDescricao($descricao);
@@ -40,7 +39,7 @@ final readonly class SubstitutionBuilder
 
         $xml = $this->build(
             $tpAmb, $verAplic, $dhEvento, $cnpjAutor, $cpfAutor,
-            $chNFSe, $codigoMotivo, $chSubstituta, $descricao, $nPedRegEvento,
+            $chNFSe, $codigoMotivo, $chSubstituta, $descricao,
         );
         $this->xsdValidator->validate($xml, 'pedRegEvento_v1.01.xsd');
 
@@ -57,7 +56,6 @@ final readonly class SubstitutionBuilder
         CodigoJustificativaSubstituicao $codigoMotivo,
         string $chSubstituta,
         string $descricao = '',
-        int $nPedRegEvento = 1,
     ): string {
         $doc = new DOMDocument('1.0', 'UTF-8');
         $doc->preserveWhiteSpace = false; // @pest-mutate-ignore FalseToTrue: only affects XML parsing, not serialization
@@ -68,7 +66,7 @@ final readonly class SubstitutionBuilder
         $root->setAttribute('xmlns', self::XMLNS);
 
         $infPedReg = $doc->createElement('infPedReg');
-        $infPedReg->setAttribute('Id', $this->generateId($chNFSe, $nPedRegEvento));
+        $infPedReg->setAttribute('Id', $this->generateId($chNFSe));
 
         $infPedReg->appendChild($this->text($doc, 'tpAmb', $tpAmb));
         $infPedReg->appendChild($this->text($doc, 'verAplic', $verAplic));
@@ -87,10 +85,9 @@ final readonly class SubstitutionBuilder
         }
 
         $infPedReg->appendChild($this->text($doc, 'chNFSe', $chNFSe));
-        $infPedReg->appendChild($this->text($doc, 'nPedRegEvento', (string) $nPedRegEvento));
 
         $evento = $doc->createElement('e105102');
-        $evento->appendChild($this->text($doc, 'xDesc', 'Cancelamento de NFS-e por Substituicao'));
+        $evento->appendChild($this->text($doc, 'xDesc', 'Cancelamento de NFS-e por Substituição'));
         $evento->appendChild($this->text($doc, 'cMotivo', $codigoMotivo->value));
 
         if ($descricao !== '') {
@@ -116,8 +113,8 @@ final readonly class SubstitutionBuilder
         }
     }
 
-    private function generateId(string $chNFSe, int $nPedRegEvento): string
+    private function generateId(string $chNFSe): string
     {
-        return 'PRE'.$chNFSe.'105102'.str_pad((string) $nPedRegEvento, 3, '0', STR_PAD_LEFT);
+        return 'PRE'.$chNFSe.'105102';
     }
 }

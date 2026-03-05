@@ -38,14 +38,13 @@ it('builds valid cancelamento xml with CNPJ author', function (): void {
         ->and($xpath->query('//n:pedRegEvento')->item(0)->getAttribute('versao'))->toBe('1.01')
         ->and($xpath->query('//n:pedRegEvento')->item(0)->getAttribute('xmlns'))->toBe('http://www.sped.fazenda.gov.br/nfse')
         ->and($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
-        ->toBe('PRE'.$chave.'101101001')
+        ->toBe('PRE'.$chave.'101101')
         ->and($xpath->evaluate('string(//n:tpAmb)'))->toBe('2')
         ->and($xpath->evaluate('string(//n:verAplic)'))->toBe('1.0')
         ->and($xpath->evaluate('string(//n:dhEvento)'))->toBe('2026-03-01T10:00:00-03:00')
         ->and($xpath->evaluate('string(//n:CNPJAutor)'))->toBe('12345678000195')
         ->and($xpath->query('//n:CPFAutor')->length)->toBe(0)
         ->and($xpath->evaluate('string(//n:chNFSe)'))->toBe($chave)
-        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('1')
         ->and($xpath->query('//n:e101101')->length)->toBe(1)
         ->and($xpath->evaluate('string(//n:e101101/n:xDesc)'))->toBe('Cancelamento de NFS-e')
         ->and($xpath->evaluate('string(//n:e101101/n:cMotivo)'))->toBe('1')
@@ -74,31 +73,7 @@ it('builds valid cancelamento xml with CPF author', function (): void {
         ->and($xpath->evaluate('string(//n:e101101/n:cMotivo)'))->toBe('2');
 });
 
-it('generates correct Id with padded nPedRegEvento', function (): void {
-    $builder = new CancellationBuilder(makeXsdValidator());
-    $chave = '12345678901234567890123456789012345678901234567890';
-
-    $xml = $builder->build(
-        tpAmb: 2,
-        verAplic: '1.0',
-        dhEvento: '2026-03-01T10:00:00-03:00',
-        cnpjAutor: '12345678000195',
-        cpfAutor: null,
-        chNFSe: $chave,
-        codigoMotivo: CodigoJustificativaCancelamento::Outros,
-        descricao: 'Outros motivos para cancelamento',
-        nPedRegEvento: 5,
-    );
-
-    $xpath = parseCancelamentoXml($xml);
-
-    expect($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
-        ->toBe('PRE'.$chave.'101101005')
-        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('5')
-        ->and($xpath->evaluate('string(//n:e101101/n:cMotivo)'))->toBe('9');
-});
-
-it('validates against pedRegEvento XSD with default nPedRegEvento', function (): void {
+it('validates against pedRegEvento XSD', function (): void {
     $builder = new CancellationBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
 
@@ -116,9 +91,8 @@ it('validates against pedRegEvento XSD with default nPedRegEvento', function ():
     $xpath = parseCancelamentoXml($xml);
 
     expect($xml)->toContain('<pedRegEvento')
-        ->and($xpath->evaluate('string(//n:nPedRegEvento)'))->toBe('1')
         ->and($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))
-        ->toBe('PRE'.$chave.'101101001');
+        ->toBe('PRE'.$chave.'101101');
 });
 
 it('throws when both cnpjAutor and cpfAutor are set', function (): void {

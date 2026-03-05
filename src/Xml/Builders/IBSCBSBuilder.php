@@ -22,6 +22,7 @@ use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
+use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
 use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
@@ -35,7 +36,11 @@ final class IBSCBSBuilder
         $el = $doc->createElement('IBSCBS');
 
         $el->appendChild($this->text($doc, 'finNFSe', $ibscbs->finNFSe->value));
-        $el->appendChild($this->text($doc, 'indFinal', $ibscbs->indFinal->value));
+
+        if ($ibscbs->indFinal instanceof IndFinal) {
+            $el->appendChild($this->text($doc, 'indFinal', $ibscbs->indFinal->value));
+        }
+
         $el->appendChild($this->text($doc, 'cIndOp', $ibscbs->cIndOp));
 
         if ($ibscbs->tpOper instanceof TpOper) {

@@ -16,17 +16,17 @@ use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
  * @phpstan-import-type InfoDestArray from InfoDest
  * @phpstan-import-type InfoImovelArray from InfoImovel
  *
- * @phpstan-type InfoIBSCBSArray array{finNFSe: string, indFinal: string, cIndOp: string, indDest: string, valores: InfoValoresIBSCBSArray, tpOper?: string, refNFSe?: list<string>, tpEnteGov?: string, dest?: InfoDestArray, imovel?: InfoImovelArray}
+ * @phpstan-type InfoIBSCBSArray array{finNFSe: string, cIndOp: string, indDest: string, valores: InfoValoresIBSCBSArray, indFinal?: string, tpOper?: string, refNFSe?: list<string>, tpEnteGov?: string, dest?: InfoDestArray, imovel?: InfoImovelArray}
  */
 final readonly class InfoIBSCBS
 {
     /** @param list<string>|null $refNFSe */
     public function __construct(
         public FinNFSe $finNFSe,
-        public IndFinal $indFinal,
         public string $cIndOp,
         public IndDest $indDest,
         public InfoValoresIBSCBS $valores,
+        public ?IndFinal $indFinal = null,
         public ?TpOper $tpOper = null,
         public ?array $refNFSe = null,
         public ?TpEnteGov $tpEnteGov = null,
@@ -43,10 +43,10 @@ final readonly class InfoIBSCBS
     {
         return new self(
             finNFSe: FinNFSe::from($data['finNFSe']),
-            indFinal: IndFinal::from($data['indFinal']),
             cIndOp: $data['cIndOp'],
             indDest: IndDest::from($data['indDest']),
             valores: InfoValoresIBSCBS::fromArray($data['valores']),
+            indFinal: isset($data['indFinal']) ? IndFinal::from($data['indFinal']) : null,
             tpOper: isset($data['tpOper']) ? TpOper::from($data['tpOper']) : null,
             refNFSe: $data['refNFSe'] ?? null,
             tpEnteGov: isset($data['tpEnteGov']) ? TpEnteGov::from($data['tpEnteGov']) : null,

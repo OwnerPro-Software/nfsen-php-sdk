@@ -28,7 +28,7 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
         private NfseAmbiente $ambiente,
     ) {}
 
-    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = '', int $nPedRegEvento = 1): NfseResponse
+    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): NfseResponse
     {
         $this->validateChaveAcesso($chave);
         $this->validateChaveAcesso($chaveSubstituta);
@@ -40,7 +40,7 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
         $operacao = 'substituir';
         $this->dispatchEvent(new NfseRequested($operacao, ['chave' => $chave]));
 
-        return $this->withFailureEvent($operacao, function () use ($chave, $chaveSubstituta, $codigoMotivo, $descricao, $nPedRegEvento, $operacao): NfseResponse {
+        return $this->withFailureEvent($operacao, function () use ($chave, $chaveSubstituta, $codigoMotivo, $descricao, $operacao): NfseResponse {
             $identity = $this->pipeline->extractAuthorIdentity('substituir');
 
             $xml = $this->substitutionBuilder->buildAndValidate(
@@ -53,7 +53,6 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
                 codigoMotivo: $codigoMotivo,
                 chSubstituta: $chaveSubstituta,
                 descricao: $descricao,
-                nPedRegEvento: $nPedRegEvento,
             );
 
             /**

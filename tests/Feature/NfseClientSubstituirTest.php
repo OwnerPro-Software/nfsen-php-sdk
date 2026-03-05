@@ -92,7 +92,7 @@ it('substituir throws HttpException on server error', function () {
         ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
 });
 
-it('substituir uses default nPedRegEvento and descricao', function () {
+it('substituir sends XML without xMotivo when descricao empty', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
@@ -105,7 +105,7 @@ it('substituir uses default nPedRegEvento and descricao', function () {
     Http::assertSent(function (Request $req) {
         $xml = gzdecode(base64_decode($req['pedidoRegistroEventoXmlGZipB64']));
 
-        return str_contains($xml, '<nPedRegEvento>1</nPedRegEvento>') &&
+        return ! str_contains($xml, '<nPedRegEvento>') &&
             ! str_contains($xml, '<xMotivo>');
     });
 });

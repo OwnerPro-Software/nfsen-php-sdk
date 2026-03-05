@@ -11,9 +11,7 @@ use Pulsar\NfseNacional\Dps\DTO\Servico\ComercioExterior;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\Dps\DTO\Servico\ExploracaoRodoviaria;
 use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
-use Pulsar\NfseNacional\Dps\DTO\Servico\LocacaoSublocacao;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
 
@@ -43,7 +41,9 @@ final class ServicoBuilder
         }
 
         $cServ->appendChild($this->text($doc, 'xDescServ', $serv->cServ->xDescServ));
-        $cServ->appendChild($this->text($doc, 'cNBS', $serv->cServ->cNBS));
+        if ($serv->cServ->cNBS !== null) {
+            $cServ->appendChild($this->text($doc, 'cNBS', $serv->cServ->cNBS));
+        }
         if ($serv->cServ->cIntContrib !== null) {
             $cServ->appendChild($this->text($doc, 'cIntContrib', $serv->cServ->cIntContrib));
         }
@@ -70,16 +70,6 @@ final class ServicoBuilder
 
             $comExt->appendChild($this->text($doc, 'mdic', $serv->comExt->mdic->value));
             $el->appendChild($comExt);
-        }
-
-        // lsadppu (optional)
-        if ($serv->lsadppu instanceof LocacaoSublocacao) {
-            $lsadppu = $doc->createElement('lsadppu');
-            $lsadppu->appendChild($this->text($doc, 'categ', $serv->lsadppu->categ->value));
-            $lsadppu->appendChild($this->text($doc, 'objeto', $serv->lsadppu->objeto->value));
-            $lsadppu->appendChild($this->text($doc, 'extensao', $serv->lsadppu->extensao));
-            $lsadppu->appendChild($this->text($doc, 'nPostes', $serv->lsadppu->nPostes));
-            $el->appendChild($lsadppu);
         }
 
         // obra (optional)
@@ -149,19 +139,6 @@ final class ServicoBuilder
             }
 
             $el->appendChild($atvEvento);
-        }
-
-        // explRod (optional)
-        if ($serv->explRod instanceof ExploracaoRodoviaria) {
-            $explRod = $doc->createElement('explRod');
-            $explRod->appendChild($this->text($doc, 'categVeic', $serv->explRod->categVeic->value));
-            $explRod->appendChild($this->text($doc, 'nEixos', $serv->explRod->nEixos));
-            $explRod->appendChild($this->text($doc, 'rodagem', $serv->explRod->rodagem->value));
-            $explRod->appendChild($this->text($doc, 'sentido', $serv->explRod->sentido));
-            $explRod->appendChild($this->text($doc, 'placa', $serv->explRod->placa));
-            $explRod->appendChild($this->text($doc, 'codAcessoPed', $serv->explRod->codAcessoPed));
-            $explRod->appendChild($this->text($doc, 'codContrato', $serv->explRod->codContrato));
-            $el->appendChild($explRod);
         }
 
         // infoCompl (optional)

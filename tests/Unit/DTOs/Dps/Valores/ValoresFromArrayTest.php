@@ -87,7 +87,7 @@ it('PisCofins::fromArray creates instance from array', function () {
         ->and($dto->pAliqCofins)->toBe('7.60')
         ->and($dto->vPis)->toBe('16.50')
         ->and($dto->vCofins)->toBe('76.00')
-        ->and($dto->tpRetPisCofins)->toBe(TipoRetPisCofins::Retido);
+        ->and($dto->tpRetPisCofins)->toBe(TipoRetPisCofins::PisCofinsRetidos);
 });
 
 it('ExigibilidadeSuspensa::fromArray creates instance from array', function () {
