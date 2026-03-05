@@ -4,7 +4,7 @@ covers(\Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador::class);
 
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('Prestador::fromArray creates instance from array', function () {
@@ -57,7 +57,7 @@ it('Prestador::fromArray preserves cNaoNIF', function () {
         'cNaoNIF' => '1',
     ]);
 
-    expect($dto->cNaoNIF)->toBe(CodNaoNIF::Dispensado);
+    expect($dto->cNaoNIF)->toBe(CNaoNIF::Dispensado);
 });
 
 it('Prestador rejects when no identifier provided', function () {

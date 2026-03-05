@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoSuspensao;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpSusp;
 
 /**
  * @phpstan-type ExigibilidadeSuspensaArray array{tpSusp: string, nProcesso: string}
@@ -12,7 +12,7 @@ use Pulsar\NfseNacional\Dps\Enums\Valores\TipoSuspensao;
 final readonly class ExigibilidadeSuspensa
 {
     public function __construct(
-        public TipoSuspensao $tpSusp,
+        public TpSusp $tpSusp,
         public string $nProcesso,
     ) {}
 
@@ -20,7 +20,7 @@ final readonly class ExigibilidadeSuspensa
     public static function fromArray(array $data): self
     {
         return new self(
-            tpSusp: TipoSuspensao::from($data['tpSusp']),
+            tpSusp: TpSusp::from($data['tpSusp']),
             nProcesso: $data['nProcesso'],
         );
     }

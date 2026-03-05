@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\InfDPS;
 
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\TipoEmitente;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\TpEmit;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 
 /**
@@ -20,9 +20,9 @@ final readonly class InfDPS
         public string $serie,
         public string $nDPS,
         public string $dCompet,
-        public TipoEmitente $tpEmit,
+        public TpEmit $tpEmit,
         public string $cLocEmi,
-        public ?MotivoEmissaoTI $cMotivoEmisTI = null,
+        public ?CMotivoEmisTI $cMotivoEmisTI = null,
         public ?string $chNFSeRej = null,
     ) {}
 
@@ -36,9 +36,9 @@ final readonly class InfDPS
             serie: $data['serie'],
             nDPS: (string) $data['nDPS'],
             dCompet: $data['dCompet'],
-            tpEmit: TipoEmitente::from($data['tpEmit']),
+            tpEmit: TpEmit::from($data['tpEmit']),
             cLocEmi: $data['cLocEmi'],
-            cMotivoEmisTI: isset($data['cMotivoEmisTI']) ? MotivoEmissaoTI::from($data['cMotivoEmisTI']) : null,
+            cMotivoEmisTI: isset($data['cMotivoEmisTI']) ? CMotivoEmisTI::from($data['cMotivoEmisTI']) : null,
             chNFSeRej: $data['chNFSeRej'] ?? null,
         );
     }

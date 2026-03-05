@@ -340,7 +340,7 @@ it('builds IBSCBS with dest cNaoNIF', function () {
                 gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new InfoDest(xNome: 'Sem NIF', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF::Dispensado),
+        dest: new InfoDest(xNome: 'Sem NIF', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::Dispensado),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -527,7 +527,7 @@ it('builds IBSCBS with fornec NIF and cNaoNIF', function () {
                     dtEmiDoc: '2026-01-01', dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis, vlrReeRepRes: '100.00',
                     docOutro: new ListaDocOutro(nDoc: 'D2', xDoc: 'Doc2'),
-                    fornec: new ListaDocFornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF::NaoInformado),
+                    fornec: new ListaDocFornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::NaoInformado),
                 ),
             ]),
         ),

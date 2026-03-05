@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\Enums\Servico;
 
-enum VinculoPrestacao: string
+enum VincPrest: string
 {
     case SemVinculo = '0';
     case Controlada = '1';

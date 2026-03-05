@@ -7,7 +7,7 @@ namespace Pulsar\NfseNacional\Dps\DTO\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 /**
  * @phpstan-import-type RegTribArray from RegTrib
@@ -24,7 +24,7 @@ final readonly class Prestador
         public ?string $CNPJ = null,
         public ?string $CPF = null,
         public ?string $NIF = null,
-        public ?CodNaoNIF $cNaoNIF = null,
+        public ?CNaoNIF $cNaoNIF = null,
         public ?string $CAEPF = null,
         public ?string $IM = null,
         public ?string $xNome = null,
@@ -47,7 +47,7 @@ final readonly class Prestador
             CNPJ: $data['CNPJ'] ?? null,
             CPF: $data['CPF'] ?? null,
             NIF: $data['NIF'] ?? null,
-            cNaoNIF: isset($data['cNaoNIF']) ? CodNaoNIF::from($data['cNaoNIF']) : null,
+            cNaoNIF: isset($data['cNaoNIF']) ? CNaoNIF::from($data['cNaoNIF']) : null,
             CAEPF: $data['CAEPF'] ?? null,
             IM: $data['IM'] ?? null,
             xNome: $data['xNome'] ?? null,

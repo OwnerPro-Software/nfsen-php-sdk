@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\Enums\Valores;
 
-enum TipoImunidadeISSQN: string
+enum TpImunidade: string
 {
     case NaoInformado = '0';
     case PatrimonioRendaServicos = '1';

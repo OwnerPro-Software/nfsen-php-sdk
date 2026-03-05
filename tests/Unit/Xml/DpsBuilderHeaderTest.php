@@ -13,7 +13,7 @@ use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
@@ -62,7 +62,7 @@ it('includes tpAmb in infDPS', function (DpsData $data) {
 
 it('includes cMotivoEmisTI when set', function () {
     $data = new DpsData(
-        infDPS: makeInfDps(cMotivoEmisTI: MotivoEmissaoTI::ImportacaoServico),
+        infDPS: makeInfDps(cMotivoEmisTI: CMotivoEmisTI::ImportacaoServico),
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: makeValoresMinimo(),

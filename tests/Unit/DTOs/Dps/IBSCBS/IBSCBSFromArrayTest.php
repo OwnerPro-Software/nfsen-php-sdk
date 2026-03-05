@@ -31,7 +31,7 @@ use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFiscalOutro;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFornec;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocOutro;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('InfoTributosTribRegular::fromArray creates instance from array', function () {
@@ -85,7 +85,7 @@ it('InfoDest::fromArray preserves NIF', function () {
 
 it('InfoDest::fromArray preserves cNaoNIF', function () {
     $dto = InfoDest::fromArray(['xNome' => 'D', 'cNaoNIF' => '2']);
-    expect($dto->cNaoNIF)->toBe(CodNaoNIF::NaoExigencia);
+    expect($dto->cNaoNIF)->toBe(CNaoNIF::NaoExigencia);
 });
 
 it('InfoImovel::fromArray creates instance from array', function () {
@@ -136,7 +136,7 @@ it('ListaDocFornec::fromArray preserves NIF', function () {
 
 it('ListaDocFornec::fromArray preserves cNaoNIF', function () {
     $dto = ListaDocFornec::fromArray(['xNome' => 'F', 'cNaoNIF' => '0']);
-    expect($dto->cNaoNIF)->toBe(CodNaoNIF::NaoInformado);
+    expect($dto->cNaoNIF)->toBe(CNaoNIF::NaoInformado);
 });
 
 it('ListaDocFornec rejects when no identifier provided', function () {

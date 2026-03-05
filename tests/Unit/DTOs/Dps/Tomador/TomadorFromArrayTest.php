@@ -4,7 +4,7 @@ covers(\Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador::class);
 
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('Tomador::fromArray creates instance from array', function () {
@@ -51,7 +51,7 @@ it('Tomador::fromArray preserves cNaoNIF', function () {
         'cNaoNIF' => '0',
     ]);
 
-    expect($dto->cNaoNIF)->toBe(CodNaoNIF::NaoInformado);
+    expect($dto->cNaoNIF)->toBe(CNaoNIF::NaoInformado);
 });
 
 it('Tomador rejects when no identifier provided', function () {

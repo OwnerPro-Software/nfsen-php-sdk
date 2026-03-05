@@ -3,7 +3,7 @@
 covers(\Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed::class);
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('creates InfoDedRed with pDR', function () {
@@ -18,7 +18,7 @@ it('creates InfoDedRed with vDR', function () {
 
 it('creates InfoDedRed with documentos', function () {
     $doc = new DocDedRed(
-        tpDedRed: TipoDedRed::Materiais,
+        tpDedRed: TpDedRed::Materiais,
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',

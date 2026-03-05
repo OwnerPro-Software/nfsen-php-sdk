@@ -9,7 +9,7 @@ use DOMElement;
 use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegApTribSN;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 final class PrestadorBuilder
 {
@@ -25,7 +25,7 @@ final class PrestadorBuilder
             $el->appendChild($this->text($doc, 'CPF', $prest->CPF));
         } elseif ($prest->NIF !== null) {
             $el->appendChild($this->text($doc, 'NIF', $prest->NIF));
-        } elseif ($prest->cNaoNIF instanceof CodNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
+        } elseif ($prest->cNaoNIF instanceof CNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
             $el->appendChild($this->text($doc, 'cNaoNIF', $prest->cNaoNIF->value));
         }
 

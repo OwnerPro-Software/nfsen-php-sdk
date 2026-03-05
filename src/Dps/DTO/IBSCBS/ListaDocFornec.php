@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
 
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 /**
  * @phpstan-type ListaDocFornecArray array{xNome: string, CNPJ?: string, CPF?: string, NIF?: string, cNaoNIF?: string}
@@ -19,7 +19,7 @@ final readonly class ListaDocFornec
         public ?string $CNPJ = null,
         public ?string $CPF = null,
         public ?string $NIF = null,
-        public ?CodNaoNIF $cNaoNIF = null,
+        public ?CNaoNIF $cNaoNIF = null,
     ) {
         self::validateChoice(
             ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'código de não NIF (cNaoNIF)' => $cNaoNIF],
@@ -36,7 +36,7 @@ final readonly class ListaDocFornec
             CNPJ: $data['CNPJ'] ?? null,
             CPF: $data['CPF'] ?? null,
             NIF: $data['NIF'] ?? null,
-            cNaoNIF: isset($data['cNaoNIF']) ? CodNaoNIF::from($data['cNaoNIF']) : null,
+            cNaoNIF: isset($data['cNaoNIF']) ? CNaoNIF::from($data['cNaoNIF']) : null,
         );
     }
 }

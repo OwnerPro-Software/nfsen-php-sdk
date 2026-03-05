@@ -6,7 +6,7 @@ use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
 use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 
@@ -53,7 +53,7 @@ it('builds toma element with cNaoNIF', function () {
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new Tomador(cNaoNIF: CodNaoNIF::Dispensado, xNome: 'Estrangeiro');
+    $toma = new Tomador(cNaoNIF: CNaoNIF::Dispensado, xNome: 'Estrangeiro');
 
     $xml = $doc->saveXML($builder->build($doc, $toma));
 

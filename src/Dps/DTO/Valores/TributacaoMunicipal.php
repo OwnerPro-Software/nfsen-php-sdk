@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoImunidadeISSQN;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 
 /**
@@ -18,9 +18,9 @@ final readonly class TributacaoMunicipal
 {
     public function __construct(
         public TribISSQN $tribISSQN,
-        public TipoRetISSQN $tpRetISSQN,
+        public TpRetISSQN $tpRetISSQN,
         public ?string $cPaisResult = null,
-        public ?TipoImunidadeISSQN $tpImunidade = null,
+        public ?TpImunidade $tpImunidade = null,
         public ?ExigibilidadeSuspensa $exigSusp = null,
         public ?BeneficioMunicipal $BM = null,
         public ?string $pAliq = null,
@@ -31,9 +31,9 @@ final readonly class TributacaoMunicipal
     {
         return new self(
             tribISSQN: TribISSQN::from($data['tribISSQN']),
-            tpRetISSQN: TipoRetISSQN::from($data['tpRetISSQN']),
+            tpRetISSQN: TpRetISSQN::from($data['tpRetISSQN']),
             cPaisResult: $data['cPaisResult'] ?? null,
-            tpImunidade: isset($data['tpImunidade']) ? TipoImunidadeISSQN::from($data['tpImunidade']) : null,
+            tpImunidade: isset($data['tpImunidade']) ? TpImunidade::from($data['tpImunidade']) : null,
             exigSusp: isset($data['exigSusp']) ? ExigibilidadeSuspensa::fromArray($data['exigSusp']) : null,
             BM: isset($data['BM']) ? BeneficioMunicipal::fromArray($data['BM']) : null,
             pAliq: $data['pAliq'] ?? null,

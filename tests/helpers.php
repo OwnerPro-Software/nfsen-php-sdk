@@ -14,11 +14,11 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
 use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\TipoEmitente;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\TpEmit;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\NfseClient;
@@ -61,9 +61,9 @@ function makeInfDps(
     ?string $serie = null,
     ?string $nDPS = null,
     ?string $dCompet = null,
-    ?TipoEmitente $tpEmit = null,
+    ?TpEmit $tpEmit = null,
     ?string $cLocEmi = null,
-    ?MotivoEmissaoTI $cMotivoEmisTI = null,
+    ?CMotivoEmisTI $cMotivoEmisTI = null,
     ?string $chNFSeRej = null,
 ): InfDPS {
     return new InfDPS(
@@ -73,7 +73,7 @@ function makeInfDps(
         serie: $serie ?? '1',
         nDPS: $nDPS ?? '1',
         dCompet: $dCompet ?? '2026-02-27',
-        tpEmit: $tpEmit ?? TipoEmitente::Prestador,
+        tpEmit: $tpEmit ?? TpEmit::Prestador,
         cLocEmi: $cLocEmi ?? '3501608',
         cMotivoEmisTI: $cMotivoEmisTI,
         chNFSeRej: $chNFSeRej,
@@ -119,7 +119,7 @@ function makeValoresMinimo(?string $vServ = null): Valores
         trib: new Tributacao(
             tribMun: new TributacaoMunicipal(
                 tribISSQN: TribISSQN::Tributavel,
-                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\Enums\Valores;
 
-enum TipoDedRed: string
+enum TpDedRed: string
 {
     case AlimentacaoBebidas = '1';
     case Materiais = '2';

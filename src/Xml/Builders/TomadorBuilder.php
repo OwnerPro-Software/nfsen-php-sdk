@@ -8,7 +8,7 @@ use DOMDocument;
 use DOMElement;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 final class TomadorBuilder
 {
@@ -24,7 +24,7 @@ final class TomadorBuilder
             $el->appendChild($this->text($doc, 'CPF', $toma->CPF));
         } elseif ($toma->NIF !== null) {
             $el->appendChild($this->text($doc, 'NIF', $toma->NIF));
-        } elseif ($toma->cNaoNIF instanceof CodNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
+        } elseif ($toma->cNaoNIF instanceof CNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
             $el->appendChild($this->text($doc, 'cNaoNIF', $toma->cNaoNIF->value));
         }
 

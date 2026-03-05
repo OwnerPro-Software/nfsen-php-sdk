@@ -25,7 +25,7 @@ use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 final class IBSCBSBuilder
 {
@@ -85,7 +85,7 @@ final class IBSCBSBuilder
             $el->appendChild($this->text($doc, 'CPF', $dest->CPF));
         } elseif ($dest->NIF !== null) {
             $el->appendChild($this->text($doc, 'NIF', $dest->NIF));
-        } elseif ($dest->cNaoNIF instanceof CodNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
+        } elseif ($dest->cNaoNIF instanceof CNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
             $el->appendChild($this->text($doc, 'cNaoNIF', $dest->cNaoNIF->value));
         }
 
@@ -193,7 +193,7 @@ final class IBSCBSBuilder
                 $fornec->appendChild($this->text($doc, 'CPF', $documento->fornec->CPF));
             } elseif ($documento->fornec->NIF !== null) {
                 $fornec->appendChild($this->text($doc, 'NIF', $documento->fornec->NIF));
-            } elseif ($documento->fornec->cNaoNIF instanceof CodNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
+            } elseif ($documento->fornec->cNaoNIF instanceof CNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
                 $fornec->appendChild($this->text($doc, 'cNaoNIF', $documento->fornec->cNaoNIF->value));
             }
 

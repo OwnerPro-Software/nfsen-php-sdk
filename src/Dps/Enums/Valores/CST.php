@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\Enums\Valores;
 
-enum TipoCST: string
+enum CST: string
 {
     case Nenhum = '00';
     case AliqBasica = '01';

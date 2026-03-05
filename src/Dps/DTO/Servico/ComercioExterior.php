@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\DTO\Servico;
 
-use Pulsar\NfseNacional\Dps\Enums\Servico\MDIC;
+use Pulsar\NfseNacional\Dps\Enums\Servico\Mdic;
+use Pulsar\NfseNacional\Dps\Enums\Servico\MdPrestacao;
 use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexP;
 use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexT;
-use Pulsar\NfseNacional\Dps\Enums\Servico\ModoPrestacao;
 use Pulsar\NfseNacional\Dps\Enums\Servico\MovTempBens;
-use Pulsar\NfseNacional\Dps\Enums\Servico\VinculoPrestacao;
+use Pulsar\NfseNacional\Dps\Enums\Servico\VincPrest;
 
 /**
  * @phpstan-type ComercioExteriorArray array{mdPrestacao: string, vincPrest: string, tpMoeda: string, vServMoeda: string, mecAFComexP: string, mecAFComexT: string, movTempBens: string, mdic: string, nDI?: string, nRE?: string}
@@ -17,14 +17,14 @@ use Pulsar\NfseNacional\Dps\Enums\Servico\VinculoPrestacao;
 final readonly class ComercioExterior
 {
     public function __construct(
-        public ModoPrestacao $mdPrestacao,
-        public VinculoPrestacao $vincPrest,
+        public MdPrestacao $mdPrestacao,
+        public VincPrest $vincPrest,
         public string $tpMoeda,
         public string $vServMoeda,
         public MecAFComexP $mecAFComexP,
         public MecAFComexT $mecAFComexT,
         public MovTempBens $movTempBens,
-        public MDIC $mdic,
+        public Mdic $mdic,
         public ?string $nDI = null,
         public ?string $nRE = null,
     ) {}
@@ -33,14 +33,14 @@ final readonly class ComercioExterior
     public static function fromArray(array $data): self
     {
         return new self(
-            mdPrestacao: ModoPrestacao::from($data['mdPrestacao']),
-            vincPrest: VinculoPrestacao::from($data['vincPrest']),
+            mdPrestacao: MdPrestacao::from($data['mdPrestacao']),
+            vincPrest: VincPrest::from($data['vincPrest']),
             tpMoeda: $data['tpMoeda'],
             vServMoeda: $data['vServMoeda'],
             mecAFComexP: MecAFComexP::from($data['mecAFComexP']),
             mecAFComexT: MecAFComexT::from($data['mecAFComexT']),
             movTempBens: MovTempBens::from($data['movTempBens']),
-            mdic: MDIC::from($data['mdic']),
+            mdic: Mdic::from($data['mdic']),
             nDI: $data['nDI'] ?? null,
             nRE: $data['nRE'] ?? null,
         );

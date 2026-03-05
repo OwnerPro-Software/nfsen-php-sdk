@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\Enums\Servico;
 
-enum ModoPrestacao: string
+enum MdPrestacao: string
 {
     case Desconhecido = '0';
     case Transfronteirico = '1';

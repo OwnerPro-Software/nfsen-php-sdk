@@ -9,7 +9,7 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
 use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
 use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
@@ -22,7 +22,7 @@ it('builds vDedRed with pDR choice', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -45,7 +45,7 @@ it('builds vDedRed with vDR choice', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -68,13 +68,13 @@ it('builds vDedRed with documentos containing chNFSe', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
         vDedRed: new InfoDedRed(documentos: [
             new DocDedRed(
-                tpDedRed: TipoDedRed::Materiais,
+                tpDedRed: TpDedRed::Materiais,
                 dtEmiDoc: '2026-01-15',
                 vDedutivelRedutivel: '100.00',
                 vDeducaoReducao: '50.00',
@@ -105,13 +105,13 @@ it('builds vDedRed with NFSeMun document', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
         vDedRed: new InfoDedRed(documentos: [
             new DocDedRed(
-                tpDedRed: TipoDedRed::Servicos,
+                tpDedRed: TpDedRed::Servicos,
                 dtEmiDoc: '2026-01-15',
                 vDedutivelRedutivel: '200.00',
                 vDeducaoReducao: '100.00',
@@ -138,13 +138,13 @@ it('builds vDedRed with NFNFS document', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
         vDedRed: new InfoDedRed(documentos: [
             new DocDedRed(
-                tpDedRed: TipoDedRed::AlimentacaoBebidas,
+                tpDedRed: TpDedRed::AlimentacaoBebidas,
                 dtEmiDoc: '2026-01-15',
                 vDedutivelRedutivel: '100.00',
                 vDeducaoReducao: '50.00',
@@ -171,13 +171,13 @@ it('builds vDedRed with fornec', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
         vDedRed: new InfoDedRed(documentos: [
             new DocDedRed(
-                tpDedRed: TipoDedRed::SubempreitadaMaoDeObra,
+                tpDedRed: TpDedRed::SubempreitadaMaoDeObra,
                 dtEmiDoc: '2026-01-15',
                 vDedutivelRedutivel: '100.00',
                 vDeducaoReducao: '50.00',
@@ -204,13 +204,13 @@ it('builds vDedRed with chNFe document', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
         vDedRed: new InfoDedRed(documentos: [
             new DocDedRed(
-                tpDedRed: TipoDedRed::Materiais,
+                tpDedRed: TpDedRed::Materiais,
                 dtEmiDoc: '2026-01-15',
                 vDedutivelRedutivel: '100.00',
                 vDeducaoReducao: '50.00',
@@ -232,13 +232,13 @@ it('builds vDedRed with nDocFisc document', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
         vDedRed: new InfoDedRed(documentos: [
             new DocDedRed(
-                tpDedRed: TipoDedRed::OutrasDeducoes,
+                tpDedRed: TpDedRed::OutrasDeducoes,
                 dtEmiDoc: '2026-01-15',
                 vDedutivelRedutivel: '100.00',
                 vDeducaoReducao: '50.00',
@@ -264,13 +264,13 @@ it('builds vDedRed with nDoc document', function () {
         trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
             tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                 tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
         vDedRed: new InfoDedRed(documentos: [
             new DocDedRed(
-                tpDedRed: TipoDedRed::OutrasDeducoes,
+                tpDedRed: TpDedRed::OutrasDeducoes,
                 dtEmiDoc: '2026-01-15',
                 vDedutivelRedutivel: '100.00',
                 vDeducaoReducao: '50.00',
@@ -300,7 +300,7 @@ it('builds DPS with vDedRed pDR that validates against XSD', function () {
             trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
                 tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                     tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                    tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                    tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
                 ),
                 indTotTrib: '0',
             ),
@@ -324,13 +324,13 @@ it('builds DPS with vDedRed documentos that validates against XSD', function () 
             trib: new \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao(
                 tribMun: new \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal(
                     tribISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN::Tributavel,
-                    tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN::NaoRetido,
+                    tpRetISSQN: \Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
                 ),
                 indTotTrib: '0',
             ),
             vDedRed: new InfoDedRed(documentos: [
                 new DocDedRed(
-                    tpDedRed: TipoDedRed::Materiais,
+                    tpDedRed: TpDedRed::Materiais,
                     dtEmiDoc: '2026-01-15',
                     vDedutivelRedutivel: '500.00',
                     vDeducaoReducao: '250.00',

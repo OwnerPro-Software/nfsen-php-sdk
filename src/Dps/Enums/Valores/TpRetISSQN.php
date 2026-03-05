@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\Enums\Valores;
 
-enum TipoRetISSQN: string
+enum TpRetISSQN: string
 {
     case NaoRetido = '1';
     case RetidoPeloTomador = '2';

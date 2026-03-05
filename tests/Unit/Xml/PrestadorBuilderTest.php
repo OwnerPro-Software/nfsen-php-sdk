@@ -10,7 +10,7 @@ use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegApTribSN;
 use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
 
@@ -96,7 +96,7 @@ it('builds prest element with cNaoNIF', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $prest = new Prestador(
-        cNaoNIF: CodNaoNIF::Dispensado,
+        cNaoNIF: CNaoNIF::Dispensado,
         regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
         xNome: 'Empresa Estrangeira',
     );

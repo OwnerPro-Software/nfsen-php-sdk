@@ -20,8 +20,8 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribValor;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
 use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoImunidadeISSQN;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetPisCofins;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
 
 final class ValoresBuilder
 {
@@ -138,7 +138,7 @@ final class ValoresBuilder
             $tribMun->appendChild($this->text($doc, 'cPaisResult', $trib->tribMun->cPaisResult));
         }
 
-        if ($trib->tribMun->tpImunidade instanceof TipoImunidadeISSQN) {
+        if ($trib->tribMun->tpImunidade instanceof TpImunidade) {
             $tribMun->appendChild($this->text($doc, 'tpImunidade', $trib->tribMun->tpImunidade->value));
         }
 
@@ -195,7 +195,7 @@ final class ValoresBuilder
                     $piscofins->appendChild($this->text($doc, 'vCofins', $trib->tribFed->piscofins->vCofins));
                 }
 
-                if ($trib->tribFed->piscofins->tpRetPisCofins instanceof TipoRetPisCofins) {
+                if ($trib->tribFed->piscofins->tpRetPisCofins instanceof TpRetPisCofins) {
                     $piscofins->appendChild($this->text($doc, 'tpRetPisCofins', $trib->tribFed->piscofins->tpRetPisCofins->value));
                 }
 

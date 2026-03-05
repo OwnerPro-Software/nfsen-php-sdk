@@ -16,11 +16,11 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoCST;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoImunidadeISSQN;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetISSQN;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetPisCofins;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoSuspensao;
+use Pulsar\NfseNacional\Dps\Enums\Valores\CST;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpSusp;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
@@ -29,7 +29,7 @@ function makeTribMunMinimo(): TributacaoMunicipal
 {
     return new TributacaoMunicipal(
         tribISSQN: TribISSQN::Tributavel,
-        tpRetISSQN: TipoRetISSQN::NaoRetido,
+        tpRetISSQN: TpRetISSQN::NaoRetido,
     );
 }
 
@@ -108,9 +108,9 @@ it('includes tribMun optional fields', function () {
         trib: new Tributacao(
             tribMun: new TributacaoMunicipal(
                 tribISSQN: TribISSQN::Tributavel,
-                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
                 cPaisResult: '01058',
-                tpImunidade: TipoImunidadeISSQN::PatrimonioRendaServicos,
+                tpImunidade: TpImunidade::PatrimonioRendaServicos,
                 pAliq: '5.00',
             ),
             indTotTrib: '0',
@@ -134,9 +134,9 @@ it('builds exigSusp in tribMun', function () {
         trib: new Tributacao(
             tribMun: new TributacaoMunicipal(
                 tribISSQN: TribISSQN::Tributavel,
-                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
                 exigSusp: new ExigibilidadeSuspensa(
-                    tpSusp: TipoSuspensao::DecisaoJudicial,
+                    tpSusp: TpSusp::DecisaoJudicial,
                     nProcesso: '0001234-56.2026.8.26.0100',
                 ),
             ),
@@ -161,7 +161,7 @@ it('builds BM in tribMun with vRedBCBM', function () {
         trib: new Tributacao(
             tribMun: new TributacaoMunicipal(
                 tribISSQN: TribISSQN::Tributavel,
-                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
                 BM: new BeneficioMunicipal(nBM: '12345', vRedBCBM: '50.00'),
             ),
             indTotTrib: '0',
@@ -186,7 +186,7 @@ it('builds BM in tribMun with pRedBCBM', function () {
         trib: new Tributacao(
             tribMun: new TributacaoMunicipal(
                 tribISSQN: TribISSQN::Tributavel,
-                tpRetISSQN: TipoRetISSQN::NaoRetido,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
                 BM: new BeneficioMunicipal(nBM: '12345', pRedBCBM: '10.00'),
             ),
             indTotTrib: '0',
@@ -218,13 +218,13 @@ it('builds tribFed with piscofins and retencoes', function () {
             indTotTrib: '0',
             tribFed: new TributacaoFederal(
                 piscofins: new PisCofins(
-                    CST: TipoCST::AliqBasica,
+                    CST: CST::AliqBasica,
                     vBCPisCofins: '100.00',
                     pAliqPis: '0.65',
                     pAliqCofins: '3.00',
                     vPis: '0.65',
                     vCofins: '3.00',
-                    tpRetPisCofins: TipoRetPisCofins::PisCofinsRetidos,
+                    tpRetPisCofins: TpRetPisCofins::PisCofinsRetidos,
                 ),
                 vRetCP: '11.00',
                 vRetIRRF: '1.50',
@@ -350,7 +350,7 @@ it('builds piscofins without tpRetPisCofins', function () {
             tribMun: makeTribMunMinimo(),
             indTotTrib: '0',
             tribFed: new TributacaoFederal(
-                piscofins: new PisCofins(CST: TipoCST::AliqBasica),
+                piscofins: new PisCofins(CST: CST::AliqBasica),
             ),
         ),
     );

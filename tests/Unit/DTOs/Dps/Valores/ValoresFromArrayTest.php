@@ -34,7 +34,7 @@ use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoRetPisCofins;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('ValorServicoPrestado::fromArray creates instance from array', function () {
@@ -87,7 +87,7 @@ it('PisCofins::fromArray creates instance from array', function () {
         ->and($dto->pAliqCofins)->toBe('7.60')
         ->and($dto->vPis)->toBe('16.50')
         ->and($dto->vCofins)->toBe('76.00')
-        ->and($dto->tpRetPisCofins)->toBe(TipoRetPisCofins::PisCofinsRetidos);
+        ->and($dto->tpRetPisCofins)->toBe(TpRetPisCofins::PisCofinsRetidos);
 });
 
 it('ExigibilidadeSuspensa::fromArray creates instance from array', function () {

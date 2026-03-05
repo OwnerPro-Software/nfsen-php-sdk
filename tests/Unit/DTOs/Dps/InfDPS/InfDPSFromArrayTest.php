@@ -7,7 +7,7 @@ covers(
 
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
 
 it('InfDPS::fromArray creates instance from array', function () {
     $dto = InfDPS::fromArray([
@@ -39,7 +39,7 @@ it('InfDPS::fromArray preserves optional fields', function () {
         'chNFSeRej' => 'CHAVE_REJEITADA_123',
     ]);
 
-    expect($dto->cMotivoEmisTI)->toBe(MotivoEmissaoTI::ImportacaoServico)
+    expect($dto->cMotivoEmisTI)->toBe(CMotivoEmisTI::ImportacaoServico)
         ->and($dto->chNFSeRej)->toBe('CHAVE_REJEITADA_123');
 });
 

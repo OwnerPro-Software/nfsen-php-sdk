@@ -9,7 +9,7 @@ use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\MotivoEmissaoTI;
+use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
 use Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder;
@@ -59,7 +59,7 @@ final readonly class DpsBuilder
         $infDps->appendChild($this->text($doc, 'nDPS', $d->nDPS));
         $infDps->appendChild($this->text($doc, 'dCompet', $d->dCompet));
         $infDps->appendChild($this->text($doc, 'tpEmit', $d->tpEmit->value));
-        if ($d->cMotivoEmisTI instanceof MotivoEmissaoTI) {
+        if ($d->cMotivoEmisTI instanceof CMotivoEmisTI) {
             $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cMotivoEmisTI->value));
         }
 

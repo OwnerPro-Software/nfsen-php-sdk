@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Dps\DTO\Valores;
 
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
 
 /**
  * @phpstan-import-type DocOutNFSeArray from DocOutNFSe
@@ -20,7 +20,7 @@ final readonly class DocDedRed
     use ValidatesExclusiveChoice;
 
     public function __construct(
-        public TipoDedRed $tpDedRed,
+        public TpDedRed $tpDedRed,
         public string $dtEmiDoc,
         public string $vDedutivelRedutivel,
         public string $vDeducaoReducao,
@@ -44,7 +44,7 @@ final readonly class DocDedRed
     public static function fromArray(array $data): self
     {
         return new self(
-            tpDedRed: TipoDedRed::from($data['tpDedRed']),
+            tpDedRed: TpDedRed::from($data['tpDedRed']),
             dtEmiDoc: $data['dtEmiDoc'],
             vDedutivelRedutivel: $data['vDedutivelRedutivel'],
             vDeducaoReducao: $data['vDeducaoReducao'],

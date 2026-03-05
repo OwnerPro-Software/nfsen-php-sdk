@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Dps\Enums\Valores;
 
-enum TipoRetPisCofins: string
+enum TpRetPisCofins: string
 {
     case PisCofinsCsllNaoRetidos = '0';
     case PisCofinsRetidos = '1';

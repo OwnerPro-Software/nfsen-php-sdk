@@ -4,12 +4,12 @@ covers(\Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed::class);
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TipoDedRed;
+use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
 it('creates DocDedRed with chNFSe', function () {
     $doc = new DocDedRed(
-        tpDedRed: TipoDedRed::Materiais,
+        tpDedRed: TpDedRed::Materiais,
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',
@@ -21,7 +21,7 @@ it('creates DocDedRed with chNFSe', function () {
 
 it('creates DocDedRed with NFSeMun', function () {
     $doc = new DocDedRed(
-        tpDedRed: TipoDedRed::Servicos,
+        tpDedRed: TpDedRed::Servicos,
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',
@@ -33,7 +33,7 @@ it('creates DocDedRed with NFSeMun', function () {
 
 it('creates DocDedRed with NFNFS', function () {
     $doc = new DocDedRed(
-        tpDedRed: TipoDedRed::AlimentacaoBebidas,
+        tpDedRed: TpDedRed::AlimentacaoBebidas,
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',
@@ -45,7 +45,7 @@ it('creates DocDedRed with NFNFS', function () {
 
 it('throws when no document type is set', function () {
     expect(fn () => new DocDedRed(
-        tpDedRed: TipoDedRed::Materiais,
+        tpDedRed: TpDedRed::Materiais,
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',
@@ -54,7 +54,7 @@ it('throws when no document type is set', function () {
 
 it('throws when multiple document types are set', function () {
     expect(fn () => new DocDedRed(
-        tpDedRed: TipoDedRed::Materiais,
+        tpDedRed: TpDedRed::Materiais,
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',

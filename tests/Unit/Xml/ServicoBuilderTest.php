@@ -11,12 +11,12 @@ use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
 use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
 use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
-use Pulsar\NfseNacional\Dps\Enums\Servico\MDIC;
+use Pulsar\NfseNacional\Dps\Enums\Servico\Mdic;
+use Pulsar\NfseNacional\Dps\Enums\Servico\MdPrestacao;
 use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexP;
 use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexT;
-use Pulsar\NfseNacional\Dps\Enums\Servico\ModoPrestacao;
 use Pulsar\NfseNacional\Dps\Enums\Servico\MovTempBens;
-use Pulsar\NfseNacional\Dps\Enums\Servico\VinculoPrestacao;
+use Pulsar\NfseNacional\Dps\Enums\Servico\VincPrest;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 
@@ -127,14 +127,14 @@ it('builds comExt element with all fields', function () {
         cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
         comExt: new ComercioExterior(
-            mdPrestacao: ModoPrestacao::Transfronteirico,
-            vincPrest: VinculoPrestacao::SemVinculo,
+            mdPrestacao: MdPrestacao::Transfronteirico,
+            vincPrest: VincPrest::SemVinculo,
             tpMoeda: '790',
             vServMoeda: '500.00',
             mecAFComexP: MecAFComexP::PROEXFinanciamento,
             mecAFComexT: MecAFComexT::PromocaoBrasilExterior,
             movTempBens: MovTempBens::Desconhecido,
-            mdic: MDIC::NaoEnviar,
+            mdic: Mdic::NaoEnviar,
             nDI: '123456',
             nRE: '789012',
         ),
@@ -164,14 +164,14 @@ it('builds comExt without optional nDI and nRE', function () {
         cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
         comExt: new ComercioExterior(
-            mdPrestacao: ModoPrestacao::Transfronteirico,
-            vincPrest: VinculoPrestacao::SemVinculo,
+            mdPrestacao: MdPrestacao::Transfronteirico,
+            vincPrest: VincPrest::SemVinculo,
             tpMoeda: '790',
             vServMoeda: '500.00',
             mecAFComexP: MecAFComexP::PROEXFinanciamento,
             mecAFComexT: MecAFComexT::PromocaoBrasilExterior,
             movTempBens: MovTempBens::Desconhecido,
-            mdic: MDIC::NaoEnviar,
+            mdic: Mdic::NaoEnviar,
         ),
     );
 

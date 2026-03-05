@@ -6,7 +6,7 @@ namespace Pulsar\NfseNacional\Dps\DTO\Tomador;
 
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CodNaoNIF;
+use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 /**
  * @phpstan-import-type EnderecoArray from Endereco
@@ -22,7 +22,7 @@ final readonly class Tomador
         public ?string $CNPJ = null,
         public ?string $CPF = null,
         public ?string $NIF = null,
-        public ?CodNaoNIF $cNaoNIF = null,
+        public ?CNaoNIF $cNaoNIF = null,
         public ?string $CAEPF = null,
         public ?string $IM = null,
         public ?Endereco $end = null,
@@ -45,7 +45,7 @@ final readonly class Tomador
             CNPJ: $data['CNPJ'] ?? null,
             CPF: $data['CPF'] ?? null,
             NIF: $data['NIF'] ?? null,
-            cNaoNIF: isset($data['cNaoNIF']) ? CodNaoNIF::from($data['cNaoNIF']) : null,
+            cNaoNIF: isset($data['cNaoNIF']) ? CNaoNIF::from($data['cNaoNIF']) : null,
             CAEPF: $data['CAEPF'] ?? null,
             IM: $data['IM'] ?? null,
             end: isset($data['end']) ? Endereco::fromArray($data['end'], path: $path.'/end') : null,
