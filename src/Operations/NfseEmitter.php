@@ -16,7 +16,10 @@ use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
-/** @phpstan-import-type DpsDataArray from DpsData */
+/**
+ * @phpstan-import-type DpsDataArray from DpsData
+ * @phpstan-import-type MessageData from ProcessingMessage
+ */
 final readonly class NfseEmitter implements EmitsNfse
 {
     use DispatchesEvents;
@@ -52,13 +55,13 @@ final readonly class NfseEmitter implements EmitsNfse
 
             /**
              * @var array{
-             *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
-             *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+             *     erros?: list<MessageData>,
+             *     erro?: MessageData,
              *     chaveAcesso?: string,
              *     nfseXmlGZipB64?: string,
              *     idDps?: string,
              *     idDPS?: string,
-             *     alertas?: list<array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string}>,
+             *     alertas?: list<MessageData>,
              *     tipoAmbiente?: int,
              *     versaoAplicativo?: string,
              *     dataHoraProcessamento?: string,

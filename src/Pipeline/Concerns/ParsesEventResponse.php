@@ -13,13 +13,15 @@ use Pulsar\NfseNacional\Support\GzipCompressor;
  * Shared event response parsing for cancelar/substituir operations.
  *
  * @requires DispatchesEvents
+ *
+ * @phpstan-import-type MessageData from ProcessingMessage
  */
 trait ParsesEventResponse
 {
     /**
-     * @param  array{
-     *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
-     *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+     * @phpstan-param  array{
+     *     erros?: list<MessageData>,
+     *     erro?: MessageData,
      *     eventoXmlGZipB64?: string,
      *     tipoAmbiente?: int,
      *     versaoAplicativo?: string,

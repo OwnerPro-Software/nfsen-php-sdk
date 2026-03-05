@@ -120,3 +120,39 @@ it('fromApiResult returns empty list when no error keys', function () {
 
     expect($list)->toBeEmpty();
 });
+
+it('creates from array with capitalized keys', function () {
+    $msg = ProcessingMessage::fromArray([
+        'Mensagem' => 'Mensagem',
+        'Codigo' => 'E0037',
+        'Descricao' => 'Descrição do erro',
+        'Complemento' => 'Info adicional',
+    ]);
+
+    expect($msg)
+        ->mensagem->toBe('Mensagem')
+        ->codigo->toBe('E0037')
+        ->descricao->toBe('Descrição do erro')
+        ->complemento->toBe('Info adicional');
+});
+
+it('prefers lowercase keys over capitalized keys', function () {
+    $msg = ProcessingMessage::fromArray([
+        'codigo' => 'lowercase',
+        'Codigo' => 'Capitalized',
+    ]);
+
+    expect($msg->codigo)->toBe('lowercase');
+});
+
+it('fromApiResult normalizes capitalized keys in erros list', function () {
+    $result = ['erros' => [
+        ['Codigo' => 'E0037', 'Descricao' => 'Município inexistente'],
+    ]];
+
+    $list = ProcessingMessage::fromApiResult($result);
+
+    expect($list)->toHaveCount(1);
+    expect($list[0]->codigo)->toBe('E0037');
+    expect($list[0]->descricao)->toBe('Município inexistente');
+});

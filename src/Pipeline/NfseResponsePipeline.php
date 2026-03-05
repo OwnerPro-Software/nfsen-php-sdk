@@ -14,6 +14,7 @@ use Pulsar\NfseNacional\Responses\NfseResponse;
 use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 
+/** @phpstan-import-type MessageData from ProcessingMessage */
 final readonly class NfseResponsePipeline implements ExecutesNfseRequests
 {
     use DispatchesEvents;
@@ -30,8 +31,8 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
         return $this->withFailureEvent($operacao, function () use ($url, $operacao): NfseResponse {
             /**
              * @var array{
-             *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
-             *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+             *     erros?: list<MessageData>,
+             *     erro?: MessageData,
              *     nfseXmlGZipB64?: string,
              *     chaveAcesso?: string,
              *     tipoAmbiente?: int,
@@ -69,8 +70,8 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
 
     /**
      * @return array{
-     *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
-     *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+     *     erros?: list<MessageData>,
+     *     erro?: MessageData,
      *     chaveAcesso?: string,
      *     idDps?: string,
      *     eventoXmlGZipB64?: string,
@@ -87,8 +88,8 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
         return $this->withFailureEvent($operacao, function () use ($url, $operacao): array {
             /**
              * @var array{
-             *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
-             *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+             *     erros?: list<MessageData>,
+             *     erro?: MessageData,
              *     chaveAcesso?: string,
              *     idDps?: string,
              *     eventoXmlGZipB64?: string,

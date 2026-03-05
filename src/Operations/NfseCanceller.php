@@ -14,8 +14,10 @@ use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventResponse;
 use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
 
+/** @phpstan-import-type MessageData from ProcessingMessage */
 final readonly class NfseCanceller implements CancelsNfse
 {
     use DispatchesEvents;
@@ -55,8 +57,8 @@ final readonly class NfseCanceller implements CancelsNfse
 
             /**
              * @var array{
-             *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
-             *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+             *     erros?: list<MessageData>,
+             *     erro?: MessageData,
              *     eventoXmlGZipB64?: string,
              *     tipoAmbiente?: int,
              *     versaoAplicativo?: string,

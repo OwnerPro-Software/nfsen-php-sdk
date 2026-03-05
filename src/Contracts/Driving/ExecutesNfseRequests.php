@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Contracts\Driving;
 
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\ProcessingMessage;
 
+/** @phpstan-import-type MessageData from ProcessingMessage */
 interface ExecutesNfseRequests
 {
     public function executeAndDecompress(string $url): NfseResponse;
@@ -16,8 +18,8 @@ interface ExecutesNfseRequests
      * Retorna JSON cru da API.
      *
      * @return array{
-     *     erros?: list<array{mensagem?: string, descricao?: string, codigo?: string, complemento?: string}>,
-     *     erro?: array{mensagem?: string, codigo?: string, descricao?: string, complemento?: string},
+     *     erros?: list<MessageData>,
+     *     erro?: MessageData,
      *     chaveAcesso?: string,
      *     idDps?: string,
      *     eventoXmlGZipB64?: string,
