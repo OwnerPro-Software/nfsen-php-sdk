@@ -36,6 +36,7 @@ final readonly class DocDedRed
         self::validateChoice(
             ['chave NFSe (chNFSe)' => $chNFSe, 'chave NFe (chNFe)' => $chNFe, 'NFSe municipal (NFSeMun)' => $NFSeMun, 'NF/NFS (NFNFS)' => $NFNFS, 'número doc. fiscal (nDocFisc)' => $nDocFisc, 'número documento (nDoc)' => $nDoc],
             expected: 1,
+            path: 'infDPS/valores/vDedRed/documentos',
         );
     }
 
@@ -54,7 +55,7 @@ final readonly class DocDedRed
             nDocFisc: $data['nDocFisc'] ?? null,
             nDoc: $data['nDoc'] ?? null,
             xDescOutDed: $data['xDescOutDed'] ?? null,
-            fornec: isset($data['fornec']) ? Tomador::fromArray($data['fornec']) : null,
+            fornec: isset($data['fornec']) ? Tomador::fromArray($data['fornec'], path: 'infDPS/valores/vDedRed/documentos/fornec') : null,
         );
     }
 }

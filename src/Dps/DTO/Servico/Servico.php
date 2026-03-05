@@ -31,6 +31,7 @@ final readonly class Servico
         self::validateChoice(
             ['código do local de prestação (cLocPrestacao)' => $cLocPrestacao, 'código do país de prestação (cPaisPrestacao)' => $cPaisPrestacao],
             expected: 1,
+            path: 'infDPS/serv/locPrest',
         );
     }
 

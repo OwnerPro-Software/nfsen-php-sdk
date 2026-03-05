@@ -33,6 +33,7 @@ final readonly class ListaDocReeRepRes
         self::validateChoice(
             ['DFe nacional (dFeNacional)' => $dFeNacional, 'documento fiscal outro (docFiscalOutro)' => $docFiscalOutro, 'outro documento (docOutro)' => $docOutro],
             expected: 1,
+            path: 'infDPS/IBSCBS/infReeRepRes/documentos',
         );
     }
 

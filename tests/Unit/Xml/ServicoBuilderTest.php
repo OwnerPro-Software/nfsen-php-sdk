@@ -87,13 +87,13 @@ it('throws when both cLocPrestacao and cPaisPrestacao are set', function () {
         cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
         cLocPrestacao: '3501608',
         cPaisPrestacao: '01058',
-    ))->toThrow(InvalidDpsArgument::class, 'Somente 1 dos seguintes campos deve ser informado: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao). Informados: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao).');
+    ))->toThrow(InvalidDpsArgument::class, '[infDPS/serv/locPrest] Somente 1 dos seguintes campos deve ser informado: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao). Informados: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao).');
 });
 
 it('throws when locPrest has no choice set', function () {
     expect(fn () => new Servico(
         cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
-    ))->toThrow(InvalidDpsArgument::class, 'Somente 1 dos seguintes campos deve ser informado: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao). Nenhum foi informado.');
+    ))->toThrow(InvalidDpsArgument::class, '[infDPS/serv/locPrest] Somente 1 dos seguintes campos deve ser informado: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao). Nenhum foi informado.');
 });
 
 it('includes optional cServ fields when set', function () {

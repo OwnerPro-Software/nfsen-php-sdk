@@ -24,6 +24,7 @@ final readonly class Obra
         self::validateChoice(
             ['código da obra (cObra)' => $cObra, 'código CIB (cCIB)' => $cCIB, 'endereço (end)' => $end],
             expected: 1,
+            path: 'infDPS/serv/obra',
         );
     }
 
@@ -34,7 +35,7 @@ final readonly class Obra
             inscImobFisc: $data['inscImobFisc'] ?? null,
             cObra: $data['cObra'] ?? null,
             cCIB: $data['cCIB'] ?? null,
-            end: isset($data['end']) ? EnderecoObra::fromArray($data['end']) : null,
+            end: isset($data['end']) ? EnderecoObra::fromArray($data['end'], path: 'infDPS/serv/obra/end') : null,
         );
     }
 }

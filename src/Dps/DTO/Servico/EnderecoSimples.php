@@ -26,6 +26,7 @@ final readonly class EnderecoSimples
         self::validateChoice(
             ['CEP' => $CEP, 'endereço exterior (endExt)' => $endExt],
             expected: 1,
+            path: 'infDPS/serv/atvEvento/end',
         );
     }
 

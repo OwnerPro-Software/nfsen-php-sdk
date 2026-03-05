@@ -16,7 +16,7 @@ it('throws when both endNac and endExt are set', function () {
         xBairro: 'Centro',
         endNac: new EnderecoNacional(cMun: '3501608', CEP: '01001000'),
         endExt: new EnderecoExterior(cPais: '01058', cEndPost: '10001', xCidade: 'NY', xEstProvReg: 'NY'),
-    ))->toThrow(InvalidDpsArgument::class, 'Somente 1 dos seguintes campos deve ser informado: endereço nacional (endNac), endereço exterior (endExt). Informados: endereço nacional (endNac), endereço exterior (endExt).');
+    ))->toThrow(InvalidDpsArgument::class, '[end] Somente 1 dos seguintes campos deve ser informado: endereço nacional (endNac), endereço exterior (endExt). Informados: endereço nacional (endNac), endereço exterior (endExt).');
 });
 
 it('throws when neither endNac nor endExt is set', function () {
@@ -24,5 +24,5 @@ it('throws when neither endNac nor endExt is set', function () {
         xLgr: 'Rua Teste',
         nro: '100',
         xBairro: 'Centro',
-    ))->toThrow(InvalidDpsArgument::class, 'Somente 1 dos seguintes campos deve ser informado: endereço nacional (endNac), endereço exterior (endExt). Nenhum foi informado.');
+    ))->toThrow(InvalidDpsArgument::class, '[end] Somente 1 dos seguintes campos deve ser informado: endereço nacional (endNac), endereço exterior (endExt). Nenhum foi informado.');
 });

@@ -29,6 +29,7 @@ final readonly class InfoDedRed
         self::validateChoice(
             ['percentual de dedução/redução (pDR)' => $pDR, 'valor de dedução/redução (vDR)' => $vDR, 'documentos' => $documentos],
             expected: 1,
+            path: 'infDPS/valores/vDedRed',
         );
     }
 

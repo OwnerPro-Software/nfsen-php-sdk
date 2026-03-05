@@ -24,6 +24,7 @@ final readonly class ListaDocFornec
         self::validateChoice(
             ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'código de não NIF (cNaoNIF)' => $cNaoNIF],
             expected: 1,
+            path: 'infDPS/IBSCBS/infReeRepRes/documentos/fornec',
         );
     }
 

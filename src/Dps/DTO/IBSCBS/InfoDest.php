@@ -30,6 +30,7 @@ final readonly class InfoDest
         self::validateChoice(
             ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'código de não NIF (cNaoNIF)' => $cNaoNIF],
             expected: 1,
+            path: 'infDPS/IBSCBS/dest',
         );
     }
 
@@ -42,7 +43,7 @@ final readonly class InfoDest
             CPF: $data['CPF'] ?? null,
             NIF: $data['NIF'] ?? null,
             cNaoNIF: isset($data['cNaoNIF']) ? CodNaoNIF::from($data['cNaoNIF']) : null,
-            end: isset($data['end']) ? Endereco::fromArray($data['end']) : null,
+            end: isset($data['end']) ? Endereco::fromArray($data['end'], path: 'infDPS/IBSCBS/dest/end') : null,
             fone: $data['fone'] ?? null,
             email: $data['email'] ?? null,
         );

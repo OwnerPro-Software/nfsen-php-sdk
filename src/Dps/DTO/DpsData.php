@@ -45,8 +45,8 @@ final readonly class DpsData
             serv: Servico::fromArray($data['serv']),
             valores: Valores::fromArray($data['valores']),
             subst: isset($data['subst']) ? SubstituicaoData::fromArray($data['subst']) : null,
-            toma: isset($data['toma']) ? Tomador::fromArray($data['toma']) : null,
-            interm: isset($data['interm']) ? Tomador::fromArray($data['interm']) : null,
+            toma: isset($data['toma']) ? Tomador::fromArray($data['toma'], path: 'infDPS/toma') : null,
+            interm: isset($data['interm']) ? Tomador::fromArray($data['interm'], path: 'infDPS/interm') : null,
             IBSCBS: isset($data['IBSCBS']) ? InfoIBSCBS::fromArray($data['IBSCBS']) : null,
         );
     }

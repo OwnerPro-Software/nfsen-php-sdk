@@ -28,15 +28,17 @@ final readonly class Tomador
         public ?Endereco $end = null,
         public ?string $fone = null,
         public ?string $email = null,
+        string $path = 'infDPS/toma',
     ) {
         self::validateChoice(
             ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'código de não NIF (cNaoNIF)' => $cNaoNIF],
             expected: 1,
+            path: $path,
         );
     }
 
     /** @phpstan-param TomadorArray $data */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, string $path = 'infDPS/toma'): self
     {
         return new self(
             xNome: $data['xNome'],
@@ -46,9 +48,10 @@ final readonly class Tomador
             cNaoNIF: isset($data['cNaoNIF']) ? CodNaoNIF::from($data['cNaoNIF']) : null,
             CAEPF: $data['CAEPF'] ?? null,
             IM: $data['IM'] ?? null,
-            end: isset($data['end']) ? Endereco::fromArray($data['end']) : null,
+            end: isset($data['end']) ? Endereco::fromArray($data['end'], path: $path.'/end') : null,
             fone: $data['fone'] ?? null,
             email: $data['email'] ?? null,
+            path: $path,
         );
     }
 }

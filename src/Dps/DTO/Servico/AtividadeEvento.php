@@ -25,6 +25,7 @@ final readonly class AtividadeEvento
         self::validateChoice(
             ['identificação da atividade/evento (idAtvEvt)' => $idAtvEvt, 'endereço (end)' => $end],
             expected: 1,
+            path: 'infDPS/serv/atvEvento',
         );
     }
 

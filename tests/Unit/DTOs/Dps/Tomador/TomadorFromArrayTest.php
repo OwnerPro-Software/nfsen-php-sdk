@@ -57,3 +57,11 @@ it('Tomador::fromArray preserves cNaoNIF', function () {
 it('Tomador rejects when no identifier provided', function () {
     Tomador::fromArray(['xNome' => 'T']);
 })->throws(InvalidDpsArgument::class);
+
+it('Tomador::fromArray propagates path to Endereco', function () {
+    expect(fn () => Tomador::fromArray([
+        'xNome' => 'T',
+        'CNPJ' => '98765432000100',
+        'end' => ['xLgr' => 'Rua', 'nro' => '1', 'xBairro' => 'B'],
+    ], path: 'infDPS/interm'))->toThrow(InvalidDpsArgument::class, '[infDPS/interm/end]');
+});

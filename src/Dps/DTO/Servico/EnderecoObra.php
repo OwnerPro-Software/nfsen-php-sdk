@@ -22,15 +22,17 @@ final readonly class EnderecoObra
         public ?string $CEP = null,
         public ?EnderecoExteriorObra $endExt = null,
         public ?string $xCpl = null,
+        string $path = 'end',
     ) {
         self::validateChoice(
             ['CEP' => $CEP, 'endereço exterior (endExt)' => $endExt],
             expected: 1,
+            path: $path,
         );
     }
 
     /** @phpstan-param EnderecoObraArray $data */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, string $path = 'end'): self
     {
         return new self(
             xLgr: $data['xLgr'],
@@ -39,6 +41,7 @@ final readonly class EnderecoObra
             CEP: $data['CEP'] ?? null,
             endExt: isset($data['endExt']) ? EnderecoExteriorObra::fromArray($data['endExt']) : null,
             xCpl: $data['xCpl'] ?? null,
+            path: $path,
         );
     }
 }

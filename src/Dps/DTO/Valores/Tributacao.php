@@ -29,6 +29,7 @@ final readonly class Tributacao
         self::validateChoice(
             ['valor total tributos (vTotTrib)' => $vTotTrib, 'percentual total tributos (pTotTrib)' => $pTotTrib, 'indicador total tributos (indTotTrib)' => $indTotTrib, 'percentual Simples Nacional (pTotTribSN)' => $pTotTribSN],
             expected: 1,
+            path: 'infDPS/valores/trib',
         );
     }
 

@@ -35,6 +35,7 @@ final readonly class Prestador
         self::validateChoice(
             ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'código de não NIF (cNaoNIF)' => $cNaoNIF],
             expected: 1,
+            path: 'infDPS/prest',
         );
     }
 
@@ -50,7 +51,7 @@ final readonly class Prestador
             CAEPF: $data['CAEPF'] ?? null,
             IM: $data['IM'] ?? null,
             xNome: $data['xNome'] ?? null,
-            end: isset($data['end']) ? Endereco::fromArray($data['end']) : null,
+            end: isset($data['end']) ? Endereco::fromArray($data['end'], path: 'infDPS/prest/end') : null,
             fone: $data['fone'] ?? null,
             email: $data['email'] ?? null,
         );

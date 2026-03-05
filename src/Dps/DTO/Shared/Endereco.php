@@ -23,15 +23,17 @@ final readonly class Endereco
         public ?EnderecoNacional $endNac = null,
         public ?EnderecoExterior $endExt = null,
         public ?string $xCpl = null,
+        string $path = 'end',
     ) {
         self::validateChoice(
             ['endereço nacional (endNac)' => $endNac, 'endereço exterior (endExt)' => $endExt],
             expected: 1,
+            path: $path,
         );
     }
 
     /** @phpstan-param EnderecoArray $data */
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, string $path = 'end'): self
     {
         return new self(
             xLgr: $data['xLgr'],
@@ -40,6 +42,7 @@ final readonly class Endereco
             endNac: isset($data['endNac']) ? EnderecoNacional::fromArray($data['endNac']) : null,
             endExt: isset($data['endExt']) ? EnderecoExterior::fromArray($data['endExt']) : null,
             xCpl: $data['xCpl'] ?? null,
+            path: $path,
         );
     }
 }

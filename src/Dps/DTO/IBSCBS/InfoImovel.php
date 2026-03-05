@@ -24,6 +24,7 @@ final readonly class InfoImovel
         self::validateChoice(
             ['código CIB (cCIB)' => $cCIB, 'endereço (end)' => $end],
             expected: 1,
+            path: 'infDPS/IBSCBS/imovel',
         );
     }
 
@@ -33,7 +34,7 @@ final readonly class InfoImovel
         return new self(
             inscImobFisc: $data['inscImobFisc'] ?? null,
             cCIB: $data['cCIB'] ?? null,
-            end: isset($data['end']) ? EnderecoObra::fromArray($data['end']) : null,
+            end: isset($data['end']) ? EnderecoObra::fromArray($data['end'], path: 'infDPS/IBSCBS/imovel/end') : null,
         );
     }
 }
