@@ -44,6 +44,7 @@ final class ServicoBuilder
         if ($serv->cServ->cNBS !== null) {
             $cServ->appendChild($this->text($doc, 'cNBS', $serv->cServ->cNBS));
         }
+
         if ($serv->cServ->cIntContrib !== null) {
             $cServ->appendChild($this->text($doc, 'cIntContrib', $serv->cServ->cIntContrib));
         }

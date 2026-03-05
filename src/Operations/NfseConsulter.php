@@ -86,10 +86,10 @@ final readonly class NfseConsulter implements ConsultsNfse
             }
 
             return new DanfseResponse(sucesso: true, pdf: $pdf);
-        } catch (HttpException $e) {
+        } catch (HttpException $httpException) {
             return new DanfseResponse(
                 sucesso: false,
-                erros: self::parseHttpError($e),
+                erros: $this->parseHttpError($httpException),
             );
         }
     }
@@ -142,7 +142,7 @@ final readonly class NfseConsulter implements ConsultsNfse
     }
 
     /** @return list<ProcessingMessage> */
-    private static function parseHttpError(HttpException $e): array
+    private function parseHttpError(HttpException $e): array
     {
         $body = $e->getResponseBody();
 
