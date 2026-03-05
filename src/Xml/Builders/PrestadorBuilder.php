@@ -6,16 +6,16 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
-use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
-use Pulsar\NfseNacional\Dps\Enums\Prestador\RegApTribSN;
+use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
+use Pulsar\NfseNacional\Dps\DTO\Shared\End;
+use Pulsar\NfseNacional\Dps\Enums\Prest\RegApTribSN;
 use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 final class PrestadorBuilder
 {
     use CreatesTextElements;
 
-    public function build(DOMDocument $doc, Prestador $prest): DOMElement
+    public function build(DOMDocument $doc, Prest $prest): DOMElement
     {
         $el = $doc->createElement('prest');
 
@@ -41,7 +41,7 @@ final class PrestadorBuilder
             $el->appendChild($this->text($doc, 'xNome', $prest->xNome));
         }
 
-        if ($prest->end instanceof Endereco) {
+        if ($prest->end instanceof End) {
             $el->appendChild($this->buildEnd($doc, $prest->end));
         }
 

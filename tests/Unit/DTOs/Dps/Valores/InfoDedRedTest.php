@@ -1,22 +1,22 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed::class);
+covers(\Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed::class);
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
-it('creates InfoDedRed with pDR', function () {
-    $info = new InfoDedRed(pDR: '10.00');
+it('creates VDedRed with pDR', function () {
+    $info = new VDedRed(pDR: '10.00');
     expect($info->pDR)->toBe('10.00');
 });
 
-it('creates InfoDedRed with vDR', function () {
-    $info = new InfoDedRed(vDR: '100.00');
+it('creates VDedRed with vDR', function () {
+    $info = new VDedRed(vDR: '100.00');
     expect($info->vDR)->toBe('100.00');
 });
 
-it('creates InfoDedRed with documentos', function () {
+it('creates VDedRed with documentos', function () {
     $doc = new DocDedRed(
         tpDedRed: TpDedRed::Materiais,
         dtEmiDoc: '2026-01-15',
@@ -25,21 +25,21 @@ it('creates InfoDedRed with documentos', function () {
         nDoc: 'DOC-001',
     );
 
-    $info = new InfoDedRed(documentos: [$doc]);
+    $info = new VDedRed(documentos: [$doc]);
     expect($info->documentos)->toHaveCount(1);
 });
 
 it('throws when no choice is set', function () {
-    expect(fn () => new InfoDedRed)
+    expect(fn () => new VDedRed)
         ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when multiple choices are set', function () {
-    expect(fn () => new InfoDedRed(pDR: '10.00', vDR: '100.00'))
+    expect(fn () => new VDedRed(pDR: '10.00', vDR: '100.00'))
         ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when documentos is empty array', function () {
-    expect(fn () => new InfoDedRed(documentos: []))
+    expect(fn () => new VDedRed(documentos: []))
         ->toThrow(InvalidDpsArgument::class, 'ao menos um');
 });

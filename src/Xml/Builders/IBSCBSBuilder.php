@@ -6,22 +6,22 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoImovel;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoReeRepRes;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosDif;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosSitClas;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosTribRegular;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoValoresIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocDFe;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFiscalOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFornec;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
-use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DFeNacional;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocFiscalOutro;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocOutro;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Documentos;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Fornec;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GDif;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GTribRegular;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
+use Pulsar\NfseNacional\Dps\DTO\Shared\End;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
@@ -31,7 +31,7 @@ final class IBSCBSBuilder
 {
     use CreatesTextElements;
 
-    public function build(DOMDocument $doc, InfoIBSCBS $ibscbs): DOMElement
+    public function build(DOMDocument $doc, IBSCBS $ibscbs): DOMElement
     {
         $el = $doc->createElement('IBSCBS');
 
@@ -62,11 +62,11 @@ final class IBSCBSBuilder
 
         $el->appendChild($this->text($doc, 'indDest', $ibscbs->indDest->value));
 
-        if ($ibscbs->dest instanceof InfoDest) {
+        if ($ibscbs->dest instanceof Dest) {
             $el->appendChild($this->buildDest($doc, $ibscbs->dest));
         }
 
-        if ($ibscbs->imovel instanceof InfoImovel) {
+        if ($ibscbs->imovel instanceof Imovel) {
             $el->appendChild($this->buildImovel($doc, $ibscbs->imovel));
         }
 
@@ -75,7 +75,7 @@ final class IBSCBSBuilder
         return $el;
     }
 
-    private function buildDest(DOMDocument $doc, InfoDest $dest): DOMElement
+    private function buildDest(DOMDocument $doc, Dest $dest): DOMElement
     {
         $el = $doc->createElement('dest');
 
@@ -91,7 +91,7 @@ final class IBSCBSBuilder
 
         $el->appendChild($this->text($doc, 'xNome', $dest->xNome));
 
-        if ($dest->end instanceof Endereco) {
+        if ($dest->end instanceof End) {
             $el->appendChild($this->buildEnd($doc, $dest->end));
         }
 
@@ -106,7 +106,7 @@ final class IBSCBSBuilder
         return $el;
     }
 
-    private function buildImovel(DOMDocument $doc, InfoImovel $imovel): DOMElement
+    private function buildImovel(DOMDocument $doc, Imovel $imovel): DOMElement
     {
         $el = $doc->createElement('imovel');
 
@@ -116,11 +116,11 @@ final class IBSCBSBuilder
 
         if ($imovel->cCIB !== null) {
             $el->appendChild($this->text($doc, 'cCIB', $imovel->cCIB));
-        } elseif ($imovel->end instanceof EnderecoObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EnderecoObra when reached
+        } elseif ($imovel->end instanceof EndObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EndObra when reached
             $endEl = $doc->createElement('end');
             if ($imovel->end->CEP !== null) {
                 $endEl->appendChild($this->text($doc, 'CEP', $imovel->end->CEP));
-            } elseif ($imovel->end->endExt instanceof EnderecoExteriorObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
+            } elseif ($imovel->end->endExt instanceof EndExt) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
                 $endExt = $doc->createElement('endExt');
                 $endExt->appendChild($this->text($doc, 'cEndPost', $imovel->end->endExt->cEndPost));
                 $endExt->appendChild($this->text($doc, 'xCidade', $imovel->end->endExt->xCidade));
@@ -141,11 +141,11 @@ final class IBSCBSBuilder
         return $el;
     }
 
-    private function buildValores(DOMDocument $doc, InfoValoresIBSCBS $valores): DOMElement
+    private function buildValores(DOMDocument $doc, Valores $valores): DOMElement
     {
         $el = $doc->createElement('valores');
 
-        if ($valores->gReeRepRes instanceof InfoReeRepRes) {
+        if ($valores->gReeRepRes instanceof GReeRepRes) {
             $gReeRepRes = $doc->createElement('gReeRepRes');
             foreach ($valores->gReeRepRes->documentos as $documento) {
                 $gReeRepRes->appendChild($this->buildDocReeRepRes($doc, $documento));
@@ -159,11 +159,11 @@ final class IBSCBSBuilder
         return $el;
     }
 
-    private function buildDocReeRepRes(DOMDocument $doc, ListaDocReeRepRes $documento): DOMElement
+    private function buildDocReeRepRes(DOMDocument $doc, Documentos $documento): DOMElement
     {
         $el = $doc->createElement('documentos');
 
-        if ($documento->dFeNacional instanceof ListaDocDFe) {
+        if ($documento->dFeNacional instanceof DFeNacional) {
             $dfe = $doc->createElement('dFeNacional');
             $dfe->appendChild($this->text($doc, 'tipoChaveDFe', $documento->dFeNacional->tipoChaveDFe->value));
             if ($documento->dFeNacional->xTipoChaveDFe !== null) {
@@ -172,20 +172,20 @@ final class IBSCBSBuilder
 
             $dfe->appendChild($this->text($doc, 'chaveDFe', $documento->dFeNacional->chaveDFe));
             $el->appendChild($dfe);
-        } elseif ($documento->docFiscalOutro instanceof ListaDocFiscalOutro) {
+        } elseif ($documento->docFiscalOutro instanceof DocFiscalOutro) {
             $docFisc = $doc->createElement('docFiscalOutro');
             $docFisc->appendChild($this->text($doc, 'cMunDocFiscal', $documento->docFiscalOutro->cMunDocFiscal));
             $docFisc->appendChild($this->text($doc, 'nDocFiscal', $documento->docFiscalOutro->nDocFiscal));
             $docFisc->appendChild($this->text($doc, 'xDocFiscal', $documento->docFiscalOutro->xDocFiscal));
             $el->appendChild($docFisc);
-        } elseif ($documento->docOutro instanceof ListaDocOutro) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already ListaDocOutro when reached
+        } elseif ($documento->docOutro instanceof DocOutro) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already DocOutro when reached
             $docOutro = $doc->createElement('docOutro');
             $docOutro->appendChild($this->text($doc, 'nDoc', $documento->docOutro->nDoc));
             $docOutro->appendChild($this->text($doc, 'xDoc', $documento->docOutro->xDoc));
             $el->appendChild($docOutro);
         }
 
-        if ($documento->fornec instanceof ListaDocFornec) {
+        if ($documento->fornec instanceof Fornec) {
             $fornec = $doc->createElement('fornec');
             if ($documento->fornec->CNPJ !== null) {
                 $fornec->appendChild($this->text($doc, 'CNPJ', $documento->fornec->CNPJ));
@@ -214,7 +214,7 @@ final class IBSCBSBuilder
         return $el;
     }
 
-    private function buildTrib(DOMDocument $doc, InfoTributosSitClas $sitClas): DOMElement
+    private function buildTrib(DOMDocument $doc, GIBSCBS $sitClas): DOMElement
     {
         $trib = $doc->createElement('trib');
         $gIBSCBS = $doc->createElement('gIBSCBS');
@@ -226,14 +226,14 @@ final class IBSCBSBuilder
             $gIBSCBS->appendChild($this->text($doc, 'cCredPres', $sitClas->cCredPres));
         }
 
-        if ($sitClas->gTribRegular instanceof InfoTributosTribRegular) {
+        if ($sitClas->gTribRegular instanceof GTribRegular) {
             $gTribRegular = $doc->createElement('gTribRegular');
             $gTribRegular->appendChild($this->text($doc, 'CSTReg', $sitClas->gTribRegular->CSTReg));
             $gTribRegular->appendChild($this->text($doc, 'cClassTribReg', $sitClas->gTribRegular->cClassTribReg));
             $gIBSCBS->appendChild($gTribRegular);
         }
 
-        if ($sitClas->gDif instanceof InfoTributosDif) {
+        if ($sitClas->gDif instanceof GDif) {
             $gDif = $doc->createElement('gDif');
             $gDif->appendChild($this->text($doc, 'pDifUF', $sitClas->gDif->pDifUF));
             $gDif->appendChild($this->text($doc, 'pDifMun', $sitClas->gDif->pDifMun));

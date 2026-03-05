@@ -2,28 +2,28 @@
 
 covers(\Pulsar\NfseNacional\Xml\Builders\ServicoBuilder::class);
 
-use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
-use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
-use Pulsar\NfseNacional\Dps\DTO\Servico\ComercioExterior;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
-use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
-use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
-use Pulsar\NfseNacional\Dps\Enums\Servico\Mdic;
-use Pulsar\NfseNacional\Dps\Enums\Servico\MdPrestacao;
-use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexP;
-use Pulsar\NfseNacional\Dps\Enums\Servico\MecAFComexT;
-use Pulsar\NfseNacional\Dps\Enums\Servico\MovTempBens;
-use Pulsar\NfseNacional\Dps\Enums\Servico\VincPrest;
+use Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento;
+use Pulsar\NfseNacional\Dps\DTO\Serv\ComExt;
+use Pulsar\NfseNacional\Dps\DTO\Serv\CServ;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
+use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
+use Pulsar\NfseNacional\Dps\DTO\Serv\Obra;
+use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
+use Pulsar\NfseNacional\Dps\Enums\Serv\Mdic;
+use Pulsar\NfseNacional\Dps\Enums\Serv\MdPrestacao;
+use Pulsar\NfseNacional\Dps\Enums\Serv\MecAFComexP;
+use Pulsar\NfseNacional\Dps\Enums\Serv\MecAFComexT;
+use Pulsar\NfseNacional\Dps\Enums\Serv\MovTempBens;
+use Pulsar\NfseNacional\Dps\Enums\Serv\VincPrest;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
 
-function makeServMinimo(): Servico
+function makeServMinimo(): Serv
 {
-    return new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    return new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
     );
 }
@@ -53,8 +53,8 @@ it('omits cNBS when null', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X'),
         cLocPrestacao: '3501608',
     );
 
@@ -70,8 +70,8 @@ it('uses cPaisPrestacao when cLocPrestacao is not set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cPaisPrestacao: '01058',
     );
 
@@ -83,16 +83,16 @@ it('uses cPaisPrestacao when cLocPrestacao is not set', function () {
 });
 
 it('throws when both cLocPrestacao and cPaisPrestacao are set', function () {
-    expect(fn () => new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
+    expect(fn () => new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
         cLocPrestacao: '3501608',
         cPaisPrestacao: '01058',
     ))->toThrow(InvalidDpsArgument::class, '[infDPS/serv/locPrest] Somente 1 dos seguintes campos deve ser informado: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao). Informados: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao).');
 });
 
 it('throws when locPrest has no choice set', function () {
-    expect(fn () => new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
+    expect(fn () => new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'X', cNBS: '1'),
     ))->toThrow(InvalidDpsArgument::class, '[infDPS/serv/locPrest] Somente 1 dos seguintes campos deve ser informado: código do local de prestação (cLocPrestacao), código do país de prestação (cPaisPrestacao). Nenhum foi informado.');
 });
 
@@ -100,8 +100,8 @@ it('includes optional cServ fields when set', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(
+    $serv = new Serv(
+        cServ: new CServ(
             cTribNac: '01.01.01.000',
             xDescServ: 'Serviço X',
             cNBS: '123456789',
@@ -123,10 +123,10 @@ it('builds comExt element with all fields', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
-        comExt: new ComercioExterior(
+        comExt: new ComExt(
             mdPrestacao: MdPrestacao::Transfronteirico,
             vincPrest: VincPrest::SemVinculo,
             tpMoeda: '790',
@@ -160,10 +160,10 @@ it('builds comExt without optional nDI and nRE', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
-        comExt: new ComercioExterior(
+        comExt: new ComExt(
             mdPrestacao: MdPrestacao::Transfronteirico,
             vincPrest: VincPrest::SemVinculo,
             tpMoeda: '790',
@@ -187,8 +187,8 @@ it('builds obra with cObra choice', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
         obra: new Obra(inscImobFisc: '12345', cObra: '67890'),
     );
@@ -207,8 +207,8 @@ it('builds obra with cCIB choice', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
         obra: new Obra(cCIB: '11111'),
     );
@@ -226,11 +226,11 @@ it('builds obra with end choice using CEP', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
         obra: new Obra(
-            end: new EnderecoObra(
+            end: new EndObra(
                 xLgr: 'Rua Teste', nro: '100', xBairro: 'Centro',
                 CEP: '01001000', xCpl: 'Sala 1',
             ),
@@ -256,13 +256,13 @@ it('builds obra with end choice using endExt', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
         obra: new Obra(
-            end: new EnderecoObra(
+            end: new EndObra(
                 xLgr: '5th Avenue', nro: '350', xBairro: 'Manhattan',
-                endExt: new EnderecoExteriorObra(cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY'),
+                endExt: new EndExt(cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY'),
             ),
         ),
     );
@@ -286,8 +286,8 @@ it('builds obra without optional inscImobFisc', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
         obra: new Obra(cObra: '67890'),
     );
@@ -309,8 +309,8 @@ it('handles accented characters in field values', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(
+    $serv = new Serv(
+        cServ: new CServ(
             cTribNac: '01.01.01.000',
             xDescServ: 'Consultoria em gestão tributária',
             cNBS: '123456789',
@@ -332,10 +332,10 @@ it('builds atvEvento with idAtvEvt choice', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
-        atvEvento: new AtividadeEvento(
+        atvEvento: new AtvEvento(
             xNome: 'Festival de Musica',
             dtIni: '2026-01-01',
             dtFim: '2026-01-03',
@@ -358,14 +358,14 @@ it('builds atvEvento with end choice using CEP', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
-        atvEvento: new AtividadeEvento(
+        atvEvento: new AtvEvento(
             xNome: 'Show',
             dtIni: '2026-02-01',
             dtFim: '2026-02-02',
-            end: new EnderecoSimples(
+            end: new EndSimples(
                 xLgr: 'Rua Evento',
                 nro: '200',
                 xBairro: 'Bairro Evento',
@@ -392,18 +392,18 @@ it('builds atvEvento with end choice using endExt', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
-        atvEvento: new AtividadeEvento(
+        atvEvento: new AtvEvento(
             xNome: 'Conferencia',
             dtIni: '2026-03-01',
             dtFim: '2026-03-05',
-            end: new EnderecoSimples(
+            end: new EndSimples(
                 xLgr: 'Broadway',
                 nro: '500',
                 xBairro: 'Midtown',
-                endExt: new EnderecoExteriorObra(cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY'),
+                endExt: new EndExt(cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY'),
             ),
         ),
     );
@@ -428,10 +428,10 @@ it('builds infoCompl with all fields', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
-        infoCompl: new InfoComplementar(
+        infoCompl: new InfoCompl(
             idDocTec: 'ART-123',
             docRef: 'REF-456',
             xPed: '789',
@@ -457,10 +457,10 @@ it('builds infoCompl with only xItemPed array', function () {
     $builder = new ServicoBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $serv = new Servico(
-        cServ: new CodigoServico(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
+    $serv = new Serv(
+        cServ: new CServ(cTribNac: '01.01.01.000', xDescServ: 'Serviço X', cNBS: '123456789'),
         cLocPrestacao: '3501608',
-        infoCompl: new InfoComplementar(
+        infoCompl: new InfoCompl(
             xItemPed: ['pedido1', 'pedido2', 'pedido3'],
         ),
     );

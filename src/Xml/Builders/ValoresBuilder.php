@@ -6,20 +6,20 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
-use Pulsar\NfseNacional\Dps\DTO\Valores\BeneficioMunicipal;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DescontoCondIncond;
+use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
+use Pulsar\NfseNacional\Dps\DTO\Valores\BM;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ExigibilidadeSuspensa;
-use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\PisCofins;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribPercentual;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribValor;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp;
+use Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS;
+use Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins;
+use Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Trib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TribFed;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
 
@@ -41,7 +41,7 @@ final class ValoresBuilder
         $el->appendChild($vServPrest);
 
         // vDescCondIncond (opcional)
-        if ($valores->vDescCondIncond instanceof DescontoCondIncond) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where vDescCondIncond is set
+        if ($valores->vDescCondIncond instanceof VDescCondIncond) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where vDescCondIncond is set
             $vDesc = $doc->createElement('vDescCondIncond');
             if ($valores->vDescCondIncond->vDescIncond !== null) {
                 $vDesc->appendChild($this->text($doc, 'vDescIncond', $valores->vDescCondIncond->vDescIncond));
@@ -55,7 +55,7 @@ final class ValoresBuilder
         }
 
         // vDedRed (opcional)
-        if ($valores->vDedRed instanceof InfoDedRed) {
+        if ($valores->vDedRed instanceof VDedRed) {
             $el->appendChild($this->buildVDedRed($doc, $valores->vDedRed));
         }
 
@@ -65,7 +65,7 @@ final class ValoresBuilder
         return $el;
     }
 
-    private function buildVDedRed(DOMDocument $doc, InfoDedRed $info): DOMElement
+    private function buildVDedRed(DOMDocument $doc, VDedRed $info): DOMElement
     {
         $el = $doc->createElement('vDedRed');
 
@@ -93,13 +93,13 @@ final class ValoresBuilder
             $el->appendChild($this->text($doc, 'chNFSe', $docDedRed->chNFSe));
         } elseif ($docDedRed->chNFe !== null) {
             $el->appendChild($this->text($doc, 'chNFe', $docDedRed->chNFe));
-        } elseif ($docDedRed->NFSeMun instanceof DocOutNFSe) {
+        } elseif ($docDedRed->NFSeMun instanceof NFSeMun) {
             $nfseMun = $doc->createElement('NFSeMun');
             $nfseMun->appendChild($this->text($doc, 'cMunNFSeMun', $docDedRed->NFSeMun->cMunNFSeMun));
             $nfseMun->appendChild($this->text($doc, 'nNFSeMun', $docDedRed->NFSeMun->nNFSeMun));
             $nfseMun->appendChild($this->text($doc, 'cVerifNFSeMun', $docDedRed->NFSeMun->cVerifNFSeMun));
             $el->appendChild($nfseMun);
-        } elseif ($docDedRed->NFNFS instanceof DocNFNFS) {
+        } elseif ($docDedRed->NFNFS instanceof NFNFS) {
             $nfnfs = $doc->createElement('NFNFS');
             $nfnfs->appendChild($this->text($doc, 'nNFS', $docDedRed->NFNFS->nNFS));
             $nfnfs->appendChild($this->text($doc, 'modNFS', $docDedRed->NFNFS->modNFS));
@@ -120,14 +120,14 @@ final class ValoresBuilder
         $el->appendChild($this->text($doc, 'vDedutivelRedutivel', $docDedRed->vDedutivelRedutivel));
         $el->appendChild($this->text($doc, 'vDeducaoReducao', $docDedRed->vDeducaoReducao));
 
-        if ($docDedRed->fornec instanceof Tomador) {
+        if ($docDedRed->fornec instanceof Toma) {
             $el->appendChild((new TomadorBuilder)->build($doc, $docDedRed->fornec, 'fornec'));
         }
 
         return $el;
     }
 
-    private function buildTrib(DOMDocument $doc, Tributacao $trib): DOMElement
+    private function buildTrib(DOMDocument $doc, Trib $trib): DOMElement
     {
         $el = $doc->createElement('trib');
 
@@ -142,14 +142,14 @@ final class ValoresBuilder
             $tribMun->appendChild($this->text($doc, 'tpImunidade', $trib->tribMun->tpImunidade->value));
         }
 
-        if ($trib->tribMun->exigSusp instanceof ExigibilidadeSuspensa) {
+        if ($trib->tribMun->exigSusp instanceof ExigSusp) {
             $exigSusp = $doc->createElement('exigSusp');
             $exigSusp->appendChild($this->text($doc, 'tpSusp', $trib->tribMun->exigSusp->tpSusp->value));
             $exigSusp->appendChild($this->text($doc, 'nProcesso', $trib->tribMun->exigSusp->nProcesso));
             $tribMun->appendChild($exigSusp);
         }
 
-        if ($trib->tribMun->BM instanceof BeneficioMunicipal) {
+        if ($trib->tribMun->BM instanceof BM) {
             $bm = $doc->createElement('BM');
             $bm->appendChild($this->text($doc, 'nBM', $trib->tribMun->BM->nBM));
             if ($trib->tribMun->BM->vRedBCBM !== null) {
@@ -169,9 +169,9 @@ final class ValoresBuilder
         $el->appendChild($tribMun);
 
         // tribFed (opcional)
-        if ($trib->tribFed instanceof TributacaoFederal) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where tribFed is set
+        if ($trib->tribFed instanceof TribFed) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where tribFed is set
             $tribFed = $doc->createElement('tribFed');
-            if ($trib->tribFed->piscofins instanceof PisCofins) {
+            if ($trib->tribFed->piscofins instanceof Piscofins) {
                 $piscofins = $doc->createElement('piscofins');
                 $piscofins->appendChild($this->text($doc, 'CST', $trib->tribFed->piscofins->CST->value));
 
@@ -219,13 +219,13 @@ final class ValoresBuilder
 
         // totTrib
         $totTrib = $doc->createElement('totTrib');
-        if ($trib->vTotTrib instanceof TotTribValor) {
+        if ($trib->vTotTrib instanceof VTotTrib) {
             $vTotTrib = $doc->createElement('vTotTrib');
             $vTotTrib->appendChild($this->text($doc, 'vTotTribFed', $trib->vTotTrib->vTotTribFed));
             $vTotTrib->appendChild($this->text($doc, 'vTotTribEst', $trib->vTotTrib->vTotTribEst));
             $vTotTrib->appendChild($this->text($doc, 'vTotTribMun', $trib->vTotTrib->vTotTribMun));
             $totTrib->appendChild($vTotTrib);
-        } elseif ($trib->pTotTrib instanceof TotTribPercentual) {
+        } elseif ($trib->pTotTrib instanceof PTotTrib) {
             $pTotTrib = $doc->createElement('pTotTrib');
             $pTotTrib->appendChild($this->text($doc, 'pTotTribFed', $trib->pTotTrib->pTotTribFed));
             $pTotTrib->appendChild($this->text($doc, 'pTotTribEst', $trib->pTotTrib->pTotTribEst));

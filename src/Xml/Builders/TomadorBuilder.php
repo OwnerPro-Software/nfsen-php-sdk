@@ -6,15 +6,15 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\Shared\End;
+use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
 use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
 
 final class TomadorBuilder
 {
     use CreatesTextElements;
 
-    public function build(DOMDocument $doc, Tomador $toma, string $elementName = 'toma'): DOMElement
+    public function build(DOMDocument $doc, Toma $toma, string $elementName = 'toma'): DOMElement
     {
         $el = $doc->createElement($elementName);
 
@@ -38,7 +38,7 @@ final class TomadorBuilder
 
         $el->appendChild($this->text($doc, 'xNome', $toma->xNome));
 
-        if ($toma->end instanceof Endereco) {
+        if ($toma->end instanceof End) {
             $el->appendChild($this->buildEnd($doc, $toma->end));
         }
 

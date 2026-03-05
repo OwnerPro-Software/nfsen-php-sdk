@@ -2,11 +2,11 @@
 
 covers(
     \Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS::class,
-    \Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData::class,
+    \Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst::class,
 );
 
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
 use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
 
 it('InfDPS::fromArray creates instance from array', function () {
@@ -71,14 +71,14 @@ it('InfDPS::fromArray throws ValueError for invalid tpAmb', function () {
     ]);
 })->throws(ValueError::class);
 
-it('SubstituicaoData::fromArray creates instance from array', function () {
-    $dto = SubstituicaoData::fromArray([
+it('Subst::fromArray creates instance from array', function () {
+    $dto = Subst::fromArray([
         'chSubstda' => '12345678901234567890123456789012345678901234567890',
         'cMotivo' => '01',
         'xMotivo' => 'Motivo teste',
     ]);
 
-    expect($dto)->toBeInstanceOf(SubstituicaoData::class)
+    expect($dto)->toBeInstanceOf(Subst::class)
         ->and($dto->chSubstda)->toBe('12345678901234567890123456789012345678901234567890')
         ->and($dto->xMotivo)->toBe('Motivo teste');
 });

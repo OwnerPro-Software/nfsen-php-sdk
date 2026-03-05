@@ -5,17 +5,17 @@ covers(
     \Pulsar\NfseNacional\Xml\Builders\CreatesTextElements::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\Valores\BeneficioMunicipal;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DescontoCondIncond;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ExigibilidadeSuspensa;
-use Pulsar\NfseNacional\Dps\DTO\Valores\PisCofins;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribPercentual;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribValor;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\BM;
+use Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins;
+use Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Trib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TribFed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TribMun;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VServPrest;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib;
 use Pulsar\NfseNacional\Dps\Enums\Valores\CST;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN;
@@ -25,22 +25,22 @@ use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
 
-function makeTribMunMinimo(): TributacaoMunicipal
+function makeTribMunMinimo(): TribMun
 {
-    return new TributacaoMunicipal(
+    return new TribMun(
         tribISSQN: TribISSQN::Tributavel,
         tpRetISSQN: TpRetISSQN::NaoRetido,
     );
 }
 
-function makeTribMinimo(): Tributacao
+function makeTribMinimo(): Trib
 {
-    return new Tributacao(tribMun: makeTribMunMinimo(), indTotTrib: '0');
+    return new Trib(tribMun: makeTribMunMinimo(), indTotTrib: '0');
 }
 
-function makeVServPrestMinimo(): ValorServicoPrestado
+function makeVServPrestMinimo(): VServPrest
 {
-    return new ValorServicoPrestado(vServ: '100.00');
+    return new VServPrest(vServ: '100.00');
 }
 
 it('builds valores element with vServPrest', function () {
@@ -70,7 +70,7 @@ it('includes vReceb in vServPrest when set', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new ValorServicoPrestado(vServ: '100.00', vReceb: '80.00'),
+        vServPrest: new VServPrest(vServ: '100.00', vReceb: '80.00'),
         trib: makeTribMinimo(),
     );
 
@@ -88,7 +88,7 @@ it('builds vDescCondIncond block', function () {
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
         trib: makeTribMinimo(),
-        vDescCondIncond: new DescontoCondIncond(vDescIncond: '10.00', vDescCond: '5.00'),
+        vDescCondIncond: new VDescCondIncond(vDescIncond: '10.00', vDescCond: '5.00'),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
@@ -105,8 +105,8 @@ it('includes tribMun optional fields', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
-            tribMun: new TributacaoMunicipal(
+        trib: new Trib(
+            tribMun: new TribMun(
                 tribISSQN: TribISSQN::Tributavel,
                 tpRetISSQN: TpRetISSQN::NaoRetido,
                 cPaisResult: '01058',
@@ -131,11 +131,11 @@ it('builds exigSusp in tribMun', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
-            tribMun: new TributacaoMunicipal(
+        trib: new Trib(
+            tribMun: new TribMun(
                 tribISSQN: TribISSQN::Tributavel,
                 tpRetISSQN: TpRetISSQN::NaoRetido,
-                exigSusp: new ExigibilidadeSuspensa(
+                exigSusp: new ExigSusp(
                     tpSusp: TpSusp::DecisaoJudicial,
                     nProcesso: '0001234-56.2026.8.26.0100',
                 ),
@@ -158,11 +158,11 @@ it('builds BM in tribMun with vRedBCBM', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
-            tribMun: new TributacaoMunicipal(
+        trib: new Trib(
+            tribMun: new TribMun(
                 tribISSQN: TribISSQN::Tributavel,
                 tpRetISSQN: TpRetISSQN::NaoRetido,
-                BM: new BeneficioMunicipal(nBM: '12345', vRedBCBM: '50.00'),
+                BM: new BM(nBM: '12345', vRedBCBM: '50.00'),
             ),
             indTotTrib: '0',
         ),
@@ -183,11 +183,11 @@ it('builds BM in tribMun with pRedBCBM', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
-            tribMun: new TributacaoMunicipal(
+        trib: new Trib(
+            tribMun: new TribMun(
                 tribISSQN: TribISSQN::Tributavel,
                 tpRetISSQN: TpRetISSQN::NaoRetido,
-                BM: new BeneficioMunicipal(nBM: '12345', pRedBCBM: '10.00'),
+                BM: new BM(nBM: '12345', pRedBCBM: '10.00'),
             ),
             indTotTrib: '0',
         ),
@@ -203,7 +203,7 @@ it('builds BM in tribMun with pRedBCBM', function () {
 });
 
 it('throws when both vRedBCBM and pRedBCBM are set in BM', function () {
-    expect(fn () => new BeneficioMunicipal(nBM: '12345', vRedBCBM: '50.00', pRedBCBM: '10.00'))
+    expect(fn () => new BM(nBM: '12345', vRedBCBM: '50.00', pRedBCBM: '10.00'))
         ->toThrow(InvalidDpsArgument::class, 'não ambos');
 });
 
@@ -213,11 +213,11 @@ it('builds tribFed with piscofins and retencoes', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
+        trib: new Trib(
             tribMun: makeTribMunMinimo(),
             indTotTrib: '0',
-            tribFed: new TributacaoFederal(
-                piscofins: new PisCofins(
+            tribFed: new TribFed(
+                piscofins: new Piscofins(
                     CST: CST::AliqBasica,
                     vBCPisCofins: '100.00',
                     pAliqPis: '0.65',
@@ -256,9 +256,9 @@ it('builds totTrib with vTotTrib choice', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
+        trib: new Trib(
             tribMun: makeTribMunMinimo(),
-            vTotTrib: new TotTribValor(vTotTribFed: '10.00', vTotTribEst: '5.00', vTotTribMun: '3.00'),
+            vTotTrib: new VTotTrib(vTotTribFed: '10.00', vTotTribEst: '5.00', vTotTribMun: '3.00'),
         ),
     );
 
@@ -277,9 +277,9 @@ it('builds totTrib with pTotTrib choice', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
+        trib: new Trib(
             tribMun: makeTribMunMinimo(),
-            pTotTrib: new TotTribPercentual(pTotTribFed: '10.00', pTotTribEst: '5.00', pTotTribMun: '3.00'),
+            pTotTrib: new PTotTrib(pTotTribFed: '10.00', pTotTribEst: '5.00', pTotTribMun: '3.00'),
         ),
     );
 
@@ -298,7 +298,7 @@ it('builds totTrib with pTotTribSN choice', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(tribMun: makeTribMunMinimo(), pTotTribSN: '5.00'),
+        trib: new Trib(tribMun: makeTribMunMinimo(), pTotTribSN: '5.00'),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $valores));
@@ -307,7 +307,7 @@ it('builds totTrib with pTotTribSN choice', function () {
 });
 
 it('throws when multiple totTrib choices are set', function () {
-    expect(fn () => new Tributacao(
+    expect(fn () => new Trib(
         tribMun: makeTribMunMinimo(),
         indTotTrib: '0',
         pTotTribSN: '5.00',
@@ -315,7 +315,7 @@ it('throws when multiple totTrib choices are set', function () {
 });
 
 it('throws when no totTrib choice is set', function () {
-    expect(fn () => new Tributacao(tribMun: makeTribMunMinimo()))
+    expect(fn () => new Trib(tribMun: makeTribMunMinimo()))
         ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
@@ -325,10 +325,10 @@ it('builds tribFed without piscofins', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
+        trib: new Trib(
             tribMun: makeTribMunMinimo(),
             indTotTrib: '0',
-            tribFed: new TributacaoFederal(vRetCP: '11.00'),
+            tribFed: new TribFed(vRetCP: '11.00'),
         ),
     );
 
@@ -346,11 +346,11 @@ it('builds piscofins without tpRetPisCofins', function () {
 
     $valores = new Valores(
         vServPrest: makeVServPrestMinimo(),
-        trib: new Tributacao(
+        trib: new Trib(
             tribMun: makeTribMunMinimo(),
             indTotTrib: '0',
-            tribFed: new TributacaoFederal(
-                piscofins: new PisCofins(CST: CST::AliqBasica),
+            tribFed: new TribFed(
+                piscofins: new Piscofins(CST: CST::AliqBasica),
             ),
         ),
     );

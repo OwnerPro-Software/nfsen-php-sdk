@@ -2,76 +2,76 @@
 
 covers(
     \Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\PisCofins::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\ExigibilidadeSuspensa::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\BeneficioMunicipal::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\TotTribValor::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\TotTribPercentual::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\DescontoCondIncond::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\VServPrest::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\TribMun::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\TribFed::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\BM::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\Trib::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS::class,
     \Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed::class,
+    \Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed::class,
     \Pulsar\NfseNacional\Dps\DTO\Valores\Valores::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\Valores\BeneficioMunicipal;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DescontoCondIncond;
+use Pulsar\NfseNacional\Dps\DTO\Valores\BM;
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ExigibilidadeSuspensa;
-use Pulsar\NfseNacional\Dps\DTO\Valores\InfoDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\PisCofins;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribPercentual;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TotTribValor;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoFederal;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp;
+use Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS;
+use Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins;
+use Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Trib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TribFed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TribMun;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VServPrest;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
-it('ValorServicoPrestado::fromArray creates instance from array', function () {
-    $dto = ValorServicoPrestado::fromArray(['vServ' => '100.00']);
-    expect($dto)->toBeInstanceOf(ValorServicoPrestado::class);
+it('VServPrest::fromArray creates instance from array', function () {
+    $dto = VServPrest::fromArray(['vServ' => '100.00']);
+    expect($dto)->toBeInstanceOf(VServPrest::class);
 });
 
-it('TributacaoMunicipal::fromArray creates instance from array', function () {
-    $dto = TributacaoMunicipal::fromArray([
+it('TribMun::fromArray creates instance from array', function () {
+    $dto = TribMun::fromArray([
         'tribISSQN' => '1',
         'tpRetISSQN' => '1',
         'cPaisResult' => '01058',
         'pAliq' => '5.00',
     ]);
 
-    expect($dto)->toBeInstanceOf(TributacaoMunicipal::class)
+    expect($dto)->toBeInstanceOf(TribMun::class)
         ->and($dto->cPaisResult)->toBe('01058')
         ->and($dto->pAliq)->toBe('5.00');
 });
 
-it('TributacaoFederal::fromArray creates instance from array', function () {
-    $dto = TributacaoFederal::fromArray([
+it('TribFed::fromArray creates instance from array', function () {
+    $dto = TribFed::fromArray([
         'piscofins' => ['CST' => '00'],
         'vRetCP' => '10.00',
         'vRetIRRF' => '5.00',
         'vRetCSLL' => '3.00',
     ]);
 
-    expect($dto)->toBeInstanceOf(TributacaoFederal::class)
-        ->and($dto->piscofins)->toBeInstanceOf(PisCofins::class)
+    expect($dto)->toBeInstanceOf(TribFed::class)
+        ->and($dto->piscofins)->toBeInstanceOf(Piscofins::class)
         ->and($dto->vRetCP)->toBe('10.00')
         ->and($dto->vRetIRRF)->toBe('5.00')
         ->and($dto->vRetCSLL)->toBe('3.00');
 });
 
-it('PisCofins::fromArray creates instance from array', function () {
-    $dto = PisCofins::fromArray([
+it('Piscofins::fromArray creates instance from array', function () {
+    $dto = Piscofins::fromArray([
         'CST' => '00',
         'vBCPisCofins' => '1000.00',
         'pAliqPis' => '1.65',
@@ -81,7 +81,7 @@ it('PisCofins::fromArray creates instance from array', function () {
         'tpRetPisCofins' => '1',
     ]);
 
-    expect($dto)->toBeInstanceOf(PisCofins::class)
+    expect($dto)->toBeInstanceOf(Piscofins::class)
         ->and($dto->vBCPisCofins)->toBe('1000.00')
         ->and($dto->pAliqPis)->toBe('1.65')
         ->and($dto->pAliqCofins)->toBe('7.60')
@@ -90,51 +90,51 @@ it('PisCofins::fromArray creates instance from array', function () {
         ->and($dto->tpRetPisCofins)->toBe(TpRetPisCofins::PisCofinsRetidos);
 });
 
-it('ExigibilidadeSuspensa::fromArray creates instance from array', function () {
-    $dto = ExigibilidadeSuspensa::fromArray(['tpSusp' => '1', 'nProcesso' => '12345']);
-    expect($dto)->toBeInstanceOf(ExigibilidadeSuspensa::class);
+it('ExigSusp::fromArray creates instance from array', function () {
+    $dto = ExigSusp::fromArray(['tpSusp' => '1', 'nProcesso' => '12345']);
+    expect($dto)->toBeInstanceOf(ExigSusp::class);
 });
 
-it('ExigibilidadeSuspensa::fromArray throws ValueError for invalid tpSusp', function () {
-    ExigibilidadeSuspensa::fromArray(['tpSusp' => 'XYZ', 'nProcesso' => '12345']);
+it('ExigSusp::fromArray throws ValueError for invalid tpSusp', function () {
+    ExigSusp::fromArray(['tpSusp' => 'XYZ', 'nProcesso' => '12345']);
 })->throws(ValueError::class);
 
-it('BeneficioMunicipal::fromArray creates instance from array', function () {
-    $dto = BeneficioMunicipal::fromArray(['nBM' => 'BM001']);
-    expect($dto)->toBeInstanceOf(BeneficioMunicipal::class);
+it('BM::fromArray creates instance from array', function () {
+    $dto = BM::fromArray(['nBM' => 'BM001']);
+    expect($dto)->toBeInstanceOf(BM::class);
 });
 
-it('BeneficioMunicipal::fromArray allows one optional field', function () {
-    $dto = BeneficioMunicipal::fromArray(['nBM' => 'BM001', 'vRedBCBM' => '100.00']);
+it('BM::fromArray allows one optional field', function () {
+    $dto = BM::fromArray(['nBM' => 'BM001', 'vRedBCBM' => '100.00']);
     expect($dto->vRedBCBM)->toBe('100.00');
 });
 
-it('BeneficioMunicipal rejects when both vRedBCBM and pRedBCBM provided', function () {
-    BeneficioMunicipal::fromArray(['nBM' => 'BM001', 'vRedBCBM' => '100.00', 'pRedBCBM' => '10.00']);
+it('BM rejects when both vRedBCBM and pRedBCBM provided', function () {
+    BM::fromArray(['nBM' => 'BM001', 'vRedBCBM' => '100.00', 'pRedBCBM' => '10.00']);
 })->throws(InvalidDpsArgument::class);
 
-it('TotTribValor::fromArray creates instance from array', function () {
-    $dto = TotTribValor::fromArray(['vTotTribFed' => '10.00', 'vTotTribEst' => '5.00', 'vTotTribMun' => '3.00']);
-    expect($dto)->toBeInstanceOf(TotTribValor::class);
+it('VTotTrib::fromArray creates instance from array', function () {
+    $dto = VTotTrib::fromArray(['vTotTribFed' => '10.00', 'vTotTribEst' => '5.00', 'vTotTribMun' => '3.00']);
+    expect($dto)->toBeInstanceOf(VTotTrib::class);
 });
 
-it('TotTribPercentual::fromArray creates instance from array', function () {
-    $dto = TotTribPercentual::fromArray(['pTotTribFed' => '10.00', 'pTotTribEst' => '5.00', 'pTotTribMun' => '3.00']);
-    expect($dto)->toBeInstanceOf(TotTribPercentual::class);
+it('PTotTrib::fromArray creates instance from array', function () {
+    $dto = PTotTrib::fromArray(['pTotTribFed' => '10.00', 'pTotTribEst' => '5.00', 'pTotTribMun' => '3.00']);
+    expect($dto)->toBeInstanceOf(PTotTrib::class);
 });
 
-it('Tributacao::fromArray creates instance from array', function () {
-    $dto = Tributacao::fromArray([
+it('Trib::fromArray creates instance from array', function () {
+    $dto = Trib::fromArray([
         'tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1'],
         'indTotTrib' => '0',
     ]);
 
-    expect($dto)->toBeInstanceOf(Tributacao::class)
+    expect($dto)->toBeInstanceOf(Trib::class)
         ->and($dto->indTotTrib)->toBe('0');
 });
 
-it('Tributacao::fromArray preserves pTotTribSN', function () {
-    $dto = Tributacao::fromArray([
+it('Trib::fromArray preserves pTotTribSN', function () {
+    $dto = Trib::fromArray([
         'tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1'],
         'pTotTribSN' => '15.50',
     ]);
@@ -142,49 +142,49 @@ it('Tributacao::fromArray preserves pTotTribSN', function () {
     expect($dto->pTotTribSN)->toBe('15.50');
 });
 
-it('Tributacao::fromArray creates with vTotTrib', function () {
-    $dto = Tributacao::fromArray([
+it('Trib::fromArray creates with vTotTrib', function () {
+    $dto = Trib::fromArray([
         'tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1'],
         'vTotTrib' => ['vTotTribFed' => '10.00', 'vTotTribEst' => '5.00', 'vTotTribMun' => '3.00'],
     ]);
 
-    expect($dto->vTotTrib)->toBeInstanceOf(TotTribValor::class);
+    expect($dto->vTotTrib)->toBeInstanceOf(VTotTrib::class);
 });
 
-it('Tributacao::fromArray creates with pTotTrib', function () {
-    $dto = Tributacao::fromArray([
+it('Trib::fromArray creates with pTotTrib', function () {
+    $dto = Trib::fromArray([
         'tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1'],
         'pTotTrib' => ['pTotTribFed' => '10.00', 'pTotTribEst' => '5.00', 'pTotTribMun' => '3.00'],
     ]);
 
-    expect($dto->pTotTrib)->toBeInstanceOf(TotTribPercentual::class);
+    expect($dto->pTotTrib)->toBeInstanceOf(PTotTrib::class);
 });
 
-it('Tributacao rejects when no totTrib variant provided', function () {
-    Tributacao::fromArray(['tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1']]);
+it('Trib rejects when no totTrib variant provided', function () {
+    Trib::fromArray(['tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1']]);
 })->throws(InvalidDpsArgument::class);
 
-it('Tributacao rejects when multiple totTrib variants provided', function () {
-    Tributacao::fromArray([
+it('Trib rejects when multiple totTrib variants provided', function () {
+    Trib::fromArray([
         'tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1'],
         'indTotTrib' => '0',
         'pTotTribSN' => '15.50',
     ]);
 })->throws(InvalidDpsArgument::class);
 
-it('DescontoCondIncond::fromArray creates instance from array', function () {
-    $dto = DescontoCondIncond::fromArray(['vDescIncond' => '5.00']);
-    expect($dto)->toBeInstanceOf(DescontoCondIncond::class);
+it('VDescCondIncond::fromArray creates instance from array', function () {
+    $dto = VDescCondIncond::fromArray(['vDescIncond' => '5.00']);
+    expect($dto)->toBeInstanceOf(VDescCondIncond::class);
 });
 
-it('DocOutNFSe::fromArray creates instance from array', function () {
-    $dto = DocOutNFSe::fromArray(['cMunNFSeMun' => '3501608', 'nNFSeMun' => '123', 'cVerifNFSeMun' => 'ABC']);
-    expect($dto)->toBeInstanceOf(DocOutNFSe::class);
+it('NFSeMun::fromArray creates instance from array', function () {
+    $dto = NFSeMun::fromArray(['cMunNFSeMun' => '3501608', 'nNFSeMun' => '123', 'cVerifNFSeMun' => 'ABC']);
+    expect($dto)->toBeInstanceOf(NFSeMun::class);
 });
 
-it('DocNFNFS::fromArray creates instance from array', function () {
-    $dto = DocNFNFS::fromArray(['nNFS' => '123', 'modNFS' => '55', 'serieNFS' => '1']);
-    expect($dto)->toBeInstanceOf(DocNFNFS::class);
+it('NFNFS::fromArray creates instance from array', function () {
+    $dto = NFNFS::fromArray(['nNFS' => '123', 'modNFS' => '55', 'serieNFS' => '1']);
+    expect($dto)->toBeInstanceOf(NFNFS::class);
 });
 
 it('DocDedRed::fromArray preserves chNFSe and xDescOutDed', function () {
@@ -230,8 +230,8 @@ it('DocDedRed::fromArray preserves nDoc', function () {
     expect($dto->nDoc)->toBe('NDOC002');
 });
 
-it('InfoDedRed::fromArray creates instance with documentos', function () {
-    $dto = InfoDedRed::fromArray([
+it('VDedRed::fromArray creates instance with documentos', function () {
+    $dto = VDedRed::fromArray([
         'documentos' => [[
             'tpDedRed' => '1', 'dtEmiDoc' => '2026-01-01',
             'vDedutivelRedutivel' => '100.00', 'vDeducaoReducao' => '50.00',
@@ -239,18 +239,18 @@ it('InfoDedRed::fromArray creates instance with documentos', function () {
         ]],
     ]);
 
-    expect($dto)->toBeInstanceOf(InfoDedRed::class)
+    expect($dto)->toBeInstanceOf(VDedRed::class)
         ->and($dto->documentos)->toHaveCount(1)
         ->and($dto->documentos[0])->toBeInstanceOf(DocDedRed::class);
 });
 
-it('InfoDedRed::fromArray preserves pDR', function () {
-    $dto = InfoDedRed::fromArray(['pDR' => '10.00']);
+it('VDedRed::fromArray preserves pDR', function () {
+    $dto = VDedRed::fromArray(['pDR' => '10.00']);
     expect($dto->pDR)->toBe('10.00');
 });
 
-it('InfoDedRed::fromArray preserves vDR', function () {
-    $dto = InfoDedRed::fromArray(['vDR' => '50.00']);
+it('VDedRed::fromArray preserves vDR', function () {
+    $dto = VDedRed::fromArray(['vDR' => '50.00']);
     expect($dto->vDR)->toBe('50.00');
 });
 

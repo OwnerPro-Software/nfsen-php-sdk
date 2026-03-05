@@ -2,14 +2,14 @@
 
 covers(
     \Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib::class,
-    \Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional::class,
-    \Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior::class,
-    \Pulsar\NfseNacional\Dps\DTO\Shared\Endereco::class,
+    \Pulsar\NfseNacional\Dps\DTO\Shared\EndNac::class,
+    \Pulsar\NfseNacional\Dps\DTO\Shared\EndExt::class,
+    \Pulsar\NfseNacional\Dps\DTO\Shared\End::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\Dps\DTO\Shared\End;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EndExt;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EndNac;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
 
 it('RegTrib::fromArray creates instance from array', function () {
@@ -28,30 +28,30 @@ it('RegTrib::fromArray throws ValueError for invalid opSimpNac', function () {
     ]);
 })->throws(ValueError::class);
 
-it('EnderecoNacional::fromArray creates instance from array', function () {
-    $dto = EnderecoNacional::fromArray([
+it('EndNac::fromArray creates instance from array', function () {
+    $dto = EndNac::fromArray([
         'cMun' => '3501608',
         'CEP' => '01310100',
     ]);
 
-    expect($dto)->toBeInstanceOf(EnderecoNacional::class)
+    expect($dto)->toBeInstanceOf(EndNac::class)
         ->and($dto->cMun)->toBe('3501608');
 });
 
-it('EnderecoExterior::fromArray creates instance from array', function () {
-    $dto = EnderecoExterior::fromArray([
+it('EndExt::fromArray creates instance from array', function () {
+    $dto = EndExt::fromArray([
         'cPais' => '01058',
         'cEndPost' => '10001',
         'xCidade' => 'New York',
         'xEstProvReg' => 'NY',
     ]);
 
-    expect($dto)->toBeInstanceOf(EnderecoExterior::class)
+    expect($dto)->toBeInstanceOf(EndExt::class)
         ->and($dto->cPais)->toBe('01058');
 });
 
-it('Endereco::fromArray creates instance with endNac', function () {
-    $dto = Endereco::fromArray([
+it('End::fromArray creates instance with endNac', function () {
+    $dto = End::fromArray([
         'xLgr' => 'Rua Teste',
         'nro' => '100',
         'xBairro' => 'Centro',
@@ -61,12 +61,12 @@ it('Endereco::fromArray creates instance with endNac', function () {
         ],
     ]);
 
-    expect($dto)->toBeInstanceOf(Endereco::class)
-        ->and($dto->endNac)->toBeInstanceOf(EnderecoNacional::class);
+    expect($dto)->toBeInstanceOf(End::class)
+        ->and($dto->endNac)->toBeInstanceOf(EndNac::class);
 });
 
-it('Endereco::fromArray preserves xCpl', function () {
-    $dto = Endereco::fromArray([
+it('End::fromArray preserves xCpl', function () {
+    $dto = End::fromArray([
         'xLgr' => 'Rua Teste',
         'nro' => '100',
         'xBairro' => 'Centro',

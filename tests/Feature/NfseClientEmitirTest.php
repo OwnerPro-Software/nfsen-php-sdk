@@ -396,8 +396,8 @@ it('emitir throws when array is missing required keys', function () {
 it('emitir validates XML against XSD before sending', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'SHOULD_NOT_REACH'], 201)]);
 
-    $servico = new \Pulsar\NfseNacional\Dps\DTO\Servico\Servico(
-        cServ: new \Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico(
+    $servico = new \Pulsar\NfseNacional\Dps\DTO\Serv\Serv(
+        cServ: new \Pulsar\NfseNacional\Dps\DTO\Serv\CServ(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD',
             xDescServ: 'Serviço',
             cNBS: '123456789',

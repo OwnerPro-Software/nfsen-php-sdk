@@ -3,19 +3,19 @@
 covers(\Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder::class);
 
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoDest;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoImovel;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoReeRepRes;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosDif;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosSitClas;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosTribRegular;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoValoresIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocDFe;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFornec;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocReeRepRes;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DFeNacional;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocOutro;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Documentos;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Fornec;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GDif;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GTribRegular;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Trib;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
@@ -26,16 +26,16 @@ use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpReeRepRes;
 use Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
-function makeMinimalIBSCBS(): InfoIBSCBS
+function makeMinimalIBSCBS(): IBSCBS
 {
-    return new InfoIBSCBS(
+    return new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(
                     CST: '100',
                     cClassTrib: '010101',
                 ),
@@ -48,13 +48,13 @@ it('builds IBSCBS without optional indFinal', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(
                     CST: '100',
                     cClassTrib: '010101',
                 ),
@@ -97,14 +97,14 @@ it('builds IBSCBS with tpOper', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Sim,
         cIndOp: '020202',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
         tpOper: TpOper::FornecimentoPagamentoPosterior,
@@ -119,14 +119,14 @@ it('builds IBSCBS with gRefNFSe', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
         refNFSe: ['12345678901234567890123456789012345678901234567890'],
@@ -143,17 +143,17 @@ it('builds IBSCBS with dest', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::OutraPessoa,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new InfoDest(xNome: 'Destinatário', CNPJ: '12345678000195'),
+        dest: new Dest(xNome: 'Destinatário', CNPJ: '12345678000195'),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -168,17 +168,17 @@ it('builds IBSCBS with imovel cCIB', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        imovel: new InfoImovel(cCIB: '12345678'),
+        imovel: new Imovel(cCIB: '12345678'),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -192,19 +192,19 @@ it('builds IBSCBS with gTribRegular and gDif', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(
                     CST: '100',
                     cClassTrib: '010101',
                     cCredPres: '01',
-                    gTribRegular: new InfoTributosTribRegular(CSTReg: '200', cClassTribReg: '020202'),
-                    gDif: new InfoTributosDif(pDifUF: '10.00', pDifMun: '5.00', pDifCBS: '3.00'),
+                    gTribRegular: new GTribRegular(CSTReg: '200', cClassTribReg: '020202'),
+                    gDif: new GDif(pDifUF: '10.00', pDifMun: '5.00', pDifCBS: '3.00'),
                 ),
             ),
         ),
@@ -227,26 +227,26 @@ it('builds IBSCBS with gReeRepRes', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
-            gReeRepRes: new InfoReeRepRes(documentos: [
-                new ListaDocReeRepRes(
+            gReeRepRes: new GReeRepRes(documentos: [
+                new Documentos(
                     dtEmiDoc: '2026-01-01',
                     dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis,
                     vlrReeRepRes: '500.00',
-                    dFeNacional: new ListaDocDFe(
+                    dFeNacional: new DFeNacional(
                         tipoChaveDFe: TipoChaveDFe::NFSe,
                         chaveDFe: '12345678901234567890123456789012345678901234567890',
                     ),
-                    fornec: new ListaDocFornec(xNome: 'Fornecedor', CNPJ: '98765432000111'),
+                    fornec: new Fornec(xNome: 'Fornecedor', CNPJ: '98765432000111'),
                 ),
             ]),
         ),
@@ -271,24 +271,24 @@ it('builds IBSCBS with dest CPF, fone and email', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::OutraPessoa,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new InfoDest(
+        dest: new Dest(
             xNome: 'Pessoa Física',
             CPF: '12345678901',
-            end: new \Pulsar\NfseNacional\Dps\DTO\Shared\Endereco(
+            end: new \Pulsar\NfseNacional\Dps\DTO\Shared\End(
                 xLgr: 'Rua Teste',
                 nro: '100',
                 xBairro: 'Centro',
-                endNac: new \Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional(cMun: '3501608', CEP: '01001000'),
+                endNac: new \Pulsar\NfseNacional\Dps\DTO\Shared\EndNac(cMun: '3501608', CEP: '01001000'),
             ),
             fone: '11999998888',
             email: 'dest@test.com',
@@ -309,17 +309,17 @@ it('builds IBSCBS with dest NIF', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::OutraPessoa,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new InfoDest(xNome: 'Estrangeiro', NIF: 'NIF12345'),
+        dest: new Dest(xNome: 'Estrangeiro', NIF: 'NIF12345'),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -330,17 +330,17 @@ it('builds IBSCBS with dest cNaoNIF', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::OutraPessoa,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new InfoDest(xNome: 'Sem NIF', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::Dispensado),
+        dest: new Dest(xNome: 'Sem NIF', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::Dispensado),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -351,19 +351,19 @@ it('builds IBSCBS with imovel end using CEP', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        imovel: new InfoImovel(
+        imovel: new Imovel(
             inscImobFisc: '12345',
-            end: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra(
+            end: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndObra(
                 xLgr: 'Rua Imovel', nro: '50', xBairro: 'Centro',
                 CEP: '01001000', xCpl: 'Apto 1',
             ),
@@ -387,20 +387,20 @@ it('builds IBSCBS with imovel end using endExt', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        imovel: new InfoImovel(
-            end: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra(
+        imovel: new Imovel(
+            end: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndObra(
                 xLgr: '5th Avenue', nro: '200', xBairro: 'Manhattan',
-                endExt: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra(
+                endExt: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndExt(
                     cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY',
                 ),
             ),
@@ -423,22 +423,22 @@ it('builds IBSCBS with docFiscalOutro', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
-            gReeRepRes: new InfoReeRepRes(documentos: [
-                new ListaDocReeRepRes(
+            gReeRepRes: new GReeRepRes(documentos: [
+                new Documentos(
                     dtEmiDoc: '2026-01-01',
                     dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::Outros,
                     vlrReeRepRes: '200.00',
-                    docFiscalOutro: new \Pulsar\NfseNacional\Dps\DTO\IBSCBS\ListaDocFiscalOutro(
+                    docFiscalOutro: new \Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocFiscalOutro(
                         cMunDocFiscal: '3501608', nDocFiscal: 'NF-001', xDocFiscal: 'Nota fiscal municipal',
                     ),
                     xTpReeRepRes: 'Outro tipo de reembolso de teste',
@@ -461,27 +461,27 @@ it('builds IBSCBS with xTipoChaveDFe', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
-            gReeRepRes: new InfoReeRepRes(documentos: [
-                new ListaDocReeRepRes(
+            gReeRepRes: new GReeRepRes(documentos: [
+                new Documentos(
                     dtEmiDoc: '2026-01-01',
                     dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis,
                     vlrReeRepRes: '100.00',
-                    dFeNacional: new ListaDocDFe(
+                    dFeNacional: new DFeNacional(
                         tipoChaveDFe: TipoChaveDFe::Outro,
                         chaveDFe: '12345',
                         xTipoChaveDFe: 'Outro documento',
                     ),
-                    fornec: new ListaDocFornec(xNome: 'Fornec CPF', CPF: '12345678901'),
+                    fornec: new Fornec(xNome: 'Fornec CPF', CPF: '12345678901'),
                 ),
             ]),
         ),
@@ -499,16 +499,16 @@ it('builds IBSCBS with fornec NIF and cNaoNIF', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     // Test NIF fornec
-    $ibscbs1 = new InfoIBSCBS(
+    $ibscbs1 = new IBSCBS(
         finNFSe: FinNFSe::Regular, indFinal: IndFinal::Nao, cIndOp: '010101', indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101')),
-            gReeRepRes: new InfoReeRepRes(documentos: [
-                new ListaDocReeRepRes(
+        valores: new Valores(
+            trib: new Trib(gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101')),
+            gReeRepRes: new GReeRepRes(documentos: [
+                new Documentos(
                     dtEmiDoc: '2026-01-01', dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis, vlrReeRepRes: '100.00',
-                    docOutro: new ListaDocOutro(nDoc: 'D1', xDoc: 'Doc'),
-                    fornec: new ListaDocFornec(xNome: 'NIF Fornec', NIF: 'NIF999'),
+                    docOutro: new DocOutro(nDoc: 'D1', xDoc: 'Doc'),
+                    fornec: new Fornec(xNome: 'NIF Fornec', NIF: 'NIF999'),
                 ),
             ]),
         ),
@@ -518,16 +518,16 @@ it('builds IBSCBS with fornec NIF and cNaoNIF', function () {
 
     // Test cNaoNIF fornec
     $doc2 = new DOMDocument('1.0', 'UTF-8');
-    $ibscbs2 = new InfoIBSCBS(
+    $ibscbs2 = new IBSCBS(
         finNFSe: FinNFSe::Regular, indFinal: IndFinal::Nao, cIndOp: '010101', indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101')),
-            gReeRepRes: new InfoReeRepRes(documentos: [
-                new ListaDocReeRepRes(
+        valores: new Valores(
+            trib: new Trib(gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101')),
+            gReeRepRes: new GReeRepRes(documentos: [
+                new Documentos(
                     dtEmiDoc: '2026-01-01', dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis, vlrReeRepRes: '100.00',
-                    docOutro: new ListaDocOutro(nDoc: 'D2', xDoc: 'Doc2'),
-                    fornec: new ListaDocFornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::NaoInformado),
+                    docOutro: new DocOutro(nDoc: 'D2', xDoc: 'Doc2'),
+                    fornec: new Fornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::NaoInformado),
                 ),
             ]),
         ),
@@ -540,32 +540,32 @@ it('builds IBSCBS with multiple documents in gReeRepRes', function () {
     $builder = new IBSCBSBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $ibscbs = new InfoIBSCBS(
+    $ibscbs = new IBSCBS(
         finNFSe: FinNFSe::Regular,
         indFinal: IndFinal::Nao,
         cIndOp: '010101',
         indDest: IndDest::Tomador,
-        valores: new InfoValoresIBSCBS(
-            trib: new InfoTributosIBSCBS(
-                gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+        valores: new Valores(
+            trib: new Trib(
+                gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
-            gReeRepRes: new InfoReeRepRes(documentos: [
-                new ListaDocReeRepRes(
+            gReeRepRes: new GReeRepRes(documentos: [
+                new Documentos(
                     dtEmiDoc: '2026-01-01',
                     dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis,
                     vlrReeRepRes: '300.00',
-                    dFeNacional: new ListaDocDFe(
+                    dFeNacional: new DFeNacional(
                         tipoChaveDFe: TipoChaveDFe::NFSe,
                         chaveDFe: '12345678901234567890123456789012345678901234567890',
                     ),
                 ),
-                new ListaDocReeRepRes(
+                new Documentos(
                     dtEmiDoc: '2026-02-01',
                     dtCompDoc: '2026-02-01',
                     tpReeRepRes: TpReeRepRes::RepasseAgenciaTurismo,
                     vlrReeRepRes: '200.00',
-                    docOutro: new ListaDocOutro(nDoc: 'DOC002', xDoc: 'Segundo documento'),
+                    docOutro: new DocOutro(nDoc: 'DOC002', xDoc: 'Segundo documento'),
                 ),
             ]),
         ),
@@ -601,34 +601,34 @@ it('builds DPS with full IBSCBS that validates against XSD', function () {
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: makeValoresMinimo(),
-        IBSCBS: new InfoIBSCBS(
+        IBSCBS: new IBSCBS(
             finNFSe: FinNFSe::Regular,
             indFinal: IndFinal::Sim,
             cIndOp: '010101',
             indDest: IndDest::OutraPessoa,
-            valores: new InfoValoresIBSCBS(
-                trib: new InfoTributosIBSCBS(
-                    gIBSCBS: new InfoTributosSitClas(
+            valores: new Valores(
+                trib: new Trib(
+                    gIBSCBS: new GIBSCBS(
                         CST: '100',
                         cClassTrib: '010101',
                         cCredPres: '01',
-                        gTribRegular: new InfoTributosTribRegular(CSTReg: '200', cClassTribReg: '020202'),
-                        gDif: new InfoTributosDif(pDifUF: '10.00', pDifMun: '5.00', pDifCBS: '3.00'),
+                        gTribRegular: new GTribRegular(CSTReg: '200', cClassTribReg: '020202'),
+                        gDif: new GDif(pDifUF: '10.00', pDifMun: '5.00', pDifCBS: '3.00'),
                     ),
                 ),
-                gReeRepRes: new InfoReeRepRes(documentos: [
-                    new ListaDocReeRepRes(
+                gReeRepRes: new GReeRepRes(documentos: [
+                    new Documentos(
                         dtEmiDoc: '2026-01-01',
                         dtCompDoc: '2026-01-01',
                         tpReeRepRes: TpReeRepRes::RepasseImoveis,
                         vlrReeRepRes: '500.00',
-                        docOutro: new ListaDocOutro(nDoc: 'DOC001', xDoc: 'Documento de teste'),
+                        docOutro: new DocOutro(nDoc: 'DOC001', xDoc: 'Documento de teste'),
                     ),
                 ]),
             ),
             tpOper: TpOper::FornecimentoRecebimentoConcomitantes,
             tpEnteGov: TpEnteGov::Municipio,
-            dest: new InfoDest(xNome: 'Destinatário Teste', CNPJ: '98765432000111'),
+            dest: new Dest(xNome: 'Destinatário Teste', CNPJ: '98765432000111'),
         ),
     );
 

@@ -3,8 +3,8 @@
 covers(\Pulsar\NfseNacional\Xml\DpsBuilder::class);
 
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
+use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
@@ -12,7 +12,7 @@ use Pulsar\NfseNacional\Xml\DpsBuilder;
 it('builds DPS with subst element that validates against XSD', function () {
     $data = new DpsData(
         infDPS: makeInfDps(),
-        subst: new SubstituicaoData(
+        subst: new Subst(
             chSubstda: '12345678901234567890123456789012345678901234567890',
             cMotivo: CodigoJustificativaSubstituicao::Outros,
             xMotivo: 'Motivo de teste para substituição da nota fiscal',
@@ -37,7 +37,7 @@ it('builds DPS with subst element that validates against XSD', function () {
 it('builds DPS with subst without xMotivo that validates against XSD', function () {
     $data = new DpsData(
         infDPS: makeInfDps(),
-        subst: new SubstituicaoData(
+        subst: new Subst(
             chSubstda: '12345678901234567890123456789012345678901234567890',
             cMotivo: CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional,
         ),
@@ -62,8 +62,8 @@ it('builds DPS with interm element that validates against XSD', function () {
         infDPS: makeInfDps(),
         subst: null,
         prest: makePrestadorCnpj(),
-        toma: new Tomador(CNPJ: '98765432000111', xNome: 'Tomador Ltda'),
-        interm: new Tomador(CNPJ: '11222333000144', xNome: 'Intermediário Ltda'),
+        toma: new Toma(CNPJ: '98765432000111', xNome: 'Tomador Ltda'),
+        interm: new Toma(CNPJ: '11222333000144', xNome: 'Intermediário Ltda'),
         serv: makeServicoMinimo(),
         valores: makeValoresMinimo(),
     );
@@ -79,13 +79,13 @@ it('builds DPS with interm element that validates against XSD', function () {
 it('builds DPS with both subst and interm that validates against XSD', function () {
     $data = new DpsData(
         infDPS: makeInfDps(),
-        subst: new SubstituicaoData(
+        subst: new Subst(
             chSubstda: '12345678901234567890123456789012345678901234567890',
             cMotivo: CodigoJustificativaSubstituicao::RejeicaoTomadorIntermediario,
         ),
         prest: makePrestadorCnpj(),
-        toma: new Tomador(CNPJ: '98765432000111', xNome: 'Tomador Ltda'),
-        interm: new Tomador(CPF: '12345678901', xNome: 'Intermediário PF'),
+        toma: new Toma(CNPJ: '98765432000111', xNome: 'Tomador Ltda'),
+        interm: new Toma(CPF: '12345678901', xNome: 'Intermediário PF'),
         serv: makeServicoMinimo(),
         valores: makeValoresMinimo(),
     );
@@ -102,7 +102,7 @@ it('builds interm element with custom element name via TomadorBuilder', function
     $builder = new TomadorBuilder;
     $doc = new DOMDocument('1.0', 'UTF-8');
 
-    $toma = new Tomador(CNPJ: '98765432000111', xNome: 'Intermediário');
+    $toma = new Toma(CNPJ: '98765432000111', xNome: 'Intermediário');
 
     $xml = $doc->saveXML($builder->build($doc, $toma, 'interm'));
 

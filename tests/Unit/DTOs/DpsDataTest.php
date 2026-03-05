@@ -3,12 +3,12 @@
 covers(\Pulsar\NfseNacional\Dps\DTO\DpsData::class);
 
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
-use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
-use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
+use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
+use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
+use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
@@ -93,8 +93,8 @@ it('creates DpsData from array via fromArray', function () {
 
     expect($data)->toBeInstanceOf(DpsData::class)
         ->and($data->infDPS)->toBeInstanceOf(InfDPS::class)
-        ->and($data->prest)->toBeInstanceOf(Prestador::class)
-        ->and($data->serv)->toBeInstanceOf(Servico::class)
+        ->and($data->prest)->toBeInstanceOf(Prest::class)
+        ->and($data->serv)->toBeInstanceOf(Serv::class)
         ->and($data->valores)->toBeInstanceOf(Valores::class)
         ->and($data->subst)->toBeNull()
         ->and($data->toma)->toBeNull()
@@ -131,8 +131,8 @@ it('DpsData::fromArray creates instance with toma and subst', function () {
     ]);
 
     expect($dto)->toBeInstanceOf(DpsData::class)
-        ->and($dto->toma)->toBeInstanceOf(Tomador::class)
-        ->and($dto->subst)->toBeInstanceOf(SubstituicaoData::class)
-        ->and($dto->interm)->toBeInstanceOf(Tomador::class)
-        ->and($dto->IBSCBS)->toBeInstanceOf(InfoIBSCBS::class);
+        ->and($dto->toma)->toBeInstanceOf(Toma::class)
+        ->and($dto->subst)->toBeInstanceOf(Subst::class)
+        ->and($dto->interm)->toBeInstanceOf(Toma::class)
+        ->and($dto->IBSCBS)->toBeInstanceOf(IBSCBS::class);
 });

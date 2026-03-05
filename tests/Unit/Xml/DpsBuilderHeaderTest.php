@@ -3,19 +3,19 @@
 covers(\Pulsar\NfseNacional\Xml\DpsBuilder::class);
 
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoTributosSitClas;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoValoresIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Trib;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
+use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
 use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
 use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
-use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
-use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
+use Pulsar\NfseNacional\Dps\Enums\Prest\OpSimpNac;
+use Pulsar\NfseNacional\Dps\Enums\Prest\RegEspTrib;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function buildDps(DpsData $data): string
@@ -93,7 +93,7 @@ it('includes chNFSeRej when set', function () {
 });
 
 it('includes toma element as child of infDPS when tomador has data', function () {
-    $tomador = new Tomador(CNPJ: '98765432000111', xNome: 'Tomador Ltda');
+    $tomador = new Toma(CNPJ: '98765432000111', xNome: 'Tomador Ltda');
 
     $data = new DpsData(infDPS: makeInfDps(), prest: makePrestadorCnpj(), serv: makeServicoMinimo(), valores: makeValoresMinimo(), toma: $tomador);
 
@@ -114,8 +114,8 @@ it('throws NfseException when scheme file does not exist', function (DpsData $da
 })->with('dpsData');
 
 it('throws NfseException on invalid XSD', function () {
-    $servico = new \Pulsar\NfseNacional\Dps\DTO\Servico\Servico(
-        cServ: new \Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico(
+    $servico = new \Pulsar\NfseNacional\Dps\DTO\Serv\Serv(
+        cServ: new \Pulsar\NfseNacional\Dps\DTO\Serv\CServ(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH',
             xDescServ: 'Serviço',
             cNBS: '123456789',
@@ -141,7 +141,7 @@ it('generates correct Id for CNPJ prestador', function (DpsData $data) {
 })->with('dpsData');
 
 it('generates correct Id for CPF prestador', function () {
-    $prestador = new Prestador(
+    $prestador = new Prest(
         CPF: '12345678901',
         regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
         xNome: 'Pessoa Física',
@@ -217,14 +217,14 @@ it('includes IBSCBS element when provided', function () {
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: makeValoresMinimo(),
-        IBSCBS: new InfoIBSCBS(
+        IBSCBS: new IBSCBS(
             finNFSe: FinNFSe::Regular,
             indFinal: IndFinal::Nao,
             cIndOp: '010101',
             indDest: IndDest::Tomador,
-            valores: new InfoValoresIBSCBS(
-                trib: new InfoTributosIBSCBS(
-                    gIBSCBS: new InfoTributosSitClas(CST: '100', cClassTrib: '010101'),
+            valores: new Valores(
+                trib: new Trib(
+                    gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
                 ),
             ),
         ),
@@ -237,7 +237,7 @@ it('includes IBSCBS element when provided', function () {
 });
 
 it('generates Id with padded zeros when prestador has NIF', function () {
-    $prestador = new Prestador(
+    $prestador = new Prest(
         NIF: 'ABC123',
         cNaoNIF: null,
         regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),

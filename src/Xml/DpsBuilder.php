@@ -6,9 +6,9 @@ namespace Pulsar\NfseNacional\Xml;
 
 use DOMDocument;
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\InfoIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\SubstituicaoData;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
+use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
+use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
 use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
@@ -70,7 +70,7 @@ final readonly class DpsBuilder
         $infDps->appendChild($this->text($doc, 'cLocEmi', $d->cLocEmi));
 
         // subst (optional)
-        if ($data->subst instanceof SubstituicaoData) {
+        if ($data->subst instanceof Subst) {
             $subst = $doc->createElement('subst');
             $subst->appendChild($this->text($doc, 'chSubstda', $data->subst->chSubstda));
             $subst->appendChild($this->text($doc, 'cMotivo', $data->subst->cMotivo->value));
@@ -84,12 +84,12 @@ final readonly class DpsBuilder
         $infDps->appendChild((new PrestadorBuilder)->build($doc, $data->prest));
 
         // toma (optional)
-        if ($data->toma instanceof Tomador) {
+        if ($data->toma instanceof Toma) {
             $infDps->appendChild((new TomadorBuilder)->build($doc, $data->toma));
         }
 
         // interm (optional)
-        if ($data->interm instanceof Tomador) {
+        if ($data->interm instanceof Toma) {
             $infDps->appendChild((new TomadorBuilder)->build($doc, $data->interm, 'interm'));
         }
 
@@ -100,7 +100,7 @@ final readonly class DpsBuilder
         $infDps->appendChild((new ValoresBuilder)->build($doc, $data->valores));
 
         // IBSCBS (optional)
-        if ($data->IBSCBS instanceof InfoIBSCBS) {
+        if ($data->IBSCBS instanceof IBSCBS) {
             $infDps->appendChild((new IBSCBSBuilder)->build($doc, $data->IBSCBS));
         }
 

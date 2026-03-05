@@ -6,9 +6,9 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Shared\Endereco;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoExterior;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EnderecoNacional;
+use Pulsar\NfseNacional\Dps\DTO\Shared\End;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EndExt;
+use Pulsar\NfseNacional\Dps\DTO\Shared\EndNac;
 
 trait CreatesTextElements
 {
@@ -20,15 +20,15 @@ trait CreatesTextElements
         return $el;
     }
 
-    private function buildEnd(DOMDocument $doc, Endereco $end): DOMElement
+    private function buildEnd(DOMDocument $doc, End $end): DOMElement
     {
         $el = $doc->createElement('end');
-        if ($end->endNac instanceof EnderecoNacional) {
+        if ($end->endNac instanceof EndNac) {
             $endNac = $doc->createElement('endNac');
             $endNac->appendChild($this->text($doc, 'cMun', $end->endNac->cMun));
             $endNac->appendChild($this->text($doc, 'CEP', $end->endNac->CEP));
             $el->appendChild($endNac);
-        } elseif ($end->endExt instanceof EnderecoExterior) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one address type
+        } elseif ($end->endExt instanceof EndExt) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one address type
             $endExt = $doc->createElement('endExt');
             $endExt->appendChild($this->text($doc, 'cPais', $end->endExt->cPais));
             $endExt->appendChild($this->text($doc, 'cEndPost', $end->endExt->cEndPost));

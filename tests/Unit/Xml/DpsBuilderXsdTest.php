@@ -3,11 +3,11 @@
 covers(\Pulsar\NfseNacional\Xml\DpsBuilder::class);
 
 use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
-use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
-use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento;
+use Pulsar\NfseNacional\Dps\DTO\Serv\CServ;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
+use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
+use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
 use Pulsar\NfseNacional\Exceptions\NfseException;
 use Pulsar\NfseNacional\Support\XmlDocumentLoader;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
@@ -48,10 +48,10 @@ it('validates DPS with atvEvento (idAtvEvt) against XSD', function () {
     $data = new DpsData(
         infDPS: makeInfDps(),
         prest: makePrestadorCnpj(),
-        serv: new Servico(
-            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+        serv: new Serv(
+            cServ: new CServ(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
             cLocPrestacao: '3501608',
-            atvEvento: new AtividadeEvento(
+            atvEvento: new AtvEvento(
                 xNome: 'Festival',
                 dtIni: '2026-01-01',
                 dtFim: '2026-01-03',
@@ -71,14 +71,14 @@ it('validates DPS with atvEvento (end with CEP) against XSD', function () {
     $data = new DpsData(
         infDPS: makeInfDps(),
         prest: makePrestadorCnpj(),
-        serv: new Servico(
-            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+        serv: new Serv(
+            cServ: new CServ(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
             cLocPrestacao: '3501608',
-            atvEvento: new AtividadeEvento(
+            atvEvento: new AtvEvento(
                 xNome: 'Show',
                 dtIni: '2026-02-01',
                 dtFim: '2026-02-02',
-                end: new EnderecoSimples(
+                end: new EndSimples(
                     xLgr: 'Rua Evento',
                     nro: '200',
                     xBairro: 'Centro',
@@ -99,18 +99,18 @@ it('validates DPS with atvEvento (end with endExt) against XSD', function () {
     $data = new DpsData(
         infDPS: makeInfDps(),
         prest: makePrestadorCnpj(),
-        serv: new Servico(
-            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+        serv: new Serv(
+            cServ: new CServ(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
             cLocPrestacao: '3501608',
-            atvEvento: new AtividadeEvento(
+            atvEvento: new AtvEvento(
                 xNome: 'Conferencia Internacional',
                 dtIni: '2026-03-01',
                 dtFim: '2026-03-05',
-                end: new EnderecoSimples(
+                end: new EndSimples(
                     xLgr: 'Broadway',
                     nro: '500',
                     xBairro: 'Midtown',
-                    endExt: new \Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra(
+                    endExt: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndExt(
                         cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY',
                     ),
                 ),
@@ -131,10 +131,10 @@ it('validates DPS with infoCompl against XSD', function () {
     $data = new DpsData(
         infDPS: makeInfDps(),
         prest: makePrestadorCnpj(),
-        serv: new Servico(
-            cServ: new CodigoServico(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
+        serv: new Serv(
+            cServ: new CServ(cTribNac: '010101', xDescServ: 'Serviço', cNBS: '123456789'),
             cLocPrestacao: '3501608',
-            infoCompl: new InfoComplementar(
+            infoCompl: new InfoCompl(
                 idDocTec: 'ART-123',
                 docRef: 'Documento de referencia',
                 xPed: '789',

@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Pulsar\NfseNacional\Dps\DTO\Valores;
 
 use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
-use Pulsar\NfseNacional\Dps\DTO\Tomador\Tomador;
+use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
 
 /**
- * @phpstan-import-type DocOutNFSeArray from DocOutNFSe
- * @phpstan-import-type DocNFNFSArray from DocNFNFS
- * @phpstan-import-type TomadorArray from Tomador
+ * @phpstan-import-type NFSeMunArray from NFSeMun
+ * @phpstan-import-type NFNFSArray from NFNFS
+ * @phpstan-import-type TomaArray from Toma
  *
- * @phpstan-type DocDedRedArray array{tpDedRed: string, dtEmiDoc: string, vDedutivelRedutivel: string, vDeducaoReducao: string, chNFSe?: string, chNFe?: string, NFSeMun?: DocOutNFSeArray, NFNFS?: DocNFNFSArray, nDocFisc?: string, nDoc?: string, xDescOutDed?: string, fornec?: TomadorArray}
+ * @phpstan-type DocDedRedArray array{tpDedRed: string, dtEmiDoc: string, vDedutivelRedutivel: string, vDeducaoReducao: string, chNFSe?: string, chNFe?: string, NFSeMun?: NFSeMunArray, NFNFS?: NFNFSArray, nDocFisc?: string, nDoc?: string, xDescOutDed?: string, fornec?: TomaArray}
  */
 final readonly class DocDedRed
 {
@@ -26,12 +26,12 @@ final readonly class DocDedRed
         public string $vDeducaoReducao,
         public ?string $chNFSe = null,
         public ?string $chNFe = null,
-        public ?DocOutNFSe $NFSeMun = null,
-        public ?DocNFNFS $NFNFS = null,
+        public ?NFSeMun $NFSeMun = null,
+        public ?NFNFS $NFNFS = null,
         public ?string $nDocFisc = null,
         public ?string $nDoc = null,
         public ?string $xDescOutDed = null,
-        public ?Tomador $fornec = null,
+        public ?Toma $fornec = null,
     ) {
         self::validateChoice(
             ['chave NFSe (chNFSe)' => $chNFSe, 'chave NFe (chNFe)' => $chNFe, 'NFSe municipal (NFSeMun)' => $NFSeMun, 'NF/NFS (NFNFS)' => $NFNFS, 'número doc. fiscal (nDocFisc)' => $nDocFisc, 'número documento (nDoc)' => $nDoc],
@@ -50,12 +50,12 @@ final readonly class DocDedRed
             vDeducaoReducao: $data['vDeducaoReducao'],
             chNFSe: $data['chNFSe'] ?? null,
             chNFe: $data['chNFe'] ?? null,
-            NFSeMun: isset($data['NFSeMun']) ? DocOutNFSe::fromArray($data['NFSeMun']) : null,
-            NFNFS: isset($data['NFNFS']) ? DocNFNFS::fromArray($data['NFNFS']) : null,
+            NFSeMun: isset($data['NFSeMun']) ? NFSeMun::fromArray($data['NFSeMun']) : null,
+            NFNFS: isset($data['NFNFS']) ? NFNFS::fromArray($data['NFNFS']) : null,
             nDocFisc: $data['nDocFisc'] ?? null,
             nDoc: $data['nDoc'] ?? null,
             xDescOutDed: $data['xDescOutDed'] ?? null,
-            fornec: isset($data['fornec']) ? Tomador::fromArray($data['fornec'], path: 'infDPS/valores/vDedRed/documentos/fornec') : null,
+            fornec: isset($data['fornec']) ? Toma::fromArray($data['fornec'], path: 'infDPS/valores/vDedRed/documentos/fornec') : null,
         );
     }
 }

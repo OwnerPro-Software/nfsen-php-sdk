@@ -6,20 +6,20 @@ namespace Pulsar\NfseNacional\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Servico\AtividadeEvento;
-use Pulsar\NfseNacional\Dps\DTO\Servico\ComercioExterior;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoExteriorObra;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoObra;
-use Pulsar\NfseNacional\Dps\DTO\Servico\EnderecoSimples;
-use Pulsar\NfseNacional\Dps\DTO\Servico\InfoComplementar;
-use Pulsar\NfseNacional\Dps\DTO\Servico\Obra;
-use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento;
+use Pulsar\NfseNacional\Dps\DTO\Serv\ComExt;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
+use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
+use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
+use Pulsar\NfseNacional\Dps\DTO\Serv\Obra;
+use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
 
 final class ServicoBuilder
 {
     use CreatesTextElements;
 
-    public function build(DOMDocument $doc, Servico $serv): DOMElement
+    public function build(DOMDocument $doc, Serv $serv): DOMElement
     {
         $el = $doc->createElement('serv');
 
@@ -51,7 +51,7 @@ final class ServicoBuilder
         $el->appendChild($cServ);
 
         // comExt (optional)
-        if ($serv->comExt instanceof ComercioExterior) {
+        if ($serv->comExt instanceof ComExt) {
             $comExt = $doc->createElement('comExt');
             $comExt->appendChild($this->text($doc, 'mdPrestacao', $serv->comExt->mdPrestacao->value));
             $comExt->appendChild($this->text($doc, 'vincPrest', $serv->comExt->vincPrest->value));
@@ -83,11 +83,11 @@ final class ServicoBuilder
                 $obra->appendChild($this->text($doc, 'cObra', $serv->obra->cObra));
             } elseif ($serv->obra->cCIB !== null) {
                 $obra->appendChild($this->text($doc, 'cCIB', $serv->obra->cCIB));
-            } elseif ($serv->obra->end instanceof EnderecoObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EnderecoObra when reached
+            } elseif ($serv->obra->end instanceof EndObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EndObra when reached
                 $endObra = $doc->createElement('end');
                 if ($serv->obra->end->CEP !== null) {
                     $endObra->appendChild($this->text($doc, 'CEP', $serv->obra->end->CEP));
-                } elseif ($serv->obra->end->endExt instanceof EnderecoExteriorObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
+                } elseif ($serv->obra->end->endExt instanceof EndExt) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
                     $endExt = $doc->createElement('endExt');
                     $endExt->appendChild($this->text($doc, 'cEndPost', $serv->obra->end->endExt->cEndPost));
                     $endExt->appendChild($this->text($doc, 'xCidade', $serv->obra->end->endExt->xCidade));
@@ -109,18 +109,18 @@ final class ServicoBuilder
         }
 
         // atvEvento (optional)
-        if ($serv->atvEvento instanceof AtividadeEvento) {
+        if ($serv->atvEvento instanceof AtvEvento) {
             $atvEvento = $doc->createElement('atvEvento');
             $atvEvento->appendChild($this->text($doc, 'xNome', $serv->atvEvento->xNome));
             $atvEvento->appendChild($this->text($doc, 'dtIni', $serv->atvEvento->dtIni));
             $atvEvento->appendChild($this->text($doc, 'dtFim', $serv->atvEvento->dtFim));
             if ($serv->atvEvento->idAtvEvt !== null) {
                 $atvEvento->appendChild($this->text($doc, 'idAtvEvt', $serv->atvEvento->idAtvEvt));
-            } elseif ($serv->atvEvento->end instanceof EnderecoSimples) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EnderecoSimples when reached
+            } elseif ($serv->atvEvento->end instanceof EndSimples) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EndSimples when reached
                 $endEl = $doc->createElement('end');
                 if ($serv->atvEvento->end->CEP !== null) {
                     $endEl->appendChild($this->text($doc, 'CEP', $serv->atvEvento->end->CEP));
-                } elseif ($serv->atvEvento->end->endExt instanceof EnderecoExteriorObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
+                } elseif ($serv->atvEvento->end->endExt instanceof EndExt) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
                     $endExt = $doc->createElement('endExt');
                     $endExt->appendChild($this->text($doc, 'cEndPost', $serv->atvEvento->end->endExt->cEndPost));
                     $endExt->appendChild($this->text($doc, 'xCidade', $serv->atvEvento->end->endExt->xCidade));
@@ -142,7 +142,7 @@ final class ServicoBuilder
         }
 
         // infoCompl (optional)
-        if ($serv->infoCompl instanceof InfoComplementar) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where infoCompl is set
+        if ($serv->infoCompl instanceof InfoCompl) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where infoCompl is set
             $infoCompl = $doc->createElement('infoCompl');
             if ($serv->infoCompl->idDocTec !== null) {
                 $infoCompl->appendChild($this->text($doc, 'idDocTec', $serv->infoCompl->idDocTec));

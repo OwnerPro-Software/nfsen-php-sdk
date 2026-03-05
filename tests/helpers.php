@@ -6,18 +6,18 @@ use Pulsar\NfseNacional\Adapters\NfseHttpClient;
 use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
 use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
-use Pulsar\NfseNacional\Dps\DTO\Prestador\Prestador;
-use Pulsar\NfseNacional\Dps\DTO\Servico\CodigoServico;
-use Pulsar\NfseNacional\Dps\DTO\Servico\Servico;
+use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
+use Pulsar\NfseNacional\Dps\DTO\Serv\CServ;
+use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
 use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Tributacao;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TributacaoMunicipal;
+use Pulsar\NfseNacional\Dps\DTO\Valores\Trib;
+use Pulsar\NfseNacional\Dps\DTO\Valores\TribMun;
 use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ValorServicoPrestado;
+use Pulsar\NfseNacional\Dps\DTO\Valores\VServPrest;
 use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
 use Pulsar\NfseNacional\Dps\Enums\InfDPS\TpEmit;
-use Pulsar\NfseNacional\Dps\Enums\Prestador\OpSimpNac;
-use Pulsar\NfseNacional\Dps\Enums\Prestador\RegEspTrib;
+use Pulsar\NfseNacional\Dps\Enums\Prest\OpSimpNac;
+use Pulsar\NfseNacional\Dps\Enums\Prest\RegEspTrib;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
@@ -84,8 +84,8 @@ function makePrestadorCnpj(
     ?string $CNPJ = null,
     ?string $xNome = null,
     ?RegTrib $regTrib = null,
-): Prestador {
-    return new Prestador(
+): Prest {
+    return new Prest(
         CNPJ: $CNPJ ?? '12345678000195',
         regTrib: $regTrib ?? new RegTrib(
             opSimpNac: OpSimpNac::NaoOptante,
@@ -95,10 +95,10 @@ function makePrestadorCnpj(
     );
 }
 
-function makeServicoMinimo(?string $cLocPrestacao = null): Servico
+function makeServicoMinimo(?string $cLocPrestacao = null): Serv
 {
-    return new Servico(
-        cServ: new CodigoServico(
+    return new Serv(
+        cServ: new CServ(
             cTribNac: '010101',
             xDescServ: 'Serviço',
             cNBS: '123456789',
@@ -115,9 +115,9 @@ function makeChaveAcesso(): string
 function makeValoresMinimo(?string $vServ = null): Valores
 {
     return new Valores(
-        vServPrest: new ValorServicoPrestado(vServ: $vServ ?? '100.00'),
-        trib: new Tributacao(
-            tribMun: new TributacaoMunicipal(
+        vServPrest: new VServPrest(vServ: $vServ ?? '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
                 tribISSQN: TribISSQN::Tributavel,
                 tpRetISSQN: TpRetISSQN::NaoRetido,
             ),

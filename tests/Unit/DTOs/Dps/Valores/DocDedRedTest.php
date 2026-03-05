@@ -2,8 +2,8 @@
 
 covers(\Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed::class);
 use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocNFNFS;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocOutNFSe;
+use Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS;
+use Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun;
 use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
 use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 
@@ -25,10 +25,10 @@ it('creates DocDedRed with NFSeMun', function () {
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',
-        NFSeMun: new DocOutNFSe(cMunNFSeMun: '3501608', nNFSeMun: '000000000000001', cVerifNFSeMun: 'ABC123'),
+        NFSeMun: new NFSeMun(cMunNFSeMun: '3501608', nNFSeMun: '000000000000001', cVerifNFSeMun: 'ABC123'),
     );
 
-    expect($doc->NFSeMun)->toBeInstanceOf(DocOutNFSe::class);
+    expect($doc->NFSeMun)->toBeInstanceOf(NFSeMun::class);
 });
 
 it('creates DocDedRed with NFNFS', function () {
@@ -37,10 +37,10 @@ it('creates DocDedRed with NFNFS', function () {
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',
-        NFNFS: new DocNFNFS(nNFS: '0000001', modNFS: '000000000000001', serieNFS: '1'),
+        NFNFS: new NFNFS(nNFS: '0000001', modNFS: '000000000000001', serieNFS: '1'),
     );
 
-    expect($doc->NFNFS)->toBeInstanceOf(DocNFNFS::class);
+    expect($doc->NFNFS)->toBeInstanceOf(NFNFS::class);
 });
 
 it('throws when no document type is set', function () {
