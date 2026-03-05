@@ -31,12 +31,12 @@ it('creates InfoDedRed with documentos', function () {
 
 it('throws when no choice is set', function () {
     expect(fn () => new InfoDedRed)
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when multiple choices are set', function () {
     expect(fn () => new InfoDedRed(pDR: '10.00', vDR: '100.00'))
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when documentos is empty array', function () {

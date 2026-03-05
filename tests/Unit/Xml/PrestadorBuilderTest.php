@@ -116,14 +116,14 @@ it('throws when both CNPJ and CPF are set', function () {
         CPF: '12345678901',
         regTrib: makeRegTrib(),
         xNome: 'Empresa',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when no identification is set', function () {
     expect(fn () => new Prestador(
         regTrib: makeRegTrib(),
         xNome: 'Empresa',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('includes fone and email when set', function () {

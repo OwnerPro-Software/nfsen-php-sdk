@@ -34,9 +34,8 @@ final readonly class DocDedRed
         public ?Tomador $fornec = null,
     ) {
         self::validateChoice(
-            ['chNFSe' => $chNFSe, 'chNFe' => $chNFe, 'NFSeMun' => $NFSeMun, 'NFNFS' => $NFNFS, 'nDocFisc' => $nDocFisc, 'nDoc' => $nDoc],
+            ['chave NFSe (chNFSe)' => $chNFSe, 'chave NFe (chNFe)' => $chNFe, 'NFSe municipal (NFSeMun)' => $NFSeMun, 'NF/NFS (NFNFS)' => $NFNFS, 'número doc. fiscal (nDocFisc)' => $nDocFisc, 'número documento (nDoc)' => $nDoc],
             expected: 1,
-            message: 'DocDedRed requer exatamente um tipo de documento.',
         );
     }
 

@@ -24,9 +24,8 @@ final readonly class EnderecoSimples
         public ?string $xCpl = null,
     ) {
         self::validateChoice(
-            ['CEP' => $CEP, 'endExt' => $endExt],
+            ['CEP' => $CEP, 'endereço exterior (endExt)' => $endExt],
             expected: 1,
-            message: 'EnderecoSimples requer exatamente um entre CEP ou endExt.',
         );
     }
 

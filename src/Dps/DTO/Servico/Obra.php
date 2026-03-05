@@ -22,9 +22,8 @@ final readonly class Obra
         public ?EnderecoObra $end = null,
     ) {
         self::validateChoice(
-            ['cObra' => $cObra, 'cCIB' => $cCIB, 'end' => $end],
+            ['código da obra (cObra)' => $cObra, 'código CIB (cCIB)' => $cCIB, 'endereço (end)' => $end],
             expected: 1,
-            message: 'Obra requer exatamente um entre cObra, cCIB ou end.',
         );
     }
 

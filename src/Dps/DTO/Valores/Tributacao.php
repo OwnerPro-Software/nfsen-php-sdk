@@ -27,9 +27,8 @@ final readonly class Tributacao
         public ?TributacaoFederal $tribFed = null,
     ) {
         self::validateChoice(
-            ['vTotTrib' => $vTotTrib, 'pTotTrib' => $pTotTrib, 'indTotTrib' => $indTotTrib, 'pTotTribSN' => $pTotTribSN],
+            ['valor total tributos (vTotTrib)' => $vTotTrib, 'percentual total tributos (pTotTrib)' => $pTotTrib, 'indicador total tributos (indTotTrib)' => $indTotTrib, 'percentual Simples Nacional (pTotTribSN)' => $pTotTribSN],
             expected: 1,
-            message: 'totTrib requer exatamente um entre vTotTrib, pTotTrib, indTotTrib ou pTotTribSN.',
         );
     }
 

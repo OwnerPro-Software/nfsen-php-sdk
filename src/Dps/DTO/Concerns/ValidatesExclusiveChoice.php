@@ -9,13 +9,23 @@ use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
 trait ValidatesExclusiveChoice
 {
     /** @param array<string, mixed> $fields */
-    private static function validateChoice(array $fields, int $expected, string $message): void
+    private static function validateChoice(array $fields, int $expected): void
     {
-        $count = count(array_filter($fields, fn (mixed $v): bool => $v !== null));
+        $filled = array_keys(array_filter($fields, fn (mixed $v): bool => $v !== null));
+        $count = count($filled);
 
-        if ($count !== $expected) {
-            throw new InvalidDpsArgument($message);
+        if ($count === $expected) {
+            return;
         }
+
+        $options = implode(', ', array_keys($fields));
+        $rule = "Somente {$expected} dos seguintes campos deve ser informado: {$options}.";
+
+        $detail = $count === 0
+            ? ' Nenhum foi informado.'
+            : ' Informados: '.implode(', ', $filled).'.';
+
+        throw new InvalidDpsArgument($rule.$detail);
     }
 
     /** @param array<string, mixed> $fields */

@@ -39,12 +39,12 @@ it('throws when InfoIBSCBS refNFSe is empty array', function () {
 
 it('throws when InfoDest has no identification', function () {
     expect(fn () => new InfoDest(xNome: 'Dest'))
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when InfoDest has multiple identifications', function () {
     expect(fn () => new InfoDest(xNome: 'Dest', CNPJ: '12345678000195', CPF: '12345678901'))
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('creates InfoDest with CNPJ', function () {
@@ -54,14 +54,14 @@ it('creates InfoDest with CNPJ', function () {
 
 it('throws when InfoImovel has no choice', function () {
     expect(fn () => new InfoImovel)
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when InfoImovel has both choices', function () {
     expect(fn () => new InfoImovel(
         cCIB: '12345678',
         end: new EnderecoObra(xLgr: 'Rua', nro: '1', xBairro: 'Centro', CEP: '01001000'),
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('creates InfoImovel with cCIB', function () {
@@ -71,7 +71,7 @@ it('creates InfoImovel with cCIB', function () {
 
 it('throws when ListaDocFornec has no identification', function () {
     expect(fn () => new ListaDocFornec(xNome: 'Fornec'))
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('creates ListaDocFornec with CPF', function () {
@@ -85,7 +85,7 @@ it('throws when ListaDocReeRepRes has no document', function () {
         dtCompDoc: '2026-01-01',
         tpReeRepRes: TpReeRepRes::Outros,
         vlrReeRepRes: '100.00',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('creates ListaDocReeRepRes with dFeNacional', function () {

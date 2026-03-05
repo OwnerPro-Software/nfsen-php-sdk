@@ -29,9 +29,8 @@ final readonly class Servico
         public ?InfoComplementar $infoCompl = null,
     ) {
         self::validateChoice(
-            ['cLocPrestacao' => $cLocPrestacao, 'cPaisPrestacao' => $cPaisPrestacao],
+            ['código do local de prestação (cLocPrestacao)' => $cLocPrestacao, 'código do país de prestação (cPaisPrestacao)' => $cPaisPrestacao],
             expected: 1,
-            message: 'Serviço requer exatamente um entre cLocPrestacao ou cPaisPrestacao.',
         );
     }
 

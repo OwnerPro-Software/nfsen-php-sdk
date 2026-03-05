@@ -23,9 +23,8 @@ final readonly class AtividadeEvento
         public ?EnderecoSimples $end = null,
     ) {
         self::validateChoice(
-            ['idAtvEvt' => $idAtvEvt, 'end' => $end],
+            ['identificação da atividade/evento (idAtvEvt)' => $idAtvEvt, 'endereço (end)' => $end],
             expected: 1,
-            message: 'AtividadeEvento requer exatamente um entre idAtvEvt ou end.',
         );
     }
 

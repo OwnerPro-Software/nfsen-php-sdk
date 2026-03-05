@@ -30,9 +30,8 @@ final readonly class Tomador
         public ?string $email = null,
     ) {
         self::validateChoice(
-            ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'cNaoNIF' => $cNaoNIF],
+            ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'código de não NIF (cNaoNIF)' => $cNaoNIF],
             expected: 1,
-            message: 'Tomador requer exatamente um entre CNPJ, CPF, NIF ou cNaoNIF.',
         );
     }
 

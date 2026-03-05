@@ -28,9 +28,8 @@ final readonly class InfoDest
         public ?string $email = null,
     ) {
         self::validateChoice(
-            ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'cNaoNIF' => $cNaoNIF],
+            ['CNPJ' => $CNPJ, 'CPF' => $CPF, 'NIF' => $NIF, 'código de não NIF (cNaoNIF)' => $cNaoNIF],
             expected: 1,
-            message: 'InfoDest requer exatamente um entre CNPJ, CPF, NIF ou cNaoNIF.',
         );
     }
 

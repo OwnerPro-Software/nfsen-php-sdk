@@ -311,12 +311,12 @@ it('throws when multiple totTrib choices are set', function () {
         tribMun: makeTribMunMinimo(),
         indTotTrib: '0',
         pTotTribSN: '5.00',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when no totTrib choice is set', function () {
     expect(fn () => new Tributacao(tribMun: makeTribMunMinimo()))
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('builds tribFed without piscofins', function () {

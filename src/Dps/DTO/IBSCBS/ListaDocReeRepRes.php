@@ -31,9 +31,8 @@ final readonly class ListaDocReeRepRes
         public ?string $xTpReeRepRes = null,
     ) {
         self::validateChoice(
-            ['dFeNacional' => $dFeNacional, 'docFiscalOutro' => $docFiscalOutro, 'docOutro' => $docOutro],
+            ['DFe nacional (dFeNacional)' => $dFeNacional, 'documento fiscal outro (docFiscalOutro)' => $docFiscalOutro, 'outro documento (docOutro)' => $docOutro],
             expected: 1,
-            message: 'ListaDocReeRepRes requer exatamente um entre dFeNacional, docFiscalOutro ou docOutro.',
         );
     }
 

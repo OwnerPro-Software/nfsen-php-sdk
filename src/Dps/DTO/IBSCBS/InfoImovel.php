@@ -22,9 +22,8 @@ final readonly class InfoImovel
         public ?EnderecoObra $end = null,
     ) {
         self::validateChoice(
-            ['cCIB' => $cCIB, 'end' => $end],
+            ['código CIB (cCIB)' => $cCIB, 'endereço (end)' => $end],
             expected: 1,
-            message: 'InfoImovel requer exatamente um entre cCIB ou end.',
         );
     }
 

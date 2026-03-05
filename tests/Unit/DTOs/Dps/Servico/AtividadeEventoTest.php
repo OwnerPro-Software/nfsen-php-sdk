@@ -17,7 +17,7 @@ it('throws when both idAtvEvt and end are set', function () {
             xBairro: 'Centro',
             CEP: '01001000',
         ),
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when neither idAtvEvt nor end is set', function () {
@@ -25,5 +25,5 @@ it('throws when neither idAtvEvt nor end is set', function () {
         xNome: 'Evento Teste',
         dtIni: '2026-01-01',
         dtFim: '2026-01-02',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });

@@ -25,9 +25,8 @@ final readonly class Endereco
         public ?string $xCpl = null,
     ) {
         self::validateChoice(
-            ['endNac' => $endNac, 'endExt' => $endExt],
+            ['endereço nacional (endNac)' => $endNac, 'endereço exterior (endExt)' => $endExt],
             expected: 1,
-            message: 'Endereço requer exatamente um entre endNac ou endExt.',
         );
     }
 

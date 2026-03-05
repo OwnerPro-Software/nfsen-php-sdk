@@ -151,12 +151,12 @@ it('includes xCpl in address when set', function () {
 
 it('throws when both CNPJ and CPF are set', function () {
     expect(fn () => new Tomador(CNPJ: '98765432000111', CPF: '12345678901', xNome: 'Tomador'))
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when no identification is set', function () {
     expect(fn () => new Tomador(xNome: 'Tomador'))
-        ->toThrow(InvalidDpsArgument::class, 'exatamente um');
+        ->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('includes fone and email when set', function () {

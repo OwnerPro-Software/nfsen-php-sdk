@@ -49,7 +49,7 @@ it('throws when no document type is set', function () {
         dtEmiDoc: '2026-01-15',
         vDedutivelRedutivel: '100.00',
         vDeducaoReducao: '50.00',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when multiple document types are set', function () {
@@ -60,5 +60,5 @@ it('throws when multiple document types are set', function () {
         vDeducaoReducao: '50.00',
         chNFSe: '12345678901234567890123456789012345678901234567890',
         nDocFisc: 'DOC-001',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });

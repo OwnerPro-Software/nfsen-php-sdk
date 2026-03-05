@@ -27,9 +27,8 @@ final readonly class InfoDedRed
         }
 
         self::validateChoice(
-            ['pDR' => $pDR, 'vDR' => $vDR, 'documentos' => $documentos],
+            ['percentual de dedução/redução (pDR)' => $pDR, 'valor de dedução/redução (vDR)' => $vDR, 'documentos' => $documentos],
             expected: 1,
-            message: 'InfoDedRed requer exatamente um entre pDR, vDR ou documentos.',
         );
     }
 

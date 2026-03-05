@@ -12,7 +12,7 @@ it('throws when both CEP and endExt are set', function () {
         xBairro: 'Centro',
         CEP: '01001000',
         endExt: new EnderecoExteriorObra(cEndPost: '10001', xCidade: 'NY', xEstProvReg: 'NY'),
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
 
 it('throws when neither CEP nor endExt is set', function () {
@@ -20,5 +20,5 @@ it('throws when neither CEP nor endExt is set', function () {
         xLgr: 'Rua Teste',
         nro: '100',
         xBairro: 'Centro',
-    ))->toThrow(InvalidDpsArgument::class, 'exatamente um');
+    ))->toThrow(InvalidDpsArgument::class, 'deve ser informado');
 });
