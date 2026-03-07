@@ -24,6 +24,7 @@ use Pulsar\NfseNacional\Operations\NfseSubstitutor;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\SubstituicaoResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
@@ -100,10 +101,12 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         $seFinUrl = $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
         $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
 
+        $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
+
         return new self(
-            emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
+            emitter: $emitter,
             canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
-            substitutor: new NfseSubstitutor($pipeline, new SubstitutionBuilder($xsdValidator), $ambiente),
+            substitutor: new NfseSubstitutor($emitter, $pipeline, new SubstitutionBuilder($xsdValidator), $ambiente),
             consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
         );
     }
@@ -125,9 +128,10 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         return $this->canceller->cancelar($chave, $codigoMotivo, $descricao);
     }
 
-    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): NfseResponse
+    /** @phpstan-param DpsData|DpsDataArray $dps */
+    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): SubstituicaoResponse
     {
-        return $this->substitutor->substituir($chave, $chaveSubstituta, $codigoMotivo, $descricao);
+        return $this->substitutor->substituir($chave, $dps, $codigoMotivo, $descricao);
     }
 
     public function consultar(): ConsultsNfse

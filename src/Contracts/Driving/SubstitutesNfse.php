@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Pulsar\NfseNacional\Contracts\Driving;
 
+use Pulsar\NfseNacional\Dps\DTO\DpsData;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Responses\NfseResponse;
+use Pulsar\NfseNacional\Responses\SubstituicaoResponse;
 
+/**
+ * @phpstan-import-type DpsDataArray from DpsData
+ */
 interface SubstitutesNfse
 {
-    public function substituir(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): NfseResponse;
+    /** @phpstan-param DpsData|DpsDataArray $dps */
+    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): SubstituicaoResponse;
 }

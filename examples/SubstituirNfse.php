@@ -24,21 +24,61 @@ $client = NfseClient::forStandalone(
 );
 
 $chaveOriginal = '00000000000000000000000000000000000000000000000000';
-$chaveSubstituta = '11111111111111111111111111111111111111111111111111';
+
+// DPS da nota substituta (dados corrigidos)
+$dpsSubstituta = [
+    'infDPS' => [
+        'tpAmb' => '2',
+        'dhEmi' => date('Y-m-d\TH:i:sP'),
+        'verAplic' => 'MeuSistema_v1.0',
+        'serie' => '1',
+        'nDPS' => '2',
+        'dCompet' => date('Y-m-d'),
+        'tpEmit' => '1',
+        'cLocEmi' => '3550308',
+    ],
+    'prest' => [
+        'CNPJ' => '00000000000000',
+        'regTrib' => [
+            'opSimpNac' => '2',
+            'regEspTrib' => '0',
+        ],
+    ],
+    'serv' => [
+        'cLocPrestacao' => '3550308',
+        'cServ' => [
+            'cTribNac' => '010101',
+            'xDescServ' => 'Desenvolvimento de software sob encomenda',
+            'cNBS' => '116030000',
+        ],
+    ],
+    'valores' => [
+        'vServPrest' => ['vServ' => '1000.00'],
+        'trib' => [
+            'tribMun' => ['tribISSQN' => '1', 'tpRetISSQN' => '1'],
+            'indTotTrib' => '0',
+        ],
+    ],
+];
 
 $response = $client->substituir(
     chave: $chaveOriginal,
-    chaveSubstituta: $chaveSubstituta,
+    dps: $dpsSubstituta,
     codigoMotivo: CodigoJustificativaSubstituicao::Outros,
-    descricao: 'Substituição por correção de dados',
+    descricao: 'Substituicao por correcao de dados',
 );
 
 if ($response->sucesso) {
-    echo "NFSe substituída com sucesso!\n";
-    echo "Chave: {$response->chave}\n";
+    echo "NFSe substituida com sucesso!\n";
+    echo "Chave substituta: {$response->emissao->chave}\n";
+} elseif (! $response->emissao->sucesso) {
+    echo "Falha na emissao da nota substituta:\n";
+    foreach ($response->emissao->erros as $erro) {
+        echo "  [{$erro->codigo}] {$erro->mensagem} - {$erro->descricao}\n";
+    }
 } else {
-    echo "Falha na substituição:\n";
-    foreach ($response->erros as $erro) {
-        echo "  [{$erro->codigo}] {$erro->mensagem} – {$erro->descricao}\n";
+    echo "Nota emitida (chave: {$response->emissao->chave}), mas registro do evento falhou:\n";
+    foreach ($response->evento->erros as $erro) {
+        echo "  [{$erro->codigo}] {$erro->mensagem} - {$erro->descricao}\n";
     }
 }

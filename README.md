@@ -152,16 +152,59 @@ Codigos de cancelamento: `ErroEmissao`, `ServicoNaoPrestado`, `Outros`.
 
 ### Substituir NFSe
 
+A substituição na API Nacional envolve duas etapas: emitir a nota substituta e registrar o evento de cancelamento por substituição (e105102). A lib orquestra as duas etapas internamente — basta informar a chave da nota original, a DPS da nota substituta e o motivo.
+
+```
+substituir(chave, dps, motivo)
+│
+├─ Etapa 1: Emite a NFS-e substituta (injeta campo `subst` na DPS automaticamente)
+│  ├─ Falhou? → retorna com emissao.sucesso = false, evento = null
+│  └─ Sucesso → continua
+│
+└─ Etapa 2: Registra evento e105102 (Cancelamento por Substituição)
+   ├─ Falhou? → retorna com emissao.sucesso = true, evento.sucesso = false
+   └─ Sucesso → retorna com sucesso = true
+```
+
+**Atenção:** é possível que a emissão da nota substituta tenha sucesso mas o registro do evento falhe. Nesse caso, a nota substituta já foi emitida na base da Receita Federal. Verifique sempre `$response->emissao` e `$response->evento` separadamente para tratar esse cenário.
+
 ```php
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 
 $response = $client->substituir(
     chave: '00000000000000000000000000000000000000000000000000',
-    chaveSubstituta: '11111111111111111111111111111111111111111111111111',
+    dps: $dpsSubstituta, // DPS da nota substituta (mesma estrutura do emitir)
     codigoMotivo: CodigoJustificativaSubstituicao::Outros,
     descricao: 'Substituicao por correcao de dados',
 );
+
+// SubstituicaoResponse:
+// - $response->sucesso   (bool)          true somente se AMBAS as etapas deram certo
+// - $response->emissao   (NfseResponse)  resultado da emissão (sempre presente)
+// - $response->evento    (?NfseResponse) resultado do registro do evento (null se emissão falhou)
+
+if ($response->sucesso) {
+    // Tudo certo: nota substituta emitida e evento registrado
+    echo "Chave substituta: {$response->emissao->chave}";
+
+} elseif (! $response->emissao->sucesso) {
+    // Emissão falhou — nenhuma nota foi gerada
+    foreach ($response->emissao->erros as $erro) {
+        echo "[{$erro->codigo}] {$erro->descricao}\n";
+    }
+
+} else {
+    // Nota substituta FOI emitida, mas o registro do evento falhou.
+    // A nota substituta já existe na base da Receita.
+    echo "Nota emitida: {$response->emissao->chave}\n";
+    echo "Evento não registrado — tente novamente ou registre manualmente.\n";
+    foreach ($response->evento->erros as $erro) {
+        echo "[{$erro->codigo}] {$erro->descricao}\n";
+    }
+}
 ```
+
+Codigos de substituição: `DesenquadramentoSimplesNacional`, `EnquadramentoSimplesNacional`, `InclusaoRetroativaImunidadeIsencao`, `ExclusaoRetroativaImunidadeIsencao`, `RejeicaoTomadorIntermediario`, `Outros`.
 
 ### Consultas
 
@@ -224,11 +267,14 @@ O pacote dispara eventos Laravel que podem ser escutados na sua aplicação:
 |--------|-------------|-----------|
 | `NfseEmitted` | `chave` | NFSe emitida com sucesso |
 | `NfseCancelled` | `chave` | NFSe cancelada com sucesso |
-| `NfseSubstituted` | `chave`, `chaveSubstituta` | NFSe substituída com sucesso |
+| `NfseSubstituted` | `chave`, `chaveSubstituta` | Evento de substituição registrado com sucesso |
 | `NfseQueried` | `operacao` | Consulta realizada |
 | `NfseRequested` | `operacao`, `metadata` | Operação iniciada |
 | `NfseRejected` | `operacao`, `codigoErro` | Operação rejeitada pela API |
 | `NfseFailed` | `operacao`, `message` | Falha na operação |
+
+**Substituição:** como `substituir` executa emissão + registro de evento internamente, a sequência de eventos disparados é:
+`NfseRequested('emitir')` → `NfseEmitted` → `NfseRequested('substituir')` → `NfseSubstituted`
 
 ## Exemplos
 

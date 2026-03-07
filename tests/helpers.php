@@ -153,10 +153,12 @@ function makeNfseClient(
     $seFinUrl = $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
     $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
 
+    $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
+
     return new NfseClient(
-        emitter: new NfseEmitter($pipeline, new DpsBuilder($xsdValidator)),
+        emitter: $emitter,
         canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
-        substitutor: new NfseSubstitutor($pipeline, new SubstitutionBuilder($xsdValidator), $ambiente),
+        substitutor: new NfseSubstitutor($emitter, $pipeline, new SubstitutionBuilder($xsdValidator), $ambiente),
         consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
     );
 }

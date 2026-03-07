@@ -44,18 +44,24 @@ it('dispatches NfseCancelled on successful cancelar', function () {
     Event::assertDispatched(NfseCancelled::class);
 });
 
-it('dispatches NfseSubstituted on successful substituir', function () {
+it('dispatches NfseEmitted and NfseSubstituted on successful substituir', function (DpsData $data) {
     Event::fake();
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
-
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
-    $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional, 'Desenquadramento do Simples Nacional');
 
+    Http::fakeSequence()
+        ->push(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)
+        ->push(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201);
+
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client->substituir($chave, $data, CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional, 'Desenquadramento do Simples Nacional');
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir');
+    Event::assertDispatched(NfseEmitted::class);
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'substituir' && $e->metadata === ['chave' => $chave]);
     Event::assertDispatched(NfseSubstituted::class, fn (NfseSubstituted $e) => $e->chave === $chave && $e->chaveSubstituta === $chaveSub);
     Event::assertNotDispatched(NfseCancelled::class);
-});
+})->with('dpsData');
 
 it('dispatches NfseQueried on successful consultar', function () {
     Event::fake();
@@ -101,19 +107,24 @@ it('dispatches NfseRejected on cancelar rejection', function () {
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
 });
 
-it('dispatches NfseRejected on substituir rejection', function () {
+it('dispatches NfseRejected on substituir event rejection', function (DpsData $data) {
     Event::fake();
-    Http::fake(['*' => Http::response(['erro' => ['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']], 200)]);
-
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
-    $client->substituir($chave, $chaveSub, CodigoJustificativaSubstituicao::Outros, 'Outro motivo para substituicao');
 
+    Http::fakeSequence()
+        ->push(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)
+        ->push(['erro' => ['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']], 200);
+
+    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client->substituir($chave, $data, CodigoJustificativaSubstituicao::Outros, 'Outro motivo para substituicao');
+
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir');
+    Event::assertDispatched(NfseEmitted::class);
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'substituir' && $e->metadata === ['chave' => $chave]);
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
     Event::assertNotDispatched(NfseSubstituted::class);
-});
+})->with('dpsData');
 
 it('dispatches NfseRequested and NfseQueried on consultar danfse', function () {
     Event::fake();
