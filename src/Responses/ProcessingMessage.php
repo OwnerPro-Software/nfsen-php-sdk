@@ -51,7 +51,7 @@ final readonly class ProcessingMessage
      */
     public static function fromApiResult(array $result): array
     {
-        $items = $result['erros'] ?? (isset($result['erro']) ? [$result['erro']] : []);
+        $items = $result['erros'] ?? (isset($result['erro']) && $result['erro'] !== [] ? [$result['erro']] : []);
 
         return self::fromArrayList($items);
     }

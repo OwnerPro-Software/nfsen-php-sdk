@@ -121,6 +121,12 @@ it('fromApiResult returns empty list when no error keys', function () {
     expect($list)->toBeEmpty();
 });
 
+it('fromApiResult discards empty erro array', function () {
+    $list = ProcessingMessage::fromApiResult(['erro' => []]);
+
+    expect($list)->toBeEmpty();
+});
+
 it('creates from array with capitalized keys', function () {
     $msg = ProcessingMessage::fromArray([
         'Mensagem' => 'Mensagem',
