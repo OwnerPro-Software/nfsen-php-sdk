@@ -31,9 +31,9 @@ final readonly class SubstitutionBuilder
         string $chNFSe,
         CodigoJustificativaSubstituicao $codigoMotivo,
         string $chSubstituta,
-        string $descricao = '',
+        ?string $descricao = null,
     ): string {
-        if ($descricao !== '') {
+        if ($descricao !== null) {
             $this->validateDescricao($descricao);
         }
 
@@ -55,7 +55,7 @@ final readonly class SubstitutionBuilder
         string $chNFSe,
         CodigoJustificativaSubstituicao $codigoMotivo,
         string $chSubstituta,
-        string $descricao = '',
+        ?string $descricao = null,
     ): string {
         $doc = new DOMDocument('1.0', 'UTF-8');
         $doc->preserveWhiteSpace = false; // @pest-mutate-ignore FalseToTrue: only affects XML parsing, not serialization
@@ -90,7 +90,7 @@ final readonly class SubstitutionBuilder
         $evento->appendChild($this->text($doc, 'xDesc', 'Cancelamento de NFS-e por Substituição'));
         $evento->appendChild($this->text($doc, 'cMotivo', $codigoMotivo->value));
 
-        if ($descricao !== '') {
+        if ($descricao !== null) {
             $evento->appendChild($this->text($doc, 'xMotivo', $descricao));
         }
 

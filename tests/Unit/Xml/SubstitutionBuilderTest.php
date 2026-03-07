@@ -47,7 +47,7 @@ it('builds valid substituicao xml with chSubstituta', function (): void {
         ->and($xpath->evaluate('string(//n:e105102/n:chSubstituta)'))->toBe($chaveSub);
 });
 
-it('omits xMotivo when descricao is empty', function (): void {
+it('omits xMotivo when descricao is null', function (): void {
     $builder = new SubstitutionBuilder(makeXsdValidator());
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';

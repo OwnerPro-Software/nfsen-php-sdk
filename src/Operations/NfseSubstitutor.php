@@ -39,7 +39,7 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
     ) {}
 
     /** @phpstan-param DpsData|DpsDataArray $dps */
-    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): SubstituicaoResponse
+    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): SubstituicaoResponse
     {
         $this->validateChaveAcesso($chave);
 
@@ -59,7 +59,7 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
             subst: new Subst(
                 chSubstda: $chave,
                 cMotivo: $codigoMotivo,
-                xMotivo: $descricao !== '' ? $descricao : null,
+                xMotivo: $descricao,
             ),
             toma: $dps->toma,
             interm: $dps->interm,
@@ -79,10 +79,33 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
         /** @var string $chaveSubstituta */
         $chaveSubstituta = $emissaoResponse->chave;
 
+        $eventoResponse = $this->registerEvent($chave, $chaveSubstituta, $codigoMotivo, $descricao);
+
+        return new SubstituicaoResponse(
+            sucesso: $eventoResponse->sucesso,
+            emissao: $emissaoResponse,
+            evento: $eventoResponse,
+        );
+    }
+
+    public function confirmarSubstituicao(string $chaveSubstituida, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): NfseResponse
+    {
+        $this->validateChaveAcesso($chaveSubstituida);
+        $this->validateChaveAcesso($chaveSubstituta);
+
+        if (is_string($codigoMotivo)) {
+            $codigoMotivo = CodigoJustificativaSubstituicao::from($codigoMotivo);
+        }
+
+        return $this->registerEvent($chaveSubstituida, $chaveSubstituta, $codigoMotivo, $descricao);
+    }
+
+    private function registerEvent(string $chave, string $chaveSubstituta, CodigoJustificativaSubstituicao $codigoMotivo, ?string $descricao): NfseResponse
+    {
         $operacao = 'substituir';
         $this->dispatchEvent(new NfseRequested($operacao, ['chave' => $chave]));
 
-        $eventoResponse = $this->withFailureEvent($operacao, function () use ($chave, $chaveSubstituta, $codigoMotivo, $descricao, $operacao): NfseResponse {
+        return $this->withFailureEvent($operacao, function () use ($chave, $chaveSubstituta, $codigoMotivo, $descricao, $operacao): NfseResponse {
             $identity = $this->pipeline->extractAuthorIdentity('substituir');
 
             $xml = $this->substitutionBuilder->buildAndValidate(
@@ -113,11 +136,5 @@ final readonly class NfseSubstitutor implements SubstitutesNfse
 
             return $this->parseEventResponse($result, $chave, $operacao, new NfseSubstituted($chave, $chaveSubstituta));
         });
-
-        return new SubstituicaoResponse(
-            sucesso: $eventoResponse->sucesso,
-            emissao: $emissaoResponse,
-            evento: $eventoResponse,
-        );
     }
 }

@@ -162,7 +162,7 @@ it('substituir throws NfseException when cert has no CNPJ nor CPF for event', fu
     ))->toThrow(NfseException::class, 'Certificado não contém CNPJ nem CPF');
 })->with('dpsData');
 
-it('substituir sends event XML without xMotivo when descricao empty', function (DpsData $dps) {
+it('substituir sends event XML without xMotivo when descricao is null', function (DpsData $dps) {
     $chave = makeChaveAcesso();
     $chaveSub = '98765432109876543210987654321098765432109876543210';
 

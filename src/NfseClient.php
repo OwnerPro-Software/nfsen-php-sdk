@@ -129,9 +129,14 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
     }
 
     /** @phpstan-param DpsData|DpsDataArray $dps */
-    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, string $descricao = ''): SubstituicaoResponse
+    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): SubstituicaoResponse
     {
         return $this->substitutor->substituir($chave, $dps, $codigoMotivo, $descricao);
+    }
+
+    public function confirmarSubstituicao(string $chaveSubstituida, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): NfseResponse
+    {
+        return $this->substitutor->confirmarSubstituicao($chaveSubstituida, $chaveSubstituta, $codigoMotivo, $descricao);
     }
 
     public function consultar(): ConsultsNfse

@@ -79,3 +79,27 @@ it('substituir injects subst into DPS and sends event XML without xMotivo', func
             ! str_contains($xml, '<xMotivo>');
     });
 });
+
+it('confirmarSubstituicao registers event without emitting', function () {
+    $chave = '12345678901234567890123456789012345678901234567890';
+    $chaveSub = '98765432109876543210987654321098765432109876543210';
+
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
+
+    $substitutor = makeNfseSubstitutor();
+    $response = $substitutor->confirmarSubstituicao(
+        $chave,
+        $chaveSub,
+        CodigoJustificativaSubstituicao::Outros,
+        'Outro motivo para substituicao',
+    );
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe($chave);
+    expect($response->xml)->not->toBeNull();
+
+    Http::assertSentCount(1);
+    Http::assertSent(fn (Request $req) => str_contains($req->url(), $chave.'/eventos') &&
+        isset($req['pedidoRegistroEventoXmlGZipB64'])
+    );
+});

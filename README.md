@@ -206,6 +206,19 @@ if ($response->sucesso) {
 
 Codigos de substituição: `DesenquadramentoSimplesNacional`, `EnquadramentoSimplesNacional`, `InclusaoRetroativaImunidadeIsencao`, `ExclusaoRetroativaImunidadeIsencao`, `RejeicaoTomadorIntermediario`, `Outros`.
 
+#### Confirmar substituição (apenas etapa 2)
+
+Se você já emitiu a nota substituta por conta própria, ou se a etapa 2 do `substituir` falhou e precisa ser refeita, use `confirmarSubstituicao` para registrar apenas o evento de cancelamento por substituição:
+
+```php
+$response = $client->confirmarSubstituicao(
+    chaveSubstituida: '00000000000000000000000000000000000000000000000000',
+    chaveSubstituta: '11111111111111111111111111111111111111111111111111',
+    codigoMotivo: CodigoJustificativaSubstituicao::Outros,
+    descricao: 'Substituicao por correcao de dados',
+); // NfseResponse
+```
+
 ### Consultas
 
 ```php
