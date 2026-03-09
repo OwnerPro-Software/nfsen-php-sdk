@@ -12,7 +12,6 @@ use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
 use Pulsar\NfseNacional\Enums\NfseAmbiente;
 use Pulsar\NfseNacional\NfseClient;
 use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\SubstituicaoResponse;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData
@@ -20,8 +19,7 @@ use Pulsar\NfseNacional\Responses\SubstituicaoResponse;
  * @method static NfseResponse emitir(DpsData|DpsDataArray $data)
  * @method static NfseResponse emitirDecisaoJudicial(DpsData|DpsDataArray $data)
  * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao)
- * @method static SubstituicaoResponse substituir(string $chave, DpsData|DpsDataArray $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null)
- * @method static NfseResponse confirmarSubstituicao(string $chaveSubstituida, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null)
+ * @method static NfseResponse substituir(string $chave, DpsData|DpsDataArray $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null)
  * @method static ConsultsNfse consultar()
  */
 final class NfseNacional extends Facade

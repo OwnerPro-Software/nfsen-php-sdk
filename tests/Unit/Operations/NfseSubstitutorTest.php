@@ -3,50 +3,42 @@
 covers(\Pulsar\NfseNacional\Operations\NfseSubstitutor::class);
 
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Adapters\CertificateManager;
-use Pulsar\NfseNacional\Adapters\NfseHttpClient;
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
-use Pulsar\NfseNacional\Adapters\XmlSigner;
 use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use Pulsar\NfseNacional\Events\NfseSubstituted;
 use Pulsar\NfseNacional\Operations\NfseEmitter;
 use Pulsar\NfseNacional\Operations\NfseSubstitutor;
-use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Support\GzipCompressor;
-use Pulsar\NfseNacional\Xml\Builders\SubstitutionBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function makeNfseSubstitutor(): NfseSubstitutor
 {
-    $certManager = new CertificateManager(makeIcpBrPfxContent(), 'secret');
-    $ambiente = NfseAmbiente::HOMOLOGACAO;
-    $prefeituraResolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $httpClient = new NfseHttpClient($certManager->getCertificate(), 30, 10, true);
-    $signer = new XmlSigner($certManager->getCertificate(), 'sha1');
+    $certManager = new \Pulsar\NfseNacional\Adapters\CertificateManager(makeIcpBrPfxContent(), 'secret');
+    $prefeituraResolver = new \Pulsar\NfseNacional\Adapters\PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $httpClient = new \Pulsar\NfseNacional\Adapters\NfseHttpClient($certManager->getCertificate(), 30, 10, true);
+    $signer = new \Pulsar\NfseNacional\Adapters\XmlSigner($certManager->getCertificate(), 'sha1');
 
-    $pipeline = new NfseRequestPipeline(
-        ambiente: $ambiente,
+    $pipeline = new \Pulsar\NfseNacional\Pipeline\NfseRequestPipeline(
+        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
         prefeituraResolver: $prefeituraResolver,
-        gzipCompressor: new GzipCompressor,
+        gzipCompressor: new \Pulsar\NfseNacional\Support\GzipCompressor,
         signer: $signer,
         authorIdentity: $certManager,
         prefeitura: '9999999',
         httpClient: $httpClient,
     );
 
-    $emitter = new NfseEmitter($pipeline, new DpsBuilder(makeXsdValidator()));
+    $emitter = new NfseEmitter($pipeline, new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator()));
 
-    return new NfseSubstitutor($emitter, $pipeline, new SubstitutionBuilder(makeXsdValidator()), $ambiente);
+    return new NfseSubstitutor($emitter);
 }
 
-it('substituir injects subst into DPS and sends event XML without xMotivo', function () {
+it('substituir injects subst into DPS and dispatches NfseSubstituted', function () {
+    Event::fake();
+
     $chave = '12345678901234567890123456789012345678901234567890';
     $chaveSub = '98765432109876543210987654321098765432109876543210';
 
-    Http::fakeSequence()
-        ->push(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)
-        ->push(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201);
+    Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
     $substitutor = makeNfseSubstitutor();
     $dps = new \Pulsar\NfseNacional\Dps\DTO\DpsData(
@@ -63,43 +55,46 @@ it('substituir injects subst into DPS and sends event XML without xMotivo', func
     );
 
     expect($response->sucesso)->toBeTrue();
-    expect($response->emissao->sucesso)->toBeTrue();
-    expect($response->emissao->chave)->toBe($chaveSub);
-    expect($response->evento)->not->toBeNull();
-    expect($response->evento->sucesso)->toBeTrue();
+    expect($response->chave)->toBe($chaveSub);
 
-    Http::assertSent(function (Request $req) {
-        if (! isset($req['pedidoRegistroEventoXmlGZipB64'])) {
+    Http::assertSentCount(1);
+    Http::assertSent(function (Request $req) use ($chave) {
+        if (! isset($req['dpsXmlGZipB64'])) {
             return false;
         }
 
-        $xml = gzdecode(base64_decode($req['pedidoRegistroEventoXmlGZipB64']));
+        $xml = gzdecode(base64_decode($req['dpsXmlGZipB64']));
 
-        return ! str_contains($xml, '<nPedRegEvento>') &&
+        return str_contains($xml, '<chSubstda>'.$chave.'</chSubstda>') &&
             ! str_contains($xml, '<xMotivo>');
     });
+
+    Event::assertDispatched(NfseSubstituted::class, fn (NfseSubstituted $e) => $e->chave === $chave && $e->chaveSubstituta === $chaveSub);
 });
 
-it('confirmarSubstituicao registers event without emitting', function () {
-    $chave = '12345678901234567890123456789012345678901234567890';
-    $chaveSub = '98765432109876543210987654321098765432109876543210';
+it('substituir does not dispatch NfseSubstituted on failure', function () {
+    Event::fake();
 
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
+    $chave = '12345678901234567890123456789012345678901234567890';
+
+    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DPS inválido', 'codigo' => 'E001']]], 200)]);
 
     $substitutor = makeNfseSubstitutor();
-    $response = $substitutor->confirmarSubstituicao(
+    $dps = new \Pulsar\NfseNacional\Dps\DTO\DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $response = $substitutor->substituir(
         $chave,
-        $chaveSub,
+        $dps,
         CodigoJustificativaSubstituicao::Outros,
-        'Outro motivo para substituicao',
+        'Motivo para substituicao da nota fiscal',
     );
 
-    expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe($chave);
-    expect($response->xml)->not->toBeNull();
+    expect($response->sucesso)->toBeFalse();
 
-    Http::assertSentCount(1);
-    Http::assertSent(fn (Request $req) => str_contains($req->url(), $chave.'/eventos') &&
-        isset($req['pedidoRegistroEventoXmlGZipB64'])
-    );
+    Event::assertNotDispatched(NfseSubstituted::class);
 });

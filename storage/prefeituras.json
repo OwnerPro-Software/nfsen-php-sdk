@@ -7,7 +7,6 @@
         "operations":{
             "emit_nfse" : "",
             "cancel_nfse" : "",
-            "substitute_nfse" : "",
             "query_nfse" : "",
             "query_dps" : "",
             "query_events" : "",

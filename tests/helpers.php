@@ -31,7 +31,6 @@ use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
-use Pulsar\NfseNacional\Xml\Builders\SubstitutionBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 function makePfxContent(): string
@@ -158,7 +157,7 @@ function makeNfseClient(
     return new NfseClient(
         emitter: $emitter,
         canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
-        substitutor: new NfseSubstitutor($emitter, $pipeline, new SubstitutionBuilder($xsdValidator), $ambiente),
+        substitutor: new NfseSubstitutor($emitter),
         consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
     );
 }

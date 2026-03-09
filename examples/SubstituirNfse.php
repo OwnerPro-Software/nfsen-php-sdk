@@ -70,15 +70,10 @@ $response = $client->substituir(
 
 if ($response->sucesso) {
     echo "NFSe substituida com sucesso!\n";
-    echo "Chave substituta: {$response->emissao->chave}\n";
-} elseif (! $response->emissao->sucesso) {
-    echo "Falha na emissao da nota substituta:\n";
-    foreach ($response->emissao->erros as $erro) {
-        echo "  [{$erro->codigo}] {$erro->mensagem} - {$erro->descricao}\n";
-    }
+    echo "Chave substituta: {$response->chave}\n";
 } else {
-    echo "Nota emitida (chave: {$response->emissao->chave}), mas registro do evento falhou:\n";
-    foreach ($response->evento->erros as $erro) {
+    echo "Falha na substituicao:\n";
+    foreach ($response->erros as $erro) {
         echo "  [{$erro->codigo}] {$erro->mensagem} - {$erro->descricao}\n";
     }
 }

@@ -24,11 +24,9 @@ use Pulsar\NfseNacional\Operations\NfseSubstitutor;
 use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
 use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
 use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\SubstituicaoResponse;
 use Pulsar\NfseNacional\Support\GzipCompressor;
 use Pulsar\NfseNacional\Support\XsdValidator;
 use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
-use Pulsar\NfseNacional\Xml\Builders\SubstitutionBuilder;
 use Pulsar\NfseNacional\Xml\DpsBuilder;
 
 /**
@@ -106,7 +104,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         return new self(
             emitter: $emitter,
             canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
-            substitutor: new NfseSubstitutor($emitter, $pipeline, new SubstitutionBuilder($xsdValidator), $ambiente),
+            substitutor: new NfseSubstitutor($emitter),
             consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
         );
     }
@@ -129,14 +127,9 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
     }
 
     /** @phpstan-param DpsData|DpsDataArray $dps */
-    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): SubstituicaoResponse
+    public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): NfseResponse
     {
         return $this->substitutor->substituir($chave, $dps, $codigoMotivo, $descricao);
-    }
-
-    public function confirmarSubstituicao(string $chaveSubstituida, string $chaveSubstituta, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): NfseResponse
-    {
-        return $this->substitutor->confirmarSubstituicao($chaveSubstituida, $chaveSubstituta, $codigoMotivo, $descricao);
     }
 
     public function consultar(): ConsultsNfse
