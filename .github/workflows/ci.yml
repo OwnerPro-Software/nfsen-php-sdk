@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v3
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, zlib, openssl, mbstring, libxml
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v3
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: dom, curl, zlib, openssl, mbstring, libxml
