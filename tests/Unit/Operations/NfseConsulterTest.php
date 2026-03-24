@@ -3,6 +3,7 @@
 use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
 use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
@@ -224,7 +225,7 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
 
         public function executeAndDownload(string $url): string
         {
-            $e = \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(
+            $e = HttpException::fromResponse(
                 400,
                 json_encode(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => '404']]]),
             );
@@ -262,7 +263,7 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
 
         public function executeAndDownload(string $url): string
         {
-            throw \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(500, 'Server Error');
+            throw HttpException::fromResponse(500, 'Server Error');
         }
 
         public function executeHead(string $url): int
@@ -297,7 +298,7 @@ it('danfse returns failure with parsed singular erro on HttpException', function
 
         public function executeAndDownload(string $url): string
         {
-            $e = \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(
+            $e = HttpException::fromResponse(
                 400,
                 json_encode(['erro' => ['descricao' => 'Chave inválida', 'codigo' => 'E400']]),
             );
@@ -335,7 +336,7 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
 
         public function executeAndDownload(string $url): string
         {
-            throw \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(
+            throw HttpException::fromResponse(
                 503,
                 json_encode(['message' => 'Service Unavailable']),
             );

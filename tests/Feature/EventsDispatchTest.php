@@ -12,10 +12,13 @@ use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Events\NfseSubstituted;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfseClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 covers(NfseCanceller::class, NfseEmitter::class, NfseSubstitutor::class);
 
@@ -122,7 +125,7 @@ it('dispatches NfseFailed on consultar HttpException', function () {
 
     try {
         $client->consultar()->nfse(makeChaveAcesso());
-    } catch (\OwnerPro\Nfsen\Exceptions\HttpException) {
+    } catch (HttpException) {
         // expected
     }
 
@@ -168,14 +171,14 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 200)]);
 
-    $compressor = Mockery::mock(\OwnerPro\Nfsen\Support\GzipCompressor::class);
+    $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
     $client = makeNfseClient(gzipCompressor: $compressor);
 
     try {
         $client->emitir($data);
-    } catch (\OwnerPro\Nfsen\Exceptions\NfseException) {
+    } catch (NfseException) {
         // expected
     }
 
@@ -187,14 +190,14 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 200)]);
 
-    $compressor = Mockery::mock(\OwnerPro\Nfsen\Support\GzipCompressor::class);
+    $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
     $client = makeNfseClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
 
     try {
         $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
-    } catch (\OwnerPro\Nfsen\Exceptions\NfseException) {
+    } catch (NfseException) {
         // expected
     }
 
@@ -210,7 +213,7 @@ it('dispatches NfseFailed on consultar NfseException', function () {
 
     try {
         $client->consultar()->nfse(makeChaveAcesso());
-    } catch (\OwnerPro\Nfsen\Exceptions\NfseException) {
+    } catch (NfseException) {
         // expected
     }
 
@@ -221,14 +224,14 @@ it('dispatches NfseFailed on consultar NfseException', function () {
 it('dispatches NfseFailed on consultar dps non-HTTP exception', function () {
     Event::fake();
     Http::fake(['*' => function (): never {
-        throw new \RuntimeException('Connection reset');
+        throw new RuntimeException('Connection reset');
     }]);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
         $client->consultar()->dps('DPS123');
-    } catch (\RuntimeException) {
+    } catch (RuntimeException) {
         // expected
     }
 
@@ -244,7 +247,7 @@ it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
 
     try {
         $client->emitir($data);
-    } catch (\OwnerPro\Nfsen\Exceptions\HttpException) {
+    } catch (HttpException) {
         // expected
     }
 

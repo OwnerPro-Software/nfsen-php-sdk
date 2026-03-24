@@ -8,6 +8,7 @@ use OwnerPro\Nfsen\Events\NfseEmitted;
 use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\NfseClient;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 
@@ -63,7 +64,7 @@ it('emitirDecisaoJudicial throws HttpException on server error', function (DpsDa
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitirDecisaoJudicial($data))
-        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
+        ->toThrow(HttpException::class);
 })->with('dpsData');
 
 it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
@@ -164,7 +165,7 @@ it('dispatches NfseFailed on emitirDecisaoJudicial HttpException', function (Dps
 
     try {
         $client->emitirDecisaoJudicial($data);
-    } catch (\OwnerPro\Nfsen\Exceptions\HttpException) {
+    } catch (HttpException) {
         // expected
     }
 

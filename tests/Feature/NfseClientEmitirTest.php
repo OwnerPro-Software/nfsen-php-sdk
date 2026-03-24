@@ -1,13 +1,21 @@
 <?php
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfseClient;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
 use OwnerPro\Nfsen\Support\GzipCompressor;
 
 covers(NfseClient::class, NfseEmitter::class);
@@ -80,7 +88,7 @@ it('consultar()->dps returns null chave when response has no chaveAcesso', funct
 
 it('throws InvalidArgumentException for invalid IBGE code', function () {
     expect(fn () => NfseClient::for(makePfxContent(), 'secret', '123'))
-        ->toThrow(\InvalidArgumentException::class, 'IBGE');
+        ->toThrow(InvalidArgumentException::class, 'IBGE');
 });
 
 it('forStandalone creates client without Laravel container', function (DpsData $data) {
@@ -157,7 +165,7 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros)->toBeArray();
-    expect($response->erros[0])->toBeInstanceOf(\OwnerPro\Nfsen\Responses\ProcessingMessage::class);
+    expect($response->erros[0])->toBeInstanceOf(ProcessingMessage::class);
     expect($response->erros[0]->descricao)->toContain('CNPJ');
     expect($response->idDps)->toBe('DPS_ERR_001');
     expect($response->tipoAmbiente)->toBe(2);
@@ -198,15 +206,15 @@ it('emitir throws HttpException on server error', function (DpsData $data) {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
-        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
+        ->toThrow(HttpException::class);
 })->with('dpsData');
 
 it('emitir succeeds and reports error when event listener throws', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_OK'], 201)]);
 
     $reported = [];
-    $this->app->bind(\Illuminate\Contracts\Debug\ExceptionHandler::class, function () use (&$reported) {
-        return new class($reported) extends \Illuminate\Foundation\Exceptions\Handler
+    $this->app->bind(ExceptionHandler::class, function () use (&$reported) {
+        return new class($reported) extends Handler
         {
             /** @param list<Throwable> $reported */
             public function __construct(private array &$reported)
@@ -221,10 +229,10 @@ it('emitir succeeds and reports error when event listener throws', function (Dps
         };
     });
 
-    \Illuminate\Support\Facades\Event::listen(
-        \OwnerPro\Nfsen\Events\NfseRequested::class,
+    Event::listen(
+        NfseRequested::class,
         function (): never {
-            throw new \RuntimeException('Listener exploded');
+            throw new RuntimeException('Listener exploded');
         }
     );
 
@@ -233,7 +241,7 @@ it('emitir succeeds and reports error when event listener throws', function (Dps
 
     expect($response->sucesso)->toBeTrue();
     expect($reported)->toHaveCount(1);
-    expect($reported[0])->toBeInstanceOf(\RuntimeException::class);
+    expect($reported[0])->toBeInstanceOf(RuntimeException::class);
     expect($reported[0]->getMessage())->toBe('Listener exploded');
 })->with('dpsData');
 
@@ -285,7 +293,7 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
 
     $client = NfseClient::forStandalone(
         makePfxContent(), 'secret', '9999999',
-        ambiente: \OwnerPro\Nfsen\Enums\NfseAmbiente::PRODUCAO,
+        ambiente: NfseAmbiente::PRODUCAO,
     );
     $response = $client->emitir($data);
 
@@ -391,14 +399,14 @@ it('emitir throws when array is missing required keys', function () {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir(['infDPS' => []]))
-        ->toThrow(\ErrorException::class);
+        ->toThrow(ErrorException::class);
 });
 
 it('emitir validates XML against XSD before sending', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'SHOULD_NOT_REACH'], 201)]);
 
-    $servico = new \OwnerPro\Nfsen\Dps\DTO\Serv\Serv(
-        cServ: new \OwnerPro\Nfsen\Dps\DTO\Serv\CServ(
+    $servico = new Serv(
+        cServ: new CServ(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD',
             xDescServ: 'Serviço',
             cNBS: '123456789',
@@ -430,7 +438,7 @@ it('emitir throws NfseException on invalid base64 in nfseXmlGZipB64', function (
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
-        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'base64');
+        ->toThrow(NfseException::class, 'base64');
 })->with('dpsData');
 
 it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (DpsData $data) {
@@ -439,7 +447,7 @@ it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (Dp
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
-        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'descomprimir');
+        ->toThrow(NfseException::class, 'descomprimir');
 })->with('dpsData');
 
 it('emitir throws NfseException when gzip compression fails', function (DpsData $data) {

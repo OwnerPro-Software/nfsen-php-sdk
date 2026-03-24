@@ -1,8 +1,13 @@
 <?php
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfseClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
@@ -126,7 +131,7 @@ it('cancelar throws HttpException on server error', function () {
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
         'Erro na emissao da nota fiscal'
-    ))->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
+    ))->toThrow(HttpException::class);
 });
 
 it('cancelar succeeds and reports error when event listener throws', function () {
@@ -136,8 +141,8 @@ it('cancelar succeeds and reports error when event listener throws', function ()
     )]);
 
     $reported = [];
-    $this->app->bind(\Illuminate\Contracts\Debug\ExceptionHandler::class, function () use (&$reported) {
-        return new class($reported) extends \Illuminate\Foundation\Exceptions\Handler
+    $this->app->bind(ExceptionHandler::class, function () use (&$reported) {
+        return new class($reported) extends Handler
         {
             /** @param list<Throwable> $reported */
             public function __construct(private array &$reported)
@@ -152,10 +157,10 @@ it('cancelar succeeds and reports error when event listener throws', function ()
         };
     });
 
-    \Illuminate\Support\Facades\Event::listen(
-        \OwnerPro\Nfsen\Events\NfseRequested::class,
+    Event::listen(
+        NfseRequested::class,
         function (): never {
-            throw new \RuntimeException('Listener exploded');
+            throw new RuntimeException('Listener exploded');
         }
     );
 
@@ -168,7 +173,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
 
     expect($response->sucesso)->toBeTrue();
     expect($reported)->toHaveCount(1);
-    expect($reported[0])->toBeInstanceOf(\RuntimeException::class);
+    expect($reported[0])->toBeInstanceOf(RuntimeException::class);
     expect($reported[0]->getMessage())->toBe('Listener exploded');
 });
 
@@ -201,7 +206,7 @@ it('cancelar throws InvalidArgumentException for invalid chaveAcesso', function 
         'INVALID_CHAVE',
         CodigoJustificativaCancelamento::ErroEmissao,
         'Erro na emissao da nota fiscal'
-    ))->toThrow(\InvalidArgumentException::class, 'chaveAcesso inválida');
+    ))->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
 });
 
 it('cancelar throws NfseException when gzip compression fails', function () {

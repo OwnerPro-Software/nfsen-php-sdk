@@ -3,6 +3,7 @@
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XmlDocumentLoader;
+use OwnerPro\Nfsen\Support\XsdValidator;
 use OwnerPro\Nfsen\Xml\Builders\CancellationBuilder;
 
 covers(CancellationBuilder::class);
@@ -207,7 +208,7 @@ it('throws NfseException when descricao has 256 characters', function (): void {
 });
 
 it('throws NfseException when scheme file does not exist', function (): void {
-    $builder = new CancellationBuilder(new \OwnerPro\Nfsen\Support\XsdValidator('/nonexistent/path'));
+    $builder = new CancellationBuilder(new XsdValidator('/nonexistent/path'));
     $chave = '12345678901234567890123456789012345678901234567890';
 
     expect(fn () => $builder->buildAndValidate(
@@ -226,7 +227,7 @@ it('throws NfseException when XML loading fails', function (): void {
     $loader = Mockery::mock(XmlDocumentLoader::class);
     $loader->shouldReceive('__invoke')->andReturn(false);
 
-    $builder = new CancellationBuilder(new \OwnerPro\Nfsen\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
+    $builder = new CancellationBuilder(new XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
     $chave = '12345678901234567890123456789012345678901234567890';
 
     expect(fn () => $builder->buildAndValidate(

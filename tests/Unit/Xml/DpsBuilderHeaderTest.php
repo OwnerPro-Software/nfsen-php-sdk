@@ -6,6 +6,8 @@ use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
 use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
@@ -14,6 +16,8 @@ use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
 use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
 use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\XsdValidator;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 covers(DpsBuilder::class);
@@ -107,15 +111,15 @@ it('includes toma element as child of infDPS when tomador has data', function ()
 });
 
 it('throws NfseException when scheme file does not exist', function (DpsData $data) {
-    $builder = new DpsBuilder(new \OwnerPro\Nfsen\Support\XsdValidator('/nonexistent/path'));
+    $builder = new DpsBuilder(new XsdValidator('/nonexistent/path'));
 
     expect(fn () => $builder->buildAndValidate($data))
-        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'Schema XSD não encontrado');
+        ->toThrow(NfseException::class, 'Schema XSD não encontrado');
 })->with('dpsData');
 
 it('throws NfseException on invalid XSD', function () {
-    $servico = new \OwnerPro\Nfsen\Dps\DTO\Serv\Serv(
-        cServ: new \OwnerPro\Nfsen\Dps\DTO\Serv\CServ(
+    $servico = new Serv(
+        cServ: new CServ(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH',
             xDescServ: 'Serviço',
             cNBS: '123456789',
@@ -128,7 +132,7 @@ it('throws NfseException on invalid XSD', function () {
     $builder = new DpsBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate($data))
-        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'XML inválido');
+        ->toThrow(NfseException::class, 'XML inválido');
 });
 
 it('generates correct Id for CNPJ prestador', function (DpsData $data) {

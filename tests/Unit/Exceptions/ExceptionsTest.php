@@ -8,7 +8,7 @@ covers(NfseException::class, CertificateExpiredException::class, HttpException::
 
 it('NfseException is a RuntimeException', function () {
     $e = new NfseException('msg');
-    expect($e)->toBeInstanceOf(\RuntimeException::class);
+    expect($e)->toBeInstanceOf(RuntimeException::class);
     expect($e->getMessage())->toBe('msg');
 });
 

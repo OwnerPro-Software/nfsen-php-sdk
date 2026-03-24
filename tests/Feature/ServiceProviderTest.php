@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\ServiceProvider;
+use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Facades\NfseNacional;
@@ -44,10 +46,10 @@ it('configures client when cert path, senha and prefeitura are set', function ()
     ]);
 
     // Re-resolve from container to trigger the configure() branch
-    $client = app(\OwnerPro\Nfsen\NfseClient::class);
+    $client = app(NfseClient::class);
 
     // If configured, consultar() returns a ConsultsNfse without throwing
-    expect($client->consultar())->toBeInstanceOf(\OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse::class);
+    expect($client->consultar())->toBeInstanceOf(ConsultsNfse::class);
 });
 
 it('facade emitir works directly when config is set', function (DpsData $data) {
@@ -83,15 +85,15 @@ it('throws RuntimeException when cert file is empty', function () {
             'nfse-nacional.prefeitura' => '3501608',
         ]);
 
-        expect(fn () => app(\OwnerPro\Nfsen\NfseClient::class))
-            ->toThrow(\RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
+        expect(fn () => app(NfseClient::class))
+            ->toThrow(RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
     } finally {
         unlink($emptyFile);
     }
 });
 
 it('throws NfseException when cert config is incomplete', function () {
-    expect(fn () => app(\OwnerPro\Nfsen\NfseClient::class))
+    expect(fn () => app(NfseClient::class))
         ->toThrow(NfseException::class, 'NfseClient não configurado');
 });
 
@@ -151,8 +153,8 @@ it('casts integer prefeitura config to string', function () {
 });
 
 it('publishes config file in console', function () {
-    $paths = \Illuminate\Support\ServiceProvider::pathsToPublish(
-        \OwnerPro\Nfsen\NfseNacionalServiceProvider::class,
+    $paths = ServiceProvider::pathsToPublish(
+        NfseNacionalServiceProvider::class,
         'nfse-nacional-config',
     );
 
