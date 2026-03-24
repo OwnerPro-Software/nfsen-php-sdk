@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Toma;
+namespace OwnerPro\Nfsen\Dps\DTO\Toma;
 
-use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 
 /**
  * @phpstan-import-type EndArray from End

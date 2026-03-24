@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Support;
+namespace OwnerPro\Nfsen\Support;
 
-use Pulsar\NfseNacional\Exceptions\NfseException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use Throwable;
 
 class GzipCompressor

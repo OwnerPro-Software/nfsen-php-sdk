@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Adapters;
+namespace OwnerPro\Nfsen\Adapters;
 
 use InvalidArgumentException;
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Signer;
-use Pulsar\NfseNacional\Contracts\Driven\SignsXml;
+use OwnerPro\Nfsen\Contracts\Driven\SignsXml;
 
 final class XmlSigner implements SignsXml
 {

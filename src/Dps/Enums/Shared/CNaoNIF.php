@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\Shared;
+namespace OwnerPro\Nfsen\Dps\Enums\Shared;
 
 enum CNaoNIF: string
 {

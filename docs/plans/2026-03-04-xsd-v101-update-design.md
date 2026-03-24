@@ -92,7 +92,7 @@ Remover `int $nPedRegEvento = 1` de:
 - `Operations/NfseCanceller.php`
 - `Operations/NfseSubstitutor.php`
 - `NfseClient.php`
-- `Facades/NfseNacional.php` (docblock `@method`)
+- `Facades/Nfsen.php` (docblock `@method`)
 
 ## 6. Testes
 

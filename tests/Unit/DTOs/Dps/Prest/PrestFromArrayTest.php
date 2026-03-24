@@ -1,11 +1,11 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\Prest\Prest::class);
+covers(\OwnerPro\Nfsen\Dps\DTO\Prest\Prest::class);
 
-use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('Prest::fromArray creates instance from array', function () {
     $dto = Prest::fromArray([

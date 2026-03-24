@@ -1,41 +1,41 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\VServPrest::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\TribMun::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\TribFed::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\BM::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\Trib::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed::class,
-    \Pulsar\NfseNacional\Dps\DTO\Valores\Valores::class,
+    \OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\TribFed::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\Piscofins::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\ExigSusp::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\BM::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\PTotTrib::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\Trib::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\NFSeMun::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\NFNFS::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed::class,
+    \OwnerPro\Nfsen\Dps\DTO\Valores\Valores::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\Valores\BM;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp;
-use Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS;
-use Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins;
-use Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Trib;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TribFed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TribMun;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VServPrest;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Dps\DTO\Valores\BM;
+use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\ExigSusp;
+use OwnerPro\Nfsen\Dps\DTO\Valores\NFNFS;
+use OwnerPro\Nfsen\Dps\DTO\Valores\NFSeMun;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Piscofins;
+use OwnerPro\Nfsen\Dps\DTO\Valores\PTotTrib;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Trib;
+use OwnerPro\Nfsen\Dps\DTO\Valores\TribFed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\TribMun;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('VServPrest::fromArray creates instance from array', function () {
     $dto = VServPrest::fromArray(['vServ' => '100.00']);

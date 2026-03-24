@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndNac;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
 
 trait CreatesTextElements
 {

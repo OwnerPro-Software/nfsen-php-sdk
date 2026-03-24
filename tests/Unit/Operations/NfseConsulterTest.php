@@ -1,12 +1,12 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Operations\NfseConsulter::class);
+covers(\OwnerPro\Nfsen\Operations\NfseConsulter::class);
 
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
-use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
-use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Operations\NfseConsulter;
-use Pulsar\NfseNacional\Responses\NfseResponse;
+use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
+use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
+use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Responses\NfseResponse;
 
 class FakeNfseClientForConsulta implements ExecutesNfseRequests
 {
@@ -224,7 +224,7 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
 
         public function executeAndDownload(string $url): string
         {
-            $e = \Pulsar\NfseNacional\Exceptions\HttpException::fromResponse(
+            $e = \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(
                 400,
                 json_encode(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => '404']]]),
             );
@@ -262,7 +262,7 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
 
         public function executeAndDownload(string $url): string
         {
-            throw \Pulsar\NfseNacional\Exceptions\HttpException::fromResponse(500, 'Server Error');
+            throw \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(500, 'Server Error');
         }
 
         public function executeHead(string $url): int
@@ -297,7 +297,7 @@ it('danfse returns failure with parsed singular erro on HttpException', function
 
         public function executeAndDownload(string $url): string
         {
-            $e = \Pulsar\NfseNacional\Exceptions\HttpException::fromResponse(
+            $e = \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(
                 400,
                 json_encode(['erro' => ['descricao' => 'Chave inválida', 'codigo' => 'E400']]),
             );
@@ -335,7 +335,7 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
 
         public function executeAndDownload(string $url): string
         {
-            throw \Pulsar\NfseNacional\Exceptions\HttpException::fromResponse(
+            throw \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(
                 503,
                 json_encode(['message' => 'Service Unavailable']),
             );

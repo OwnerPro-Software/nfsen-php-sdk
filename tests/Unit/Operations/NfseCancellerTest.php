@@ -1,18 +1,18 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Operations\NfseCanceller::class);
+covers(\OwnerPro\Nfsen\Operations\NfseCanceller::class);
 
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Adapters\CertificateManager;
-use Pulsar\NfseNacional\Adapters\NfseHttpClient;
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
-use Pulsar\NfseNacional\Adapters\XmlSigner;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Operations\NfseCanceller;
-use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Support\GzipCompressor;
-use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
+use OwnerPro\Nfsen\Adapters\CertificateManager;
+use OwnerPro\Nfsen\Adapters\NfseHttpClient;
+use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
+use OwnerPro\Nfsen\Adapters\XmlSigner;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Operations\NfseCanceller;
+use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
+use OwnerPro\Nfsen\Support\GzipCompressor;
+use OwnerPro\Nfsen\Xml\Builders\CancellationBuilder;
 
 function makeNfseCanceller(): NfseCanceller
 {

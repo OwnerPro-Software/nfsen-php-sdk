@@ -2,6 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Exceptions;
+namespace OwnerPro\Nfsen\Exceptions;
 
 final class CertificateExpiredException extends NfseException {}

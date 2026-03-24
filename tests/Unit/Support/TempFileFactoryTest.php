@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Support\TempFileFactory::class);
+covers(\OwnerPro\Nfsen\Support\TempFileFactory::class);
 
-use Pulsar\NfseNacional\Support\TempFileFactory;
+use OwnerPro\Nfsen\Support\TempFileFactory;
 
 it('creates a temporary file resource via invocation', function () {
     $factory = new TempFileFactory;

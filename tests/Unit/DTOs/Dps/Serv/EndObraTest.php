@@ -1,9 +1,9 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\Serv\EndObra::class);
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+covers(\OwnerPro\Nfsen\Dps\DTO\Serv\EndObra::class);
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('throws when both CEP and endExt are set', function () {
     expect(fn () => new EndObra(

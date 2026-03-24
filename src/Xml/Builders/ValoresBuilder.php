@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
-use Pulsar\NfseNacional\Dps\DTO\Valores\BM;
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp;
-use Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS;
-use Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins;
-use Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Trib;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TribFed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\DTO\Valores\BM;
+use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\ExigSusp;
+use OwnerPro\Nfsen\Dps\DTO\Valores\NFNFS;
+use OwnerPro\Nfsen\Dps\DTO\Valores\NFSeMun;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Piscofins;
+use OwnerPro\Nfsen\Dps\DTO\Valores\PTotTrib;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Trib;
+use OwnerPro\Nfsen\Dps\DTO\Valores\TribFed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 
 final class ValoresBuilder
 {

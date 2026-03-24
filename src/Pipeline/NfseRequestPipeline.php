@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Pipeline;
+namespace OwnerPro\Nfsen\Pipeline;
 
-use Pulsar\NfseNacional\Contracts\Driven\ExtractsAuthorIdentity;
-use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
-use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Contracts\Driven\SignsXml;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity;
+use OwnerPro\Nfsen\Contracts\Driven\ResolvesPrefeituras;
+use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Driven\SignsXml;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 final readonly class NfseRequestPipeline
 {

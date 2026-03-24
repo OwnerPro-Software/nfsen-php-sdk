@@ -1,16 +1,16 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseClient::class, \Pulsar\NfseNacional\Operations\NfseEmitter::class);
+covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseEmitter::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Events\NfseFailed;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\NfseClient;
 
 it('emitirDecisaoJudicial returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(
@@ -62,7 +62,7 @@ it('emitirDecisaoJudicial throws HttpException on server error', function (DpsDa
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitirDecisaoJudicial($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 })->with('dpsData');
 
 it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
@@ -163,7 +163,7 @@ it('dispatches NfseFailed on emitirDecisaoJudicial HttpException', function (Dps
 
     try {
         $client->emitirDecisaoJudicial($data);
-    } catch (\Pulsar\NfseNacional\Exceptions\HttpException) {
+    } catch (\OwnerPro\Nfsen\Exceptions\HttpException) {
         // expected
     }
 

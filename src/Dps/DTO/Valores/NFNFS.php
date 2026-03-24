@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Valores;
+namespace OwnerPro\Nfsen\Dps\DTO\Valores;
 
 /**
  * @phpstan-type NFNFSArray array{nNFS: string, modNFS: string, serieNFS: string}

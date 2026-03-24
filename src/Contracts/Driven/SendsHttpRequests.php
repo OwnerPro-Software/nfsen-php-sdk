@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Driven;
+namespace OwnerPro\Nfsen\Contracts\Driven;
 
 interface SendsHttpRequests
 {

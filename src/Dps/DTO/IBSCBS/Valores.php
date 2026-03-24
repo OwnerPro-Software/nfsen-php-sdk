@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
+namespace OwnerPro\Nfsen\Dps\DTO\IBSCBS;
 
 /**
  * @phpstan-import-type TribArray from Trib

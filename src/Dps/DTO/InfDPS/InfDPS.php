@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\InfDPS;
+namespace OwnerPro\Nfsen\Dps\DTO\InfDPS;
 
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\TpEmit;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 /**
  * @phpstan-type InfDPSArray array{tpAmb: string, dhEmi: string, verAplic: string, serie: string, nDPS: string, dCompet: string, tpEmit: string, cLocEmi: string, cMotivoEmisTI?: string, chNFSeRej?: string}

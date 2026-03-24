@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional;
+namespace OwnerPro\Nfsen;
 
 use Illuminate\Support\ServiceProvider;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Exceptions\NfseException;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use RuntimeException;
 
 final class NfseNacionalServiceProvider extends ServiceProvider

@@ -1,9 +1,9 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Responses\EventsResponse::class);
+covers(\OwnerPro\Nfsen\Responses\EventsResponse::class);
 
-use Pulsar\NfseNacional\Responses\EventsResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Responses\EventsResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
 it('success response carries xml and no erros', function () {
     $response = new EventsResponse(true, '<Evento/>');

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 require __DIR__.'/../vendor/autoload.php';
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\NfseClient;
 
 // -------------------------------------------------------------------
 // Consultar eventos de uma NFSe (Standalone – sem Laravel)

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Adapters;
+namespace OwnerPro\Nfsen\Adapters;
 
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Contracts\Driven\ExtractsAuthorIdentity;
-use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity;
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
 
 final readonly class CertificateManager implements ExtractsAuthorIdentity
 {

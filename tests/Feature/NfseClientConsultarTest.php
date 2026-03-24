@@ -1,10 +1,10 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseClient::class);
+covers(\OwnerPro\Nfsen\NfseClient::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\NfseClient;
 
 it('consultar()->danfse returns DanfseResponse with pdf', function () {
     $chave = makeChaveAcesso();
@@ -67,7 +67,7 @@ it('consultar()->nfse throws HttpException on server error', function () {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->consultar()->nfse(makeChaveAcesso()))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 });
 
 it('consultar()->danfse returns failure on HTTP error', function () {
@@ -87,7 +87,7 @@ it('consultar()->eventos throws HttpException on server error', function () {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->consultar()->eventos(makeChaveAcesso()))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 });
 
 it('consultar()->nfse throws NfseException on invalid base64 response', function () {
@@ -96,7 +96,7 @@ it('consultar()->nfse throws NfseException on invalid base64 response', function
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->consultar()->nfse(makeChaveAcesso()))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'base64');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'base64');
 });
 
 it('consultar()->nfse throws NfseException on invalid gzip response', function () {
@@ -105,7 +105,7 @@ it('consultar()->nfse throws NfseException on invalid gzip response', function (
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->consultar()->nfse(makeChaveAcesso()))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'descomprimir');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'descomprimir');
 });
 
 it('consultar()->verificarDps returns true on 200', function () {
@@ -136,7 +136,7 @@ it('consultar()->verificarDps throws HttpException on server error', function ()
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->consultar()->verificarDps('DPS123'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 });
 
 it('consultar()->verificarDps throws on non-HTTP exception', function () {

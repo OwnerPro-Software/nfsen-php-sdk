@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require __DIR__.'/../vendor/autoload.php';
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\NfseClient;
 
 // -------------------------------------------------------------------
 // Verificar se uma DPS foi processada (Standalone – sem Laravel)

@@ -1,10 +1,10 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Support\XsdValidator::class);
+covers(\OwnerPro\Nfsen\Support\XsdValidator::class);
 
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\XmlDocumentLoader;
-use Pulsar\NfseNacional\Support\XsdValidator;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\XmlDocumentLoader;
+use OwnerPro\Nfsen\Support\XsdValidator;
 
 it('throws NfseException when scheme file does not exist', function () {
     $validator = new XsdValidator('/nonexistent/path');

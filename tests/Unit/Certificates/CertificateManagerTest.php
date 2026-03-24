@@ -2,8 +2,8 @@
 
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Exception\CertificateException;
-use Pulsar\NfseNacional\Adapters\CertificateManager;
-use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Adapters\CertificateManager;
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
 
 it('loads certificate from pfx content and exposes it via getter', function () {
     $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
@@ -69,5 +69,5 @@ it('implements ExtractsAuthorIdentity interface', function () {
     $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
     $manager = new CertificateManager($pfxContent, 'secret');
 
-    expect($manager)->toBeInstanceOf(\Pulsar\NfseNacional\Contracts\Driven\ExtractsAuthorIdentity::class);
+    expect($manager)->toBeInstanceOf(\OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity::class);
 });

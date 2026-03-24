@@ -1,18 +1,18 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder::class);
+covers(\OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder::class);
 
-use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndNac;
-use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Dps\Enums\Prest\OpSimpNac;
-use Pulsar\NfseNacional\Dps\Enums\Prest\RegApTribSN;
-use Pulsar\NfseNacional\Dps\Enums\Prest\RegEspTrib;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
+use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
+use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
+use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegApTribSN;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder;
 
 function makeRegTrib(): RegTrib
 {

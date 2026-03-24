@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Operations;
+namespace OwnerPro\Nfsen\Operations;
 
-use Pulsar\NfseNacional\Contracts\Driving\EmitsNfse;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
-use Pulsar\NfseNacional\Support\GzipCompressor;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Contracts\Driving\EmitsNfse;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Pipeline\Concerns\DispatchesEvents;
+use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Support\GzipCompressor;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData

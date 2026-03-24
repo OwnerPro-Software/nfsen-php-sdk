@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Concerns;
+namespace OwnerPro\Nfsen\Dps\DTO\Concerns;
 
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 trait ValidatesExclusiveChoice
 {

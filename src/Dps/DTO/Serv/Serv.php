@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Serv;
+namespace OwnerPro\Nfsen\Dps\DTO\Serv;
 
-use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
+use OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 
 /**
  * @phpstan-import-type CServArray from CServ

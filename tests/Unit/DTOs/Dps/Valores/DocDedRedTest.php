@@ -1,11 +1,11 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed::class);
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\NFNFS;
-use Pulsar\NfseNacional\Dps\DTO\Valores\NFSeMun;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+covers(\OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed::class);
+use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\NFNFS;
+use OwnerPro\Nfsen\Dps\DTO\Valores\NFSeMun;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpDedRed;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('creates DocDedRed with chNFSe', function () {
     $doc = new DocDedRed(

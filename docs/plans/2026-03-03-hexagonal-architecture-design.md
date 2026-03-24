@@ -23,7 +23,7 @@ src/Contracts/Ports/
     └── ResolvesPrefeituras.php
 ```
 
-Namespace: `Pulsar\NfseNacional\Contracts\Ports\Driving\*` e `Pulsar\NfseNacional\Contracts\Ports\Driven\*`.
+Namespace: `OwnerPro\Nfsen\Contracts\Ports\Driving\*` e `OwnerPro\Nfsen\Contracts\Ports\Driven\*`.
 
 O diretório `src/Contracts/` atual é removido após a migração.
 

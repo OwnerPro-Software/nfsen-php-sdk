@@ -62,14 +62,14 @@ The file already imports `NfseConsulter`. Add `covers(NfseConsulter::class);` af
 
 covers(NfseConsulter::class);
 
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
+use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 // ... rest of file unchanged
 ```
 
 Note: `NfseConsulter` needs to be imported. Check if a `use` statement exists; if not, the `covers()` call needs the FQCN or a `use` import must be added:
 
 ```php
-use Pulsar\NfseNacional\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Operations\NfseConsulter;
 
 covers(NfseConsulter::class);
 ```

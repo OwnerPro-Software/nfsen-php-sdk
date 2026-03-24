@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Driven;
+namespace OwnerPro\Nfsen\Contracts\Driven;
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 interface ResolvesPrefeituras extends ResolvesOperations
 {

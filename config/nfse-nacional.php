@@ -1,6 +1,6 @@
 <?php
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 return [
     'ambiente' => env('NFSE_AMBIENTE', NfseAmbiente::HOMOLOGACAO->value),

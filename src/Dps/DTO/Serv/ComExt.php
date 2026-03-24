@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Serv;
+namespace OwnerPro\Nfsen\Dps\DTO\Serv;
 
-use Pulsar\NfseNacional\Dps\Enums\Serv\Mdic;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MdPrestacao;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MecAFComexP;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MecAFComexT;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MovTempBens;
-use Pulsar\NfseNacional\Dps\Enums\Serv\VincPrest;
+use OwnerPro\Nfsen\Dps\Enums\Serv\Mdic;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MdPrestacao;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MecAFComexP;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MecAFComexT;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MovTempBens;
+use OwnerPro\Nfsen\Dps\Enums\Serv\VincPrest;
 
 /**
  * @phpstan-type ComExtArray array{mdPrestacao: string, vincPrest: string, tpMoeda: string, vServMoeda: string, mecAFComexP: string, mecAFComexT: string, movTempBens: string, mdic: string, nDI?: string, nRE?: string}

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Adapters;
+namespace OwnerPro\Nfsen\Adapters;
 
 use InvalidArgumentException;
-use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Support\FileReader;
+use OwnerPro\Nfsen\Contracts\Driven\ResolvesPrefeituras;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Support\FileReader;
 
 final class PrefeituraResolver implements ResolvesPrefeituras
 {

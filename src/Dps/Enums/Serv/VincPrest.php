@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\Serv;
+namespace OwnerPro\Nfsen\Dps\Enums\Serv;
 
 enum VincPrest: string
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
+namespace OwnerPro\Nfsen\Dps\DTO\IBSCBS;
 
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 /**
  * @phpstan-import-type DocumentosArray from Documentos

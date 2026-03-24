@@ -2,32 +2,32 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional;
+namespace OwnerPro\Nfsen;
 
-use Pulsar\NfseNacional\Adapters\CertificateManager;
-use Pulsar\NfseNacional\Adapters\NfseHttpClient;
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
-use Pulsar\NfseNacional\Adapters\XmlSigner;
-use Pulsar\NfseNacional\Contracts\Driving\CancelsNfse;
-use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
-use Pulsar\NfseNacional\Contracts\Driving\EmitsNfse;
-use Pulsar\NfseNacional\Contracts\Driving\QueriesNfse;
-use Pulsar\NfseNacional\Contracts\Driving\SubstitutesNfse;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Operations\NfseCanceller;
-use Pulsar\NfseNacional\Operations\NfseConsulter;
-use Pulsar\NfseNacional\Operations\NfseEmitter;
-use Pulsar\NfseNacional\Operations\NfseSubstitutor;
-use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
-use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Support\GzipCompressor;
-use Pulsar\NfseNacional\Support\XsdValidator;
-use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Adapters\CertificateManager;
+use OwnerPro\Nfsen\Adapters\NfseHttpClient;
+use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
+use OwnerPro\Nfsen\Adapters\XmlSigner;
+use OwnerPro\Nfsen\Contracts\Driving\CancelsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\EmitsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\QueriesNfse;
+use OwnerPro\Nfsen\Contracts\Driving\SubstitutesNfse;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Operations\NfseCanceller;
+use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Operations\NfseEmitter;
+use OwnerPro\Nfsen\Operations\NfseSubstitutor;
+use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
+use OwnerPro\Nfsen\Pipeline\NfseResponsePipeline;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Support\GzipCompressor;
+use OwnerPro\Nfsen\Support\XsdValidator;
+use OwnerPro\Nfsen\Xml\Builders\CancellationBuilder;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData

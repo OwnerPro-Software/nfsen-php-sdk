@@ -4,7 +4,7 @@
 
 **Goal:** Reorganize `src/` from technical-concern folders to domain-screaming folders, so the top-level communicates "NFS-e Nacional system" instead of "PHP package patterns."
 
-**Architecture:** Pure namespace refactoring — no logic changes. Move files with `git mv`, update namespace declarations and imports, verify tests pass after each batch. PSR-4 autoload root (`Pulsar\NfseNacional\` → `src/`) stays unchanged.
+**Architecture:** Pure namespace refactoring — no logic changes. Move files with `git mv`, update namespace declarations and imports, verify tests pass after each batch. PSR-4 autoload root (`OwnerPro\Nfsen\` → `src/`) stays unchanged.
 
 **Tech Stack:** PHP 8.2, Laravel, Pest, PHPStan, Psalm, Rector, Pint
 
@@ -18,7 +18,7 @@
 - **Use `git mv`** for all moves to preserve git history.
 - **sed order matters:** Always replace more-specific namespace prefixes before less-specific ones.
 - **Top-level enums stay:** `Enums/NfseAmbiente.php`, `Enums/TipoEvento.php`, `Enums/CodigoJustificativaCancelamento.php`, `Enums/CodigoJustificativaSubstituicao.php` remain in `src/Enums/` (they're cross-cutting, not DPS-specific).
-- **composer.json PSR-4 unchanged:** The root mapping `Pulsar\\NfseNacional\\` → `src/` covers all subdirectories automatically.
+- **composer.json PSR-4 unchanged:** The root mapping `OwnerPro\\Nfsen\\` → `src/` covers all subdirectories automatically.
 
 ---
 
@@ -46,20 +46,20 @@ rmdir src/Http src/Signing src/Certificates src/Services
 **Step 2: Update namespace declarations in moved files**
 
 ```bash
-sed -i 's/namespace Pulsar\\NfseNacional\\Http;/namespace Pulsar\\NfseNacional\\Adapters;/' src/Adapters/NfseHttpClient.php
-sed -i 's/namespace Pulsar\\NfseNacional\\Signing;/namespace Pulsar\\NfseNacional\\Adapters;/' src/Adapters/XmlSigner.php
-sed -i 's/namespace Pulsar\\NfseNacional\\Certificates;/namespace Pulsar\\NfseNacional\\Adapters;/' src/Adapters/CertificateManager.php
-sed -i 's/namespace Pulsar\\NfseNacional\\Services;/namespace Pulsar\\NfseNacional\\Adapters;/' src/Adapters/PrefeituraResolver.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Http;/namespace OwnerPro\\Nfsen\\Adapters;/' src/Adapters/NfseHttpClient.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Signing;/namespace OwnerPro\\Nfsen\\Adapters;/' src/Adapters/XmlSigner.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Certificates;/namespace OwnerPro\\Nfsen\\Adapters;/' src/Adapters/CertificateManager.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Services;/namespace OwnerPro\\Nfsen\\Adapters;/' src/Adapters/PrefeituraResolver.php
 ```
 
 **Step 3: Update imports across entire codebase**
 
 ```bash
 find src tests -name '*.php' -exec sed -i \
-  -e 's/Pulsar\\NfseNacional\\Http\\NfseHttpClient/Pulsar\\NfseNacional\\Adapters\\NfseHttpClient/g' \
-  -e 's/Pulsar\\NfseNacional\\Signing\\XmlSigner/Pulsar\\NfseNacional\\Adapters\\XmlSigner/g' \
-  -e 's/Pulsar\\NfseNacional\\Certificates\\CertificateManager/Pulsar\\NfseNacional\\Adapters\\CertificateManager/g' \
-  -e 's/Pulsar\\NfseNacional\\Services\\PrefeituraResolver/Pulsar\\NfseNacional\\Adapters\\PrefeituraResolver/g' \
+  -e 's/OwnerPro\\Nfsen\\Http\\NfseHttpClient/OwnerPro\\Nfsen\\Adapters\\NfseHttpClient/g' \
+  -e 's/OwnerPro\\Nfsen\\Signing\\XmlSigner/OwnerPro\\Nfsen\\Adapters\\XmlSigner/g' \
+  -e 's/OwnerPro\\Nfsen\\Certificates\\CertificateManager/OwnerPro\\Nfsen\\Adapters\\CertificateManager/g' \
+  -e 's/OwnerPro\\Nfsen\\Services\\PrefeituraResolver/OwnerPro\\Nfsen\\Adapters\\PrefeituraResolver/g' \
   {} +
 ```
 
@@ -68,24 +68,24 @@ find src tests -name '*.php' -exec sed -i \
 In `tests/Unit/ArchTest.php`, the hexagonal boundary rules reference old namespaces:
 ```php
 // OLD:
-'Pulsar\NfseNacional\Http',
-'Pulsar\NfseNacional\Signing',
-'Pulsar\NfseNacional\Services',
-'Pulsar\NfseNacional\Certificates',
+'OwnerPro\Nfsen\Http',
+'OwnerPro\Nfsen\Signing',
+'OwnerPro\Nfsen\Services',
+'OwnerPro\Nfsen\Certificates',
 // NEW (all become):
-'Pulsar\NfseNacional\Adapters',
+'OwnerPro\Nfsen\Adapters',
 ```
 
 ```bash
 find tests -name 'ArchTest.php' -exec sed -i \
-  -e "s/'Pulsar\\\\NfseNacional\\\\Http'/'Pulsar\\\\NfseNacional\\\\Adapters'/g" \
-  -e "s/'Pulsar\\\\NfseNacional\\\\Signing'/'Pulsar\\\\NfseNacional\\\\Adapters'/g" \
-  -e "s/'Pulsar\\\\NfseNacional\\\\Services'/'Pulsar\\\\NfseNacional\\\\Adapters'/g" \
-  -e "s/'Pulsar\\\\NfseNacional\\\\Certificates'/'Pulsar\\\\NfseNacional\\\\Adapters'/g" \
+  -e "s/'OwnerPro\\\\Nfsen\\\\Http'/'OwnerPro\\\\Nfsen\\\\Adapters'/g" \
+  -e "s/'OwnerPro\\\\Nfsen\\\\Signing'/'OwnerPro\\\\Nfsen\\\\Adapters'/g" \
+  -e "s/'OwnerPro\\\\Nfsen\\\\Services'/'OwnerPro\\\\Nfsen\\\\Adapters'/g" \
+  -e "s/'OwnerPro\\\\Nfsen\\\\Certificates'/'OwnerPro\\\\Nfsen\\\\Adapters'/g" \
   {} +
 ```
 
-Note: After deduplication, both arch rules will have `'Pulsar\NfseNacional\Adapters'` once instead of 4 separate namespaces. Manually deduplicate the arrays.
+Note: After deduplication, both arch rules will have `'OwnerPro\Nfsen\Adapters'` once instead of 4 separate namespaces. Manually deduplicate the arrays.
 
 **Step 5: Run tests**
 
@@ -127,18 +127,18 @@ rmdir src/Handlers/Concerns
 **Step 2: Update namespace declarations**
 
 ```bash
-sed -i 's/namespace Pulsar\\NfseNacional\\Handlers;/namespace Pulsar\\NfseNacional\\Pipeline;/' src/Pipeline/NfseRequestPipeline.php
-sed -i 's/namespace Pulsar\\NfseNacional\\Handlers\\Concerns;/namespace Pulsar\\NfseNacional\\Pipeline\\Concerns;/' src/Pipeline/Concerns/*.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Handlers;/namespace OwnerPro\\Nfsen\\Pipeline;/' src/Pipeline/NfseRequestPipeline.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Handlers\\Concerns;/namespace OwnerPro\\Nfsen\\Pipeline\\Concerns;/' src/Pipeline/Concerns/*.php
 ```
 
 **Step 3: Update imports across codebase**
 
 ```bash
 find src tests -name '*.php' -exec sed -i \
-  -e 's/Pulsar\\NfseNacional\\Handlers\\Concerns\\DispatchesEvents/Pulsar\\NfseNacional\\Pipeline\\Concerns\\DispatchesEvents/g' \
-  -e 's/Pulsar\\NfseNacional\\Handlers\\Concerns\\ValidatesChaveAcesso/Pulsar\\NfseNacional\\Pipeline\\Concerns\\ValidatesChaveAcesso/g' \
-  -e 's/Pulsar\\NfseNacional\\Handlers\\Concerns\\ParsesEventoResponse/Pulsar\\NfseNacional\\Pipeline\\Concerns\\ParsesEventoResponse/g' \
-  -e 's/Pulsar\\NfseNacional\\Handlers\\NfseRequestPipeline/Pulsar\\NfseNacional\\Pipeline\\NfseRequestPipeline/g' \
+  -e 's/OwnerPro\\Nfsen\\Handlers\\Concerns\\DispatchesEvents/OwnerPro\\Nfsen\\Pipeline\\Concerns\\DispatchesEvents/g' \
+  -e 's/OwnerPro\\Nfsen\\Handlers\\Concerns\\ValidatesChaveAcesso/OwnerPro\\Nfsen\\Pipeline\\Concerns\\ValidatesChaveAcesso/g' \
+  -e 's/OwnerPro\\Nfsen\\Handlers\\Concerns\\ParsesEventoResponse/OwnerPro\\Nfsen\\Pipeline\\Concerns\\ParsesEventoResponse/g' \
+  -e 's/OwnerPro\\Nfsen\\Handlers\\NfseRequestPipeline/OwnerPro\\Nfsen\\Pipeline\\NfseRequestPipeline/g' \
   {} +
 ```
 
@@ -179,16 +179,16 @@ git mv src/Handlers/NfseSubstitutor.php src/Operations/NfseSubstitutor.php
 **Step 2: Update namespace declarations**
 
 ```bash
-sed -i 's/namespace Pulsar\\NfseNacional\\Handlers;/namespace Pulsar\\NfseNacional\\Operations;/' src/Operations/*.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Handlers;/namespace OwnerPro\\Nfsen\\Operations;/' src/Operations/*.php
 ```
 
 **Step 3: Update imports across codebase**
 
 ```bash
 find src tests -name '*.php' -exec sed -i \
-  -e 's/Pulsar\\NfseNacional\\Handlers\\NfseEmitter/Pulsar\\NfseNacional\\Operations\\NfseEmitter/g' \
-  -e 's/Pulsar\\NfseNacional\\Handlers\\NfseCanceller/Pulsar\\NfseNacional\\Operations\\NfseCanceller/g' \
-  -e 's/Pulsar\\NfseNacional\\Handlers\\NfseSubstitutor/Pulsar\\NfseNacional\\Operations\\NfseSubstitutor/g' \
+  -e 's/OwnerPro\\Nfsen\\Handlers\\NfseEmitter/OwnerPro\\Nfsen\\Operations\\NfseEmitter/g' \
+  -e 's/OwnerPro\\Nfsen\\Handlers\\NfseCanceller/OwnerPro\\Nfsen\\Operations\\NfseCanceller/g' \
+  -e 's/OwnerPro\\Nfsen\\Handlers\\NfseSubstitutor/OwnerPro\\Nfsen\\Operations\\NfseSubstitutor/g' \
   {} +
 ```
 
@@ -248,16 +248,16 @@ Important: Update the more-specific `Xml\Builders` namespace BEFORE the less-spe
 
 ```bash
 # Sub-builders: Xml\Builders → Builders\Xml\Parts
-sed -i 's/namespace Pulsar\\NfseNacional\\Xml\\Builders;/namespace Pulsar\\NfseNacional\\Builders\\Xml\\Parts;/' src/Builders/Xml/Parts/*.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Xml\\Builders;/namespace OwnerPro\\Nfsen\\Builders\\Xml\\Parts;/' src/Builders/Xml/Parts/*.php
 
 # DpsBuilder: Xml → Builders\Xml
-sed -i 's/namespace Pulsar\\NfseNacional\\Xml;/namespace Pulsar\\NfseNacional\\Builders\\Xml;/' src/Builders/Xml/DpsBuilder.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Xml;/namespace OwnerPro\\Nfsen\\Builders\\Xml;/' src/Builders/Xml/DpsBuilder.php
 
 # ConsultaBuilder: Consulta → Builders\Consulta
-sed -i 's/namespace Pulsar\\NfseNacional\\Consulta;/namespace Pulsar\\NfseNacional\\Builders\\Consulta;/' src/Builders/Consulta/ConsultaBuilder.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Consulta;/namespace OwnerPro\\Nfsen\\Builders\\Consulta;/' src/Builders/Consulta/ConsultaBuilder.php
 
 # NfseQueryExecutor: Handlers → Builders\Consulta
-sed -i 's/namespace Pulsar\\NfseNacional\\Handlers;/namespace Pulsar\\NfseNacional\\Builders\\Consulta;/' src/Builders/Consulta/NfseQueryExecutor.php
+sed -i 's/namespace OwnerPro\\Nfsen\\Handlers;/namespace OwnerPro\\Nfsen\\Builders\\Consulta;/' src/Builders/Consulta/NfseQueryExecutor.php
 ```
 
 **Step 3: Update imports across codebase**
@@ -267,50 +267,50 @@ Important: Replace more-specific patterns first.
 ```bash
 # First: Xml\Builders\* → Builders\Xml\Parts\* (more specific)
 find src tests -name '*.php' -exec sed -i \
-  's/Pulsar\\NfseNacional\\Xml\\Builders/Pulsar\\NfseNacional\\Builders\\Xml\\Parts/g' \
+  's/OwnerPro\\Nfsen\\Xml\\Builders/OwnerPro\\Nfsen\\Builders\\Xml\\Parts/g' \
   {} +
 
 # Then: Xml\DpsBuilder → Builders\Xml\DpsBuilder
 find src tests -name '*.php' -exec sed -i \
-  's/Pulsar\\NfseNacional\\Xml\\DpsBuilder/Pulsar\\NfseNacional\\Builders\\Xml\\DpsBuilder/g' \
+  's/OwnerPro\\Nfsen\\Xml\\DpsBuilder/OwnerPro\\Nfsen\\Builders\\Xml\\DpsBuilder/g' \
   {} +
 
 # Consulta\ConsultaBuilder → Builders\Consulta\ConsultaBuilder
 find src tests -name '*.php' -exec sed -i \
-  's/Pulsar\\NfseNacional\\Consulta\\ConsultaBuilder/Pulsar\\NfseNacional\\Builders\\Consulta\\ConsultaBuilder/g' \
+  's/OwnerPro\\Nfsen\\Consulta\\ConsultaBuilder/OwnerPro\\Nfsen\\Builders\\Consulta\\ConsultaBuilder/g' \
   {} +
 
 # NfseQueryExecutor (already moved from Handlers in Task 3's sed, but may have been missed if it wasn't caught by the Handlers patterns)
 find src tests -name '*.php' -exec sed -i \
-  's/Pulsar\\NfseNacional\\Handlers\\NfseQueryExecutor/Pulsar\\NfseNacional\\Builders\\Consulta\\NfseQueryExecutor/g' \
+  's/OwnerPro\\Nfsen\\Handlers\\NfseQueryExecutor/OwnerPro\\Nfsen\\Builders\\Consulta\\NfseQueryExecutor/g' \
   {} +
 ```
 
 **Step 4: Update architecture test**
 
 In `tests/Unit/ArchTest.php`, update the namespace references:
-- `Pulsar\NfseNacional\Handlers` → `Pulsar\NfseNacional\Operations` + `Pulsar\NfseNacional\Pipeline` + `Pulsar\NfseNacional\Builders\Consulta`
-- `Pulsar\NfseNacional\Consulta` → `Pulsar\NfseNacional\Builders\Consulta`
+- `OwnerPro\Nfsen\Handlers` → `OwnerPro\Nfsen\Operations` + `OwnerPro\Nfsen\Pipeline` + `OwnerPro\Nfsen\Builders\Consulta`
+- `OwnerPro\Nfsen\Consulta` → `OwnerPro\Nfsen\Builders\Consulta`
 
 The arch rules should now enforce that Operations, Pipeline, and Builders\Consulta do NOT depend on Adapters. Rewrite the rules:
 
 ```php
 arch('operations do not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Operations')
+    ->expect('OwnerPro\Nfsen\Operations')
     ->not->toUse([
-        'Pulsar\NfseNacional\Adapters',
+        'OwnerPro\Nfsen\Adapters',
     ]);
 
 arch('pipeline does not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Pipeline')
+    ->expect('OwnerPro\Nfsen\Pipeline')
     ->not->toUse([
-        'Pulsar\NfseNacional\Adapters',
+        'OwnerPro\Nfsen\Adapters',
     ]);
 
 arch('consulta builders do not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Builders\Consulta')
+    ->expect('OwnerPro\Nfsen\Builders\Consulta')
     ->not->toUse([
-        'Pulsar\NfseNacional\Adapters',
+        'OwnerPro\Nfsen\Adapters',
     ]);
 ```
 
@@ -359,7 +359,7 @@ rmdir src/DTOs/Dps
 
 ```bash
 find src/Dps/DTO -name '*.php' -exec sed -i \
-  's/namespace Pulsar\\NfseNacional\\DTOs\\Dps/namespace Pulsar\\NfseNacional\\Dps\\DTO/g' \
+  's/namespace OwnerPro\\Nfsen\\DTOs\\Dps/namespace OwnerPro\\Nfsen\\Dps\\DTO/g' \
   {} +
 ```
 
@@ -367,7 +367,7 @@ find src/Dps/DTO -name '*.php' -exec sed -i \
 
 ```bash
 find src tests -name '*.php' -exec sed -i \
-  's/Pulsar\\NfseNacional\\DTOs\\Dps/Pulsar\\NfseNacional\\Dps\\DTO/g' \
+  's/OwnerPro\\Nfsen\\DTOs\\Dps/OwnerPro\\Nfsen\\Dps\\DTO/g' \
   {} +
 ```
 
@@ -412,7 +412,7 @@ rmdir src/Enums/Dps
 
 ```bash
 find src/Dps/Enums -name '*.php' -exec sed -i \
-  's/namespace Pulsar\\NfseNacional\\Enums\\Dps/namespace Pulsar\\NfseNacional\\Dps\\Enums/g' \
+  's/namespace OwnerPro\\Nfsen\\Enums\\Dps/namespace OwnerPro\\Nfsen\\Dps\\Enums/g' \
   {} +
 ```
 
@@ -420,7 +420,7 @@ find src/Dps/Enums -name '*.php' -exec sed -i \
 
 ```bash
 find src tests -name '*.php' -exec sed -i \
-  's/Pulsar\\NfseNacional\\Enums\\Dps/Pulsar\\NfseNacional\\Dps\\Enums/g' \
+  's/OwnerPro\\Nfsen\\Enums\\Dps/OwnerPro\\Nfsen\\Dps\\Enums/g' \
   {} +
 ```
 
@@ -464,17 +464,17 @@ rmdir src/DTOs
 **Step 2: Update namespace declarations**
 
 ```bash
-sed -i 's/namespace Pulsar\\NfseNacional\\DTOs;/namespace Pulsar\\NfseNacional\\Responses;/' src/Responses/*.php
+sed -i 's/namespace OwnerPro\\Nfsen\\DTOs;/namespace OwnerPro\\Nfsen\\Responses;/' src/Responses/*.php
 ```
 
 **Step 3: Update imports across codebase**
 
 ```bash
 find src tests -name '*.php' -exec sed -i \
-  -e 's/Pulsar\\NfseNacional\\DTOs\\NfseResponse/Pulsar\\NfseNacional\\Responses\\NfseResponse/g' \
-  -e 's/Pulsar\\NfseNacional\\DTOs\\DanfseResponse/Pulsar\\NfseNacional\\Responses\\DanfseResponse/g' \
-  -e 's/Pulsar\\NfseNacional\\DTOs\\EventosResponse/Pulsar\\NfseNacional\\Responses\\EventosResponse/g' \
-  -e 's/Pulsar\\NfseNacional\\DTOs\\MensagemProcessamento/Pulsar\\NfseNacional\\Responses\\MensagemProcessamento/g' \
+  -e 's/OwnerPro\\Nfsen\\DTOs\\NfseResponse/OwnerPro\\Nfsen\\Responses\\NfseResponse/g' \
+  -e 's/OwnerPro\\Nfsen\\DTOs\\DanfseResponse/OwnerPro\\Nfsen\\Responses\\DanfseResponse/g' \
+  -e 's/OwnerPro\\Nfsen\\DTOs\\EventosResponse/OwnerPro\\Nfsen\\Responses\\EventosResponse/g' \
+  -e 's/OwnerPro\\Nfsen\\DTOs\\MensagemProcessamento/OwnerPro\\Nfsen\\Responses\\MensagemProcessamento/g' \
   {} +
 ```
 

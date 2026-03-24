@@ -1,27 +1,27 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Dps\DTO\Serv\CServ::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\Serv::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\ComExt::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\Obra::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\EndObra::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\EndExt::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento::class,
-    \Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\CServ::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\Serv::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\ComExt::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\Obra::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\EndObra::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\EndExt::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento::class,
+    \OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento;
-use Pulsar\NfseNacional\Dps\DTO\Serv\ComExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\CServ;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
-use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Obra;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
+use OwnerPro\Nfsen\Dps\DTO\Serv\ComExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
+use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Obra;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('CServ::fromArray creates instance from array', function () {
     $dto = CServ::fromArray([

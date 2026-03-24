@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
+namespace OwnerPro\Nfsen\Dps\DTO\IBSCBS;
 
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpEnteGov;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpOper;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 /**
  * @phpstan-import-type ValoresArray from Valores

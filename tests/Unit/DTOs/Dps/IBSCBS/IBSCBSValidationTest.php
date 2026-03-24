@@ -1,26 +1,26 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel::class,
 );
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DFeNacional;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Documentos;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Fornec;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Trib;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TipoChaveDFe;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpReeRepRes;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Fornec;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TipoChaveDFe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpReeRepRes;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('throws when IBSCBS refNFSe is empty array', function () {
     expect(fn () => new IBSCBS(

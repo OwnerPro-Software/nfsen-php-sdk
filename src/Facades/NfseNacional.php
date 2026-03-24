@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Facades;
+namespace OwnerPro\Nfsen\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Responses\NfseResponse;
+use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Responses\NfseResponse;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData

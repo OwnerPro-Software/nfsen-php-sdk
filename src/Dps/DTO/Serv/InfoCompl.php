@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Serv;
+namespace OwnerPro\Nfsen\Dps\DTO\Serv;
 
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 /**
  * @phpstan-type InfoComplArray array{idDocTec?: string, docRef?: string, xPed?: string, xItemPed?: list<string>, xInfComp?: string}

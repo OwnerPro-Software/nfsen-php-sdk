@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Pipeline;
+namespace OwnerPro\Nfsen\Pipeline;
 
-use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
-use Pulsar\NfseNacional\Events\NfseQueried;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
+use OwnerPro\Nfsen\Events\NfseQueried;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Pipeline\Concerns\DispatchesEvents;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 /** @phpstan-import-type MessageData from ProcessingMessage */
 final readonly class NfseResponsePipeline implements ExecutesNfseRequests

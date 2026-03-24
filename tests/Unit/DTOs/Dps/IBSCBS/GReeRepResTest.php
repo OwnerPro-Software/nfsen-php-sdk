@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes::class);
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+covers(\OwnerPro\Nfsen\Dps\DTO\IBSCBS\GReeRepRes::class);
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GReeRepRes;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('throws when documentos is empty array', function () {
     expect(fn () => new GReeRepRes(documentos: []))

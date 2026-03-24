@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
+namespace OwnerPro\Nfsen\Dps\DTO\IBSCBS;
 
 /**
  * @phpstan-type GDifArray array{pDifUF: string, pDifMun: string, pDifCBS: string}

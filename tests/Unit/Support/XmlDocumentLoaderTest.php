@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Support\XmlDocumentLoader::class);
+covers(\OwnerPro\Nfsen\Support\XmlDocumentLoader::class);
 
-use Pulsar\NfseNacional\Support\XmlDocumentLoader;
+use OwnerPro\Nfsen\Support\XmlDocumentLoader;
 
 it('loads valid XML and returns DOMDocument', function () {
     $loader = new XmlDocumentLoader;

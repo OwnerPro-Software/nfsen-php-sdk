@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\IBSCBS;
+namespace OwnerPro\Nfsen\Dps\Enums\IBSCBS;
 
 enum TpOper: string
 {

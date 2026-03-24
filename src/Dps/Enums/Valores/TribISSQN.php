@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\Valores;
+namespace OwnerPro\Nfsen\Dps\Enums\Valores;
 
 enum TribISSQN: string
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Shared;
+namespace OwnerPro\Nfsen\Dps\DTO\Shared;
 
-use Pulsar\NfseNacional\Dps\Enums\Prest\OpSimpNac;
-use Pulsar\NfseNacional\Dps\Enums\Prest\RegApTribSN;
-use Pulsar\NfseNacional\Dps\Enums\Prest\RegEspTrib;
+use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegApTribSN;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 
 /**
  * @phpstan-type RegTribArray array{opSimpNac: string, regEspTrib: string, regApTribSN?: string}

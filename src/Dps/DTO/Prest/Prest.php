@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Prest;
+namespace OwnerPro\Nfsen\Dps\DTO\Prest;
 
-use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 
 /**
  * @phpstan-import-type RegTribArray from RegTrib

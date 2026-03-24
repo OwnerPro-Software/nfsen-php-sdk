@@ -5,9 +5,9 @@
 > **Parte 1 de 3** — Tasks 1–7 (Fundação): bootstrap, enums, exceptions, DTOs, certificates, prefeitura resolver, XML signer.
 
 
-**Goal:** Reescrever o pacote nfse-nacional com namespace `Pulsar\NfseNacional`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
+**Goal:** Reescrever o pacote nfse-nacional com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
-**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `Pulsar\NfseNacional`); código legado coexiste em `src/` (namespace `Hadder\NfseNacional`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
+**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `OwnerPro\Nfsen`); código legado coexiste em `src/` (namespace `Hadder\Nfsen`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
 
 > **Nota standalone:** Em modo standalone (sem Laravel bootado), os Laravel Events (`NfseEmitted`, `NfseFailed`, etc.) **não são disparados** — o `dispatchEvent()` silencia a ausência do dispatcher. Todas as demais funcionalidades (emitir, cancelar, consultar) operam normalmente.
 
@@ -17,7 +17,7 @@
 
 ## Convenções
 
-- Namespace: `Pulsar\NfseNacional`
+- Namespace: `OwnerPro\Nfsen`
 - Testes rodam com: `./vendor/bin/pest`
 - Fixtures de cert: `tests/fixtures/certs/fake.pfx` (senha: `secret`) — sem OID ICP-Brasil
 - Fixtures de cert: `tests/fixtures/certs/fake-icpbr.pfx` (senha: `secret`) — com OID ICP-Brasil (CNPJ extraível via `Certificate::getCnpj()`)
@@ -39,7 +39,7 @@
 
 ```json
 {
-  "name": "pulsar/nfse-nacional",
+  "name": "ownerpro/nfsen",
   "description": "Pacote Laravel para emissão de NFSe Nacional",
   "license": "MIT",
   "require": {
@@ -63,13 +63,13 @@
   },
   "autoload": {
     "psr-4": {
-      "Hadder\\NfseNacional\\": "src/",
-      "Pulsar\\NfseNacional\\": "src-new/"
+      "Hadder\\Nfsen\\": "src/",
+      "OwnerPro\\Nfsen\\": "src-new/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Pulsar\\NfseNacional\\Tests\\": "tests/"
+      "OwnerPro\\Nfsen\\Tests\\": "tests/"
     }
   },
   "config": {
@@ -79,13 +79,13 @@
   "prefer-stable": true,
   "extra": {
     "laravel": {
-      "providers": ["Pulsar\\NfseNacional\\NfseNacionalServiceProvider"]
+      "providers": ["OwnerPro\\Nfsen\\NfseNacionalServiceProvider"]
     }
   }
 }
 ```
 
-> **Nota transição:** Mantemos o autoload `Hadder\NfseNacional` e as deps legadas (`tcpdf`, `var-dumper`) durante a reescrita para não quebrar código existente em `src/`. A remoção ocorre na Task 18 (limpeza final).
+> **Nota transição:** Mantemos o autoload `Hadder\Nfsen` e as deps legadas (`tcpdf`, `var-dumper`) durante a reescrita para não quebrar código existente em `src/`. A remoção ocorre na Task 18 (limpeza final).
 
 > **Nota Helpers.php:** O `composer.json` legado tinha `"files": ["Helpers.php"]` que define `now()` global. Esse autoload é **intencionalmente removido** — o `now()` do `illuminate/support` substitui. Padronizar o `Helpers.php` (Step 4d) para segurança caso o arquivo seja carregado manualmente.
 
@@ -124,7 +124,7 @@ Gerar 3 fixtures de certificado:
 openssl genrsa -out tests/fixtures/certs/fake.key 2048
 openssl req -new -x509 -key tests/fixtures/certs/fake.key \
   -out tests/fixtures/certs/fake.crt -days 3650 \
-  -subj "/CN=Fake Test/O=Pulsar/C=BR"
+  -subj "/CN=Fake Test/O=OwnerPro/C=BR"
 openssl pkcs12 -export \
   -out tests/fixtures/certs/fake.pfx \
   -inkey tests/fixtures/certs/fake.key \
@@ -144,7 +144,7 @@ prompt = no
 
 [req_dn]
 CN = Fake ICP-BR Test
-O = Pulsar
+O = OwnerPro
 C = BR
 
 [v3_req]
@@ -254,7 +254,7 @@ git commit -m "chore: bootstrap reescrita — deps, estrutura de dirs e cert de 
 ```php
 <?php
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 it('has producao value of 1', function () {
     expect(NfseAmbiente::PRODUCAO->value)->toBe(1);
@@ -289,7 +289,7 @@ it('fromConfig throws on unknown string value', function () {
 ```php
 <?php
 
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
+use OwnerPro\Nfsen\Enums\MotivoCancelamento;
 
 it('has erro emissao value', function () {
     expect(MotivoCancelamento::ErroEmissao->value)->toBe('e101101');
@@ -305,7 +305,7 @@ it('has outros value', function () {
 ```bash
 ./vendor/bin/pest tests/Unit/Enums/ --no-coverage
 ```
-Expected: FAIL — `Pulsar\NfseNacional\Enums\NfseAmbiente not found`
+Expected: FAIL — `OwnerPro\Nfsen\Enums\NfseAmbiente not found`
 
 **Step 3: Implementar os enums**
 
@@ -313,7 +313,7 @@ Expected: FAIL — `Pulsar\NfseNacional\Enums\NfseAmbiente not found`
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Enums;
+namespace OwnerPro\Nfsen\Enums;
 
 enum NfseAmbiente: int
 {
@@ -341,7 +341,7 @@ enum NfseAmbiente: int
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Enums;
+namespace OwnerPro\Nfsen\Enums;
 
 enum MotivoCancelamento: string
 {
@@ -380,9 +380,9 @@ git commit -m "feat: add NfseAmbiente and MotivoCancelamento enums"
 ```php
 <?php
 
-use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
-use Pulsar\NfseNacional\Exceptions\HttpException;
-use Pulsar\NfseNacional\Exceptions\NfseException;
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 
 it('NfseException is a RuntimeException', function () {
     $e = new NfseException('msg');
@@ -415,7 +415,7 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Exceptions;
+namespace OwnerPro\Nfsen\Exceptions;
 
 class NfseException extends \RuntimeException {}
 ```
@@ -424,7 +424,7 @@ class NfseException extends \RuntimeException {}
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Exceptions;
+namespace OwnerPro\Nfsen\Exceptions;
 
 class CertificateExpiredException extends NfseException {}
 ```
@@ -433,7 +433,7 @@ class CertificateExpiredException extends NfseException {}
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Exceptions;
+namespace OwnerPro\Nfsen\Exceptions;
 
 class HttpException extends NfseException {}
 ```
@@ -472,7 +472,7 @@ git commit -m "feat: add NfseException, CertificateExpiredException, HttpExcepti
 ```php
 <?php
 
-use Pulsar\NfseNacional\DTOs\NfseResponse;
+use OwnerPro\Nfsen\DTOs\NfseResponse;
 
 it('stores a success response', function () {
     $response = new NfseResponse(true, 'chave123', '<xml/>', null);
@@ -497,7 +497,7 @@ it('stores a failure response', function () {
 ```php
 <?php
 
-use Pulsar\NfseNacional\DTOs\DpsData;
+use OwnerPro\Nfsen\DTOs\DpsData;
 
 it('stores all groups', function () {
     $infDps    = new stdClass();
@@ -529,7 +529,7 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\DTOs;
+namespace OwnerPro\Nfsen\DTOs;
 
 readonly class NfseResponse
 {
@@ -546,7 +546,7 @@ readonly class NfseResponse
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\DTOs;
+namespace OwnerPro\Nfsen\DTOs;
 
 use stdClass;
 
@@ -568,7 +568,7 @@ readonly class DpsData
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\DTOs;
+namespace OwnerPro\Nfsen\DTOs;
 
 readonly class DanfseResponse
 {
@@ -584,7 +584,7 @@ readonly class DanfseResponse
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\DTOs;
+namespace OwnerPro\Nfsen\DTOs;
 
 readonly class EventosResponse
 {
@@ -602,7 +602,7 @@ readonly class EventosResponse
 ```php
 <?php
 
-use Pulsar\NfseNacional\DTOs\DanfseResponse;
+use OwnerPro\Nfsen\DTOs\DanfseResponse;
 
 it('stores a DANFSe success response', function () {
     $response = new DanfseResponse(true, 'https://danfse.url/CHAVE', null);
@@ -624,7 +624,7 @@ it('stores a DANFSe failure response', function () {
 ```php
 <?php
 
-use Pulsar\NfseNacional\DTOs\EventosResponse;
+use OwnerPro\Nfsen\DTOs\EventosResponse;
 
 it('stores eventos success response', function () {
     $eventos = [['tipo' => '101101', 'desc' => 'Cancelamento']];
@@ -677,8 +677,8 @@ git commit -m "feat: add NfseResponse, DpsData, DanfseResponse, EventosResponse 
 <?php
 
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Certificates\CertificateManager;
-use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Certificates\CertificateManager;
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
 
 it('loads certificate from pfx content', function () {
     $pfxContent = file_get_contents(__DIR__ . '/../../fixtures/certs/fake.pfx');
@@ -710,10 +710,10 @@ Expected: FAIL — class not found
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Certificates;
+namespace OwnerPro\Nfsen\Certificates;
 
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
 
 class CertificateManager
 {
@@ -784,8 +784,8 @@ cancelar_nfse     → nfse/{chave}/eventos
 ```php
 <?php
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Services\PrefeituraResolver;
 
 $jsonPath = __DIR__ . '/../../../storage/prefeituras.json';
 
@@ -851,9 +851,9 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Services;
+namespace OwnerPro\Nfsen\Services;
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 class PrefeituraResolver
 {
@@ -961,7 +961,7 @@ git commit -m "feat: add PrefeituraResolver — merge de URLs/operations com pre
 ```php
 <?php
 
-use Pulsar\NfseNacional\Signing\XmlSigner;
+use OwnerPro\Nfsen\Signing\XmlSigner;
 
 // makeTestCertificate() definida em tests/helpers.php (criado na Task 8)
 
@@ -1009,7 +1009,7 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Signing;
+namespace OwnerPro\Nfsen\Signing;
 
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Signer;

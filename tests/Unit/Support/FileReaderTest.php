@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Support\FileReader::class);
+covers(\OwnerPro\Nfsen\Support\FileReader::class);
 
-use Pulsar\NfseNacional\Support\FileReader;
+use OwnerPro\Nfsen\Support\FileReader;
 
 it('reads file contents via invocation', function () {
     $reader = new FileReader;

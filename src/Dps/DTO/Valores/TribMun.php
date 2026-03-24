@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Valores;
+namespace OwnerPro\Nfsen\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 
 /**
  * @phpstan-import-type ExigSuspArray from ExigSusp

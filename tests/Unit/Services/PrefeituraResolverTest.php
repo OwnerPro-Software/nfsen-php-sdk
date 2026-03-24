@@ -1,8 +1,8 @@
 <?php
 
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Support\FileReader;
+use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Support\FileReader;
 
 $jsonPath = __DIR__.'/../../../storage/prefeituras.json';
 

@@ -1,9 +1,9 @@
 # NFSe Nacional
 
-[![CI](https://github.com/jonathanpmartins/nfse-nacional/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jonathanpmartins/nfse-nacional/actions)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/jonathanpmartins/nfse-nacional.svg)](https://packagist.org/packages/jonathanpmartins/nfse-nacional)
-[![PHP Version](https://img.shields.io/packagist/php-v/jonathanpmartins/nfse-nacional.svg)](https://packagist.org/packages/jonathanpmartins/nfse-nacional)
-[![License](https://img.shields.io/packagist/l/jonathanpmartins/nfse-nacional.svg)](LICENSE)
+[![CI](https://github.com/OwnerPro-Software/nfsen/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OwnerPro-Software/nfsen/actions)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
+[![PHP Version](https://img.shields.io/packagist/php-v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
+[![License](https://img.shields.io/packagist/l/ownerpro/nfsen.svg)](LICENSE)
 
 Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padrão Nacional** ([nfse.gov.br](https://www.nfse.gov.br/)) via API REST. Funciona com Laravel 11/12 ou standalone (sem framework).
 
@@ -28,7 +28,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 ## Instalação
 
 ```bash
-composer require jonathanpmartins/nfse-nacional
+composer require ownerpro/nfsen
 ```
 
 ## Configuração
@@ -57,8 +57,8 @@ NFSE_SSL_VERIFY=true
 ### Standalone (sem Laravel)
 
 ```php
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\NfseClient;
 
 $client = NfseClient::forStandalone(
     pfxContent: file_get_contents('/caminho/certificado.pfx'),
@@ -139,7 +139,7 @@ if ($response->sucesso) {
 ### Cancelar NFSe
 
 ```php
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 
 $response = $client->cancelar(
     chave: '00000000000000000000000000000000000000000000000000',
@@ -157,7 +157,7 @@ O método `substituir()` emite uma DPS com o grupo `subst` preenchido automatica
 > **Nota:** O registro do evento de cancelamento por substituição (`e105102`) via API Eventos (`POST /nfse/{chave}/eventos`) é restrito a sistemas municipais conveniados com o ADN — o autor desse evento é o município emissor (MEmis), não o contribuinte. O cancelamento da nota original ocorre automaticamente ao emitir a DPS com o grupo `subst` preenchido.
 
 ```php
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 
 $response = $client->substituir(
     chave: '00000000000000000000000000000000000000000000000000',
@@ -181,7 +181,7 @@ Codigos de substituição: `DesenquadramentoSimplesNacional`, `EnquadramentoSimp
 ### Consultas
 
 ```php
-use Pulsar\NfseNacional\Enums\TipoEvento;
+use OwnerPro\Nfsen\Enums\TipoEvento;
 
 // Consultar NFSe por chave de acesso
 $response = $client->consultar()->nfse($chave);
@@ -208,7 +208,7 @@ $processada = $client->consultar()->verificarDps($idDps); // true ou false
 ### Laravel Facade
 
 ```php
-use Pulsar\NfseNacional\Facades\NfseNacional;
+use OwnerPro\Nfsen\Facades\NfseNacional;
 
 // Emitir
 $response = NfseNacional::emitir($dps);
@@ -225,7 +225,7 @@ $client = NfseNacional::for($pfxContent, $senha, '3550308');
 $response = $client->emitir($dps);
 
 // Sobrescrever ambiente (ignorar config)
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 $client = NfseNacional::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
 $response = $client->emitir($dps);

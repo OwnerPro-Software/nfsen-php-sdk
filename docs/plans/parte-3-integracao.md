@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Reescrever o pacote nfse-nacional com namespace `Pulsar\NfseNacional`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
+**Goal:** Reescrever o pacote nfse-nacional com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
-**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `Pulsar\NfseNacional`); código legado coexiste em `src/` (namespace `Hadder\NfseNacional`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
+**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `OwnerPro\Nfsen`); código legado coexiste em `src/` (namespace `Hadder\Nfsen`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
 
 > **Nota standalone:** Em modo standalone (sem Laravel bootado), os Laravel Events (`NfseEmitted`, `NfseFailed`, etc.) **não são disparados** — o `dispatchEvent()` silencia a ausência do dispatcher. Todas as demais funcionalidades (emitir, cancelar, consultar) operam normalmente.
 
@@ -14,7 +14,7 @@
 
 ## Convenções
 
-- Namespace: `Pulsar\NfseNacional`
+- Namespace: `OwnerPro\Nfsen`
 - Testes rodam com: `./vendor/bin/pest`
 - Fixtures de cert: `tests/fixtures/certs/fake.pfx` (senha: `secret`) — sem OID ICP-Brasil
 - Fixtures de cert: `tests/fixtures/certs/fake-icpbr.pfx` (senha: `secret`) — com OID ICP-Brasil (CNPJ extraível via `Certificate::getCnpj()`)
@@ -39,7 +39,7 @@
 
 **Files:**
 - Create: `src-new/NfseNacionalServiceProvider.php`
-- Create: `src-new/Facades/NfseNacional.php`
+- Create: `src-new/Facades/Nfsen.php`
 - Create: `config/nfse-nacional.php`
 - Create: `tests/Feature/ServiceProviderTest.php`
 
@@ -49,16 +49,16 @@
 ```php
 <?php
 
-use Pulsar\NfseNacional\Facades\NfseNacional;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Facades\Nfsen;
+use OwnerPro\Nfsen\NfseClient;
 
 it('resolves NfseClient from container', function () {
     $client = app(NfseClient::class);
     expect($client)->toBeInstanceOf(NfseClient::class);
 });
 
-it('NfseNacional facade resolves NfseClient', function () {
-    expect(NfseNacional::getFacadeRoot())->toBeInstanceOf(NfseClient::class);
+it('Nfsen facade resolves NfseClient', function () {
+    expect(Nfsen::getFacadeRoot())->toBeInstanceOf(NfseClient::class);
 });
 
 it('config nfse-nacional is published', function () {
@@ -79,7 +79,7 @@ Expected: FAIL
 ```php
 <?php
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 return [
     'ambiente'          => env('NFSE_AMBIENTE', NfseAmbiente::HOMOLOGACAO->value),
@@ -100,12 +100,12 @@ return [
 ```php
 <?php
 
-namespace Pulsar\NfseNacional;
+namespace OwnerPro\Nfsen;
 
 use Illuminate\Support\ServiceProvider;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Services\PrefeituraResolver;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 class NfseNacionalServiceProvider extends ServiceProvider
 {
@@ -153,19 +153,19 @@ class NfseNacionalServiceProvider extends ServiceProvider
 
 **Step 5: Criar Facade**
 
-`src-new/Facades/NfseNacional.php`:
+`src-new/Facades/Nfsen.php`:
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Facades;
+namespace OwnerPro\Nfsen\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\NfseClient;
 
 /**
  * @method static NfseClient for(string $pfxContent, string $senha, string $prefeitura)
  */
-class NfseNacional extends Facade
+class Nfsen extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
@@ -271,10 +271,10 @@ Copiar o output e substituir `__PLACEHOLDER__`.
 <?php
 
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\DTOs\DpsData;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\MotivoCancelamento;
+use OwnerPro\Nfsen\NfseClient;
 
 // makePfxContent() definida em tests/helpers.php (criado na Task 8)
 
@@ -368,28 +368,28 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional;
+namespace OwnerPro\Nfsen;
 
 use Illuminate\Container\Container;
-use Pulsar\NfseNacional\Certificates\CertificateManager;
-use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
-use Pulsar\NfseNacional\Contracts\NfseClientContract;
-use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Events\NfseCancelled;
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Events\NfseFailed;
-use Pulsar\NfseNacional\Events\NfseQueried;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Exceptions\HttpException;
-use Pulsar\NfseNacional\Http\NfseHttpClient;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
-use Pulsar\NfseNacional\Signing\XmlSigner;
-use Pulsar\NfseNacional\Xml\Builders\EventoBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Certificates\CertificateManager;
+use OwnerPro\Nfsen\Consulta\ConsultaBuilder;
+use OwnerPro\Nfsen\Contracts\NfseClientContract;
+use OwnerPro\Nfsen\DTOs\DpsData;
+use OwnerPro\Nfsen\DTOs\NfseResponse;
+use OwnerPro\Nfsen\Enums\MotivoCancelamento;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseQueried;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Http\NfseHttpClient;
+use OwnerPro\Nfsen\Services\PrefeituraResolver;
+use OwnerPro\Nfsen\Signing\XmlSigner;
+use OwnerPro\Nfsen\Xml\Builders\EventoBuilder;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 class NfseClient implements NfseClientContract
 {
@@ -465,7 +465,7 @@ class NfseClient implements NfseClientContract
     private function ensureConfigured(): void
     {
         if ($this->certManager === null || $this->prefeitura === null || $this->httpClient === null) {
-            throw new \Pulsar\NfseNacional\Exceptions\NfseException(
+            throw new \OwnerPro\Nfsen\Exceptions\NfseException(
                 'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
             );
         }
@@ -631,7 +631,7 @@ class NfseClient implements NfseClientContract
             if (isset($result['erros']) || isset($result['erro'])) {
                 $erro = $result['erros'][0]['descricao'] ?? $result['erro'] ?? 'Erro';
                 $this->dispatchEvent(new NfseRejected($operacao, $result['erros'][0]['codigo'] ?? 'UNKNOWN'));
-                throw new \Pulsar\NfseNacional\Exceptions\NfseException($erro);
+                throw new \OwnerPro\Nfsen\Exceptions\NfseException($erro);
             }
 
             $this->dispatchEvent(new NfseQueried($operacao));
@@ -707,8 +707,8 @@ Expected: PASS
 <?php
 
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Enums\MotivoCancelamento;
+use OwnerPro\Nfsen\NfseClient;
 
 it('cancelar returns success NfseResponse', function () {
     Http::fake(['*' => Http::response(
@@ -769,7 +769,7 @@ it('cancelar works with cert without ICP-Brasil OID', function () {
 <?php
 
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\NfseClient;
 
 it('consultar()->danfse returns DanfseResponse with url', function () {
     Http::fake(['*' => Http::response(['danfseUrl' => 'https://danfse.url/CHAVE123'], 200)]);
@@ -808,13 +808,13 @@ it('consultar()->eventos returns empty array when no events', function () {
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
-use Pulsar\NfseNacional\Events\NfseCancelled;
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Events\NfseQueried;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\DTOs\DpsData;
+use OwnerPro\Nfsen\Enums\MotivoCancelamento;
+use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseQueried;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\NfseClient;
 
 it('dispatches NfseRequested and NfseEmitted on successful emitir', function (DpsData $data) {
     Event::fake();
@@ -884,38 +884,38 @@ git commit -m "test: feature tests para cancelar e dispatch de events"
 
 **Files:**
 - Create: `CHANGELOG.md`
-- Modify: `composer.json` (remover autoload `Hadder\NfseNacional`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`, apontar `Pulsar` para `src/`)
+- Modify: `composer.json` (remover autoload `Hadder\Nfsen`, remover `symfony/var-dumper` e `tecnickcom/tcpdf`, apontar `OwnerPro` para `src/`)
 - Delete: `Helpers.php` (guard `function_exists` adicionado na Task 1 — agora remover completamente)
-- Rename: `src/` → `src-old/` (código legado `Hadder\NfseNacional` preservado para referência)
-- Rename: `src-new/` → `src/` (código novo `Pulsar\NfseNacional` assume o diretório principal)
+- Rename: `src/` → `src-old/` (código legado `Hadder\Nfsen` preservado para referência)
+- Rename: `src-new/` → `src/` (código novo `OwnerPro\Nfsen` assume o diretório principal)
 - Modify: `storage/prefeituras.json` (remover chaves por nome legado, manter só IBGE)
 
 **Step 1: Renomear diretórios — src/ → src-old/, src-new/ → src/**
 
-Mover a implementação legada (`Hadder\NfseNacional`) para `src-old/` e promover a implementação nova (`Pulsar\NfseNacional`) para `src/`:
+Mover a implementação legada (`Hadder\Nfsen`) para `src-old/` e promover a implementação nova (`OwnerPro\Nfsen`) para `src/`:
 
 ```bash
 mv src/ src-old/
 mv src-new/ src/
 ```
 
-> **Nota:** Após este passo, o namespace `Pulsar\NfseNacional` passa a viver em `src/` — layout padrão de pacote. O código legado fica em `src-old/` para referência e pode ser removido quando não for mais necessário.
+> **Nota:** Após este passo, o namespace `OwnerPro\Nfsen` passa a viver em `src/` — layout padrão de pacote. O código legado fica em `src-old/` para referência e pode ser removido quando não for mais necessário.
 
 **Step 2: Atualizar autoload no composer.json**
 
-Remover a entrada `Hadder\NfseNacional` do PSR-4 e apontar `Pulsar\NfseNacional` para `src/` (agora que o rename foi feito):
+Remover a entrada `Hadder\Nfsen` do PSR-4 e apontar `OwnerPro\Nfsen` para `src/` (agora que o rename foi feito):
 
 ```json
 "autoload": {
   "psr-4": {
-    "Pulsar\\NfseNacional\\": "src/"
+    "OwnerPro\\Nfsen\\": "src/"
   }
 }
 ```
 
 **Step 3: Remover dependências legadas do composer.json**
 
-Remover `tecnickcom/tcpdf` e `symfony/var-dumper` do `require`. Verificar antes que nenhum arquivo em `src/` (já renomeado) com namespace `Pulsar\NfseNacional` as importa:
+Remover `tecnickcom/tcpdf` e `symfony/var-dumper` do `require`. Verificar antes que nenhum arquivo em `src/` (já renomeado) com namespace `OwnerPro\Nfsen` as importa:
 
 ```bash
 grep -r "use TCPDF\|use Symfony\\Component\\VarDumper\|use Symfony\\Component\\Debug" src/ --include="*.php"
@@ -943,7 +943,7 @@ Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas
 
 ### Breaking Changes
 - Requisito mínimo de PHP alterado de 8.1 para **8.2**
-- Namespace alterado de `Hadder\NfseNacional` para `Pulsar\NfseNacional`
+- Namespace alterado de `Hadder\Nfsen` para `OwnerPro\Nfsen`
 - Identificação de prefeituras exclusivamente por **código IBGE** (7 dígitos); suporte a nome legado (`americana-sp`) removido
 - API pública completamente nova: `NfseClient::for($pfx, $senha, $ibge)->emitir($dpsData)`
 
@@ -958,7 +958,7 @@ Remover entradas com chave por nome legado (ex: `americana-sp`), mantendo apenas
 - Validação XSD do DPS via `DpsBuilder::buildAndValidate()`
 
 ### Removed
-- Namespace legado `Hadder\NfseNacional` (autoload removido)
+- Namespace legado `Hadder\Nfsen` (autoload removido)
 - Dependências `symfony/var-dumper` e `tecnickcom/tcpdf`
 - Arquivo `Helpers.php` com `now()` global (substituído por `illuminate/support`)
 - Suporte a identificação de prefeitura por nome (chaves por nome removidas do JSON)

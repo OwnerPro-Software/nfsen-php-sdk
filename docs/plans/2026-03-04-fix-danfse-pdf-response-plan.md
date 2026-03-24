@@ -44,7 +44,7 @@ it('getBytes throws HttpException on 4xx', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->getBytes('https://example.com/danfse/INVALID'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'HTTP error: 404');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class, 'HTTP error: 404');
 });
 
 it('getBytes throws HttpException on 5xx', function () {
@@ -53,7 +53,7 @@ it('getBytes throws HttpException on 5xx', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->getBytes('https://example.com/danfse/CHAVE123'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'HTTP error: 500');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class, 'HTTP error: 500');
 });
 
 it('getBytes does not follow redirects', function () {
@@ -62,7 +62,7 @@ it('getBytes does not follow redirects', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->getBytes('https://example.com/danfse/CHAVE123'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 
     Http::assertSentCount(1);
 });
@@ -151,9 +151,9 @@ Replace the full content of `src/Contracts/Driving/ExecutesNfseRequests.php`:
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Driving;
+namespace OwnerPro\Nfsen\Contracts\Driving;
 
-use Pulsar\NfseNacional\Responses\NfseResponse;
+use OwnerPro\Nfsen\Responses\NfseResponse;
 
 interface ExecutesNfseRequests
 {
@@ -378,10 +378,10 @@ Replace the full content of `tests/Unit/DTOs/DanfseResponseTest.php`:
 ```php
 <?php
 
-covers(\Pulsar\NfseNacional\Responses\DanfseResponse::class);
+covers(\OwnerPro\Nfsen\Responses\DanfseResponse::class);
 
-use Pulsar\NfseNacional\Responses\DanfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Responses\DanfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
 it('success response carries pdf bytes and no erros', function () {
     $response = new DanfseResponse(true, 'PDF-BINARY-CONTENT');
@@ -427,7 +427,7 @@ Replace `src/Responses/DanfseResponse.php`:
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Responses;
+namespace OwnerPro\Nfsen\Responses;
 
 final readonly class DanfseResponse
 {
@@ -564,7 +564,7 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
 
         public function executeAndDownload(string $url): string
         {
-            $e = \Pulsar\NfseNacional\Exceptions\HttpException::fromResponse(
+            $e = \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(
                 400,
                 json_encode(['erros' => [['descricao' => 'DANFSe não encontrada', 'codigo' => '404']]]),
             );
@@ -602,7 +602,7 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
 
         public function executeAndDownload(string $url): string
         {
-            throw \Pulsar\NfseNacional\Exceptions\HttpException::fromResponse(500, 'Server Error');
+            throw \OwnerPro\Nfsen\Exceptions\HttpException::fromResponse(500, 'Server Error');
         }
 
         public function executeHead(string $url): int
@@ -629,7 +629,7 @@ Expected: FAIL — `danfse()` still calls `execute()` which returns array, not P
 
 **Step 3: Rewrite `danfse()` and add `parseHttpError()`**
 
-In `src/Operations/NfseConsulter.php`, add `use Pulsar\NfseNacional\Exceptions\HttpException;` to imports.
+In `src/Operations/NfseConsulter.php`, add `use OwnerPro\Nfsen\Exceptions\HttpException;` to imports.
 
 Replace the `danfse()` method (lines 67-96) with:
 
@@ -687,7 +687,7 @@ Add the `parseHttpError` private method before `buildUrl`:
     }
 ```
 
-Remove the `use Pulsar\NfseNacional\Support\GzipCompressor;` import if `GzipCompressor` is no longer used in this file. Check: it's still used in `eventos()`, so keep it.
+Remove the `use OwnerPro\Nfsen\Support\GzipCompressor;` import if `GzipCompressor` is no longer used in this file. Check: it's still used in `eventos()`, so keep it.
 
 **Step 4: Run tests to verify they pass**
 
@@ -837,8 +837,8 @@ declare(strict_types=1);
 
 require __DIR__.'/../vendor/autoload.php';
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\NfseClient;
 
 // -------------------------------------------------------------------
 // Consultar DANFSE – PDF binário (Standalone – sem Laravel)

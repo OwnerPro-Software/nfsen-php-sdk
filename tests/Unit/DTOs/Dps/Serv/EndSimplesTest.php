@@ -1,9 +1,9 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples::class);
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+covers(\OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples::class);
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('throws when both CEP and endExt are set', function () {
     expect(fn () => new EndSimples(

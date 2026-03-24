@@ -27,7 +27,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Ports\Driven;
+namespace OwnerPro\Nfsen\Contracts\Ports\Driven;
 
 interface SignsXml
 {
@@ -42,7 +42,7 @@ interface SignsXml
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Ports\Driven;
+namespace OwnerPro\Nfsen\Contracts\Ports\Driven;
 
 interface ExtractsAuthorIdentity
 {
@@ -58,7 +58,7 @@ interface ExtractsAuthorIdentity
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Ports\Driven;
+namespace OwnerPro\Nfsen\Contracts\Ports\Driven;
 
 interface SendsHttpRequests
 {
@@ -82,9 +82,9 @@ interface SendsHttpRequests
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Ports\Driven;
+namespace OwnerPro\Nfsen\Contracts\Ports\Driven;
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 interface ResolvesPrefeituras
 {
@@ -136,7 +136,7 @@ it('implements ExtractsAuthorIdentity interface', function () {
     $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake.pfx');
     $manager = new CertificateManager($pfxContent, 'secret');
 
-    expect($manager)->toBeInstanceOf(\Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity::class);
+    expect($manager)->toBeInstanceOf(\OwnerPro\Nfsen\Contracts\Ports\Driven\ExtractsAuthorIdentity::class);
 });
 ```
 
@@ -148,7 +148,7 @@ Expected: FAIL — `extract()` method does not exist.
 **Step 3: Implement extract() and add implements**
 
 Modify `src/Certificates/CertificateManager.php`:
-- Add `use Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity;`
+- Add `use OwnerPro\Nfsen\Contracts\Ports\Driven\ExtractsAuthorIdentity;`
 - Change class declaration to `final readonly class CertificateManager implements ExtractsAuthorIdentity`
 - Add the `extract()` method (logic from `NfseRequestPipeline::extractAuthorIdentity()`):
 
@@ -189,19 +189,19 @@ Three adapters gain `implements` with zero logic changes.
 **Step 1: NfseHttpClient implements SendsHttpRequests**
 
 In `src/Http/NfseHttpClient.php`:
-- Add `use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;`
+- Add `use OwnerPro\Nfsen\Contracts\Ports\Driven\SendsHttpRequests;`
 - Change to `final readonly class NfseHttpClient implements SendsHttpRequests`
 
 **Step 2: XmlSigner implements SignsXml**
 
 In `src/Signing/XmlSigner.php`:
-- Add `use Pulsar\NfseNacional\Contracts\Ports\Driven\SignsXml;`
+- Add `use OwnerPro\Nfsen\Contracts\Ports\Driven\SignsXml;`
 - Change to `final class XmlSigner implements SignsXml`
 
 **Step 3: PrefeituraResolver implements ResolvesPrefeituras**
 
 In `src/Services/PrefeituraResolver.php`:
-- Add `use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;`
+- Add `use OwnerPro\Nfsen\Contracts\Ports\Driven\ResolvesPrefeituras;`
 - Change to `final class PrefeituraResolver implements ResolvesPrefeituras`
 
 **Step 4: Run tests to verify nothing broke**
@@ -237,15 +237,15 @@ Replace the full class with:
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Handlers;
+namespace OwnerPro\Nfsen\Handlers;
 
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ExtractsAuthorIdentity;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Contracts\Ports\Driven\SignsXml;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Contracts\Ports\Driven\ExtractsAuthorIdentity;
+use OwnerPro\Nfsen\Contracts\Ports\Driven\ResolvesPrefeituras;
+use OwnerPro\Nfsen\Contracts\Ports\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Ports\Driven\SignsXml;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 final readonly class NfseRequestPipeline
 {
@@ -315,7 +315,7 @@ function makeNfseClient(
     $prefeituraResolver = new PrefeituraResolver(__DIR__.'/../storage/prefeituras.json');
     $xsdValidator = makeXsdValidator();
     $httpClient = new NfseHttpClient($certManager->getCertificate(), 30, 10, true);
-    $signer = new \Pulsar\NfseNacional\Signing\XmlSigner($certManager->getCertificate(), 'sha1');
+    $signer = new \OwnerPro\Nfsen\Signing\XmlSigner($certManager->getCertificate(), 'sha1');
 
     $pipeline = new NfseRequestPipeline(
         ambiente: $ambiente,
@@ -363,8 +363,8 @@ git commit -m "refactor: NfseRequestPipeline depends on driven ports instead of 
 **Step 1: Change the constructor type hint**
 
 In `src/Handlers/NfseQueryExecutor.php`:
-- Add `use Pulsar\NfseNacional\Contracts\Ports\Driven\SendsHttpRequests;`
-- Remove `use Pulsar\NfseNacional\Http\NfseHttpClient;`
+- Add `use OwnerPro\Nfsen\Contracts\Ports\Driven\SendsHttpRequests;`
+- Remove `use OwnerPro\Nfsen\Http\NfseHttpClient;`
 - Change constructor: `private NfseHttpClient $httpClient` → `private SendsHttpRequests $httpClient`
 
 **Step 2: Run tests**
@@ -390,8 +390,8 @@ git commit -m "refactor: NfseQueryExecutor depends on SendsHttpRequests port"
 **Step 1: Change the constructor type hint**
 
 In `src/Consulta/ConsultaBuilder.php`:
-- Add `use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;`
-- Remove `use Pulsar\NfseNacional\Services\PrefeituraResolver;`
+- Add `use OwnerPro\Nfsen\Contracts\Ports\Driven\ResolvesPrefeituras;`
+- Remove `use OwnerPro\Nfsen\Services\PrefeituraResolver;`
 - Change constructor: `private PrefeituraResolver $resolver` → `private ResolvesPrefeituras $resolver`
 
 **Step 2: Update ConsultaBuilderTest if it references `PrefeituraResolver` directly**
@@ -421,8 +421,8 @@ git commit -m "refactor: ConsultaBuilder depends on ResolvesPrefeituras port"
 **Step 1: Change the constructor type hint and update forStandalone()**
 
 In `src/NfseClient.php`:
-- Add `use Pulsar\NfseNacional\Contracts\Ports\Driven\ResolvesPrefeituras;`
-- Remove `use Pulsar\NfseNacional\Services\PrefeituraResolver;` (if no longer needed — check if `forStandalone` still instantiates it)
+- Add `use OwnerPro\Nfsen\Contracts\Ports\Driven\ResolvesPrefeituras;`
+- Remove `use OwnerPro\Nfsen\Services\PrefeituraResolver;` (if no longer needed — check if `forStandalone` still instantiates it)
 - Actually, `forStandalone()` creates `new PrefeituraResolver(...)`, so the import stays. Only the constructor property type changes.
 - Change constructor: `private PrefeituraResolver $prefeituraResolver` → `private ResolvesPrefeituras $prefeituraResolver`
 
@@ -451,7 +451,7 @@ public static function forStandalone(
     $certManager = new CertificateManager($pfxContent, $senha);
     $effectiveSslVerify = $ambiente === NfseAmbiente::PRODUCAO || $sslVerify;
     $httpClient = new NfseHttpClient($certManager->getCertificate(), $timeout, $connectTimeout, $effectiveSslVerify);
-    $signer = new \Pulsar\NfseNacional\Signing\XmlSigner($certManager->getCertificate(), $signingAlgorithm);
+    $signer = new \OwnerPro\Nfsen\Signing\XmlSigner($certManager->getCertificate(), $signingAlgorithm);
 
     $pipeline = new NfseRequestPipeline(
         ambiente: $ambiente,
@@ -476,7 +476,7 @@ public static function forStandalone(
 ```
 
 Add imports that may be needed:
-- `use Pulsar\NfseNacional\Signing\XmlSigner;`
+- `use OwnerPro\Nfsen\Signing\XmlSigner;`
 
 **Step 2: Run tests**
 
@@ -507,11 +507,11 @@ Move the 5 existing interfaces and update all imports across the codebase.
 
 **Step 1: Create the files in new location with updated namespace**
 
-Each file changes only its `namespace` line from `Pulsar\NfseNacional\Contracts` to `Pulsar\NfseNacional\Contracts\Ports\Driving`. Content stays identical otherwise.
+Each file changes only its `namespace` line from `OwnerPro\Nfsen\Contracts` to `OwnerPro\Nfsen\Contracts\Ports\Driving`. Content stays identical otherwise.
 
 **Step 2: Update all imports in source files**
 
-Files that import from `Pulsar\NfseNacional\Contracts\*`:
+Files that import from `OwnerPro\Nfsen\Contracts\*`:
 
 | File | Old import | New import |
 |------|-----------|------------|
@@ -632,10 +632,10 @@ src/Contracts/Ports/Driving/SubstitutesNfse.php
 **Step 3: Verify no concrete infrastructure imports in core**
 
 ```bash
-grep -r "use Pulsar\\NfseNacional\\Http\\NfseHttpClient" src/Handlers/ src/Consulta/
-grep -r "use Pulsar\\NfseNacional\\Signing\\XmlSigner" src/Handlers/
-grep -r "use Pulsar\\NfseNacional\\Services\\PrefeituraResolver" src/Handlers/ src/Consulta/
-grep -r "use Pulsar\\NfseNacional\\Certificates\\CertificateManager" src/Handlers/
+grep -r "use OwnerPro\\Nfsen\\Http\\NfseHttpClient" src/Handlers/ src/Consulta/
+grep -r "use OwnerPro\\Nfsen\\Signing\\XmlSigner" src/Handlers/
+grep -r "use OwnerPro\\Nfsen\\Services\\PrefeituraResolver" src/Handlers/ src/Consulta/
+grep -r "use OwnerPro\\Nfsen\\Certificates\\CertificateManager" src/Handlers/
 ```
 
 Expected: All return empty (no matches). Only `src/NfseClient.php` (composition root) should import concrete classes.

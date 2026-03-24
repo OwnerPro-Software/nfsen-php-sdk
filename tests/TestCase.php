@@ -1,9 +1,9 @@
 <?php
 
-namespace Pulsar\NfseNacional\Tests;
+namespace OwnerPro\Nfsen\Tests;
 
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use Pulsar\NfseNacional\NfseNacionalServiceProvider;
+use OwnerPro\Nfsen\NfseNacionalServiceProvider;
 
 abstract class TestCase extends OrchestraTestCase
 {

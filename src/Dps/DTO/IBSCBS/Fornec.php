@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
+namespace OwnerPro\Nfsen\Dps\DTO\IBSCBS;
 
-use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 
 /**
  * @phpstan-type FornecArray array{xNome: string, CNPJ?: string, CPF?: string, NIF?: string, cNaoNIF?: string}

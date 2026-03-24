@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Valores;
+namespace OwnerPro\Nfsen\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice;
-use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpDedRed;
 
 /**
  * @phpstan-import-type NFSeMunArray from NFSeMun

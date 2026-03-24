@@ -1,16 +1,16 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib::class,
-    \Pulsar\NfseNacional\Dps\DTO\Shared\EndNac::class,
-    \Pulsar\NfseNacional\Dps\DTO\Shared\EndExt::class,
-    \Pulsar\NfseNacional\Dps\DTO\Shared\End::class,
+    \OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib::class,
+    \OwnerPro\Nfsen\Dps\DTO\Shared\EndNac::class,
+    \OwnerPro\Nfsen\Dps\DTO\Shared\EndExt::class,
+    \OwnerPro\Nfsen\Dps\DTO\Shared\End::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndNac;
-use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
+use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
 
 it('RegTrib::fromArray creates instance from array', function () {
     $dto = RegTrib::fromArray([

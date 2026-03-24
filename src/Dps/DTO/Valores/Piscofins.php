@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Valores;
+namespace OwnerPro\Nfsen\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Dps\Enums\Valores\CST;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
+use OwnerPro\Nfsen\Dps\Enums\Valores\CST;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 
 /**
  * @phpstan-type PiscofinsArray array{CST: string, vBCPisCofins?: string, pAliqPis?: string, pAliqCofins?: string, vPis?: string, vCofins?: string, tpRetPisCofins?: string}

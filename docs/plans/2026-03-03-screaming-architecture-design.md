@@ -91,24 +91,24 @@ src/
 
 | Old Namespace | New Namespace |
 |---|---|
-| `Pulsar\NfseNacional\DTOs\Dps\*` | `Pulsar\NfseNacional\Dps\DTO\*` |
-| `Pulsar\NfseNacional\Enums\Dps\*` | `Pulsar\NfseNacional\Dps\Enums\*` |
-| `Pulsar\NfseNacional\Xml\DpsBuilder` | `Pulsar\NfseNacional\Builders\Xml\DpsBuilder` |
-| `Pulsar\NfseNacional\Xml\Builders\*` | `Pulsar\NfseNacional\Builders\Xml\Parts\*` |
-| `Pulsar\NfseNacional\Consulta\*` | `Pulsar\NfseNacional\Builders\Consulta\*` |
-| `Pulsar\NfseNacional\Handlers\NfseEmitter` | `Pulsar\NfseNacional\Operations\NfseEmitter` |
-| `Pulsar\NfseNacional\Handlers\NfseCanceller` | `Pulsar\NfseNacional\Operations\NfseCanceller` |
-| `Pulsar\NfseNacional\Handlers\NfseSubstitutor` | `Pulsar\NfseNacional\Operations\NfseSubstitutor` |
-| `Pulsar\NfseNacional\Handlers\NfseRequestPipeline` | `Pulsar\NfseNacional\Pipeline\NfseRequestPipeline` |
-| `Pulsar\NfseNacional\Handlers\Concerns\*` | `Pulsar\NfseNacional\Pipeline\Concerns\*` |
-| `Pulsar\NfseNacional\Http\NfseHttpClient` | `Pulsar\NfseNacional\Adapters\NfseHttpClient` |
-| `Pulsar\NfseNacional\Signing\XmlSigner` | `Pulsar\NfseNacional\Adapters\XmlSigner` |
-| `Pulsar\NfseNacional\Certificates\CertificateManager` | `Pulsar\NfseNacional\Adapters\CertificateManager` |
-| `Pulsar\NfseNacional\Services\PrefeituraResolver` | `Pulsar\NfseNacional\Adapters\PrefeituraResolver` |
-| `Pulsar\NfseNacional\DTOs\NfseResponse` | `Pulsar\NfseNacional\Responses\NfseResponse` |
-| `Pulsar\NfseNacional\DTOs\DanfseResponse` | `Pulsar\NfseNacional\Responses\DanfseResponse` |
-| `Pulsar\NfseNacional\DTOs\EventosResponse` | `Pulsar\NfseNacional\Responses\EventosResponse` |
-| `Pulsar\NfseNacional\DTOs\MensagemProcessamento` | `Pulsar\NfseNacional\Responses\MensagemProcessamento` |
+| `OwnerPro\Nfsen\DTOs\Dps\*` | `OwnerPro\Nfsen\Dps\DTO\*` |
+| `OwnerPro\Nfsen\Enums\Dps\*` | `OwnerPro\Nfsen\Dps\Enums\*` |
+| `OwnerPro\Nfsen\Xml\DpsBuilder` | `OwnerPro\Nfsen\Builders\Xml\DpsBuilder` |
+| `OwnerPro\Nfsen\Xml\Builders\*` | `OwnerPro\Nfsen\Builders\Xml\Parts\*` |
+| `OwnerPro\Nfsen\Consulta\*` | `OwnerPro\Nfsen\Builders\Consulta\*` |
+| `OwnerPro\Nfsen\Handlers\NfseEmitter` | `OwnerPro\Nfsen\Operations\NfseEmitter` |
+| `OwnerPro\Nfsen\Handlers\NfseCanceller` | `OwnerPro\Nfsen\Operations\NfseCanceller` |
+| `OwnerPro\Nfsen\Handlers\NfseSubstitutor` | `OwnerPro\Nfsen\Operations\NfseSubstitutor` |
+| `OwnerPro\Nfsen\Handlers\NfseRequestPipeline` | `OwnerPro\Nfsen\Pipeline\NfseRequestPipeline` |
+| `OwnerPro\Nfsen\Handlers\Concerns\*` | `OwnerPro\Nfsen\Pipeline\Concerns\*` |
+| `OwnerPro\Nfsen\Http\NfseHttpClient` | `OwnerPro\Nfsen\Adapters\NfseHttpClient` |
+| `OwnerPro\Nfsen\Signing\XmlSigner` | `OwnerPro\Nfsen\Adapters\XmlSigner` |
+| `OwnerPro\Nfsen\Certificates\CertificateManager` | `OwnerPro\Nfsen\Adapters\CertificateManager` |
+| `OwnerPro\Nfsen\Services\PrefeituraResolver` | `OwnerPro\Nfsen\Adapters\PrefeituraResolver` |
+| `OwnerPro\Nfsen\DTOs\NfseResponse` | `OwnerPro\Nfsen\Responses\NfseResponse` |
+| `OwnerPro\Nfsen\DTOs\DanfseResponse` | `OwnerPro\Nfsen\Responses\DanfseResponse` |
+| `OwnerPro\Nfsen\DTOs\EventosResponse` | `OwnerPro\Nfsen\Responses\EventosResponse` |
+| `OwnerPro\Nfsen\DTOs\MensagemProcessamento` | `OwnerPro\Nfsen\Responses\MensagemProcessamento` |
 
 ## Folders Removed (Empty After Move)
 
@@ -144,6 +144,6 @@ src/
 
 - All source files under `src/` need namespace updates
 - All test files need import updates
-- `composer.json` autoload PSR-4 mapping stays the same (root `Pulsar\\NfseNacional\\` → `src/`)
+- `composer.json` autoload PSR-4 mapping stays the same (root `OwnerPro\\Nfsen\\` → `src/`)
 - Architecture tests in `ArchTest.php` need rule updates for new namespaces
 - Service provider bindings need updated class references

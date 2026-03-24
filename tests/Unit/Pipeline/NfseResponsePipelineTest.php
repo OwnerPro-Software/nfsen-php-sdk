@@ -1,14 +1,14 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Pipeline\NfseResponsePipeline::class);
+covers(\OwnerPro\Nfsen\Pipeline\NfseResponsePipeline::class);
 
 use Illuminate\Support\Facades\Event;
-use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Events\NfseFailed;
-use Pulsar\NfseNacional\Events\NfseQueried;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Pipeline\NfseResponsePipeline;
+use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseQueried;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Pipeline\NfseResponsePipeline;
 
 /**
  * @param  ?array<string, mixed>  $getResult

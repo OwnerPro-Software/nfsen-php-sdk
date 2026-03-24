@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao::class);
+covers(\OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao::class);
 
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 
 it('has desenquadramento simples nacional value', function (): void {
     expect(CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional->value)->toBe('01');

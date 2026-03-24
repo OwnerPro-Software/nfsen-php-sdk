@@ -1,24 +1,24 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Xml\Builders\ServicoBuilder::class);
+covers(\OwnerPro\Nfsen\Xml\Builders\ServicoBuilder::class);
 
-use Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento;
-use Pulsar\NfseNacional\Dps\DTO\Serv\ComExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\CServ;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
-use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Obra;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
-use Pulsar\NfseNacional\Dps\Enums\Serv\Mdic;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MdPrestacao;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MecAFComexP;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MecAFComexT;
-use Pulsar\NfseNacional\Dps\Enums\Serv\MovTempBens;
-use Pulsar\NfseNacional\Dps\Enums\Serv\VincPrest;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
+use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
+use OwnerPro\Nfsen\Dps\DTO\Serv\ComExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
+use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Obra;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Dps\Enums\Serv\Mdic;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MdPrestacao;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MecAFComexP;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MecAFComexT;
+use OwnerPro\Nfsen\Dps\Enums\Serv\MovTempBens;
+use OwnerPro\Nfsen\Dps\Enums\Serv\VincPrest;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Xml\Builders\ServicoBuilder;
 
 function makeServMinimo(): Serv
 {

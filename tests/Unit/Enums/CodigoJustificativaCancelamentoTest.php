@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento::class);
+covers(\OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento::class);
 
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 
 it('has erro emissao value', function (): void {
     expect(CodigoJustificativaCancelamento::ErroEmissao->value)->toBe('1');

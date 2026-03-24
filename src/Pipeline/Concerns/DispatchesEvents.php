@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Pipeline\Concerns;
+namespace OwnerPro\Nfsen\Pipeline\Concerns;
 
 use Closure;
-use Pulsar\NfseNacional\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseFailed;
 use Throwable;
 
 trait DispatchesEvents

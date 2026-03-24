@@ -1,13 +1,13 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseClient::class, \Pulsar\NfseNacional\Operations\NfseSubstitutor::class);
+covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseSubstitutor::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Responses\NfseResponse;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Responses\NfseResponse;
 
 it('substituir returns success when emission succeeds', function (DpsData $dps) {
     $chave = makeChaveAcesso();
@@ -82,7 +82,7 @@ it('substituir throws HttpException on server error during emission', function (
         $dps,
         CodigoJustificativaSubstituicao::Outros,
         'Outro motivo para substituicao',
-    ))->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+    ))->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 })->with('dpsData');
 
 it('substituir accepts array DPS and converts to DpsData', function () {

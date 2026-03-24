@@ -2,9 +2,9 @@
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Adapters\NfseHttpClient;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\TempFileFactory;
+use OwnerPro\Nfsen\Adapters\NfseHttpClient;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\TempFileFactory;
 
 it('posts json payload to given url', function () {
     Http::fake(['*' => Http::response(['sucesso' => true], 201)]);
@@ -49,7 +49,7 @@ it('throws HttpException on 5xx when response has no JSON body', function () {
     try {
         $client->post('https://example.com/nfse', []);
         test()->fail('Expected HttpException');
-    } catch (\Pulsar\NfseNacional\Exceptions\HttpException $e) {
+    } catch (\OwnerPro\Nfsen\Exceptions\HttpException $e) {
         expect($e->getMessage())->toBe('HTTP error: 500');
         expect($e->getResponseBody())->toContain('Server Error');
     }
@@ -156,7 +156,7 @@ it('head throws HttpException on 5xx', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->head('https://example.com/dps/DPS123'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 });
 
 it('head throws NfseException when tmpfile fails', function () {
@@ -388,7 +388,7 @@ it('getBytes throws HttpException on 4xx', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->getBytes('https://example.com/danfse/INVALID'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'HTTP error: 404');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class, 'HTTP error: 404');
 });
 
 it('getBytes throws HttpException on 5xx', function () {
@@ -397,7 +397,7 @@ it('getBytes throws HttpException on 5xx', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->getBytes('https://example.com/danfse/CHAVE123'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class, 'HTTP error: 500');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class, 'HTTP error: 500');
 });
 
 it('getBytes does not follow redirects', function () {
@@ -406,7 +406,7 @@ it('getBytes does not follow redirects', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->getBytes('https://example.com/danfse/CHAVE123'))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 
     Http::assertSentCount(1);
 });

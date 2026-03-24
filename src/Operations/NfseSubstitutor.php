@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Operations;
+namespace OwnerPro\Nfsen\Operations;
 
-use Pulsar\NfseNacional\Contracts\Driving\EmitsNfse;
-use Pulsar\NfseNacional\Contracts\Driving\SubstitutesNfse;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Events\NfseSubstituted;
-use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
-use Pulsar\NfseNacional\Responses\NfseResponse;
+use OwnerPro\Nfsen\Contracts\Driving\EmitsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\SubstitutesNfse;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Events\NfseSubstituted;
+use OwnerPro\Nfsen\Pipeline\Concerns\DispatchesEvents;
+use OwnerPro\Nfsen\Pipeline\Concerns\ValidatesChaveAcesso;
+use OwnerPro\Nfsen\Responses\NfseResponse;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData

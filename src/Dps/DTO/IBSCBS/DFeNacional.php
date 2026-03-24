@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\IBSCBS;
+namespace OwnerPro\Nfsen\Dps\DTO\IBSCBS;
 
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TipoChaveDFe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TipoChaveDFe;
 
 /**
  * @phpstan-type DFeNacionalArray array{tipoChaveDFe: string, chaveDFe: string, xTipoChaveDFe?: string}
