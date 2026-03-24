@@ -12,7 +12,7 @@ override the environment per-client instance.
 Add an optional `?NfseAmbiente $ambiente = null` parameter to
 `NfseClient::for()` and `Nfsen::for()`.
 
-- When `null` → uses `config('nfse-nacional.ambiente')` (current behavior).
+- When `null` → uses `config('nfsen.ambiente')` (current behavior).
 - When provided → uses the given value, ignoring config.
 
 `forStandalone()` already accepts `ambiente` — no changes needed there.
@@ -38,6 +38,6 @@ Nfsen::for($pfx, $senha, '3550308', NfseAmbiente::PRODUCAO);
 
 ## What does NOT change
 
-- `NfseNacionalServiceProvider` — binding uses config, unchanged.
+- `NfsenServiceProvider` — binding uses config, unchanged.
 - `forStandalone()` — already has the parameter.
 - No other config parameter is exposed for runtime override.

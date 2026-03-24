@@ -5,7 +5,7 @@ arch()->preset()->security();
 arch()->preset()->laravel();
 arch()->preset()->strict()
     ->ignoring('OwnerPro\Nfsen\Exceptions\NfseException')
-    ->ignoring('OwnerPro\Nfsen\Facades\NfseNacional')
+    ->ignoring('OwnerPro\Nfsen\Facades\Nfsen')
     ->ignoring('OwnerPro\Nfsen\Support\TempFileFactory')
     ->ignoring('OwnerPro\Nfsen\Support\FileReader')
     ->ignoring('OwnerPro\Nfsen\Support\GzipCompressor')

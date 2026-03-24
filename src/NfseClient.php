@@ -44,9 +44,9 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
 
     public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): self
     {
-        if (function_exists('config') && config('nfse-nacional') !== null) {
+        if (function_exists('config') && config('nfsen') !== null) {
             /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool} $config */
-            $config = config('nfse-nacional');
+            $config = config('nfsen');
 
             return self::forStandalone(
                 pfxContent: $pfxContent,

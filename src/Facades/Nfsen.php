@@ -23,7 +23,7 @@ use SensitiveParameter;
  * @method static NfseResponse substituir(string $chave, DpsData|DpsDataArray $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null)
  * @method static ConsultsNfse consultar()
  */
-final class NfseNacional extends Facade
+final class Nfsen extends Facade
 {
     protected static function getFacadeAccessor(): string
     {

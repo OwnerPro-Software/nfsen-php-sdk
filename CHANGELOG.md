@@ -24,7 +24,7 @@ de testes, tipos e mutações, e suporte a PHP 8.2+ com Laravel 11/12.
 - Validação XSD dos documentos antes do envio
 - mTLS via `tmpfile()` — sem escrita nomeada em disco, sem CNPJ no path
 - SSL habilitado corretamente (`verify: true`)
-- Facade `NfseNacional` para uso simplificado com Laravel
+- Facade `Nfsen` para uso simplificado com Laravel
 - Override de ambiente em runtime via `NfseClient::for(..., ambiente: NfseAmbiente::PRODUCAO)`
 - Identificação de prefeituras exclusivamente por código IBGE (7 dígitos)
 - Suporte a PHP 8.2, 8.3 e 8.4

@@ -38,7 +38,7 @@ composer require ownerpro/nfsen
 Publique o arquivo de configuração:
 
 ```bash
-php artisan vendor:publish --tag=nfse-nacional-config
+php artisan vendor:publish --tag=nfsen-config
 ```
 
 Adicione as variáveis de ambiente no `.env`:
@@ -219,26 +219,26 @@ $processada = $client->consultar()->verificarDps($idDps); // true ou false
 ### Laravel Facade
 
 ```php
-use OwnerPro\Nfsen\Facades\NfseNacional;
+use OwnerPro\Nfsen\Facades\Nfsen;
 
 // Emitir
-$response = NfseNacional::emitir($dps);
+$response = Nfsen::emitir($dps);
 
 // Cancelar
-$response = NfseNacional::cancelar($chave, $motivo, $descricao);
+$response = Nfsen::cancelar($chave, $motivo, $descricao);
 
 // Consultar
-$response = NfseNacional::consultar()->nfse($chave);
-$danfse   = NfseNacional::consultar()->danfse($chave);
+$response = Nfsen::consultar()->nfse($chave);
+$danfse   = Nfsen::consultar()->danfse($chave);
 
 // Usar certificado diferente por requisicao
-$client = NfseNacional::for($pfxContent, $senha, '3550308');
+$client = Nfsen::for($pfxContent, $senha, '3550308');
 $response = $client->emitir($dps);
 
 // Sobrescrever ambiente (ignorar config)
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
-$client = NfseNacional::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
+$client = Nfsen::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
 $response = $client->emitir($dps);
 ```
 

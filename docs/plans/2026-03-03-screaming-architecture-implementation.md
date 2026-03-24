@@ -576,5 +576,5 @@ src/
   Responses/         # Response DTOs (NfseResponse, DanfseResponse, etc.)
   Support/           # Pure utilities (unchanged)
   NfseClient.php
-  NfseNacionalServiceProvider.php
+  NfsenServiceProvider.php
 ```

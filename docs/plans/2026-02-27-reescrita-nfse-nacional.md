@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Reescrever o pacote `nfse-nacional` como um pacote Laravel idiomático, multitenante, testável com Pest e sem os bugs estruturais do código original.
+**Goal:** Reescrever o pacote `nfsen` como um pacote Laravel idiomático, multitenante, testável com Pest e sem os bugs estruturais do código original.
 
 **Architecture:** Pacote standalone com Service Provider e Facade. `NfseClient::for($pfx, $senha, $prefeitura)` cria instâncias isoladas por tenant. A camada HTTP usa o `Http::` do Laravel com mTLS. O XML é construído por builders especializados por grupo (prestador, tomador, serviço, valores). `sped-common` cuida do certificado e da assinatura XMLDSig.
 
@@ -27,9 +27,9 @@
 
 **Files:**
 - Modify: `composer.json`
-- Create: `src/NfseNacionalServiceProvider.php`
+- Create: `src/NfsenServiceProvider.php`
 - Create: `src/Facades/Nfsen.php`
-- Create: `config/nfse-nacional.php`
+- Create: `config/nfsen.php`
 - Create: `tests/Pest.php`
 
 **Step 1: Atualizar composer.json**
@@ -75,7 +75,7 @@ Substituir o conteúdo por:
   "extra": {
     "laravel": {
       "providers": [
-        "OwnerPro\\Nfsen\\NfseNacionalServiceProvider"
+        "OwnerPro\\Nfsen\\NfsenServiceProvider"
       ],
       "aliases": {
         "Nfsen": "OwnerPro\\Nfsen\\Facades\\Nfsen"
@@ -102,19 +102,19 @@ Expected: sem erros, `vendor/` criado.
 
 ```php
 <?php
-// src/NfseNacionalServiceProvider.php
+// src/NfsenServiceProvider.php
 namespace OwnerPro\Nfsen;
 
 use Illuminate\Support\ServiceProvider;
 
-class NfseNacionalServiceProvider extends ServiceProvider
+class NfsenServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/nfse-nacional.php', 'nfse-nacional');
+        $this->mergeConfigFrom(__DIR__.'/../config/nfsen.php', 'nfsen');
 
         $this->app->bind(NfseClient::class, function ($app) {
-            $config = $app['config']['nfse-nacional'];
+            $config = $app['config']['nfsen'];
             $pfxContent = file_get_contents($config['certificado']['path']);
             return NfseClient::for($pfxContent, $config['certificado']['senha'], $config['prefeitura'], $config['ambiente']);
         });
@@ -123,7 +123,7 @@ class NfseNacionalServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->publishes([
-            __DIR__.'/../config/nfse-nacional.php' => config_path('nfse-nacional.php'),
+            __DIR__.'/../config/nfsen.php' => config_path('nfsen.php'),
         ], 'config');
     }
 }
@@ -154,7 +154,7 @@ class Nfsen extends Facade
 
 ```php
 <?php
-// config/nfse-nacional.php
+// config/nfsen.php
 return [
     'ambiente'   => env('NFSE_AMBIENTE', 2), // 1=produção, 2=homologação
     'prefeitura' => env('NFSE_PREFEITURA'),
@@ -181,14 +181,14 @@ uses(OwnerPro\Nfsen\Tests\TestCase::class)->in('Feature', 'Unit');
 // tests/TestCase.php
 namespace OwnerPro\Nfsen\Tests;
 
-use OwnerPro\Nfsen\NfseNacionalServiceProvider;
+use OwnerPro\Nfsen\NfsenServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
     protected function getPackageProviders($app): array
     {
-        return [NfseNacionalServiceProvider::class];
+        return [NfsenServiceProvider::class];
     }
 }
 ```
@@ -196,7 +196,7 @@ abstract class TestCase extends BaseTestCase
 **Step 8: Commit**
 
 ```bash
-git add composer.json src/NfseNacionalServiceProvider.php src/Facades/ config/ tests/Pest.php tests/TestCase.php
+git add composer.json src/NfsenServiceProvider.php src/Facades/ config/ tests/Pest.php tests/TestCase.php
 git commit -m "chore: scaffold do pacote Laravel com Service Provider e Facade"
 ```
 
@@ -2465,7 +2465,7 @@ Os arquivos a seguir do projeto original podem ser removidos depois que o novo c
 
 ```bash
 git add -A
-git commit -m "feat: reescrita completa do pacote nfse-nacional
+git commit -m "feat: reescrita completa do pacote nfsen
 
 - Substitui cURL manual por Laravel Http com mTLS correto (SSL verificado)
 - Quebra Dps.php monolítico em builders especializados por grupo XML

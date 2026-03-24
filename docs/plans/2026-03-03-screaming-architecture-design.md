@@ -84,7 +84,7 @@ src/
   Support/                          # Pure utilities (unchanged)
   Facades/                          # Laravel facade (unchanged)
   NfseClient.php
-  NfseNacionalServiceProvider.php
+  NfsenServiceProvider.php
 ```
 
 ## Namespace Mapping

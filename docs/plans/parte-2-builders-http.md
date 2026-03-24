@@ -1,8 +1,8 @@
-# Reescrita nfse-nacional — Plano de Implementação
+# Reescrita nfsen — Plano de Implementação
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Reescrever o pacote nfse-nacional com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
+**Goal:** Reescrever o pacote nfsen com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
 **Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `OwnerPro\Nfsen`); código legado coexiste em `src/` (namespace `Hadder\Nfsen`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
 
@@ -1062,7 +1062,7 @@ git commit -m "feat: add EventoBuilder — XML de cancelamento pedRegEvento"
 
 **Files:**
 - Create: `src-new/Http/NfseHttpClient.php`
-- Create: `src-new/NfseNacionalServiceProvider.php` (stub mínimo — expandido na Task 16)
+- Create: `src-new/NfsenServiceProvider.php` (stub mínimo — expandido na Task 16)
 - Create: `tests/Unit/Http/NfseHttpClientTest.php`
 - Create: `tests/TestCase.php`
 - Modify: `tests/Pest.php` (adicionar `uses()`)
@@ -1076,7 +1076,7 @@ git commit -m "feat: add EventoBuilder — XML de cancelamento pedRegEvento"
 
 **Step 1: Criar stub do ServiceProvider**
 
-`src-new/NfseNacionalServiceProvider.php` (stub mínimo — necessário para o TestCase do Testbench; expandido com bindings reais na Task 16):
+`src-new/NfsenServiceProvider.php` (stub mínimo — necessário para o TestCase do Testbench; expandido com bindings reais na Task 16):
 ```php
 <?php
 
@@ -1084,7 +1084,7 @@ namespace OwnerPro\Nfsen;
 
 use Illuminate\Support\ServiceProvider;
 
-class NfseNacionalServiceProvider extends ServiceProvider
+class NfsenServiceProvider extends ServiceProvider
 {
     public function register(): void {}
 
@@ -1164,7 +1164,7 @@ it('certificate PEM output is valid for mTLS', function () {
 });
 ```
 
-> **Nota:** Para `Http::fake()` funcionar, os testes precisam de um app Laravel. Configure o `TestCase` com `orchestra/testbench`. O `NfseNacionalServiceProvider` já foi criado no Step 1.
+> **Nota:** Para `Http::fake()` funcionar, os testes precisam de um app Laravel. Configure o `TestCase` com `orchestra/testbench`. O `NfsenServiceProvider` já foi criado no Step 1.
 
 **Step 3: Criar TestCase e atualizar Pest.php**
 
@@ -1175,13 +1175,13 @@ Criar `tests/TestCase.php`:
 namespace OwnerPro\Nfsen\Tests;
 
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use OwnerPro\Nfsen\NfseNacionalServiceProvider;
+use OwnerPro\Nfsen\NfsenServiceProvider;
 
 abstract class TestCase extends OrchestraTestCase
 {
     protected function getPackageProviders($app): array
     {
-        return [NfseNacionalServiceProvider::class];
+        return [NfsenServiceProvider::class];
     }
 }
 ```
@@ -1281,7 +1281,7 @@ Expected: PASS
 **Step 7: Commit**
 
 ```bash
-git add src-new/Http/ src-new/NfseNacionalServiceProvider.php tests/Unit/Http/ tests/TestCase.php tests/Pest.php
+git add src-new/Http/ src-new/NfsenServiceProvider.php tests/Unit/Http/ tests/TestCase.php tests/Pest.php
 git commit -m "feat: add NfseHttpClient — mTLS via tmpfile, Laravel Http client; stub ServiceProvider"
 ```
 

@@ -82,7 +82,7 @@
   "prefer-stable": true,
   "extra": {
     "laravel": {
-      "providers": ["OwnerPro\\Nfsen\\NfseNacionalServiceProvider"]
+      "providers": ["OwnerPro\\Nfsen\\NfsenServiceProvider"]
     }
   }
 }
