@@ -1,13 +1,13 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Dps\DTO\Shared\End::class,
-    \Pulsar\NfseNacional\Dps\DTO\Concerns\ValidatesExclusiveChoice::class,
+    \OwnerPro\Nfsen\Dps\DTO\Shared\End::class,
+    \OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice::class,
 );
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndNac;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('throws when both endNac and endExt are set', function () {
     expect(fn () => new End(

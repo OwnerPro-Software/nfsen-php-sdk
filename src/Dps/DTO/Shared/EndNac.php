@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Shared;
+namespace OwnerPro\Nfsen\Dps\DTO\Shared;
 
 /**
  * @phpstan-type EndNacArray array{cMun: string, CEP: string}

@@ -1,12 +1,12 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseNacionalServiceProvider::class, \Pulsar\NfseNacional\Facades\NfseNacional::class);
+covers(\OwnerPro\Nfsen\NfseNacionalServiceProvider::class, \OwnerPro\Nfsen\Facades\NfseNacional::class);
 
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Facades\NfseNacional;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Facades\NfseNacional;
+use OwnerPro\Nfsen\NfseClient;
 
 it('resolves NfseClient from container', function () {
     config([
@@ -43,10 +43,10 @@ it('configures client when cert path, senha and prefeitura are set', function ()
     ]);
 
     // Re-resolve from container to trigger the configure() branch
-    $client = app(\Pulsar\NfseNacional\NfseClient::class);
+    $client = app(\OwnerPro\Nfsen\NfseClient::class);
 
     // If configured, consultar() returns a ConsultsNfse without throwing
-    expect($client->consultar())->toBeInstanceOf(\Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse::class);
+    expect($client->consultar())->toBeInstanceOf(\OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse::class);
 });
 
 it('facade emitir works directly when config is set', function (DpsData $data) {
@@ -82,7 +82,7 @@ it('throws RuntimeException when cert file is empty', function () {
             'nfse-nacional.prefeitura' => '3501608',
         ]);
 
-        expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
+        expect(fn () => app(\OwnerPro\Nfsen\NfseClient::class))
             ->toThrow(\RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
     } finally {
         unlink($emptyFile);
@@ -90,7 +90,7 @@ it('throws RuntimeException when cert file is empty', function () {
 });
 
 it('throws NfseException when cert config is incomplete', function () {
-    expect(fn () => app(\Pulsar\NfseNacional\NfseClient::class))
+    expect(fn () => app(\OwnerPro\Nfsen\NfseClient::class))
         ->toThrow(NfseException::class, 'NfseClient não configurado');
 });
 
@@ -151,7 +151,7 @@ it('casts integer prefeitura config to string', function () {
 
 it('publishes config file in console', function () {
     $paths = \Illuminate\Support\ServiceProvider::pathsToPublish(
-        \Pulsar\NfseNacional\NfseNacionalServiceProvider::class,
+        \OwnerPro\Nfsen\NfseNacionalServiceProvider::class,
         'nfse-nacional-config',
     );
 

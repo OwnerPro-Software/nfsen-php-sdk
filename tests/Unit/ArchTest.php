@@ -4,28 +4,28 @@ arch()->preset()->php();
 arch()->preset()->security();
 arch()->preset()->laravel();
 arch()->preset()->strict()
-    ->ignoring('Pulsar\NfseNacional\Exceptions\NfseException')
-    ->ignoring('Pulsar\NfseNacional\Facades\NfseNacional')
-    ->ignoring('Pulsar\NfseNacional\Support\TempFileFactory')
-    ->ignoring('Pulsar\NfseNacional\Support\FileReader')
-    ->ignoring('Pulsar\NfseNacional\Support\GzipCompressor')
-    ->ignoring('Pulsar\NfseNacional\Support\XmlDocumentLoader');
+    ->ignoring('OwnerPro\Nfsen\Exceptions\NfseException')
+    ->ignoring('OwnerPro\Nfsen\Facades\NfseNacional')
+    ->ignoring('OwnerPro\Nfsen\Support\TempFileFactory')
+    ->ignoring('OwnerPro\Nfsen\Support\FileReader')
+    ->ignoring('OwnerPro\Nfsen\Support\GzipCompressor')
+    ->ignoring('OwnerPro\Nfsen\Support\XmlDocumentLoader');
 
 // Hexagonal boundary: core must not depend on infrastructure adapters
 arch('operations do not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Operations')
+    ->expect('OwnerPro\Nfsen\Operations')
     ->not->toUse([
-        'Pulsar\NfseNacional\Adapters',
+        'OwnerPro\Nfsen\Adapters',
     ]);
 
 arch('pipeline does not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Pipeline')
+    ->expect('OwnerPro\Nfsen\Pipeline')
     ->not->toUse([
-        'Pulsar\NfseNacional\Adapters',
+        'OwnerPro\Nfsen\Adapters',
     ]);
 
 arch('xml builders do not depend on infrastructure adapters')
-    ->expect('Pulsar\NfseNacional\Xml')
+    ->expect('OwnerPro\Nfsen\Xml')
     ->not->toUse([
-        'Pulsar\NfseNacional\Adapters',
+        'OwnerPro\Nfsen\Adapters',
     ]);

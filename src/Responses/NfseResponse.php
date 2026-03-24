@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Responses;
+namespace OwnerPro\Nfsen\Responses;
 
 final readonly class NfseResponse
 {

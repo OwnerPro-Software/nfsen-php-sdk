@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Driving;
+namespace OwnerPro\Nfsen\Contracts\Driving;
 
 interface QueriesNfse
 {

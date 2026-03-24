@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Enums\TipoEvento::class);
+covers(\OwnerPro\Nfsen\Enums\TipoEvento::class);
 
-use Pulsar\NfseNacional\Enums\TipoEvento;
+use OwnerPro\Nfsen\Enums\TipoEvento;
 
 it('has all 18 expected values', function () {
     expect(TipoEvento::cases())->toHaveCount(18);

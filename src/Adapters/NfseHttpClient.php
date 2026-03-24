@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Adapters;
+namespace OwnerPro\Nfsen\Adapters;
 
 use Closure;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Exceptions\HttpException;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\TempFileFactory;
+use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\TempFileFactory;
 
 final readonly class NfseHttpClient implements SendsHttpRequests
 {

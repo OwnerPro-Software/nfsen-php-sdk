@@ -1,29 +1,29 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Xml\Builders\ValoresBuilder::class,
-    \Pulsar\NfseNacional\Xml\Builders\CreatesTextElements::class,
+    \OwnerPro\Nfsen\Xml\Builders\ValoresBuilder::class,
+    \OwnerPro\Nfsen\Xml\Builders\CreatesTextElements::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\Valores\BM;
-use Pulsar\NfseNacional\Dps\DTO\Valores\ExigSusp;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Piscofins;
-use Pulsar\NfseNacional\Dps\DTO\Valores\PTotTrib;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Trib;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TribFed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\TribMun;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VDescCondIncond;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VServPrest;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VTotTrib;
-use Pulsar\NfseNacional\Dps\Enums\Valores\CST;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpImunidade;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetISSQN;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpRetPisCofins;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpSusp;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TribISSQN;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
+use OwnerPro\Nfsen\Dps\DTO\Valores\BM;
+use OwnerPro\Nfsen\Dps\DTO\Valores\ExigSusp;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Piscofins;
+use OwnerPro\Nfsen\Dps\DTO\Valores\PTotTrib;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Trib;
+use OwnerPro\Nfsen\Dps\DTO\Valores\TribFed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\TribMun;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib;
+use OwnerPro\Nfsen\Dps\Enums\Valores\CST;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Xml\Builders\ValoresBuilder;
 
 function makeTribMunMinimo(): TribMun
 {

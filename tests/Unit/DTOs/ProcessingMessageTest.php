@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Responses\ProcessingMessage::class);
+covers(\OwnerPro\Nfsen\Responses\ProcessingMessage::class);
 
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
 it('constructs with all fields', function () {
     $msg = new ProcessingMessage(

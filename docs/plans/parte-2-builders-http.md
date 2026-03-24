@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Reescrever o pacote nfse-nacional com namespace `Pulsar\NfseNacional`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
+**Goal:** Reescrever o pacote nfse-nacional com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
-**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `Pulsar\NfseNacional`); código legado coexiste em `src/` (namespace `Hadder\NfseNacional`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
+**Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `OwnerPro\Nfsen`); código legado coexiste em `src/` (namespace `Hadder\Nfsen`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
 
 > **Nota standalone:** Em modo standalone (sem Laravel bootado), os Laravel Events (`NfseEmitted`, `NfseFailed`, etc.) **não são disparados** — o `dispatchEvent()` silencia a ausência do dispatcher. Todas as demais funcionalidades (emitir, cancelar, consultar) operam normalmente.
 
@@ -14,7 +14,7 @@
 
 ## Convenções
 
-- Namespace: `Pulsar\NfseNacional`
+- Namespace: `OwnerPro\Nfsen`
 - Testes rodam com: `./vendor/bin/pest`
 - Fixtures de cert: `tests/fixtures/certs/fake.pfx` (senha: `secret`) — sem OID ICP-Brasil
 - Fixtures de cert: `tests/fixtures/certs/fake-icpbr.pfx` (senha: `secret`) — com OID ICP-Brasil (CNPJ extraível via `Certificate::getCnpj()`)
@@ -76,7 +76,7 @@ require_once __DIR__ . '/helpers.php';
 <?php
 
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Certificates\CertificateManager;
+use OwnerPro\Nfsen\Certificates\CertificateManager;
 
 function makePfxContent(): string
 {
@@ -93,7 +93,7 @@ function makeTestCertificate(): Certificate
 ```php
 <?php
 
-use Pulsar\NfseNacional\DTOs\DpsData;
+use OwnerPro\Nfsen\DTOs\DpsData;
 
 dataset('dpsData', [
     'basico' => function (): DpsData {
@@ -142,7 +142,7 @@ dataset('dpsData', [
 ```php
 <?php
 
-use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
+use OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder;
 
 it('builds prest element with CNPJ', function () {
     $builder = new PrestadorBuilder();
@@ -187,8 +187,8 @@ it('builds prest element with CPF when no CNPJ', function () {
 ```php
 <?php
 
-use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\DTOs\DpsData;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 it('builds xml with DPS root element', function (DpsData $data) {
     $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
@@ -227,7 +227,7 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
@@ -314,14 +314,14 @@ class PrestadorBuilder
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Xml;
+namespace OwnerPro\Nfsen\Xml;
 
 use DOMDocument;
-use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
-use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
-use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
-use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
+use OwnerPro\Nfsen\DTOs\DpsData;
+use OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder;
+use OwnerPro\Nfsen\Xml\Builders\TomadorBuilder;
+use OwnerPro\Nfsen\Xml\Builders\ServicoBuilder;
+use OwnerPro\Nfsen\Xml\Builders\ValoresBuilder;
 
 class DpsBuilder
 {
@@ -426,7 +426,7 @@ git commit -m "feat: add PrestadorBuilder and DpsBuilder (header + prest); boots
 ```php
 <?php
 
-use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
+use OwnerPro\Nfsen\Xml\Builders\TomadorBuilder;
 
 it('builds toma element with CNPJ', function () {
     $builder = new TomadorBuilder();
@@ -447,7 +447,7 @@ it('builds toma element with CNPJ', function () {
 ```php
 <?php
 
-use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
+use OwnerPro\Nfsen\Xml\Builders\ServicoBuilder;
 
 it('builds serv element with locPrest and cServ', function () {
     $builder = new ServicoBuilder();
@@ -478,7 +478,7 @@ it('builds serv element with locPrest and cServ', function () {
 ```php
 <?php
 
-use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
+use OwnerPro\Nfsen\Xml\Builders\ValoresBuilder;
 
 it('builds valores element with vServPrest', function () {
     $builder = new ValoresBuilder();
@@ -511,7 +511,7 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
@@ -570,7 +570,7 @@ class TomadorBuilder
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
@@ -651,7 +651,7 @@ class ServicoBuilder
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
@@ -800,8 +800,8 @@ it('returns empty string for empty operation override', function () use ($jsonPa
 ```php
 <?php
 
-use Pulsar\NfseNacional\DTOs\DpsData;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\DTOs\DpsData;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data) {
     $builder = new DpsBuilder(__DIR__ . '/../../../storage/schemes');
@@ -855,7 +855,7 @@ private function validateXsd(string $xmlFragment): void
     libxml_clear_errors();
     if (!$valid) {
         $messages = array_map(fn ($e) => trim($e->message), $errors);
-        throw new \Pulsar\NfseNacional\Exceptions\NfseException(
+        throw new \OwnerPro\Nfsen\Exceptions\NfseException(
             'XML inválido: ' . implode('; ', $messages)
         );
     }
@@ -915,8 +915,8 @@ O XML de cancelamento tem estrutura:
 ```php
 <?php
 
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
-use Pulsar\NfseNacional\Xml\Builders\EventoBuilder;
+use OwnerPro\Nfsen\Enums\MotivoCancelamento;
+use OwnerPro\Nfsen\Xml\Builders\EventoBuilder;
 
 it('builds evento xml for e101101', function () {
     $builder = new EventoBuilder();
@@ -973,10 +973,10 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
-use Pulsar\NfseNacional\Enums\MotivoCancelamento;
+use OwnerPro\Nfsen\Enums\MotivoCancelamento;
 
 class EventoBuilder
 {
@@ -1080,7 +1080,7 @@ git commit -m "feat: add EventoBuilder — XML de cancelamento pedRegEvento"
 ```php
 <?php
 
-namespace Pulsar\NfseNacional;
+namespace OwnerPro\Nfsen;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -1100,7 +1100,7 @@ class NfseNacionalServiceProvider extends ServiceProvider
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Http\NfseHttpClient;
+use OwnerPro\Nfsen\Http\NfseHttpClient;
 
 // makeTestCertificate() definida em tests/helpers.php (criado na Task 8)
 
@@ -1135,7 +1135,7 @@ it('throws HttpException on 5xx response', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->post('https://example.com/nfse', []))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 });
 
 it('throws HttpException on 4xx response', function () {
@@ -1144,7 +1144,7 @@ it('throws HttpException on 4xx response', function () {
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     expect(fn () => $client->post('https://example.com/nfse', []))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 });
 
 it('certificate PEM output is valid for mTLS', function () {
@@ -1172,10 +1172,10 @@ Criar `tests/TestCase.php`:
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Tests;
+namespace OwnerPro\Nfsen\Tests;
 
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use Pulsar\NfseNacional\NfseNacionalServiceProvider;
+use OwnerPro\Nfsen\NfseNacionalServiceProvider;
 
 abstract class TestCase extends OrchestraTestCase
 {
@@ -1190,7 +1190,7 @@ Atualizar `tests/Pest.php` (adicionar `uses()` ao bootstrap criado na Task 8):
 ```php
 <?php
 
-uses(Pulsar\NfseNacional\Tests\TestCase::class)->in('Unit/Http', 'Feature');
+uses(OwnerPro\Nfsen\Tests\TestCase::class)->in('Unit/Http', 'Feature');
 
 require_once __DIR__ . '/datasets.php';
 ```
@@ -1206,11 +1206,11 @@ Expected: FAIL (classe não existe)
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Http;
+namespace OwnerPro\Nfsen\Http;
 
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
-use Pulsar\NfseNacional\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\HttpException;
 
 class NfseHttpClient
 {
@@ -1303,9 +1303,9 @@ git commit -m "feat: add NfseHttpClient — mTLS via tmpfile, Laravel Http clien
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Contracts;
+namespace OwnerPro\Nfsen\Contracts;
 
-use Pulsar\NfseNacional\DTOs\NfseResponse;
+use OwnerPro\Nfsen\DTOs\NfseResponse;
 
 interface NfseClientContract
 {
@@ -1322,10 +1322,10 @@ interface NfseClientContract
 ```php
 <?php
 
-use Pulsar\NfseNacional\Consulta\ConsultaBuilder;
-use Pulsar\NfseNacional\Contracts\NfseClientContract;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use OwnerPro\Nfsen\Consulta\ConsultaBuilder;
+use OwnerPro\Nfsen\Contracts\NfseClientContract;
+use OwnerPro\Nfsen\DTOs\NfseResponse;
+use OwnerPro\Nfsen\Services\PrefeituraResolver;
 
 class FakeNfseClientForConsulta implements NfseClientContract
 {
@@ -1385,13 +1385,13 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Consulta;
+namespace OwnerPro\Nfsen\Consulta;
 
-use Pulsar\NfseNacional\Contracts\NfseClientContract;
-use Pulsar\NfseNacional\DTOs\DanfseResponse;
-use Pulsar\NfseNacional\DTOs\EventosResponse;
-use Pulsar\NfseNacional\DTOs\NfseResponse;
-use Pulsar\NfseNacional\Services\PrefeituraResolver;
+use OwnerPro\Nfsen\Contracts\NfseClientContract;
+use OwnerPro\Nfsen\DTOs\DanfseResponse;
+use OwnerPro\Nfsen\DTOs\EventosResponse;
+use OwnerPro\Nfsen\DTOs\NfseResponse;
+use OwnerPro\Nfsen\Services\PrefeituraResolver;
 
 final class ConsultaBuilder
 {
@@ -1491,12 +1491,12 @@ git commit -m "feat: add NfseClientContract + ConsultaBuilder — fluent nfse/dp
 ```php
 <?php
 
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Events\NfseCancelled;
-use Pulsar\NfseNacional\Events\NfseQueried;
-use Pulsar\NfseNacional\Events\NfseFailed;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseQueried;
+use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
 
 it('NfseRequested carries operacao', function () {
     $event = new NfseRequested('emitir', ['payload']);
@@ -1542,7 +1542,7 @@ Expected: FAIL
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Events;
+namespace OwnerPro\Nfsen\Events;
 
 class NfseRequested
 {
@@ -1557,7 +1557,7 @@ class NfseRequested
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Events;
+namespace OwnerPro\Nfsen\Events;
 
 class NfseEmitted
 {
@@ -1571,7 +1571,7 @@ class NfseEmitted
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Events;
+namespace OwnerPro\Nfsen\Events;
 
 class NfseCancelled
 {
@@ -1585,7 +1585,7 @@ class NfseCancelled
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Events;
+namespace OwnerPro\Nfsen\Events;
 
 class NfseQueried
 {
@@ -1599,7 +1599,7 @@ class NfseQueried
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Events;
+namespace OwnerPro\Nfsen\Events;
 
 class NfseFailed
 {
@@ -1614,7 +1614,7 @@ class NfseFailed
 ```php
 <?php
 
-namespace Pulsar\NfseNacional\Events;
+namespace OwnerPro\Nfsen\Events;
 
 class NfseRejected
 {

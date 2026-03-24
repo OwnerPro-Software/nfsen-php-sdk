@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Driving;
+namespace OwnerPro\Nfsen\Contracts\Driving;
 
-use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
 /** @phpstan-import-type MessageData from ProcessingMessage */
 interface ExecutesNfseRequests

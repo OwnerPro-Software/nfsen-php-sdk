@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento;
-use Pulsar\NfseNacional\Dps\DTO\Serv\ComExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
-use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Obra;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
+use OwnerPro\Nfsen\Dps\DTO\Serv\ComExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
+use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Obra;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 
 final class ServicoBuilder
 {

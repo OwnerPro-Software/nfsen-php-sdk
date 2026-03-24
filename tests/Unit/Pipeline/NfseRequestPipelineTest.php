@@ -1,15 +1,15 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Pipeline\NfseRequestPipeline::class);
+covers(\OwnerPro\Nfsen\Pipeline\NfseRequestPipeline::class);
 
-use Pulsar\NfseNacional\Contracts\Driven\ExtractsAuthorIdentity;
-use Pulsar\NfseNacional\Contracts\Driven\ResolvesPrefeituras;
-use Pulsar\NfseNacional\Contracts\Driven\SendsHttpRequests;
-use Pulsar\NfseNacional\Contracts\Driven\SignsXml;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity;
+use OwnerPro\Nfsen\Contracts\Driven\ResolvesPrefeituras;
+use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Driven\SignsXml;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 /**
  * @param  array<string, mixed>  $postResult

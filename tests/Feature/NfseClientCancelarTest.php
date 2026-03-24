@@ -1,13 +1,13 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseClient::class, \Pulsar\NfseNacional\Operations\NfseCanceller::class);
+covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseCanceller::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 it('cancelar returns success NfseResponse', function () {
     Http::fake(['*' => Http::response(
@@ -125,7 +125,7 @@ it('cancelar throws HttpException on server error', function () {
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
         'Erro na emissao da nota fiscal'
-    ))->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+    ))->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 });
 
 it('cancelar succeeds and reports error when event listener throws', function () {
@@ -152,7 +152,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
     });
 
     \Illuminate\Support\Facades\Event::listen(
-        \Pulsar\NfseNacional\Events\NfseRequested::class,
+        \OwnerPro\Nfsen\Events\NfseRequested::class,
         function (): never {
             throw new \RuntimeException('Listener exploded');
         }

@@ -1,14 +1,14 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Xml\Builders\TomadorBuilder::class);
+covers(\OwnerPro\Nfsen\Xml\Builders\TomadorBuilder::class);
 
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Shared\EndNac;
-use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
-use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Xml\Builders\TomadorBuilder;
 
 it('builds toma element with CNPJ', function () {
     $builder = new TomadorBuilder;

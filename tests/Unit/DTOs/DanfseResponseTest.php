@@ -1,9 +1,9 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Responses\DanfseResponse::class);
+covers(\OwnerPro\Nfsen\Responses\DanfseResponse::class);
 
-use Pulsar\NfseNacional\Responses\DanfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Responses\DanfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
 it('success response carries pdf bytes and no erros', function () {
     $response = new DanfseResponse(true, 'PDF-BINARY-CONTENT');

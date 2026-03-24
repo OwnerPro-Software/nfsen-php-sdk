@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 require __DIR__.'/../vendor/autoload.php';
 
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\NfseClient;
 
 // -------------------------------------------------------------------
 // Substituir NFSe (Standalone – sem Laravel)

@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst::class);
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
+covers(\OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst::class);
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 
 it('creates Subst with all fields', function () {
     $subst = new Subst(

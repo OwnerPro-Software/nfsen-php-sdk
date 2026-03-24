@@ -1,22 +1,22 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Xml\DpsBuilder::class);
+covers(\OwnerPro\Nfsen\Xml\DpsBuilder::class);
 
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Trib;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
-use Pulsar\NfseNacional\Dps\DTO\Shared\RegTrib;
-use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
-use Pulsar\NfseNacional\Dps\Enums\Prest\OpSimpNac;
-use Pulsar\NfseNacional\Dps\Enums\Prest\RegEspTrib;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
+use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
+use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 function buildDps(DpsData $data): string
 {
@@ -107,15 +107,15 @@ it('includes toma element as child of infDPS when tomador has data', function ()
 });
 
 it('throws NfseException when scheme file does not exist', function (DpsData $data) {
-    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator('/nonexistent/path'));
+    $builder = new DpsBuilder(new \OwnerPro\Nfsen\Support\XsdValidator('/nonexistent/path'));
 
     expect(fn () => $builder->buildAndValidate($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'Schema XSD não encontrado');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'Schema XSD não encontrado');
 })->with('dpsData');
 
 it('throws NfseException on invalid XSD', function () {
-    $servico = new \Pulsar\NfseNacional\Dps\DTO\Serv\Serv(
-        cServ: new \Pulsar\NfseNacional\Dps\DTO\Serv\CServ(
+    $servico = new \OwnerPro\Nfsen\Dps\DTO\Serv\Serv(
+        cServ: new \OwnerPro\Nfsen\Dps\DTO\Serv\CServ(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD_VALIDATION_BECAUSE_IT_EXCEEDS_MAX_LENGTH',
             xDescServ: 'Serviço',
             cNBS: '123456789',
@@ -128,7 +128,7 @@ it('throws NfseException on invalid XSD', function () {
     $builder = new DpsBuilder(makeXsdValidator());
 
     expect(fn () => $builder->buildAndValidate($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'XML inválido');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'XML inválido');
 });
 
 it('generates correct Id for CNPJ prestador', function (DpsData $data) {

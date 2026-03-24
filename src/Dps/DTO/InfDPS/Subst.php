@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\InfDPS;
+namespace OwnerPro\Nfsen\Dps\DTO\InfDPS;
 
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 
 /**
  * @phpstan-type SubstArray array{chSubstda: string, cMotivo: string, xMotivo?: string}

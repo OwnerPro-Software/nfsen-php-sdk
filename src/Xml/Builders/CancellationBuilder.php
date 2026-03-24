@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use InvalidArgumentException;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\XsdValidator;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\XsdValidator;
 
 final readonly class CancellationBuilder
 {

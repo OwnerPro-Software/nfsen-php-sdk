@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\InfDPS;
+namespace OwnerPro\Nfsen\Dps\Enums\InfDPS;
 
 enum CMotivoEmisTI: string
 {

@@ -1,38 +1,38 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\GTribRegular::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\GDif::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Trib::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\DFeNacional::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocFiscalOutro::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocOutro::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Fornec::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\Documentos::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes::class,
-    \Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GTribRegular::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GDif::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocOutro::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Fornec::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GReeRepRes::class,
+    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DFeNacional;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocFiscalOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Documentos;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Fornec;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GDif;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GTribRegular;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Trib;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocOutro;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Fornec;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GDif;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GReeRepRes;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GTribRegular;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('GTribRegular::fromArray creates instance from array', function () {
     $dto = GTribRegular::fromArray(['CSTReg' => '00', 'cClassTribReg' => '001']);

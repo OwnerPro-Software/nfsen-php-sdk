@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Contracts\Driving;
+namespace OwnerPro\Nfsen\Contracts\Driving;
 
-use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Responses\DanfseResponse;
-use Pulsar\NfseNacional\Responses\EventsResponse;
-use Pulsar\NfseNacional\Responses\NfseResponse;
+use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\Responses\DanfseResponse;
+use OwnerPro\Nfsen\Responses\EventsResponse;
+use OwnerPro\Nfsen\Responses\NfseResponse;
 
 interface ConsultsNfse
 {

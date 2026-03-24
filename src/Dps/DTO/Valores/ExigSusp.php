@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Valores;
+namespace OwnerPro\Nfsen\Dps\DTO\Valores;
 
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpSusp;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
 
 /**
  * @phpstan-type ExigSuspArray array{tpSusp: string, nProcesso: string}

@@ -1,22 +1,22 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Events\NfseRequested::class,
-    \Pulsar\NfseNacional\Events\NfseEmitted::class,
-    \Pulsar\NfseNacional\Events\NfseCancelled::class,
-    \Pulsar\NfseNacional\Events\NfseSubstituted::class,
-    \Pulsar\NfseNacional\Events\NfseQueried::class,
-    \Pulsar\NfseNacional\Events\NfseFailed::class,
-    \Pulsar\NfseNacional\Events\NfseRejected::class,
+    \OwnerPro\Nfsen\Events\NfseRequested::class,
+    \OwnerPro\Nfsen\Events\NfseEmitted::class,
+    \OwnerPro\Nfsen\Events\NfseCancelled::class,
+    \OwnerPro\Nfsen\Events\NfseSubstituted::class,
+    \OwnerPro\Nfsen\Events\NfseQueried::class,
+    \OwnerPro\Nfsen\Events\NfseFailed::class,
+    \OwnerPro\Nfsen\Events\NfseRejected::class,
 );
 
-use Pulsar\NfseNacional\Events\NfseCancelled;
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Events\NfseFailed;
-use Pulsar\NfseNacional\Events\NfseQueried;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Events\NfseSubstituted;
+use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseQueried;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Events\NfseSubstituted;
 
 it('NfseRequested carries operacao and metadata', function () {
     $event = new NfseRequested('emitir', ['payload']);

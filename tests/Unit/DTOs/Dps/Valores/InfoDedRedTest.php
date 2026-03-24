@@ -1,10 +1,10 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed::class);
-use Pulsar\NfseNacional\Dps\DTO\Valores\DocDedRed;
-use Pulsar\NfseNacional\Dps\DTO\Valores\VDedRed;
-use Pulsar\NfseNacional\Dps\Enums\Valores\TpDedRed;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+covers(\OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed::class);
+use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpDedRed;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('creates VDedRed with pDR', function () {
     $info = new VDedRed(pDR: '10.00');

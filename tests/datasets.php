@@ -1,8 +1,8 @@
 <?php
 
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\Serv\CServ;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 
 dataset('dpsData', [
     'basico' => function (): DpsData {

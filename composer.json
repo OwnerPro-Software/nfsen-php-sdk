@@ -1,5 +1,5 @@
 {
-  "name": "jonathanpmartins/nfse-nacional",
+  "name": "ownerpro/nfsen",
   "description": "Pacote Laravel para emissão de NFSe Nacional",
   "license": "MIT",
   "require": {
@@ -29,12 +29,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Pulsar\\NfseNacional\\": "src/"
+      "OwnerPro\\Nfsen\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Pulsar\\NfseNacional\\Tests\\": "tests/"
+      "OwnerPro\\Nfsen\\Tests\\": "tests/"
     },
     "files": [
       "tests/helpers.php"
@@ -67,7 +67,7 @@
   "prefer-stable": true,
   "extra": {
     "laravel": {
-      "providers": ["Pulsar\\NfseNacional\\NfseNacionalServiceProvider"]
+      "providers": ["OwnerPro\\Nfsen\\NfseNacionalServiceProvider"]
     }
   }
 }

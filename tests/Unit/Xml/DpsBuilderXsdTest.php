@@ -1,16 +1,16 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Xml\DpsBuilder::class);
+covers(\OwnerPro\Nfsen\Xml\DpsBuilder::class);
 
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\Serv\AtvEvento;
-use Pulsar\NfseNacional\Dps\DTO\Serv\CServ;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndSimples;
-use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\Support\XmlDocumentLoader;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
+use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
+use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Support\XmlDocumentLoader;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data) {
     $builder = new DpsBuilder(makeXsdValidator());
@@ -38,7 +38,7 @@ it('buildAndValidate throws NfseException when XML loading fails', function (Dps
     $loader = Mockery::mock(XmlDocumentLoader::class);
     $loader->shouldReceive('__invoke')->andReturn(false);
 
-    $builder = new DpsBuilder(new \Pulsar\NfseNacional\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
+    $builder = new DpsBuilder(new \OwnerPro\Nfsen\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
 
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(NfseException::class, 'falha ao carregar documento');
@@ -110,7 +110,7 @@ it('validates DPS with atvEvento (end with endExt) against XSD', function () {
                     xLgr: 'Broadway',
                     nro: '500',
                     xBairro: 'Midtown',
-                    endExt: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndExt(
+                    endExt: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndExt(
                         cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY',
                     ),
                 ),

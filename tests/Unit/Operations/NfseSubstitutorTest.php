@@ -1,33 +1,33 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Operations\NfseSubstitutor::class);
+covers(\OwnerPro\Nfsen\Operations\NfseSubstitutor::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Events\NfseSubstituted;
-use Pulsar\NfseNacional\Operations\NfseEmitter;
-use Pulsar\NfseNacional\Operations\NfseSubstitutor;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Events\NfseSubstituted;
+use OwnerPro\Nfsen\Operations\NfseEmitter;
+use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 
 function makeNfseSubstitutor(): NfseSubstitutor
 {
-    $certManager = new \Pulsar\NfseNacional\Adapters\CertificateManager(makeIcpBrPfxContent(), 'secret');
-    $prefeituraResolver = new \Pulsar\NfseNacional\Adapters\PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $httpClient = new \Pulsar\NfseNacional\Adapters\NfseHttpClient($certManager->getCertificate(), 30, 10, true);
-    $signer = new \Pulsar\NfseNacional\Adapters\XmlSigner($certManager->getCertificate(), 'sha1');
+    $certManager = new \OwnerPro\Nfsen\Adapters\CertificateManager(makeIcpBrPfxContent(), 'secret');
+    $prefeituraResolver = new \OwnerPro\Nfsen\Adapters\PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $httpClient = new \OwnerPro\Nfsen\Adapters\NfseHttpClient($certManager->getCertificate(), 30, 10, true);
+    $signer = new \OwnerPro\Nfsen\Adapters\XmlSigner($certManager->getCertificate(), 'sha1');
 
-    $pipeline = new \Pulsar\NfseNacional\Pipeline\NfseRequestPipeline(
-        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::HOMOLOGACAO,
+    $pipeline = new \OwnerPro\Nfsen\Pipeline\NfseRequestPipeline(
+        ambiente: \OwnerPro\Nfsen\Enums\NfseAmbiente::HOMOLOGACAO,
         prefeituraResolver: $prefeituraResolver,
-        gzipCompressor: new \Pulsar\NfseNacional\Support\GzipCompressor,
+        gzipCompressor: new \OwnerPro\Nfsen\Support\GzipCompressor,
         signer: $signer,
         authorIdentity: $certManager,
         prefeitura: '9999999',
         httpClient: $httpClient,
     );
 
-    $emitter = new NfseEmitter($pipeline, new \Pulsar\NfseNacional\Xml\DpsBuilder(makeXsdValidator()));
+    $emitter = new NfseEmitter($pipeline, new \OwnerPro\Nfsen\Xml\DpsBuilder(makeXsdValidator()));
 
     return new NfseSubstitutor($emitter);
 }
@@ -41,7 +41,7 @@ it('substituir injects subst into DPS and dispatches NfseSubstituted', function 
     Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
     $substitutor = makeNfseSubstitutor();
-    $dps = new \Pulsar\NfseNacional\Dps\DTO\DpsData(
+    $dps = new \OwnerPro\Nfsen\Dps\DTO\DpsData(
         infDPS: makeInfDps(),
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
@@ -80,7 +80,7 @@ it('substituir does not dispatch NfseSubstituted on failure', function () {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DPS inválido', 'codigo' => 'E001']]], 200)]);
 
     $substitutor = makeNfseSubstitutor();
-    $dps = new \Pulsar\NfseNacional\Dps\DTO\DpsData(
+    $dps = new \OwnerPro\Nfsen\Dps\DTO\DpsData(
         infDPS: makeInfDps(),
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),

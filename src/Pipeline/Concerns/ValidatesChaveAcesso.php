@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Pipeline\Concerns;
+namespace OwnerPro\Nfsen\Pipeline\Concerns;
 
 use InvalidArgumentException;
 

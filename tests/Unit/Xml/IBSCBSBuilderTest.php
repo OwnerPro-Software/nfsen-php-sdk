@@ -1,30 +1,30 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder::class);
+covers(\OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder::class);
 
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DFeNacional;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Documentos;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Fornec;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GDif;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GTribRegular;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Trib;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\FinNFSe;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndDest;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TipoChaveDFe;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpReeRepRes;
-use Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocOutro;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Fornec;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GDif;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GReeRepRes;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GTribRegular;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TipoChaveDFe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpEnteGov;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpOper;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpReeRepRes;
+use OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 function makeMinimalIBSCBS(): IBSCBS
 {
@@ -284,11 +284,11 @@ it('builds IBSCBS with dest CPF, fone and email', function () {
         dest: new Dest(
             xNome: 'Pessoa Física',
             CPF: '12345678901',
-            end: new \Pulsar\NfseNacional\Dps\DTO\Shared\End(
+            end: new \OwnerPro\Nfsen\Dps\DTO\Shared\End(
                 xLgr: 'Rua Teste',
                 nro: '100',
                 xBairro: 'Centro',
-                endNac: new \Pulsar\NfseNacional\Dps\DTO\Shared\EndNac(cMun: '3501608', CEP: '01001000'),
+                endNac: new \OwnerPro\Nfsen\Dps\DTO\Shared\EndNac(cMun: '3501608', CEP: '01001000'),
             ),
             fone: '11999998888',
             email: 'dest@test.com',
@@ -340,7 +340,7 @@ it('builds IBSCBS with dest cNaoNIF', function () {
                 gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new Dest(xNome: 'Sem NIF', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::Dispensado),
+        dest: new Dest(xNome: 'Sem NIF', cNaoNIF: \OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF::Dispensado),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -363,7 +363,7 @@ it('builds IBSCBS with imovel end using CEP', function () {
         ),
         imovel: new Imovel(
             inscImobFisc: '12345',
-            end: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndObra(
+            end: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndObra(
                 xLgr: 'Rua Imovel', nro: '50', xBairro: 'Centro',
                 CEP: '01001000', xCpl: 'Apto 1',
             ),
@@ -398,9 +398,9 @@ it('builds IBSCBS with imovel end using endExt', function () {
             ),
         ),
         imovel: new Imovel(
-            end: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndObra(
+            end: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndObra(
                 xLgr: '5th Avenue', nro: '200', xBairro: 'Manhattan',
-                endExt: new \Pulsar\NfseNacional\Dps\DTO\Serv\EndExt(
+                endExt: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndExt(
                     cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY',
                 ),
             ),
@@ -438,7 +438,7 @@ it('builds IBSCBS with docFiscalOutro', function () {
                     dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::Outros,
                     vlrReeRepRes: '200.00',
-                    docFiscalOutro: new \Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocFiscalOutro(
+                    docFiscalOutro: new \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro(
                         cMunDocFiscal: '3501608', nDocFiscal: 'NF-001', xDocFiscal: 'Nota fiscal municipal',
                     ),
                     xTpReeRepRes: 'Outro tipo de reembolso de teste',
@@ -527,7 +527,7 @@ it('builds IBSCBS with fornec NIF and cNaoNIF', function () {
                     dtEmiDoc: '2026-01-01', dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis, vlrReeRepRes: '100.00',
                     docOutro: new DocOutro(nDoc: 'D2', xDoc: 'Doc2'),
-                    fornec: new Fornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF::NaoInformado),
+                    fornec: new Fornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF::NaoInformado),
                 ),
             ]),
         ),

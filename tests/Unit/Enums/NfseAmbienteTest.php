@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Enums\NfseAmbiente::class);
+covers(\OwnerPro\Nfsen\Enums\NfseAmbiente::class);
 
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 it('has producao value of 1', function () {
     expect(NfseAmbiente::PRODUCAO->value)->toBe('1');

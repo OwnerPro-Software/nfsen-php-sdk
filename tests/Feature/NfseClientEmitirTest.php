@@ -1,15 +1,15 @@
 <?php
 
-covers(\Pulsar\NfseNacional\NfseClient::class, \Pulsar\NfseNacional\Operations\NfseEmitter::class);
+covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseEmitter::class);
 
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Adapters\PrefeituraResolver;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Exceptions\NfseException;
-use Pulsar\NfseNacional\NfseClient;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 it('emitir returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(
@@ -156,7 +156,7 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros)->toBeArray();
-    expect($response->erros[0])->toBeInstanceOf(\Pulsar\NfseNacional\Responses\ProcessingMessage::class);
+    expect($response->erros[0])->toBeInstanceOf(\OwnerPro\Nfsen\Responses\ProcessingMessage::class);
     expect($response->erros[0]->descricao)->toContain('CNPJ');
     expect($response->idDps)->toBe('DPS_ERR_001');
     expect($response->tipoAmbiente)->toBe(2);
@@ -197,7 +197,7 @@ it('emitir throws HttpException on server error', function (DpsData $data) {
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\HttpException::class);
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
 })->with('dpsData');
 
 it('emitir succeeds and reports error when event listener throws', function (DpsData $data) {
@@ -221,7 +221,7 @@ it('emitir succeeds and reports error when event listener throws', function (Dps
     });
 
     \Illuminate\Support\Facades\Event::listen(
-        \Pulsar\NfseNacional\Events\NfseRequested::class,
+        \OwnerPro\Nfsen\Events\NfseRequested::class,
         function (): never {
             throw new \RuntimeException('Listener exploded');
         }
@@ -284,7 +284,7 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
 
     $client = NfseClient::forStandalone(
         makePfxContent(), 'secret', '9999999',
-        ambiente: \Pulsar\NfseNacional\Enums\NfseAmbiente::PRODUCAO,
+        ambiente: \OwnerPro\Nfsen\Enums\NfseAmbiente::PRODUCAO,
     );
     $response = $client->emitir($data);
 
@@ -396,8 +396,8 @@ it('emitir throws when array is missing required keys', function () {
 it('emitir validates XML against XSD before sending', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'SHOULD_NOT_REACH'], 201)]);
 
-    $servico = new \Pulsar\NfseNacional\Dps\DTO\Serv\Serv(
-        cServ: new \Pulsar\NfseNacional\Dps\DTO\Serv\CServ(
+    $servico = new \OwnerPro\Nfsen\Dps\DTO\Serv\Serv(
+        cServ: new \OwnerPro\Nfsen\Dps\DTO\Serv\CServ(
             cTribNac: 'INVALID_LONG_VALUE_THAT_WILL_FAIL_XSD',
             xDescServ: 'Serviço',
             cNBS: '123456789',
@@ -429,7 +429,7 @@ it('emitir throws NfseException on invalid base64 in nfseXmlGZipB64', function (
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'base64');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'base64');
 })->with('dpsData');
 
 it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (DpsData $data) {
@@ -438,7 +438,7 @@ it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (Dp
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
-        ->toThrow(\Pulsar\NfseNacional\Exceptions\NfseException::class, 'descomprimir');
+        ->toThrow(\OwnerPro\Nfsen\Exceptions\NfseException::class, 'descomprimir');
 })->with('dpsData');
 
 it('emitir throws NfseException when gzip compression fails', function (DpsData $data) {

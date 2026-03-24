@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Exceptions;
+namespace OwnerPro\Nfsen\Exceptions;
 
 use RuntimeException;
 

@@ -1,13 +1,13 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS::class,
-    \Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst::class,
+    \OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS::class,
+    \OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst::class,
 );
 
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
 
 it('InfDPS::fromArray creates instance from array', function () {
     $dto = InfDPS::fromArray([

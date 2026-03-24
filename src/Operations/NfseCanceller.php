@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Operations;
+namespace OwnerPro\Nfsen\Operations;
 
-use Pulsar\NfseNacional\Contracts\Driving\CancelsNfse;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
-use Pulsar\NfseNacional\Events\NfseCancelled;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Pipeline\Concerns\DispatchesEvents;
-use Pulsar\NfseNacional\Pipeline\Concerns\ParsesEventResponse;
-use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
-use Pulsar\NfseNacional\Pipeline\NfseRequestPipeline;
-use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
-use Pulsar\NfseNacional\Xml\Builders\CancellationBuilder;
+use OwnerPro\Nfsen\Contracts\Driving\CancelsNfse;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Pipeline\Concerns\DispatchesEvents;
+use OwnerPro\Nfsen\Pipeline\Concerns\ParsesEventResponse;
+use OwnerPro\Nfsen\Pipeline\Concerns\ValidatesChaveAcesso;
+use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Xml\Builders\CancellationBuilder;
 
 /** @phpstan-import-type MessageData from ProcessingMessage */
 final readonly class NfseCanceller implements CancelsNfse

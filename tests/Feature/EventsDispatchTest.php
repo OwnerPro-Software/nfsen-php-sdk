@@ -1,24 +1,24 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Operations\NfseCanceller::class,
-    \Pulsar\NfseNacional\Operations\NfseEmitter::class,
-    \Pulsar\NfseNacional\Operations\NfseSubstitutor::class,
+    \OwnerPro\Nfsen\Operations\NfseCanceller::class,
+    \OwnerPro\Nfsen\Operations\NfseEmitter::class,
+    \OwnerPro\Nfsen\Operations\NfseSubstitutor::class,
 );
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Enums\CodigoJustificativaSubstituicao;
-use Pulsar\NfseNacional\Events\NfseCancelled;
-use Pulsar\NfseNacional\Events\NfseEmitted;
-use Pulsar\NfseNacional\Events\NfseFailed;
-use Pulsar\NfseNacional\Events\NfseQueried;
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Events\NfseRequested;
-use Pulsar\NfseNacional\Events\NfseSubstituted;
-use Pulsar\NfseNacional\NfseClient;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseQueried;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Events\NfseSubstituted;
+use OwnerPro\Nfsen\NfseClient;
 
 it('dispatches NfseRequested and NfseEmitted on successful emitir', function (DpsData $data) {
     Event::fake();
@@ -123,7 +123,7 @@ it('dispatches NfseFailed on consultar HttpException', function () {
 
     try {
         $client->consultar()->nfse(makeChaveAcesso());
-    } catch (\Pulsar\NfseNacional\Exceptions\HttpException) {
+    } catch (\OwnerPro\Nfsen\Exceptions\HttpException) {
         // expected
     }
 
@@ -169,14 +169,14 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 200)]);
 
-    $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
+    $compressor = Mockery::mock(\OwnerPro\Nfsen\Support\GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
     $client = makeNfseClient(gzipCompressor: $compressor);
 
     try {
         $client->emitir($data);
-    } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
+    } catch (\OwnerPro\Nfsen\Exceptions\NfseException) {
         // expected
     }
 
@@ -188,14 +188,14 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['chaveAcesso' => 'X'], 200)]);
 
-    $compressor = Mockery::mock(\Pulsar\NfseNacional\Support\GzipCompressor::class);
+    $compressor = Mockery::mock(\OwnerPro\Nfsen\Support\GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
     $client = makeNfseClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
 
     try {
         $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
-    } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
+    } catch (\OwnerPro\Nfsen\Exceptions\NfseException) {
         // expected
     }
 
@@ -211,7 +211,7 @@ it('dispatches NfseFailed on consultar NfseException', function () {
 
     try {
         $client->consultar()->nfse(makeChaveAcesso());
-    } catch (\Pulsar\NfseNacional\Exceptions\NfseException) {
+    } catch (\OwnerPro\Nfsen\Exceptions\NfseException) {
         // expected
     }
 
@@ -245,7 +245,7 @@ it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
 
     try {
         $client->emitir($data);
-    } catch (\Pulsar\NfseNacional\Exceptions\HttpException) {
+    } catch (\OwnerPro\Nfsen\Exceptions\HttpException) {
         // expected
     }
 

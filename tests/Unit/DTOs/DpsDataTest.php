@@ -1,16 +1,16 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\DpsData::class);
+covers(\OwnerPro\Nfsen\Dps\DTO\DpsData::class);
 
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
-use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
-use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
-use Pulsar\NfseNacional\Xml\DpsBuilder;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
+use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
+use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 it('exposes all five groups as readonly properties', function () {
     $infDps = makeInfDps();

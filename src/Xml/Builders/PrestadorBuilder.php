@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\Enums\Prest\RegApTribSN;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegApTribSN;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 
 final class PrestadorBuilder
 {

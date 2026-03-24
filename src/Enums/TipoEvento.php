@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Enums;
+namespace OwnerPro\Nfsen\Enums;
 
 enum TipoEvento: int
 {

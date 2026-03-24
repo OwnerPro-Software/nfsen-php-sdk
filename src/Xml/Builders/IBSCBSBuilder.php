@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml\Builders;
+namespace OwnerPro\Nfsen\Xml\Builders;
 
 use DOMDocument;
 use DOMElement;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Dest;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DFeNacional;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocFiscalOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\DocOutro;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Documentos;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Fornec;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GDif;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GIBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GReeRepRes;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\GTribRegular;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Imovel;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\Valores;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndExt;
-use Pulsar\NfseNacional\Dps\DTO\Serv\EndObra;
-use Pulsar\NfseNacional\Dps\DTO\Shared\End;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\IndFinal;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpEnteGov;
-use Pulsar\NfseNacional\Dps\Enums\IBSCBS\TpOper;
-use Pulsar\NfseNacional\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocOutro;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Fornec;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GDif;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GReeRepRes;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GTribRegular;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpEnteGov;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpOper;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 
 final class IBSCBSBuilder
 {

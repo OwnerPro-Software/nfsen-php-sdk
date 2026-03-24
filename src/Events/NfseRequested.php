@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Events;
+namespace OwnerPro\Nfsen\Events;
 
 final readonly class NfseRequested
 {

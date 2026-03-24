@@ -19,9 +19,9 @@ declare(strict_types=1);
 // Publicar a config: php artisan vendor:publish --tag=nfse-nacional-config
 // -------------------------------------------------------------------
 
-use Pulsar\NfseNacional\Enums\CodigoJustificativaCancelamento;
-use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Facades\NfseNacional;
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\Facades\NfseNacional;
 
 // -- Emitir NFSe ---------------------------------------------------
 $response = NfseNacional::emitir([

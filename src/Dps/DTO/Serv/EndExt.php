@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Serv;
+namespace OwnerPro\Nfsen\Dps\DTO\Serv;
 
 /**
  * @phpstan-type EndExtArray array{cEndPost: string, xCidade: string, xEstProvReg: string}

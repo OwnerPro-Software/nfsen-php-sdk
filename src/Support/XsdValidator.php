@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Support;
+namespace OwnerPro\Nfsen\Support;
 
 use LibXMLError;
-use Pulsar\NfseNacional\Exceptions\NfseException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 
 final readonly class XsdValidator
 {

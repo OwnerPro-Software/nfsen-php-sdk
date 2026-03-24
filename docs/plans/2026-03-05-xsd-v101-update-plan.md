@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\Valores;
+namespace OwnerPro\Nfsen\Dps\Enums\Valores;
 
 enum TipoRetPisCofins: string
 {
@@ -66,7 +66,7 @@ Case `'07'` renamed: `TributavelContribuicao` → `IsentaContribuicao`.
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\Valores;
+namespace OwnerPro\Nfsen\Dps\Enums\Valores;
 
 enum TipoCST: string
 {
@@ -476,7 +476,7 @@ refactor!: remove nPedRegEvento from SubstitutionBuilder, fix xDesc accent per X
 - Modify: `src/Operations/NfseCanceller.php`
 - Modify: `src/Operations/NfseSubstitutor.php`
 - Modify: `src/NfseClient.php`
-- Modify: `src/Facades/NfseNacional.php`
+- Modify: `src/Facades/Nfsen.php`
 - Modify: `tests/Unit/Operations/NfseCancellerTest.php`
 - Modify: `tests/Unit/Operations/NfseSubstitutorTest.php`
 - Modify: `tests/Feature/NfseClientSubstituirTest.php`
@@ -510,7 +510,7 @@ public function substituir(string $chave, string $chaveSubstituta, CodigoJustifi
 1. `cancelar()` line 123: Remove `int $nPedRegEvento = 1` param and `$nPedRegEvento` from forwarded call
 2. `substituir()` line 128: Remove `int $nPedRegEvento = 1` param and `$nPedRegEvento` from forwarded call
 
-**Step 6: Update `NfseNacional.php` facade docblock**
+**Step 6: Update `Nfsen.php` facade docblock**
 
 ```php
 @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao)

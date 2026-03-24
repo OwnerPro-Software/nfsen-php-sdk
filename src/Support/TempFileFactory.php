@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Support;
+namespace OwnerPro\Nfsen\Support;
 
 class TempFileFactory
 {

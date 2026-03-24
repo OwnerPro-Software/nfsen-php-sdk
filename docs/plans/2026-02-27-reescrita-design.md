@@ -25,7 +25,7 @@ Pacote standalone instalável via Composer, usado dentro de uma **aplicação La
 src/
 ├── NfseNacionalServiceProvider.php
 ├── Facades/
-│   └── NfseNacional.php
+│   └── Nfsen.php
 ├── NfseClient.php
 ├── Enums/
 │   ├── NfseAmbiente.php
@@ -114,12 +114,12 @@ final class ConsultaBuilder
 ### Via Facade
 
 ```php
-NfseNacional::for($pfxContent, $senha, '3501608')->emitir($dpsData);
-NfseNacional::for($pfxContent, $senha, '3501608')->cancelar($chave, $motivo, $descricao);
-NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->nfse($chave);
-NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->dps($chave);
-NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->danfse($chave);
-NfseNacional::for($pfxContent, $senha, '3501608')->consultar()->eventos($chave);
+Nfsen::for($pfxContent, $senha, '3501608')->emitir($dpsData);
+Nfsen::for($pfxContent, $senha, '3501608')->cancelar($chave, $motivo, $descricao);
+Nfsen::for($pfxContent, $senha, '3501608')->consultar()->nfse($chave);
+Nfsen::for($pfxContent, $senha, '3501608')->consultar()->dps($chave);
+Nfsen::for($pfxContent, $senha, '3501608')->consultar()->danfse($chave);
+Nfsen::for($pfxContent, $senha, '3501608')->consultar()->eventos($chave);
 ```
 
 ### Configuração estática (config/nfse-nacional.php)

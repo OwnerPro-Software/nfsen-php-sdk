@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Pipeline\Concerns;
+namespace OwnerPro\Nfsen\Pipeline\Concerns;
 
-use Pulsar\NfseNacional\Events\NfseRejected;
-use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 /**
  * Shared event response parsing for cancelar/substituir operations.

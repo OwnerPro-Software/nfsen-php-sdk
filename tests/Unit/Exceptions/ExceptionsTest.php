@@ -1,14 +1,14 @@
 <?php
 
 covers(
-    \Pulsar\NfseNacional\Exceptions\NfseException::class,
-    \Pulsar\NfseNacional\Exceptions\CertificateExpiredException::class,
-    \Pulsar\NfseNacional\Exceptions\HttpException::class,
+    \OwnerPro\Nfsen\Exceptions\NfseException::class,
+    \OwnerPro\Nfsen\Exceptions\CertificateExpiredException::class,
+    \OwnerPro\Nfsen\Exceptions\HttpException::class,
 );
 
-use Pulsar\NfseNacional\Exceptions\CertificateExpiredException;
-use Pulsar\NfseNacional\Exceptions\HttpException;
-use Pulsar\NfseNacional\Exceptions\NfseException;
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 
 it('NfseException is a RuntimeException', function () {
     $e = new NfseException('msg');

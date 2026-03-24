@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\Enums\Prest;
+namespace OwnerPro\Nfsen\Dps\Enums\Prest;
 
 enum RegEspTrib: string
 {

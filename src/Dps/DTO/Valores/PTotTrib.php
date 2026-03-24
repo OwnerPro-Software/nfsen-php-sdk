@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO\Valores;
+namespace OwnerPro\Nfsen\Dps\DTO\Valores;
 
 /**
  * @phpstan-type PTotTribArray array{pTotTribFed: string, pTotTribEst: string, pTotTribMun: string}

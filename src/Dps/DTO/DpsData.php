@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Dps\DTO;
+namespace OwnerPro\Nfsen\Dps\DTO;
 
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\InfDPS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
-use Pulsar\NfseNacional\Dps\DTO\Prest\Prest;
-use Pulsar\NfseNacional\Dps\DTO\Serv\Serv;
-use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
-use Pulsar\NfseNacional\Dps\DTO\Valores\Valores;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
+use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
 
 /**
  * @phpstan-import-type InfDPSArray from InfDPS

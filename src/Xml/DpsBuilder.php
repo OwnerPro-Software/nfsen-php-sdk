@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Xml;
+namespace OwnerPro\Nfsen\Xml;
 
 use DOMDocument;
-use Pulsar\NfseNacional\Dps\DTO\DpsData;
-use Pulsar\NfseNacional\Dps\DTO\IBSCBS\IBSCBS;
-use Pulsar\NfseNacional\Dps\DTO\InfDPS\Subst;
-use Pulsar\NfseNacional\Dps\DTO\Toma\Toma;
-use Pulsar\NfseNacional\Dps\Enums\InfDPS\CMotivoEmisTI;
-use Pulsar\NfseNacional\Support\XsdValidator;
-use Pulsar\NfseNacional\Xml\Builders\CreatesTextElements;
-use Pulsar\NfseNacional\Xml\Builders\IBSCBSBuilder;
-use Pulsar\NfseNacional\Xml\Builders\PrestadorBuilder;
-use Pulsar\NfseNacional\Xml\Builders\ServicoBuilder;
-use Pulsar\NfseNacional\Xml\Builders\TomadorBuilder;
-use Pulsar\NfseNacional\Xml\Builders\ValoresBuilder;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
+use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
+use OwnerPro\Nfsen\Support\XsdValidator;
+use OwnerPro\Nfsen\Xml\Builders\CreatesTextElements;
+use OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder;
+use OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder;
+use OwnerPro\Nfsen\Xml\Builders\ServicoBuilder;
+use OwnerPro\Nfsen\Xml\Builders\TomadorBuilder;
+use OwnerPro\Nfsen\Xml\Builders\ValoresBuilder;
 
 final readonly class DpsBuilder
 {

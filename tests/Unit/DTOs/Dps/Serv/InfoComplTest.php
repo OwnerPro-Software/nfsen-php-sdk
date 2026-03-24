@@ -1,8 +1,8 @@
 <?php
 
-covers(\Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl::class);
-use Pulsar\NfseNacional\Dps\DTO\Serv\InfoCompl;
-use Pulsar\NfseNacional\Exceptions\InvalidDpsArgument;
+covers(\OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl::class);
+use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
 it('throws when xItemPed is empty array', function () {
     expect(fn () => new InfoCompl(xItemPed: []))

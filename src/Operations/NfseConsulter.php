@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Pulsar\NfseNacional\Operations;
+namespace OwnerPro\Nfsen\Operations;
 
-use Pulsar\NfseNacional\Contracts\Driven\ResolvesOperations;
-use Pulsar\NfseNacional\Contracts\Driving\ConsultsNfse;
-use Pulsar\NfseNacional\Contracts\Driving\ExecutesNfseRequests;
-use Pulsar\NfseNacional\Enums\TipoEvento;
-use Pulsar\NfseNacional\Exceptions\HttpException;
-use Pulsar\NfseNacional\Pipeline\Concerns\ValidatesChaveAcesso;
-use Pulsar\NfseNacional\Responses\DanfseResponse;
-use Pulsar\NfseNacional\Responses\EventsResponse;
-use Pulsar\NfseNacional\Responses\NfseResponse;
-use Pulsar\NfseNacional\Responses\ProcessingMessage;
-use Pulsar\NfseNacional\Support\GzipCompressor;
+use OwnerPro\Nfsen\Contracts\Driven\ResolvesOperations;
+use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
+use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Pipeline\Concerns\ValidatesChaveAcesso;
+use OwnerPro\Nfsen\Responses\DanfseResponse;
+use OwnerPro\Nfsen\Responses\EventsResponse;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
+use OwnerPro\Nfsen\Support\GzipCompressor;
 
 final readonly class NfseConsulter implements ConsultsNfse
 {

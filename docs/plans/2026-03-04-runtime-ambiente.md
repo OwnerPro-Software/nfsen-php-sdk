@@ -2,7 +2,7 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Allow `NfseClient::for()` and `NfseNacional::for()` to accept an optional `ambiente` parameter that overrides the config value.
+**Goal:** Allow `NfseClient::for()` and `Nfsen::for()` to accept an optional `ambiente` parameter that overrides the config value.
 
 **Architecture:** Add `?NfseAmbiente $ambiente = null` as 4th parameter to both `for()` methods. When null, read from config (current behavior). When provided, use it directly. No other files change.
 
@@ -119,7 +119,7 @@ Expected: PASS (implementation from Task 2 already handles this)
 ### Task 4: Update Facade
 
 **Files:**
-- Modify: `src/Facades/NfseNacional.php:31-34`
+- Modify: `src/Facades/Nfsen.php:31-34`
 
 **Step 1: Update Facade `for()` method**
 
@@ -140,7 +140,7 @@ public static function for(string $pfxContent, string $senha, string $prefeitura
 
 Add the missing import if not present:
 ```php
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 ```
 
 **Step 2: Run full suite**
@@ -160,19 +160,19 @@ Expected: All tests pass
 In the "Laravel Facade" section (~line 193-210), change:
 ```markdown
 // Usar certificado diferente por requisicao
-$client = NfseNacional::for($pfxContent, $senha, '3550308');
+$client = Nfsen::for($pfxContent, $senha, '3550308');
 $response = $client->emitir($dps);
 ```
 to:
 ```markdown
 // Usar certificado diferente por requisicao
-$client = NfseNacional::for($pfxContent, $senha, '3550308');
+$client = Nfsen::for($pfxContent, $senha, '3550308');
 $response = $client->emitir($dps);
 
 // Sobrescrever ambiente (ignorar config)
-use Pulsar\NfseNacional\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
-$client = NfseNacional::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
+$client = Nfsen::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
 $response = $client->emitir($dps);
 ```
 
@@ -217,6 +217,6 @@ Run: `./vendor/bin/pest --coverage --min=100 --parallel`
 **Step 1: Commit all changes**
 
 ```bash
-git add src/NfseClient.php src/Facades/NfseNacional.php tests/Feature/NfseClientEmitirTest.php README.md
+git add src/NfseClient.php src/Facades/Nfsen.php tests/Feature/NfseClientEmitirTest.php README.md
 git commit -m "feat: allow runtime environment override in for() method"
 ```
