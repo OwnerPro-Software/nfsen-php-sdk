@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Enums\NfseAmbiente::class);
-
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
+
+covers(NfseAmbiente::class);
 
 it('has producao value of 1', function () {
     expect(NfseAmbiente::PRODUCAO->value)->toBe('1');

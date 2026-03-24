@@ -1,8 +1,9 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl::class);
 use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(InfoCompl::class);
 
 it('throws when xItemPed is empty array', function () {
     expect(fn () => new InfoCompl(xItemPed: []))

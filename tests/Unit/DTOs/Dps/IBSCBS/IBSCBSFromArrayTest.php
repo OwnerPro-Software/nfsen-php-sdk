@@ -1,22 +1,5 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GTribRegular::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GDif::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocOutro::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Fornec::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\GReeRepRes::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS::class,
-);
-
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro;
@@ -33,6 +16,8 @@ use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(GTribRegular::class, GDif::class, GIBSCBS::class, Trib::class, Valores::class, Dest::class, Imovel::class, DFeNacional::class, DocFiscalOutro::class, DocOutro::class, Fornec::class, Documentos::class, GReeRepRes::class, IBSCBS::class);
 
 it('GTribRegular::fromArray creates instance from array', function () {
     $dto = GTribRegular::fromArray(['CSTReg' => '00', 'cClassTribReg' => '001']);

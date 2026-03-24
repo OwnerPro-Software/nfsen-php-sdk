@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Operations\NfseSubstitutor::class);
-
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -9,6 +7,8 @@ use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Events\NfseSubstituted;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
+
+covers(NfseSubstitutor::class);
 
 function makeNfseSubstitutor(): NfseSubstitutor
 {

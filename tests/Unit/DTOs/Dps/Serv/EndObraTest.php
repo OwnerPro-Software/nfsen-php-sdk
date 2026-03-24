@@ -1,9 +1,10 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\Serv\EndObra::class);
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(EndObra::class);
 
 it('throws when both CEP and endExt are set', function () {
     expect(fn () => new EndObra(

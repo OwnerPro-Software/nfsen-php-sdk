@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
@@ -25,6 +23,8 @@ use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpOper;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpReeRepRes;
 use OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
+
+covers(IBSCBSBuilder::class);
 
 function makeMinimalIBSCBS(): IBSCBS
 {

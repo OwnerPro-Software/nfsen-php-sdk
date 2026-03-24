@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento::class);
-
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+
+covers(CodigoJustificativaCancelamento::class);
 
 it('has erro emissao value', function (): void {
     expect(CodigoJustificativaCancelamento::ErroEmissao->value)->toBe('1');

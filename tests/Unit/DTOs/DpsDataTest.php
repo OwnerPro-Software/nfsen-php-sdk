@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\DpsData::class);
-
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS;
@@ -11,6 +9,8 @@ use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
+
+covers(DpsData::class);
 
 it('exposes all five groups as readonly properties', function () {
     $infDps = makeInfDps();

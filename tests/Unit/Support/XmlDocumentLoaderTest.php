@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Support\XmlDocumentLoader::class);
-
 use OwnerPro\Nfsen\Support\XmlDocumentLoader;
+
+covers(XmlDocumentLoader::class);
 
 it('loads valid XML and returns DOMDocument', function () {
     $loader = new XmlDocumentLoader;

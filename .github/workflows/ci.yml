@@ -19,10 +19,10 @@ jobs:
     name: PHP ${{ matrix.php }} — Laravel ${{ matrix.laravel }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@v3
         with:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, zlib, openssl, mbstring, libxml
@@ -44,10 +44,10 @@ jobs:
     name: Quality Checks
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@v3
         with:
           php-version: '8.4'
           extensions: dom, curl, zlib, openssl, mbstring, libxml

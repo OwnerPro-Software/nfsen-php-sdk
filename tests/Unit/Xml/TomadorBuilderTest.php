@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\Builders\TomadorBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\Shared\End;
 use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
 use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
@@ -9,6 +7,8 @@ use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 use OwnerPro\Nfsen\Xml\Builders\TomadorBuilder;
+
+covers(TomadorBuilder::class);
 
 it('builds toma element with CNPJ', function () {
     $builder = new TomadorBuilder;

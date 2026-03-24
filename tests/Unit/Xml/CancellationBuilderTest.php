@@ -1,11 +1,11 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\Builders\CancellationBuilder::class);
-
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XmlDocumentLoader;
 use OwnerPro\Nfsen\Xml\Builders\CancellationBuilder;
+
+covers(CancellationBuilder::class);
 
 function parseCancelamentoXml(string $xml): DOMXPath
 {

@@ -1,13 +1,14 @@
 <?php
 
-covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseSubstitutor::class);
-
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Responses\NfseResponse;
+
+covers(NfseClient::class, NfseSubstitutor::class);
 
 it('substituir returns success when emission succeeds', function (DpsData $dps) {
     $chave = makeChaveAcesso();

@@ -1,16 +1,11 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib::class,
-    \OwnerPro\Nfsen\Dps\DTO\Shared\EndNac::class,
-    \OwnerPro\Nfsen\Dps\DTO\Shared\EndExt::class,
-    \OwnerPro\Nfsen\Dps\DTO\Shared\End::class,
-);
-
 use OwnerPro\Nfsen\Dps\DTO\Shared\End;
 use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
 use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
 use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
+
+covers(RegTrib::class, EndNac::class, EndExt::class, End::class);
 
 it('RegTrib::fromArray creates instance from array', function () {
     $dto = RegTrib::fromArray([

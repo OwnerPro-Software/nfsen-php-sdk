@@ -1,13 +1,10 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS::class,
-    \OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst::class,
-);
-
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS;
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
 use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
+
+covers(InfDPS::class, Subst::class);
 
 it('InfDPS::fromArray creates instance from array', function () {
     $dto = InfDPS::fromArray([

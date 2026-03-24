@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\Builders\ValoresBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
@@ -12,6 +10,8 @@ use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpDedRed;
 use OwnerPro\Nfsen\Xml\Builders\ValoresBuilder;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
+
+covers(ValoresBuilder::class);
 
 it('builds vDedRed with pDR choice', function () {
     $builder = new ValoresBuilder;

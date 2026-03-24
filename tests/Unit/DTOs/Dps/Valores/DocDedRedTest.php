@@ -1,11 +1,12 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed::class);
 use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
 use OwnerPro\Nfsen\Dps\DTO\Valores\NFNFS;
 use OwnerPro\Nfsen\Dps\DTO\Valores\NFSeMun;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpDedRed;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(DocDedRed::class);
 
 it('creates DocDedRed with chNFSe', function () {
     $doc = new DocDedRed(

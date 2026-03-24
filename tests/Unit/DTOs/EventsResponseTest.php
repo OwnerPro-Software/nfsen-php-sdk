@@ -1,9 +1,9 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Responses\EventsResponse::class);
-
 use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
+
+covers(EventsResponse::class);
 
 it('success response carries xml and no erros', function () {
     $response = new EventsResponse(true, '<Evento/>');

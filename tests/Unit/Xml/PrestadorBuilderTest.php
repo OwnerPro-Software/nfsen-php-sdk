@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
 use OwnerPro\Nfsen\Dps\DTO\Shared\End;
 use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
@@ -13,6 +11,8 @@ use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 use OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder;
+
+covers(PrestadorBuilder::class);
 
 function makeRegTrib(): RegTrib
 {

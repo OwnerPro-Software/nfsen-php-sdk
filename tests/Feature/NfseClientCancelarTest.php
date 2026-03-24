@@ -1,13 +1,14 @@
 <?php
 
-covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseCanceller::class);
-
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Support\GzipCompressor;
+
+covers(NfseClient::class, NfseCanceller::class);
 
 it('cancelar returns success NfseResponse', function () {
     Http::fake(['*' => Http::response(

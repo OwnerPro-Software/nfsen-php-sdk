@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Responses\ProcessingMessage::class);
-
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
+
+covers(ProcessingMessage::class);
 
 it('constructs with all fields', function () {
     $msg = new ProcessingMessage(

@@ -1,10 +1,5 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS::class,
-    \OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel::class,
-);
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos;
@@ -21,6 +16,8 @@ use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TipoChaveDFe;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpReeRepRes;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(Dest::class, IBSCBS::class, Imovel::class);
 
 it('throws when IBSCBS refNFSe is empty array', function () {
     expect(fn () => new IBSCBS(

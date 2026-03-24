@@ -1,13 +1,12 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Dps\DTO\Shared\End::class,
-    \OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice::class,
-);
+use OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 use OwnerPro\Nfsen\Dps\DTO\Shared\End;
 use OwnerPro\Nfsen\Dps\DTO\Shared\EndExt;
 use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(End::class, ValidatesExclusiveChoice::class);
 
 it('throws when both endNac and endExt are set', function () {
     expect(fn () => new End(

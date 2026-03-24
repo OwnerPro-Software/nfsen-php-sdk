@@ -1,12 +1,13 @@
 <?php
 
-covers(\OwnerPro\Nfsen\NfseNacionalServiceProvider::class, \OwnerPro\Nfsen\Facades\NfseNacional::class);
-
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Facades\NfseNacional;
 use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfseNacionalServiceProvider;
+
+covers(NfseNacionalServiceProvider::class, NfseNacional::class);
 
 it('resolves NfseClient from container', function () {
     config([

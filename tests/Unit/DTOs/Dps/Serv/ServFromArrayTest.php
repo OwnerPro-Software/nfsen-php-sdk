@@ -1,17 +1,5 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Dps\DTO\Serv\CServ::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\Serv::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\ComExt::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\Obra::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\EndObra::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\EndExt::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento::class,
-    \OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl::class,
-);
-
 use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
 use OwnerPro\Nfsen\Dps\DTO\Serv\ComExt;
 use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
@@ -22,6 +10,8 @@ use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Obra;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(CServ::class, Serv::class, ComExt::class, Obra::class, EndObra::class, EndExt::class, EndSimples::class, AtvEvento::class, InfoCompl::class);
 
 it('CServ::fromArray creates instance from array', function () {
     $dto = CServ::fromArray([

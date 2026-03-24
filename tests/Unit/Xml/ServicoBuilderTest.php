@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\Builders\ServicoBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
 use OwnerPro\Nfsen\Dps\DTO\Serv\ComExt;
 use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
@@ -19,6 +17,8 @@ use OwnerPro\Nfsen\Dps\Enums\Serv\MovTempBens;
 use OwnerPro\Nfsen\Dps\Enums\Serv\VincPrest;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 use OwnerPro\Nfsen\Xml\Builders\ServicoBuilder;
+
+covers(ServicoBuilder::class);
 
 function makeServMinimo(): Serv
 {

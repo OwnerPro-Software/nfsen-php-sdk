@@ -1,9 +1,10 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento::class);
 use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(AtvEvento::class);
 
 it('throws when both idAtvEvt and end are set', function () {
     expect(fn () => new AtvEvento(

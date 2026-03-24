@@ -1,10 +1,5 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Xml\Builders\ValoresBuilder::class,
-    \OwnerPro\Nfsen\Xml\Builders\CreatesTextElements::class,
-);
-
 use OwnerPro\Nfsen\Dps\DTO\Valores\BM;
 use OwnerPro\Nfsen\Dps\DTO\Valores\ExigSusp;
 use OwnerPro\Nfsen\Dps\DTO\Valores\Piscofins;
@@ -23,7 +18,10 @@ use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Xml\Builders\CreatesTextElements;
 use OwnerPro\Nfsen\Xml\Builders\ValoresBuilder;
+
+covers(ValoresBuilder::class, CreatesTextElements::class);
 
 function makeTribMunMinimo(): TribMun
 {

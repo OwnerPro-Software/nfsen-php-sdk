@@ -1,10 +1,10 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Support\XsdValidator::class);
-
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XmlDocumentLoader;
 use OwnerPro\Nfsen\Support\XsdValidator;
+
+covers(XsdValidator::class);
 
 it('throws NfseException when scheme file does not exist', function () {
     $validator = new XsdValidator('/nonexistent/path');

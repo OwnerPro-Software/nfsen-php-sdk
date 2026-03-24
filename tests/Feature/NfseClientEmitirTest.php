@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseEmitter::class);
-
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
@@ -9,7 +7,10 @@ use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Support\GzipCompressor;
+
+covers(NfseClient::class, NfseEmitter::class);
 
 it('emitir returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(

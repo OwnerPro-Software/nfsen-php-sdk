@@ -1,24 +1,6 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\TribFed::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\Piscofins::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\ExigSusp::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\BM::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\PTotTrib::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\Trib::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\NFSeMun::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\NFNFS::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed::class,
-    \OwnerPro\Nfsen\Dps\DTO\Valores\Valores::class,
-);
-
+use OwnerPro\Nfsen\Dps\DTO\Concerns\ValidatesExclusiveChoice;
 use OwnerPro\Nfsen\Dps\DTO\Valores\BM;
 use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
 use OwnerPro\Nfsen\Dps\DTO\Valores\ExigSusp;
@@ -36,6 +18,8 @@ use OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(ValidatesExclusiveChoice::class, VServPrest::class, TribMun::class, TribFed::class, Piscofins::class, ExigSusp::class, BM::class, VTotTrib::class, PTotTrib::class, Trib::class, VDescCondIncond::class, NFSeMun::class, NFNFS::class, DocDedRed::class, VDedRed::class, Valores::class);
 
 it('VServPrest::fromArray creates instance from array', function () {
     $dto = VServPrest::fromArray(['vServ' => '100.00']);

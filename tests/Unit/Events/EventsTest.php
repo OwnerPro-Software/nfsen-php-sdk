@@ -1,15 +1,5 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Events\NfseRequested::class,
-    \OwnerPro\Nfsen\Events\NfseEmitted::class,
-    \OwnerPro\Nfsen\Events\NfseCancelled::class,
-    \OwnerPro\Nfsen\Events\NfseSubstituted::class,
-    \OwnerPro\Nfsen\Events\NfseQueried::class,
-    \OwnerPro\Nfsen\Events\NfseFailed::class,
-    \OwnerPro\Nfsen\Events\NfseRejected::class,
-);
-
 use OwnerPro\Nfsen\Events\NfseCancelled;
 use OwnerPro\Nfsen\Events\NfseEmitted;
 use OwnerPro\Nfsen\Events\NfseFailed;
@@ -17,6 +7,8 @@ use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Events\NfseSubstituted;
+
+covers(NfseRequested::class, NfseEmitted::class, NfseCancelled::class, NfseSubstituted::class, NfseQueried::class, NfseFailed::class, NfseRejected::class);
 
 it('NfseRequested carries operacao and metadata', function () {
     $event = new NfseRequested('emitir', ['payload']);

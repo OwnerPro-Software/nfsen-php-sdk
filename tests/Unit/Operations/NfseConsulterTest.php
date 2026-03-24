@@ -1,12 +1,12 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Operations\NfseConsulter::class);
-
 use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
 use OwnerPro\Nfsen\Responses\NfseResponse;
+
+covers(NfseConsulter::class);
 
 class FakeNfseClientForConsulta implements ExecutesNfseRequests
 {
