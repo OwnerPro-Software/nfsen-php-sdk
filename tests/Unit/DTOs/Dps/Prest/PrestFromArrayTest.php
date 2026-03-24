@@ -1,11 +1,11 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\Prest\Prest::class);
-
 use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
 use OwnerPro\Nfsen\Dps\DTO\Shared\End;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(Prest::class);
 
 it('Prest::fromArray creates instance from array', function () {
     $dto = Prest::fromArray([

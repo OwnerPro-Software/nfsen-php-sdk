@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Adapters\XmlSigner::class);
-
 use OwnerPro\Nfsen\Adapters\XmlSigner;
+
+covers(XmlSigner::class);
 
 function parseSignedXml(string $signed): DOMDocument
 {

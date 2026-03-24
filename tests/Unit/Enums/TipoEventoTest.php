@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Enums\TipoEvento::class);
-
 use OwnerPro\Nfsen\Enums\TipoEvento;
+
+covers(TipoEvento::class);
 
 it('has all 18 expected values', function () {
     expect(TipoEvento::cases())->toHaveCount(18);

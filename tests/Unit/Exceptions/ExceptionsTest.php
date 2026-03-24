@@ -1,14 +1,10 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Exceptions\NfseException::class,
-    \OwnerPro\Nfsen\Exceptions\CertificateExpiredException::class,
-    \OwnerPro\Nfsen\Exceptions\HttpException::class,
-);
-
 use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
+
+covers(NfseException::class, CertificateExpiredException::class, HttpException::class);
 
 it('NfseException is a RuntimeException', function () {
     $e = new NfseException('msg');

@@ -1,11 +1,11 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\Toma\Toma::class);
-
 use OwnerPro\Nfsen\Dps\DTO\Shared\End;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(Toma::class);
 
 it('Toma::fromArray creates instance from array', function () {
     $dto = Toma::fromArray([

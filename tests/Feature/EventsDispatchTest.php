@@ -1,11 +1,5 @@
 <?php
 
-covers(
-    \OwnerPro\Nfsen\Operations\NfseCanceller::class,
-    \OwnerPro\Nfsen\Operations\NfseEmitter::class,
-    \OwnerPro\Nfsen\Operations\NfseSubstitutor::class,
-);
-
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
@@ -19,6 +13,11 @@ use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Events\NfseSubstituted;
 use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Operations\NfseCanceller;
+use OwnerPro\Nfsen\Operations\NfseEmitter;
+use OwnerPro\Nfsen\Operations\NfseSubstitutor;
+
+covers(NfseCanceller::class, NfseEmitter::class, NfseSubstitutor::class);
 
 it('dispatches NfseRequested and NfseEmitted on successful emitir', function (DpsData $data) {
     Event::fake();

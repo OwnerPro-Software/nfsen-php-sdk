@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\NfseClient::class, \OwnerPro\Nfsen\Operations\NfseEmitter::class);
-
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -11,6 +9,9 @@ use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\Operations\NfseEmitter;
+
+covers(NfseClient::class, NfseEmitter::class);
 
 it('emitirDecisaoJudicial returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(

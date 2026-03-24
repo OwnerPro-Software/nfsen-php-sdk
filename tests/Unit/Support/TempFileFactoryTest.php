@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Support\TempFileFactory::class);
-
 use OwnerPro\Nfsen\Support\TempFileFactory;
+
+covers(TempFileFactory::class);
 
 it('creates a temporary file resource via invocation', function () {
     $factory = new TempFileFactory;

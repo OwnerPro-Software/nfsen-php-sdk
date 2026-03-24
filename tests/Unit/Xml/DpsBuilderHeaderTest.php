@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\DpsBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\GIBSCBS;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
@@ -17,6 +15,8 @@ use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
 use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
+
+covers(DpsBuilder::class);
 
 function buildDps(DpsData $data): string
 {

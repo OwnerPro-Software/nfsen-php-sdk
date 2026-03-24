@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Pipeline\NfseResponsePipeline::class);
-
 use Illuminate\Support\Facades\Event;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
 use OwnerPro\Nfsen\Events\NfseFailed;
@@ -9,6 +7,8 @@ use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Pipeline\NfseResponsePipeline;
+
+covers(NfseResponsePipeline::class);
 
 /**
  * @param  ?array<string, mixed>  $getResult

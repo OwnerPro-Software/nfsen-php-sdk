@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao::class);
-
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+
+covers(CodigoJustificativaSubstituicao::class);
 
 it('has desenquadramento simples nacional value', function (): void {
     expect(CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional->value)->toBe('01');

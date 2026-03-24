@@ -1,9 +1,9 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Support\GzipCompressor::class);
-
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\GzipCompressor;
+
+covers(GzipCompressor::class);
 
 it('compresses string data via invocation', function () {
     $compressor = new GzipCompressor;

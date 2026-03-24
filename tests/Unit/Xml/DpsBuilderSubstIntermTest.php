@@ -1,13 +1,13 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\DpsBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Xml\Builders\TomadorBuilder;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
+
+covers(DpsBuilder::class);
 
 it('builds DPS with subst element that validates against XSD', function () {
     $data = new DpsData(

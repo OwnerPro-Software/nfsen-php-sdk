@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Pipeline\NfseRequestPipeline::class);
-
 use OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity;
 use OwnerPro\Nfsen\Contracts\Driven\ResolvesPrefeituras;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
@@ -10,6 +8,8 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
 use OwnerPro\Nfsen\Support\GzipCompressor;
+
+covers(NfseRequestPipeline::class);
 
 /**
  * @param  array<string, mixed>  $postResult

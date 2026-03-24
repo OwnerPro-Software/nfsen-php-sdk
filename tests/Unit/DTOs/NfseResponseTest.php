@@ -1,9 +1,9 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Responses\NfseResponse::class);
-
 use OwnerPro\Nfsen\Responses\NfseResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
+
+covers(NfseResponse::class);
 
 it('success response carries chave and empty erros', function () {
     $response = new NfseResponse(true, 'chave123', '<NFSe/>');

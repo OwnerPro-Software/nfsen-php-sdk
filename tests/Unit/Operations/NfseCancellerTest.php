@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Operations\NfseCanceller::class);
-
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Adapters\CertificateManager;
 use OwnerPro\Nfsen\Adapters\NfseHttpClient;
@@ -13,6 +11,8 @@ use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
 use OwnerPro\Nfsen\Support\GzipCompressor;
 use OwnerPro\Nfsen\Xml\Builders\CancellationBuilder;
+
+covers(NfseCanceller::class);
 
 function makeNfseCanceller(): NfseCanceller
 {

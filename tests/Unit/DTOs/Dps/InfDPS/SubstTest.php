@@ -1,8 +1,9 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst::class);
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+
+covers(Subst::class);
 
 it('creates Subst with all fields', function () {
     $subst = new Subst(

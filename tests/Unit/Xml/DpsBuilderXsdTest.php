@@ -1,7 +1,5 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Xml\DpsBuilder::class);
-
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
 use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
@@ -11,6 +9,8 @@ use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XmlDocumentLoader;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
+
+covers(DpsBuilder::class);
 
 it('produces xml that validates against DPS_v1.01.xsd', function (DpsData $data) {
     $builder = new DpsBuilder(makeXsdValidator());

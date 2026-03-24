@@ -1,10 +1,10 @@
 <?php
 
-covers(\OwnerPro\Nfsen\NfseClient::class);
-
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\NfseClient;
+
+covers(NfseClient::class);
 
 it('consultar()->danfse returns DanfseResponse with pdf', function () {
     $chave = makeChaveAcesso();

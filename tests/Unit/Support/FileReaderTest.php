@@ -1,8 +1,8 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Support\FileReader::class);
-
 use OwnerPro\Nfsen\Support\FileReader;
+
+covers(FileReader::class);
 
 it('reads file contents via invocation', function () {
     $reader = new FileReader;

@@ -1,10 +1,11 @@
 <?php
 
-covers(\OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed::class);
 use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpDedRed;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
+covers(VDedRed::class);
 
 it('creates VDedRed with pDR', function () {
     $info = new VDedRed(pDR: '10.00');
