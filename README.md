@@ -136,6 +136,15 @@ if ($response->sucesso) {
 }
 ```
 
+### Emitir NFSe por decisão judicial
+
+Utiliza endpoint diferente (`emit_court_order`) para notas emitidas por determinação judicial:
+
+```php
+$response = $client->emitirDecisaoJudicial($dps);
+// Mesma estrutura de DPS e mesmo NfseResponse do emitir()
+```
+
 ### Cancelar NFSe
 
 ```php
@@ -243,10 +252,92 @@ O pacote dispara eventos Laravel que podem ser escutados na sua aplicação:
 | `NfseQueried` | `operacao` | Consulta realizada |
 | `NfseRequested` | `operacao`, `metadata` | Operação iniciada |
 | `NfseRejected` | `operacao`, `codigoErro` | Operação rejeitada pela API |
-| `NfseFailed` | `operacao`, `message` | Falha na operação |
+| `NfseFailed` | `operacao`, `mensagem` | Falha na operação |
 
 **Substituição:** como `substituir` delega ao `emitir` internamente, a sequência de eventos disparados é:
 `NfseRequested('emitir')` → `NfseEmitted` → `NfseSubstituted`
+
+## Objetos de Resposta
+
+Cada operação retorna um DTO tipado e imutável:
+
+### `NfseResponse`
+
+Retornado por `emitir()`, `emitirDecisaoJudicial()`, `cancelar()`, `substituir()`, `consultar()->nfse()` e `consultar()->dps()`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `sucesso` | `bool` | Se a operação foi aceita |
+| `chave` | `?string` | Chave de acesso da NFSe (50 dígitos) |
+| `xml` | `?string` | XML da NFSe processada |
+| `idDps` | `?string` | Identificador da DPS |
+| `alertas` | `list<ProcessingMessage>` | Alertas não-bloqueantes |
+| `erros` | `list<ProcessingMessage>` | Erros de processamento |
+| `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
+| `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
+| `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+
+### `DanfseResponse`
+
+Retornado por `consultar()->danfse()`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `sucesso` | `bool` | Se o PDF foi obtido |
+| `pdf` | `?string` | Conteúdo binário do PDF |
+| `erros` | `list<ProcessingMessage>` | Erros de processamento |
+
+### `EventsResponse`
+
+Retornado por `consultar()->eventos()`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `sucesso` | `bool` | Se a consulta teve sucesso |
+| `xml` | `?string` | XML do evento |
+| `erros` | `list<ProcessingMessage>` | Erros de processamento |
+| `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
+| `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
+| `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+
+### `ProcessingMessage`
+
+Representa uma mensagem de erro ou alerta da API:
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `mensagem` | `?string` | Mensagem principal |
+| `codigo` | `?string` | Código do erro/alerta |
+| `descricao` | `?string` | Descrição detalhada |
+| `complemento` | `?string` | Informação complementar |
+
+## Exceções
+
+| Exceção | Pai | Quando |
+|---------|-----|--------|
+| `NfseException` | `RuntimeException` | Erros gerais (XML inválido, falha de compressão, etc.) |
+| `HttpException` | `NfseException` | Erros HTTP 5xx sem corpo JSON. Acesse `getResponseBody()` para detalhes |
+| `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
+| `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS |
+
+```php
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+
+try {
+    $response = $client->emitir($dps);
+} catch (CertificateExpiredException $e) {
+    // Certificado expirado -- renovar
+} catch (InvalidDpsArgument $e) {
+    // Dados da DPS inválidos -- corrigir payload
+} catch (HttpException $e) {
+    // Erro HTTP -- $e->getCode() para status, $e->getResponseBody() para corpo
+} catch (NfseException $e) {
+    // Outros erros (XML, compressão, etc.)
+}
+```
 
 ## Exemplos
 

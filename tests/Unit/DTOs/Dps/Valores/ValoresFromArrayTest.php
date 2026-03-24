@@ -16,6 +16,7 @@ use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib;
+use OwnerPro\Nfsen\Dps\Enums\Valores\CST;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
@@ -159,6 +160,46 @@ it('Trib rejects when multiple totTrib variants provided', function () {
 it('VDescCondIncond::fromArray creates instance from array', function () {
     $dto = VDescCondIncond::fromArray(['vDescIncond' => '5.00']);
     expect($dto)->toBeInstanceOf(VDescCondIncond::class);
+});
+
+it('VDescCondIncond rejects when all fields are null', function () {
+    new VDescCondIncond;
+})->throws(InvalidDpsArgument::class, 'vDescCondIncond deve conter ao menos um campo preenchido.');
+
+it('VDescCondIncond accepts with only vDescIncond', function () {
+    $dto = new VDescCondIncond(vDescIncond: '5.00');
+    expect($dto->vDescIncond)->toBe('5.00')
+        ->and($dto->vDescCond)->toBeNull();
+});
+
+it('VDescCondIncond accepts with only vDescCond', function () {
+    $dto = new VDescCondIncond(vDescCond: '3.00');
+    expect($dto->vDescCond)->toBe('3.00')
+        ->and($dto->vDescIncond)->toBeNull();
+});
+
+it('TribFed rejects when all fields are null', function () {
+    new TribFed;
+})->throws(InvalidDpsArgument::class, 'tribFed deve conter ao menos um campo preenchido.');
+
+it('TribFed accepts with only piscofins', function () {
+    $dto = new TribFed(piscofins: new Piscofins(CST: CST::Nenhum));
+    expect($dto->piscofins)->toBeInstanceOf(Piscofins::class);
+});
+
+it('TribFed accepts with only vRetCP', function () {
+    $dto = new TribFed(vRetCP: '10.00');
+    expect($dto->vRetCP)->toBe('10.00');
+});
+
+it('TribFed accepts with only vRetIRRF', function () {
+    $dto = new TribFed(vRetIRRF: '5.00');
+    expect($dto->vRetIRRF)->toBe('5.00');
+});
+
+it('TribFed accepts with only vRetCSLL', function () {
+    $dto = new TribFed(vRetCSLL: '3.00');
+    expect($dto->vRetCSLL)->toBe('3.00');
 });
 
 it('NFSeMun::fromArray creates instance from array', function () {

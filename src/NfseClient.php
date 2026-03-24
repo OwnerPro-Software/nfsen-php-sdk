@@ -28,6 +28,7 @@ use OwnerPro\Nfsen\Support\GzipCompressor;
 use OwnerPro\Nfsen\Support\XsdValidator;
 use OwnerPro\Nfsen\Xml\Builders\CancellationBuilder;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
+use SensitiveParameter;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData
@@ -41,7 +42,7 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
         private ConsultsNfse $consulter,
     ) {}
 
-    public static function for(string $pfxContent, string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): self
+    public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): self
     {
         if (function_exists('config') && config('nfse-nacional') !== null) {
             /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool} $config */
@@ -63,19 +64,19 @@ final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, 
     }
 
     public static function forStandalone(
-        string $pfxContent,
-        string $senha,
+        #[SensitiveParameter] string $pfxContent,
+        #[SensitiveParameter] string $senha,
         string $prefeitura,
         NfseAmbiente $ambiente = NfseAmbiente::HOMOLOGACAO,
         int $timeout = 30,
         string $signingAlgorithm = 'sha1',
         bool $sslVerify = true,
         ?string $prefeiturasJsonPath = null,
-        ?string $schemesPath = null,
+        ?string $schemasPath = null,
         int $connectTimeout = 10,
     ): self {
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
-        $schemasPath = $schemesPath ?? __DIR__.'/../storage/schemes';
+        $schemasPath ??= __DIR__.'/../storage/schemes';
 
         $prefeituraResolver = new PrefeituraResolver($jsonPath);
         $xsdValidator = new XsdValidator($schemasPath);

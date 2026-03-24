@@ -148,8 +148,8 @@ it('forStandalone uses custom prefeiturasJsonPath', function (DpsData $data) {
     }
 })->with('dpsData');
 
-it('forStandalone uses custom schemesPath', function (DpsData $data) {
-    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', schemesPath: '/nonexistent/schemas');
+it('forStandalone uses custom schemasPath', function (DpsData $data) {
+    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', schemasPath: '/nonexistent/schemas');
 
     expect(fn () => $client->emitir($data))->toThrow(NfseException::class);
 })->with('dpsData');
