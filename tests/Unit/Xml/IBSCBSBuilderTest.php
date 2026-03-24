@@ -3,6 +3,7 @@
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DFeNacional;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocOutro;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Documentos;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Fornec;
@@ -14,6 +15,10 @@ use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Trib;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
+use OwnerPro\Nfsen\Dps\DTO\Shared\End;
+use OwnerPro\Nfsen\Dps\DTO\Shared\EndNac;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
@@ -21,6 +26,7 @@ use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TipoChaveDFe;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpEnteGov;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpOper;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpReeRepRes;
+use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
 
@@ -284,11 +290,11 @@ it('builds IBSCBS with dest CPF, fone and email', function () {
         dest: new Dest(
             xNome: 'Pessoa Física',
             CPF: '12345678901',
-            end: new \OwnerPro\Nfsen\Dps\DTO\Shared\End(
+            end: new End(
                 xLgr: 'Rua Teste',
                 nro: '100',
                 xBairro: 'Centro',
-                endNac: new \OwnerPro\Nfsen\Dps\DTO\Shared\EndNac(cMun: '3501608', CEP: '01001000'),
+                endNac: new EndNac(cMun: '3501608', CEP: '01001000'),
             ),
             fone: '11999998888',
             email: 'dest@test.com',
@@ -340,7 +346,7 @@ it('builds IBSCBS with dest cNaoNIF', function () {
                 gIBSCBS: new GIBSCBS(CST: '100', cClassTrib: '010101'),
             ),
         ),
-        dest: new Dest(xNome: 'Sem NIF', cNaoNIF: \OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF::Dispensado),
+        dest: new Dest(xNome: 'Sem NIF', cNaoNIF: CNaoNIF::Dispensado),
     );
 
     $xml = $doc->saveXML($builder->build($doc, $ibscbs));
@@ -363,7 +369,7 @@ it('builds IBSCBS with imovel end using CEP', function () {
         ),
         imovel: new Imovel(
             inscImobFisc: '12345',
-            end: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndObra(
+            end: new EndObra(
                 xLgr: 'Rua Imovel', nro: '50', xBairro: 'Centro',
                 CEP: '01001000', xCpl: 'Apto 1',
             ),
@@ -398,9 +404,9 @@ it('builds IBSCBS with imovel end using endExt', function () {
             ),
         ),
         imovel: new Imovel(
-            end: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndObra(
+            end: new EndObra(
                 xLgr: '5th Avenue', nro: '200', xBairro: 'Manhattan',
-                endExt: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndExt(
+                endExt: new EndExt(
                     cEndPost: '10001', xCidade: 'New York', xEstProvReg: 'NY',
                 ),
             ),
@@ -438,7 +444,7 @@ it('builds IBSCBS with docFiscalOutro', function () {
                     dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::Outros,
                     vlrReeRepRes: '200.00',
-                    docFiscalOutro: new \OwnerPro\Nfsen\Dps\DTO\IBSCBS\DocFiscalOutro(
+                    docFiscalOutro: new DocFiscalOutro(
                         cMunDocFiscal: '3501608', nDocFiscal: 'NF-001', xDocFiscal: 'Nota fiscal municipal',
                     ),
                     xTpReeRepRes: 'Outro tipo de reembolso de teste',
@@ -527,7 +533,7 @@ it('builds IBSCBS with fornec NIF and cNaoNIF', function () {
                     dtEmiDoc: '2026-01-01', dtCompDoc: '2026-01-01',
                     tpReeRepRes: TpReeRepRes::RepasseImoveis, vlrReeRepRes: '100.00',
                     docOutro: new DocOutro(nDoc: 'D2', xDoc: 'Doc2'),
-                    fornec: new Fornec(xNome: 'cNaoNIF Fornec', cNaoNIF: \OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF::NaoInformado),
+                    fornec: new Fornec(xNome: 'cNaoNIF Fornec', cNaoNIF: CNaoNIF::NaoInformado),
                 ),
             ]),
         ),

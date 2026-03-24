@@ -94,7 +94,7 @@ it('throws InvalidArgumentException for non-7-digit ibge code', function () use 
     $resolver = new PrefeituraResolver($jsonPath);
 
     expect(fn () => $resolver->resolveSeFinUrl('123', NfseAmbiente::HOMOLOGACAO))
-        ->toThrow(\InvalidArgumentException::class, 'IBGE');
+        ->toThrow(InvalidArgumentException::class, 'IBGE');
 });
 
 it('url-encodes special characters in template parameter values', function () use ($jsonPath) {
@@ -109,19 +109,19 @@ it('throws InvalidArgumentException for missing template parameter', function ()
     $resolver = new PrefeituraResolver($jsonPath);
 
     expect(fn () => $resolver->resolveOperation('9999999', 'query_events', ['chave' => 'ABC']))
-        ->toThrow(\InvalidArgumentException::class, "'{tipoEvento}'");
+        ->toThrow(InvalidArgumentException::class, "'{tipoEvento}'");
 });
 
 it('throws InvalidArgumentException for unknown operation', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
     expect(fn () => $resolver->resolveOperation('9999999', 'operacao_inexistente'))
-        ->toThrow(\InvalidArgumentException::class, 'Operação desconhecida');
+        ->toThrow(InvalidArgumentException::class, 'Operação desconhecida');
 });
 
 it('throws InvalidArgumentException for missing json file', function () {
     expect(fn () => new PrefeituraResolver('/non/existent/path.json'))
-        ->toThrow(\InvalidArgumentException::class, 'não encontrado');
+        ->toThrow(InvalidArgumentException::class, 'não encontrado');
 });
 
 it('throws InvalidArgumentException when file_get_contents fails', function () use ($jsonPath) {
@@ -129,7 +129,7 @@ it('throws InvalidArgumentException when file_get_contents fails', function () u
     $reader->shouldReceive('__invoke')->with($jsonPath)->andReturn(false);
 
     expect(fn () => new PrefeituraResolver($jsonPath, $reader))
-        ->toThrow(\InvalidArgumentException::class, 'Falha ao ler');
+        ->toThrow(InvalidArgumentException::class, 'Falha ao ler');
 });
 
 it('throws InvalidArgumentException for invalid json content with parse error detail', function () {
@@ -138,7 +138,7 @@ it('throws InvalidArgumentException for invalid json content with parse error de
 
     try {
         expect(fn () => new PrefeituraResolver($tmpFile))
-            ->toThrow(\InvalidArgumentException::class, 'Syntax error');
+            ->toThrow(InvalidArgumentException::class, 'Syntax error');
     } finally {
         unlink($tmpFile);
     }
@@ -148,7 +148,7 @@ it('throws InvalidArgumentException for invalid ibge code on resolveAdnUrl', fun
     $resolver = new PrefeituraResolver($jsonPath);
 
     expect(fn () => $resolver->resolveAdnUrl('123', NfseAmbiente::HOMOLOGACAO))
-        ->toThrow(\InvalidArgumentException::class, 'IBGE');
+        ->toThrow(InvalidArgumentException::class, 'IBGE');
 });
 
 it('resolves custom adn url for known prefeitura', function () use ($jsonPath) {
@@ -163,7 +163,7 @@ it('throws InvalidArgumentException for invalid ibge code on resolveOperation', 
     $resolver = new PrefeituraResolver($jsonPath);
 
     expect(fn () => $resolver->resolveOperation('abc', 'query_nfse', ['chave' => 'X']))
-        ->toThrow(\InvalidArgumentException::class, 'IBGE');
+        ->toThrow(InvalidArgumentException::class, 'IBGE');
 });
 
 it('casts integer parameter values to string in template', function () use ($jsonPath) {

@@ -16,20 +16,20 @@ covers(NfseResponsePipeline::class);
 function buildResponsePipeline(
     ?array $getResult = null,
     ?int $headResult = null,
-    ?\Throwable $throwOnGet = null,
-    ?\Throwable $throwOnHead = null,
+    ?Throwable $throwOnGet = null,
+    ?Throwable $throwOnHead = null,
     ?string $getBytesResult = null,
-    ?\Throwable $throwOnGetBytes = null,
+    ?Throwable $throwOnGetBytes = null,
 ): NfseResponsePipeline {
     $httpClient = new class($getResult ?? [], $headResult ?? 200, $throwOnGet, $throwOnHead, $getBytesResult, $throwOnGetBytes) implements SendsHttpRequests
     {
         public function __construct(
             private readonly array $getResult,
             private readonly int $headResult,
-            private readonly ?\Throwable $throwOnGet,
-            private readonly ?\Throwable $throwOnHead,
+            private readonly ?Throwable $throwOnGet,
+            private readonly ?Throwable $throwOnHead,
             private readonly ?string $getBytesResult,
-            private readonly ?\Throwable $throwOnGetBytes,
+            private readonly ?Throwable $throwOnGetBytes,
         ) {}
 
         /** @param array<string, string> $payload */

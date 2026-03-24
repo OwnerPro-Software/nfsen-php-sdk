@@ -5,9 +5,14 @@ use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\DTO\Valores\DocDedRed;
 use OwnerPro\Nfsen\Dps\DTO\Valores\NFNFS;
 use OwnerPro\Nfsen\Dps\DTO\Valores\NFSeMun;
+use OwnerPro\Nfsen\Dps\DTO\Valores\Trib;
+use OwnerPro\Nfsen\Dps\DTO\Valores\TribMun;
 use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpDedRed;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Xml\Builders\ValoresBuilder;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
 
@@ -18,11 +23,11 @@ it('builds vDedRed with pDR choice', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -41,11 +46,11 @@ it('builds vDedRed with vDR choice', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -64,11 +69,11 @@ it('builds vDedRed with documentos containing chNFSe', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -101,11 +106,11 @@ it('builds vDedRed with NFSeMun document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -134,11 +139,11 @@ it('builds vDedRed with NFNFS document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -167,11 +172,11 @@ it('builds vDedRed with fornec', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -200,11 +205,11 @@ it('builds vDedRed with chNFe document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -228,11 +233,11 @@ it('builds vDedRed with nDocFisc document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -260,11 +265,11 @@ it('builds vDedRed with nDoc document', function () {
     $doc = new DOMDocument('1.0', 'UTF-8');
 
     $valores = new Valores(
-        vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-        trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-            tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+        vServPrest: new VServPrest(vServ: '100.00'),
+        trib: new Trib(
+            tribMun: new TribMun(
+                tribISSQN: TribISSQN::Tributavel,
+                tpRetISSQN: TpRetISSQN::NaoRetido,
             ),
             indTotTrib: '0',
         ),
@@ -296,11 +301,11 @@ it('builds DPS with vDedRed pDR that validates against XSD', function () {
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: new Valores(
-            vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '100.00'),
-            trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-                tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                    tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                    tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+            vServPrest: new VServPrest(vServ: '100.00'),
+            trib: new Trib(
+                tribMun: new TribMun(
+                    tribISSQN: TribISSQN::Tributavel,
+                    tpRetISSQN: TpRetISSQN::NaoRetido,
                 ),
                 indTotTrib: '0',
             ),
@@ -320,11 +325,11 @@ it('builds DPS with vDedRed documentos that validates against XSD', function () 
         prest: makePrestadorCnpj(),
         serv: makeServicoMinimo(),
         valores: new Valores(
-            vServPrest: new \OwnerPro\Nfsen\Dps\DTO\Valores\VServPrest(vServ: '1000.00'),
-            trib: new \OwnerPro\Nfsen\Dps\DTO\Valores\Trib(
-                tribMun: new \OwnerPro\Nfsen\Dps\DTO\Valores\TribMun(
-                    tribISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN::Tributavel,
-                    tpRetISSQN: \OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN::NaoRetido,
+            vServPrest: new VServPrest(vServ: '1000.00'),
+            trib: new Trib(
+                tribMun: new TribMun(
+                    tribISSQN: TribISSQN::Tributavel,
+                    tpRetISSQN: TpRetISSQN::NaoRetido,
                 ),
                 indTotTrib: '0',
             ),

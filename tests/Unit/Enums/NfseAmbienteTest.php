@@ -36,15 +36,15 @@ it('fromConfig accepts numeric string values', function () {
 
 it('fromConfig throws on unknown string value', function () {
     expect(fn () => NfseAmbiente::fromConfig('unknown'))
-        ->toThrow(\InvalidArgumentException::class);
+        ->toThrow(InvalidArgumentException::class);
 });
 
 it('fromConfig throws InvalidArgumentException on invalid numeric value', function () {
     expect(fn () => NfseAmbiente::fromConfig(0))
-        ->toThrow(\InvalidArgumentException::class, 'Ambiente NFSe inválido');
+        ->toThrow(InvalidArgumentException::class, 'Ambiente NFSe inválido');
 
     expect(fn () => NfseAmbiente::fromConfig('3'))
-        ->toThrow(\InvalidArgumentException::class, 'Ambiente NFSe inválido');
+        ->toThrow(InvalidArgumentException::class, 'Ambiente NFSe inválido');
 });
 
 it('fromConfig normalizes leading zeros via integer cast', function () {

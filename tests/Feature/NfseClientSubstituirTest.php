@@ -4,6 +4,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\NfseClient;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Responses\NfseResponse;
@@ -70,7 +71,7 @@ it('substituir throws InvalidArgumentException for invalid chaveAcesso', functio
     $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->substituir('INVALID_CHAVE', $dps, CodigoJustificativaSubstituicao::Outros, 'Outro motivo'))
-        ->toThrow(\InvalidArgumentException::class, 'chaveAcesso inválida');
+        ->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
 })->with('dpsData');
 
 it('substituir throws HttpException on server error during emission', function (DpsData $dps) {
@@ -83,7 +84,7 @@ it('substituir throws HttpException on server error during emission', function (
         $dps,
         CodigoJustificativaSubstituicao::Outros,
         'Outro motivo para substituicao',
-    ))->toThrow(\OwnerPro\Nfsen\Exceptions\HttpException::class);
+    ))->toThrow(HttpException::class);
 })->with('dpsData');
 
 it('substituir accepts array DPS and converts to DpsData', function () {

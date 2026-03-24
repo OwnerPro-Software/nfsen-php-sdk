@@ -3,11 +3,13 @@
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
 use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
+use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
 use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XmlDocumentLoader;
+use OwnerPro\Nfsen\Support\XsdValidator;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 covers(DpsBuilder::class);
@@ -38,7 +40,7 @@ it('buildAndValidate throws NfseException when XML loading fails', function (Dps
     $loader = Mockery::mock(XmlDocumentLoader::class);
     $loader->shouldReceive('__invoke')->andReturn(false);
 
-    $builder = new DpsBuilder(new \OwnerPro\Nfsen\Support\XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
+    $builder = new DpsBuilder(new XsdValidator(__DIR__.'/../../../storage/schemes', xmlDocumentLoader: $loader));
 
     expect(fn () => $builder->buildAndValidate($data))
         ->toThrow(NfseException::class, 'falha ao carregar documento');
@@ -110,7 +112,7 @@ it('validates DPS with atvEvento (end with endExt) against XSD', function () {
                     xLgr: 'Broadway',
                     nro: '500',
                     xBairro: 'Midtown',
-                    endExt: new \OwnerPro\Nfsen\Dps\DTO\Serv\EndExt(
+                    endExt: new EndExt(
                         cEndPost: '10036', xCidade: 'New York', xEstProvReg: 'NY',
                     ),
                 ),
