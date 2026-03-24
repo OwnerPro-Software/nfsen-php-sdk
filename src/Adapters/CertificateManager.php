@@ -18,7 +18,7 @@ final readonly class CertificateManager implements ExtractsAuthorIdentity
         $this->certificate = Certificate::readPfx($pfxContent, $password);
 
         if ($this->certificate->isExpired()) {
-            throw new CertificateExpiredException('Certificate is expired.');
+            throw new CertificateExpiredException('Certificado expirado.');
         }
     }
 

@@ -44,7 +44,7 @@ php artisan vendor:publish --tag=nfse-nacional-config
 Adicione as variáveis de ambiente no `.env`:
 
 ```env
-NFSE_AMBIENTE=2                   # 1 = Producao, 2 = Homologacao
+NFSE_AMBIENTE=2                   # 1 = Producao, 2 = Homologacao (aceita: 'producao', 'production', 'homologacao', 'homologation')
 NFSE_PREFEITURA=3550308           # Codigo IBGE do municipio (7 digitos)
 NFSE_CERT_PATH=/caminho/cert.pfx  # Caminho do certificado PFX/P12
 NFSE_CERT_SENHA=senha             # Senha do certificado
@@ -203,12 +203,14 @@ $response = $client->consultar()->danfse($chave);
 // $response->pdf contém o conteúdo binário do PDF
 file_put_contents('danfse.pdf', $response->pdf);
 
-// Consultar eventos
+// Consultar eventos (tipoEvento é obrigatório)
 $response = $client->consultar()->eventos(
     chave: $chave,
-    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador, // e101101
     nSequencial: 1,
 );
+// Tipos disponíveis: CancelamentoPorIniciativaPrestador, CancelamentoPorIniciativaFisco,
+// CancelamentoPorSubstituicao, AnulacaoCancelamento
 
 // Verificar se DPS foi processada
 $processada = $client->consultar()->verificarDps($idDps); // true ou false
