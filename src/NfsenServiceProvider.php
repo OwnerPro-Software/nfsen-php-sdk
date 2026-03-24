@@ -15,7 +15,7 @@ final class NfsenServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/nfsen.php', 'nfsen');
 
-        $this->app->bind(NfseClient::class, function (): NfseClient {
+        $this->app->bind(NfsenClient::class, function (): NfsenClient {
             /**
              * @var array{
              *     ambiente: int|string,
@@ -37,7 +37,7 @@ final class NfsenServiceProvider extends ServiceProvider
 
             if (! $certPath || ! $certSenha || ! $prefeitura || ! is_file($certPath)) {
                 throw new NfseException(
-                    'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfsen.php.'
+                    'NfsenClient não configurado. Use NfsenClient::for() ou configure certificado/prefeitura no config/nfsen.php.'
                 );
             }
 
@@ -47,7 +47,7 @@ final class NfsenServiceProvider extends ServiceProvider
                 throw new RuntimeException('Falha ao ler arquivo de certificado digital.');
             }
 
-            return NfseClient::forStandalone(
+            return NfsenClient::forStandalone(
                 pfxContent: $certContent,
                 senha: $certSenha,
                 prefeitura: $prefeitura,

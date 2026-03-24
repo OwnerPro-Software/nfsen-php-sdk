@@ -13,12 +13,12 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
 use OwnerPro\Nfsen\Support\GzipCompressor;
 
-covers(NfseClient::class, NfseEmitter::class);
+covers(NfsenClient::class, NfseEmitter::class);
 
 it('emitir returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(
@@ -26,7 +26,7 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
         201
     )]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -49,7 +49,7 @@ it('consultar()->nfse returns success NfseResponse', function () {
     $xmlB64 = base64_encode(gzencode('<NFSe/>'));
     Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64, 'chaveAcesso' => $chave], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->nfse($chave);
 
     expect($response->sucesso)->toBeTrue();
@@ -64,7 +64,7 @@ it('consultar()->nfse returns success NfseResponse', function () {
 it('consultar()->dps returns success NfseResponse with chaveAcesso', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DPS_OK', 'idDps' => 'DPS001'], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->dps('DPS123');
 
     expect($response->sucesso)->toBeTrue();
@@ -79,7 +79,7 @@ it('consultar()->dps returns success NfseResponse with chaveAcesso', function ()
 it('consultar()->dps returns null chave when response has no chaveAcesso', function () {
     Http::fake(['*' => Http::response(['idDps' => 'DPS001'], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->dps('DPS123');
 
     expect($response->sucesso)->toBeTrue();
@@ -87,14 +87,14 @@ it('consultar()->dps returns null chave when response has no chaveAcesso', funct
 });
 
 it('throws InvalidArgumentException for invalid IBGE code', function () {
-    expect(fn () => NfseClient::for(makePfxContent(), 'secret', '123'))
+    expect(fn () => NfsenClient::for(makePfxContent(), 'secret', '123'))
         ->toThrow(InvalidArgumentException::class, 'IBGE');
 });
 
 it('forStandalone creates client without Laravel container', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_STANDALONE'], 201)]);
 
-    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -106,7 +106,7 @@ it('for() falls back to forStandalone when config is null', function (DpsData $d
 
     config()->offsetUnset('nfsen');
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -118,7 +118,7 @@ it('for() uses config values when config is present', function (DpsData $data) {
 
     config()->set('nfsen.ambiente', NfseAmbiente::PRODUCAO->value);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -138,7 +138,7 @@ it('forStandalone uses custom prefeiturasJsonPath', function (DpsData $data) {
 
     try {
         PrefeituraResolver::clearCache();
-        $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', prefeiturasJsonPath: $tmpJson);
+        $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999', prefeiturasJsonPath: $tmpJson);
         $client->emitir($data);
 
         Http::assertSent(fn (Request $req) => $req->url() === 'https://custom.sefin.test/nfse');
@@ -149,7 +149,7 @@ it('forStandalone uses custom prefeiturasJsonPath', function (DpsData $data) {
 })->with('dpsData');
 
 it('forStandalone uses custom schemasPath', function (DpsData $data) {
-    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', schemasPath: '/nonexistent/schemas');
+    $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999', schemasPath: '/nonexistent/schemas');
 
     expect(fn () => $client->emitir($data))->toThrow(NfseException::class);
 })->with('dpsData');
@@ -160,7 +160,7 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
         200
     )]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
@@ -183,7 +183,7 @@ it('emitir returns idDps from lowercase key on rejection', function (DpsData $da
         'erros' => [['descricao' => 'Erro', 'codigo' => 'E001']],
     ], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
@@ -193,7 +193,7 @@ it('emitir returns idDps from lowercase key on rejection', function (DpsData $da
 it('emitir returns rejection on 4xx response with erro body', function (DpsData $data) {
     Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Certificado inválido', 'codigo' => 'E401']], 401)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
@@ -203,7 +203,7 @@ it('emitir returns rejection on 4xx response with erro body', function (DpsData 
 it('emitir throws HttpException on server error', function (DpsData $data) {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
         ->toThrow(HttpException::class);
@@ -236,7 +236,7 @@ it('emitir succeeds and reports error when event listener throws', function (Dps
         }
     );
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -248,7 +248,7 @@ it('emitir succeeds and reports error when event listener throws', function (Dps
 it('emitir uses Americana custom URL without operation path', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_AM'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '3501608');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '3501608');
     $client->emitir($data);
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
@@ -259,7 +259,7 @@ it('emitir uses Americana custom URL without operation path', function (DpsData 
 it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_SP'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '3547304');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '3547304');
     $client->emitir($data);
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse' &&
@@ -270,7 +270,7 @@ it('emitir uses Santa Ana de Parnaiba custom URL with operation path', function 
 it('emitir returns rejection when response has no chaveAcesso', function (DpsData $data) {
     Http::fake(['*' => Http::response(['status' => 'ok'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
@@ -281,7 +281,7 @@ it('emitir returns rejection when response has no chaveAcesso', function (DpsDat
 it('emitir returns rejection with singular erro field', function (DpsData $data) {
     Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Erro genérico na emissão', 'codigo' => 'E999']], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeFalse();
@@ -291,7 +291,7 @@ it('emitir returns rejection with singular erro field', function (DpsData $data)
 it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_PROD'], 201)]);
 
-    $client = NfseClient::forStandalone(
+    $client = NfsenClient::forStandalone(
         makePfxContent(), 'secret', '9999999',
         ambiente: NfseAmbiente::PRODUCAO,
     );
@@ -306,7 +306,7 @@ it('emitir uses producao URL when ambiente is PRODUCAO', function (DpsData $data
 })->with('dpsData');
 
 it('forStandalone defaults to sslVerify true', function () {
-    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999');
 
     $consulter = (new ReflectionProperty($client, 'consulter'))->getValue($client);
     $queryExecutor = (new ReflectionProperty($consulter, 'client'))->getValue($consulter);
@@ -317,7 +317,7 @@ it('forStandalone defaults to sslVerify true', function () {
 });
 
 it('forStandalone uses default timeout and connectTimeout', function () {
-    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999');
 
     $consulter = (new ReflectionProperty($client, 'consulter'))->getValue($client);
     $queryExecutor = (new ReflectionProperty($consulter, 'client'))->getValue($consulter);
@@ -330,7 +330,7 @@ it('forStandalone uses default timeout and connectTimeout', function () {
 });
 
 it('configure enforces sslVerify true when ambiente is PRODUCAO even if config says false', function () {
-    $client = NfseClient::forStandalone(
+    $client = NfsenClient::forStandalone(
         makePfxContent(), 'secret', '9999999',
         ambiente: NfseAmbiente::PRODUCAO,
         sslVerify: false,
@@ -347,7 +347,7 @@ it('configure enforces sslVerify true when ambiente is PRODUCAO even if config s
 it('emitir accepts array and coerces to DpsData', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir([
         'infDPS' => [
             'tpAmb' => '2',
@@ -396,7 +396,7 @@ it('emitir accepts array and coerces to DpsData', function () {
 });
 
 it('emitir throws when array is missing required keys', function () {
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir(['infDPS' => []]))
         ->toThrow(ErrorException::class);
@@ -424,7 +424,7 @@ it('emitir validates XML against XSD before sending', function () {
         valores: makeValoresMinimo(),
     );
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
         ->toThrow(NfseException::class, 'XML inválido');
@@ -435,7 +435,7 @@ it('emitir validates XML against XSD before sending', function () {
 it('emitir throws NfseException on invalid base64 in nfseXmlGZipB64', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => '!!!invalid!!!'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
         ->toThrow(NfseException::class, 'base64');
@@ -444,7 +444,7 @@ it('emitir throws NfseException on invalid base64 in nfseXmlGZipB64', function (
 it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => base64_encode('not-gzip-data')], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
         ->toThrow(NfseException::class, 'descomprimir');
@@ -456,7 +456,7 @@ it('emitir throws NfseException when gzip compression fails', function (DpsData 
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = makeNfseClient(gzipCompressor: $compressor);
+    $client = makeNfsenClient(gzipCompressor: $compressor);
 
     expect(fn () => $client->emitir($data))
         ->toThrow(NfseException::class, 'comprimir XML');
@@ -466,7 +466,7 @@ it('for() uses ambiente override instead of config value', function (DpsData $da
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_OVERRIDE'], 201)]);
 
     // Config is HOMOLOGACAO by default, but we override to PRODUCAO
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::PRODUCAO);
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::PRODUCAO);
     $response = $client->emitir($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -482,7 +482,7 @@ it('for() ambiente override takes precedence over config', function (DpsData $da
     config()->set('nfsen.ambiente', NfseAmbiente::PRODUCAO->value);
 
     // Config says PRODUCAO, but we override to HOMOLOGACAO
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::HOMOLOGACAO);
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::HOMOLOGACAO);
     $client->emitir($data);
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse');
@@ -493,7 +493,7 @@ it('for() uses ambiente override even when config is absent', function (DpsData 
 
     config()->offsetUnset('nfsen');
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::PRODUCAO);
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::PRODUCAO);
     $client->emitir($data);
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.nfse.gov.br/SefinNacional/nfse');

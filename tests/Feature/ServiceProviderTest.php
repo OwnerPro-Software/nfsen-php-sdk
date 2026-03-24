@@ -6,30 +6,30 @@ use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Facades\Nfsen;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\NfsenServiceProvider;
 
 covers(NfsenServiceProvider::class, Nfsen::class);
 
-it('resolves NfseClient from container', function () {
+it('resolves NfsenClient from container', function () {
     config([
         'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '3501608',
     ]);
 
-    $client = app(NfseClient::class);
-    expect($client)->toBeInstanceOf(NfseClient::class);
+    $client = app(NfsenClient::class);
+    expect($client)->toBeInstanceOf(NfsenClient::class);
 });
 
-it('Nfsen facade resolves NfseClient', function () {
+it('Nfsen facade resolves NfsenClient', function () {
     config([
         'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '3501608',
     ]);
 
-    expect(Nfsen::getFacadeRoot())->toBeInstanceOf(NfseClient::class);
+    expect(Nfsen::getFacadeRoot())->toBeInstanceOf(NfsenClient::class);
 });
 
 it('config nfsen is published', function () {
@@ -46,7 +46,7 @@ it('configures client when cert path, senha and prefeitura are set', function ()
     ]);
 
     // Re-resolve from container to trigger the configure() branch
-    $client = app(NfseClient::class);
+    $client = app(NfsenClient::class);
 
     // If configured, consultar() returns a ConsultsNfse without throwing
     expect($client->consultar())->toBeInstanceOf(ConsultsNfse::class);
@@ -67,12 +67,12 @@ it('facade emitir works directly when config is set', function (DpsData $data) {
     expect($response->chave)->toBe('CHAVE_FACADE');
 })->with('dpsData');
 
-it('facade for() returns configured NfseClient without double resolution', function () {
+it('facade for() returns configured NfsenClient without double resolution', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_FOR'], 200)]);
 
     $client = Nfsen::for(makePfxContent(), 'secret', '9999999');
 
-    expect($client)->toBeInstanceOf(NfseClient::class);
+    expect($client)->toBeInstanceOf(NfsenClient::class);
 });
 
 it('throws RuntimeException when cert file is empty', function () {
@@ -85,7 +85,7 @@ it('throws RuntimeException when cert file is empty', function () {
             'nfsen.prefeitura' => '3501608',
         ]);
 
-        expect(fn () => app(NfseClient::class))
+        expect(fn () => app(NfsenClient::class))
             ->toThrow(RuntimeException::class, 'Falha ao ler arquivo de certificado digital.');
     } finally {
         unlink($emptyFile);
@@ -93,8 +93,8 @@ it('throws RuntimeException when cert file is empty', function () {
 });
 
 it('throws NfseException when cert config is incomplete', function () {
-    expect(fn () => app(NfseClient::class))
-        ->toThrow(NfseException::class, 'NfseClient não configurado');
+    expect(fn () => app(NfsenClient::class))
+        ->toThrow(NfseException::class, 'NfsenClient não configurado');
 });
 
 it('throws NfseException when only certPath is missing', function () {
@@ -104,8 +104,8 @@ it('throws NfseException when only certPath is missing', function () {
         'nfsen.prefeitura' => '3501608',
     ]);
 
-    expect(fn () => app(NfseClient::class))
-        ->toThrow(NfseException::class, 'NfseClient não configurado');
+    expect(fn () => app(NfsenClient::class))
+        ->toThrow(NfseException::class, 'NfsenClient não configurado');
 });
 
 it('throws NfseException when only senha is missing', function () {
@@ -115,8 +115,8 @@ it('throws NfseException when only senha is missing', function () {
         'nfsen.prefeitura' => '3501608',
     ]);
 
-    expect(fn () => app(NfseClient::class))
-        ->toThrow(NfseException::class, 'NfseClient não configurado');
+    expect(fn () => app(NfsenClient::class))
+        ->toThrow(NfseException::class, 'NfsenClient não configurado');
 });
 
 it('throws NfseException when only prefeitura is missing', function () {
@@ -126,8 +126,8 @@ it('throws NfseException when only prefeitura is missing', function () {
         'nfsen.prefeitura' => '',
     ]);
 
-    expect(fn () => app(NfseClient::class))
-        ->toThrow(NfseException::class, 'NfseClient não configurado');
+    expect(fn () => app(NfsenClient::class))
+        ->toThrow(NfseException::class, 'NfsenClient não configurado');
 });
 
 it('throws NfseException when certPath does not exist as file', function () {
@@ -137,8 +137,8 @@ it('throws NfseException when certPath does not exist as file', function () {
         'nfsen.prefeitura' => '3501608',
     ]);
 
-    expect(fn () => app(NfseClient::class))
-        ->toThrow(NfseException::class, 'NfseClient não configurado');
+    expect(fn () => app(NfsenClient::class))
+        ->toThrow(NfseException::class, 'NfsenClient não configurado');
 });
 
 it('casts integer prefeitura config to string', function () {
@@ -148,8 +148,8 @@ it('casts integer prefeitura config to string', function () {
         'nfsen.prefeitura' => 3501608,
     ]);
 
-    $client = app(NfseClient::class);
-    expect($client)->toBeInstanceOf(NfseClient::class);
+    $client = app(NfsenClient::class);
+    expect($client)->toBeInstanceOf(NfsenClient::class);
 });
 
 it('publishes config file in console', function () {

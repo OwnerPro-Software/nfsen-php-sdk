@@ -9,11 +9,11 @@ use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Support\GzipCompressor;
 
-covers(NfseClient::class, NfseCanceller::class);
+covers(NfsenClient::class, NfseCanceller::class);
 
 it('cancelar returns success NfseResponse', function () {
     Http::fake(['*' => Http::response(
@@ -22,7 +22,7 @@ it('cancelar returns success NfseResponse', function () {
     )]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
-    $client = NfseClient::for($pfx, 'secret', '9999999');
+    $client = NfsenClient::for($pfx, 'secret', '9999999');
     $response = $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
@@ -52,7 +52,7 @@ it('cancelar accepts string codigoMotivo and coerces to enum', function () {
     )]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
-    $client = NfseClient::for($pfx, 'secret', '9999999');
+    $client = NfsenClient::for($pfx, 'secret', '9999999');
     $response = $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
         '1',
@@ -65,7 +65,7 @@ it('cancelar accepts string codigoMotivo and coerces to enum', function () {
 });
 
 it('cancelar throws ValueError for invalid string codigoMotivo', function () {
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
@@ -81,7 +81,7 @@ it('cancelar returns rejection NfseResponse on erro field', function () {
     )]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
-    $client = NfseClient::for($pfx, 'secret', '9999999');
+    $client = NfsenClient::for($pfx, 'secret', '9999999');
     $response = $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
@@ -99,7 +99,7 @@ it('cancelar returns rejection NfseResponse on erro field', function () {
 it('cancelar returns rejection NfseResponse on singular erro field', function () {
     Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Operação não permitida', 'codigo' => 'E999']], 200)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
@@ -113,7 +113,7 @@ it('cancelar returns rejection NfseResponse on singular erro field', function ()
 it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {
     Http::fake(['*' => Http::response([], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
@@ -125,7 +125,7 @@ it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {
 it('cancelar throws HttpException on server error', function () {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
@@ -164,7 +164,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
         }
     );
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->cancelar(
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
@@ -180,7 +180,7 @@ it('cancelar succeeds and reports error when event listener throws', function ()
 it('cancelar uses Americana custom URL without operation path', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
@@ -191,7 +191,7 @@ it('cancelar uses Americana custom URL without operation path', function () {
 it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '3547304');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '3547304');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://producaorestrita.simplissweb.com.br/nfse/12345678901234567890123456789012345678901234567890/eventos' &&
@@ -200,7 +200,7 @@ it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', functio
 });
 
 it('cancelar throws InvalidArgumentException for invalid chaveAcesso', function () {
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->cancelar(
         'INVALID_CHAVE',
@@ -215,7 +215,7 @@ it('cancelar throws NfseException when gzip compression fails', function () {
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = makeNfseClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
+    $client = makeNfsenClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
 
     expect(fn () => $client->cancelar(
         '12345678901234567890123456789012345678901234567890',

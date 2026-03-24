@@ -1,8 +1,8 @@
 {
-  "name": "ownerpro/nfsen",
+  "name": "ownerpro/nfsen-php-sdk",
   "description": "Pacote Laravel para emissão de NFSe Nacional",
   "license": "MIT",
-  "homepage": "https://github.com/OwnerPro-Software/nfsen",
+  "homepage": "https://github.com/OwnerPro-Software/nfsen-php-sdk",
   "keywords": [
     "nfse",
     "nota-fiscal",
@@ -15,8 +15,8 @@
     "prefeitura"
   ],
   "support": {
-    "issues": "https://github.com/OwnerPro-Software/nfsen/issues",
-    "source": "https://github.com/OwnerPro-Software/nfsen"
+    "issues": "https://github.com/OwnerPro-Software/nfsen-php-sdk/issues",
+    "source": "https://github.com/OwnerPro-Software/nfsen-php-sdk"
   },
   "require": {
     "php": "^8.2",

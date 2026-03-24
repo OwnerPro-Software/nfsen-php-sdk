@@ -33,7 +33,7 @@ use SensitiveParameter;
 /**
  * @phpstan-import-type DpsDataArray from DpsData
  */
-final readonly class NfseClient implements CancelsNfse, EmitsNfse, QueriesNfse, SubstitutesNfse
+final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse, SubstitutesNfse
 {
     public function __construct(
         private EmitsNfse $emitter,

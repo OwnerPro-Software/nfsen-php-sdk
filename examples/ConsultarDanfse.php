@@ -5,7 +5,7 @@ declare(strict_types=1);
 require __DIR__.'/../vendor/autoload.php';
 
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 
 // -------------------------------------------------------------------
 // Consultar DANFSE – PDF binário (Standalone – sem Laravel)
@@ -15,7 +15,7 @@ $pfxContent = file_get_contents(__DIR__.'/certificado.pfx');
 $senha = 'senha_certificado';
 $prefeitura = 'PREFEITURA';
 
-$client = NfseClient::forStandalone(
+$client = NfsenClient::forStandalone(
     pfxContent: $pfxContent,
     senha: $senha,
     prefeitura: $prefeitura,

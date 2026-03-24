@@ -10,7 +10,7 @@
 
 Se você descobrir uma vulnerabilidade de segurança, **não abra uma issue pública**.
 
-Use o recurso [**Security Advisories**](https://github.com/OwnerPro-Software/nfsen/security/advisories/new) do GitHub para reportar de forma privada.
+Use o recurso [**Security Advisories**](https://github.com/OwnerPro-Software/nfsen-php-sdk/security/advisories/new) do GitHub para reportar de forma privada.
 
 Inclua:
 

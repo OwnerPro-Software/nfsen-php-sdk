@@ -9,7 +9,7 @@ use OwnerPro\Nfsen\Responses\NfseResponse;
 
 covers(NfseConsulter::class);
 
-class FakeNfseClientForConsulta implements ExecutesNfseRequests
+class FakeNfsenClientForConsulta implements ExecutesNfseRequests
 {
     public array $calls = [];
 
@@ -44,7 +44,7 @@ class FakeNfseClientForConsulta implements ExecutesNfseRequests
     }
 }
 
-function makeNfseConsulter(FakeNfseClientForConsulta $fakeClient): NfseConsulter
+function makeNfseConsulter(FakeNfsenClientForConsulta $fakeClient): NfseConsulter
 {
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
 
@@ -52,7 +52,7 @@ function makeNfseConsulter(FakeNfseClientForConsulta $fakeClient): NfseConsulter
 }
 
 it('calls executeAndDecompress with nfse url for nfse query', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
@@ -63,7 +63,7 @@ it('calls executeAndDecompress with nfse url for nfse query', function () {
 });
 
 it('calls execute with dps url', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
 
     $builder->dps('DPS456');
@@ -516,7 +516,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
 });
 
 it('eventos uses default nSequencial = 1 in URL', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
@@ -526,7 +526,7 @@ it('eventos uses default nSequencial = 1 in URL', function () {
 });
 
 it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
@@ -536,7 +536,7 @@ it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
 });
 
 it('coerces int tipoEvento to TipoEvento enum', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
@@ -546,7 +546,7 @@ it('coerces int tipoEvento to TipoEvento enum', function () {
 });
 
 it('throws ValueError for invalid int tipoEvento', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
 
     expect(fn () => $builder->eventos(makeChaveAcesso(), 999999))
@@ -554,7 +554,7 @@ it('throws ValueError for invalid int tipoEvento', function () {
 });
 
 it('danfse uses adnBaseUrl when populated', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
     $builder = new NfseConsulter($fakeClient, 'https://sefin.base', 'https://adn.base', $resolver, '9999999');
     $chave = makeChaveAcesso();
@@ -565,7 +565,7 @@ it('danfse uses adnBaseUrl when populated', function () {
 });
 
 it('danfse falls back to seFinBaseUrl when adnBaseUrl is empty', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
@@ -575,7 +575,7 @@ it('danfse falls back to seFinBaseUrl when adnBaseUrl is empty', function () {
 });
 
 it('verificarDps returns true when status is 200', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $fakeClient->headStatus = 200;
     $builder = makeNfseConsulter($fakeClient);
 
@@ -584,7 +584,7 @@ it('verificarDps returns true when status is 200', function () {
 });
 
 it('verificarDps returns false when status is 404', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $fakeClient->headStatus = 404;
     $builder = makeNfseConsulter($fakeClient);
 
@@ -592,7 +592,7 @@ it('verificarDps returns false when status is 404', function () {
 });
 
 it('throws InvalidArgumentException for invalid chaveAcesso on nfse', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
 
     expect(fn () => $builder->nfse('INVALID'))
@@ -600,7 +600,7 @@ it('throws InvalidArgumentException for invalid chaveAcesso on nfse', function (
 });
 
 it('throws InvalidArgumentException for invalid chaveAcesso on danfse', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
 
     expect(fn () => $builder->danfse('INVALID'))
@@ -608,7 +608,7 @@ it('throws InvalidArgumentException for invalid chaveAcesso on danfse', function
 });
 
 it('throws InvalidArgumentException for invalid chaveAcesso on eventos', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
 
     expect(fn () => $builder->eventos('INVALID'))
@@ -616,7 +616,7 @@ it('throws InvalidArgumentException for invalid chaveAcesso on eventos', functio
 });
 
 it('buildUrl trims trailing slash from baseUrl', function () {
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
     $builder = new NfseConsulter($fakeClient, 'https://sefin.base/', '', $resolver, '9999999');
 
@@ -631,7 +631,7 @@ it('buildUrl trims leading slash from path', function () {
         '9999998' => ['operations' => ['query_nfse' => '/nfse/{chave}']],
     ]));
 
-    $fakeClient = new FakeNfseClientForConsulta;
+    $fakeClient = new FakeNfsenClientForConsulta;
 
     try {
         $resolver = new PrefeituraResolver($tmpJson);

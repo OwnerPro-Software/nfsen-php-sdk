@@ -4,14 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [1.0.0] - 2026-03-24
 
-Primeira versão estável sob o namespace `OwnerPro\Nfsen` e pacote `ownerpro/nfsen`.
+Primeira versão estável sob o namespace `OwnerPro\Nfsen` e pacote `ownerpro/nfsen-php-sdk`.
 
 Reescrita completa do projeto original, com arquitetura hexagonal, 100% de cobertura
 de testes, tipos e mutações, e suporte a PHP 8.2+ com Laravel 11/12.
 
 ### Added
-- `NfseClient::for()` — instância configurada por tenant via container Laravel
-- `NfseClient::forStandalone()` — instância standalone sem dependência do container
+- `NfsenClient::for()` — instância configurada por tenant via container Laravel
+- `NfsenClient::forStandalone()` — instância standalone sem dependência do container
 - Emissão de NFSe (`emitir`) e emissão por decisão judicial (`emitirDecisaoJudicial`)
 - Cancelamento de NFSe (`cancelar`)
 - Substituição de NFSe (`substituir`) — emissão da substituta + cancelamento da original em uma única requisição
@@ -25,7 +25,7 @@ de testes, tipos e mutações, e suporte a PHP 8.2+ com Laravel 11/12.
 - mTLS via `tmpfile()` — sem escrita nomeada em disco, sem CNPJ no path
 - SSL habilitado corretamente (`verify: true`)
 - Facade `Nfsen` para uso simplificado com Laravel
-- Override de ambiente em runtime via `NfseClient::for(..., ambiente: NfseAmbiente::PRODUCAO)`
+- Override de ambiente em runtime via `NfsenClient::for(..., ambiente: NfseAmbiente::PRODUCAO)`
 - Identificação de prefeituras exclusivamente por código IBGE (7 dígitos)
 - Suporte a PHP 8.2, 8.3 e 8.4
 - Suporte a Laravel 11 e 12
@@ -43,9 +43,9 @@ de testes, tipos e mutações, e suporte a PHP 8.2+ com Laravel 11/12.
 
 ### Breaking Changes (em relação ao projeto original)
 - Namespace: `Hadder\NfseNacional` → `OwnerPro\Nfsen`
-- Pacote: `ownerpro/nfsen` (antes não publicado no Packagist)
+- Pacote: `ownerpro/nfsen-php-sdk` (antes não publicado no Packagist)
 - Requisito mínimo de PHP alterado de 8.1 para **8.2**
-- API pública completamente nova: `NfseClient::for($pfx, $senha, $ibge)->emitir($dpsData)`
+- API pública completamente nova: `NfsenClient::for($pfx, $senha, $ibge)->emitir($dpsData)`
 - Identificação de prefeituras exclusivamente por código IBGE; suporte a nome legado removido
 - Removido `Helpers.php` com `now()` global
 - Removidas dependências `symfony/var-dumper` e `tecnickcom/tcpdf`

@@ -9,10 +9,10 @@ use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\HttpException;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 
-covers(NfseClient::class, NfseEmitter::class);
+covers(NfsenClient::class, NfseEmitter::class);
 
 it('emitirDecisaoJudicial returns success NfseResponse', function (DpsData $data) {
     Http::fake(['*' => Http::response(
@@ -20,7 +20,7 @@ it('emitirDecisaoJudicial returns success NfseResponse', function (DpsData $data
         201
     )]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitirDecisaoJudicial($data);
 
     expect($response->sucesso)->toBeTrue();
@@ -40,7 +40,7 @@ it('emitirDecisaoJudicial returns rejection with erros array', function (DpsData
         200
     )]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitirDecisaoJudicial($data);
 
     expect($response->sucesso)->toBeFalse();
@@ -51,7 +51,7 @@ it('emitirDecisaoJudicial returns rejection with erros array', function (DpsData
 it('emitirDecisaoJudicial returns rejection when response has no chaveAcesso', function (DpsData $data) {
     Http::fake(['*' => Http::response(['status' => 'ok'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitirDecisaoJudicial($data);
 
     expect($response->sucesso)->toBeFalse();
@@ -61,7 +61,7 @@ it('emitirDecisaoJudicial returns rejection when response has no chaveAcesso', f
 it('emitirDecisaoJudicial throws HttpException on server error', function (DpsData $data) {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitirDecisaoJudicial($data))
         ->toThrow(HttpException::class);
@@ -70,7 +70,7 @@ it('emitirDecisaoJudicial throws HttpException on server error', function (DpsDa
 it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitirDecisaoJudicial([
         'infDPS' => [
             'tpAmb' => '2',
@@ -121,7 +121,7 @@ it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
 it('emitirDecisaoJudicial uses xmlGZipB64 payload key', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitirDecisaoJudicial($data);
 
     Http::assertSent(fn (Request $req) => isset($req['xmlGZipB64']) && ! isset($req['dpsXmlGZipB64']));
@@ -130,7 +130,7 @@ it('emitirDecisaoJudicial uses xmlGZipB64 payload key', function (DpsData $data)
 it('emitirDecisaoJudicial posts to decisao-judicial/nfse URL', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitirDecisaoJudicial($data);
 
     Http::assertSent(fn (Request $req) => str_contains($req->url(), 'decisao-judicial/nfse'));
@@ -140,7 +140,7 @@ it('dispatches NfseRequested and NfseEmitted on successful emitirDecisaoJudicial
     Event::fake();
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitirDecisaoJudicial($data);
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir_decisao_judicial');
@@ -151,7 +151,7 @@ it('dispatches NfseRejected on emitirDecisaoJudicial rejection', function (DpsDa
     Event::fake();
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Erro', 'codigo' => 'E001']]], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitirDecisaoJudicial($data);
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E001');
@@ -161,7 +161,7 @@ it('dispatches NfseFailed on emitirDecisaoJudicial HttpException', function (Dps
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
         $client->emitirDecisaoJudicial($data);

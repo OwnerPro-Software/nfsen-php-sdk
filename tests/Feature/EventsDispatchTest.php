@@ -14,7 +14,7 @@ use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Events\NfseSubstituted;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
@@ -27,7 +27,7 @@ it('dispatches NfseRequested and NfseEmitted on successful emitir', function (Dp
     Event::fake();
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitir($data);
 
     Event::assertDispatched(NfseRequested::class);
@@ -39,7 +39,7 @@ it('dispatches NfseCancelled on successful cancelar', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
 
     $pfx = file_get_contents(__DIR__.'/../fixtures/certs/fake-icpbr.pfx');
-    $client = NfseClient::for($pfx, 'secret', '9999999');
+    $client = NfsenClient::for($pfx, 'secret', '9999999');
     $chave = '12345678901234567890123456789012345678901234567890';
     $client->cancelar($chave, CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
@@ -54,7 +54,7 @@ it('dispatches NfseEmitted and NfseSubstituted on successful substituir', functi
 
     Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $client->substituir($chave, $data, CodigoJustificativaSubstituicao::DesenquadramentoSimplesNacional, 'Desenquadramento do Simples Nacional');
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir');
@@ -68,7 +68,7 @@ it('dispatches NfseQueried on successful consultar', function () {
     $xmlB64 = base64_encode(gzencode('<NFSe/>'));
     Http::fake(['*' => Http::response(['nfseXmlGZipB64' => $xmlB64], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->nfse(makeChaveAcesso());
 
     Event::assertDispatched(NfseQueried::class);
@@ -78,7 +78,7 @@ it('dispatches NfseRejected on emitir when response has no chaveAcesso', functio
     Event::fake();
     Http::fake(['*' => Http::response(['status' => 'ok'], 201)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitir($data);
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir');
@@ -90,7 +90,7 @@ it('dispatches NfseRejected on emitir rejection', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Erro', 'codigo' => 'E001']]], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitir($data);
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E001');
@@ -100,7 +100,7 @@ it('dispatches NfseRejected on cancelar rejection', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['erro' => ['descricao' => 'NFSe não encontrada', 'codigo' => 'E404']], 200)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'cancelar');
@@ -111,7 +111,7 @@ it('dispatches NfseRequested and NfseQueried on consultar danfse', function () {
     Event::fake();
     Http::fake(['*' => Http::response('PDF-CONTENT', 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->danfse(makeChaveAcesso());
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
@@ -122,7 +122,7 @@ it('dispatches NfseFailed on consultar HttpException', function () {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
         $client->consultar()->nfse(makeChaveAcesso());
@@ -138,7 +138,7 @@ it('dispatches NfseFailed on consultar danfse HTTP error', function () {
     Event::fake();
     Http::fake(['*' => Http::response('Not Found', 404)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->danfse(makeChaveAcesso());
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'consultar');
@@ -150,7 +150,7 @@ it('dispatches NfseRejected on consultar eventos rejection', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Eventos não encontrados', 'codigo' => 'E404']], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->eventos(makeChaveAcesso());
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
@@ -161,7 +161,7 @@ it('dispatches NfseRejected on consultar dps with singular erro field', function
     Event::fake();
     Http::fake(['*' => Http::response(['erro' => ['descricao' => 'Erro genérico', 'codigo' => 'E999']], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->consultar()->dps('DPS123');
 
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E999');
@@ -175,7 +175,7 @@ it('dispatches NfseFailed on emitir NfseException', function (DpsData $data) {
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = makeNfseClient(gzipCompressor: $compressor);
+    $client = makeNfsenClient(gzipCompressor: $compressor);
 
     try {
         $client->emitir($data);
@@ -194,7 +194,7 @@ it('dispatches NfseFailed on cancelar NfseException', function () {
     $compressor = Mockery::mock(GzipCompressor::class);
     $compressor->shouldReceive('__invoke')->andReturn(false);
 
-    $client = makeNfseClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
+    $client = makeNfsenClient(gzipCompressor: $compressor, pfxContent: makeIcpBrPfxContent());
 
     try {
         $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
@@ -210,7 +210,7 @@ it('dispatches NfseFailed on consultar NfseException', function () {
     Event::fake();
     Http::fake(['*' => Http::response(['nfseXmlGZipB64' => '!!!invalid-base64!!!'], 200)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
         $client->consultar()->nfse(makeChaveAcesso());
@@ -228,7 +228,7 @@ it('dispatches NfseFailed on consultar dps non-HTTP exception', function () {
         throw new RuntimeException('Connection reset');
     }]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
         $client->consultar()->dps('DPS123');
@@ -244,7 +244,7 @@ it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     try {
         $client->emitir($data);

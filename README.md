@@ -1,10 +1,10 @@
 # NFSe Nacional
 
-[![CI](https://github.com/OwnerPro-Software/nfsen/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OwnerPro-Software/nfsen/actions)
+[![CI](https://github.com/OwnerPro-Software/nfsen-php-sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OwnerPro-Software/nfsen-php-sdk/actions)
 [![PHPStan Level 10](https://img.shields.io/badge/PHPStan-level%2010-brightgreen.svg)](https://phpstan.org/)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
-[![PHP Version](https://img.shields.io/packagist/php-v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
-[![License](https://img.shields.io/packagist/l/ownerpro/nfsen.svg)](LICENSE)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/ownerpro/nfsen-php-sdk.svg)](https://packagist.org/packages/ownerpro/nfsen-php-sdk)
+[![PHP Version](https://img.shields.io/packagist/php-v/ownerpro/nfsen-php-sdk.svg)](https://packagist.org/packages/ownerpro/nfsen-php-sdk)
+[![License](https://img.shields.io/packagist/l/ownerpro/nfsen-php-sdk.svg)](LICENSE)
 
 Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padrão Nacional** ([nfse.gov.br](https://www.nfse.gov.br/)) via API REST. Funciona com Laravel 11/12 ou standalone (sem framework).
 
@@ -29,7 +29,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 ## Instalação
 
 ```bash
-composer require ownerpro/nfsen
+composer require ownerpro/nfsen-php-sdk
 ```
 
 ## Configuração
@@ -59,9 +59,9 @@ NFSE_SSL_VERIFY=true
 
 ```php
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 
-$client = NfseClient::forStandalone(
+$client = NfsenClient::forStandalone(
     pfxContent: file_get_contents('/caminho/certificado.pfx'),
     senha: 'senha_certificado',
     prefeitura: '3550308',

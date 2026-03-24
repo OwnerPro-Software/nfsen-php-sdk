@@ -10,7 +10,7 @@ use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 use SensitiveParameter;
 
@@ -27,11 +27,11 @@ final class Nfsen extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return NfseClient::class;
+        return NfsenClient::class;
     }
 
-    public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): NfseClient
+    public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): NfsenClient
     {
-        return NfseClient::for($pfxContent, $senha, $prefeitura, $ambiente);
+        return NfsenClient::for($pfxContent, $senha, $prefeitura, $ambiente);
     }
 }

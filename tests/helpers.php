@@ -21,7 +21,7 @@ use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
@@ -125,11 +125,11 @@ function makeValoresMinimo(?string $vServ = null): Valores
     );
 }
 
-function makeNfseClient(
+function makeNfsenClient(
     ?GzipCompressor $gzipCompressor = null,
     ?string $pfxContent = null,
     string $prefeitura = '9999999',
-): NfseClient {
+): NfsenClient {
     $pfxContent ??= makePfxContent();
     $certManager = new CertificateManager($pfxContent, 'secret');
     $ambiente = NfseAmbiente::HOMOLOGACAO;
@@ -154,7 +154,7 @@ function makeNfseClient(
 
     $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
 
-    return new NfseClient(
+    return new NfsenClient(
         emitter: $emitter,
         canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
         substitutor: new NfseSubstitutor($emitter),

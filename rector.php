@@ -31,7 +31,7 @@ return RectorConfig::configure()
     ->withSkip([
         // fromArray() methods use @phpstan-param with typed array shapes — this rule would add redundant @param array<string, mixed>
         AddParamArrayDocblockFromDimFetchAccessRector::class,
-        // Bug no Rector 2.3.8: esta regra entra em loop infinito no NfseClient.php.
+        // Bug no Rector 2.3.8: esta regra entra em loop infinito no NfsenClient.php.
         // Ela tenta inferir @param docblocks a partir de chamadas locais entre métodos,
         // mas os métodos interconectados (emitir→doEmitir→sendEvento→dispatchEvent)
         // causam re-análise cíclica infinita, travando o processo por >2 minutos.

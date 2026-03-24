@@ -5,11 +5,11 @@ use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Exceptions\HttpException;
-use OwnerPro\Nfsen\NfseClient;
+use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
-covers(NfseClient::class, NfseSubstitutor::class);
+covers(NfsenClient::class, NfseSubstitutor::class);
 
 it('substituir returns success when emission succeeds', function (DpsData $dps) {
     $chave = makeChaveAcesso();
@@ -17,7 +17,7 @@ it('substituir returns success when emission succeeds', function (DpsData $dps) 
 
     Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->substituir(
         $chave,
         $dps,
@@ -36,7 +36,7 @@ it('substituir returns success when emission succeeds', function (DpsData $dps) 
 it('substituir returns failure when emission is rejected', function (DpsData $dps) {
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'DPS inválido', 'codigo' => 'E001']]], 200)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->substituir(
         makeChaveAcesso(),
         $dps,
@@ -54,21 +54,21 @@ it('substituir accepts string codigoMotivo and coerces to enum', function (DpsDa
 
     Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->substituir($chave, $dps, '01', 'Desenquadramento');
 
     expect($response->sucesso)->toBeTrue();
 })->with('dpsData');
 
 it('substituir throws ValueError for invalid string codigoMotivo', function (DpsData $dps) {
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->substituir(makeChaveAcesso(), $dps, 'INVALID', 'Motivo'))
         ->toThrow(ValueError::class);
 })->with('dpsData');
 
 it('substituir throws InvalidArgumentException for invalid chaveAcesso', function (DpsData $dps) {
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->substituir('INVALID_CHAVE', $dps, CodigoJustificativaSubstituicao::Outros, 'Outro motivo'))
         ->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
@@ -77,7 +77,7 @@ it('substituir throws InvalidArgumentException for invalid chaveAcesso', functio
 it('substituir throws HttpException on server error during emission', function (DpsData $dps) {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->substituir(
         makeChaveAcesso(),
@@ -93,7 +93,7 @@ it('substituir accepts array DPS and converts to DpsData', function () {
 
     Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $response = $client->substituir(
         $chave,
         [
@@ -137,7 +137,7 @@ it('substituir injects subst into DPS XML payload', function (DpsData $dps) {
 
     Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $client->substituir($chave, $dps, CodigoJustificativaSubstituicao::Outros, 'Motivo para substituicao da nota fiscal');
 
     Http::assertSent(function (Request $req) use ($chave) {
@@ -157,7 +157,7 @@ it('substituir does not inject xMotivo when descricao is null', function (DpsDat
 
     Http::fake(['*' => Http::response(['chaveAcesso' => $chaveSub, 'nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], 201)]);
 
-    $client = NfseClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
     $client->substituir($chave, $dps, CodigoJustificativaSubstituicao::EnquadramentoSimplesNacional);
 
     Http::assertSent(function (Request $req) {
