@@ -39,6 +39,19 @@ jobs:
       - name: Run type coverage
         run: ./vendor/bin/pest --type-coverage --min=100
 
+      - name: Generate Clover coverage report
+        if: matrix.php == '8.4' && matrix.laravel == '12.*'
+        run: ./vendor/bin/pest --coverage --coverage-clover=coverage.xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.php == '8.4' && matrix.laravel == '12.*'
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
   quality:
     runs-on: ubuntu-latest
     name: Quality Checks

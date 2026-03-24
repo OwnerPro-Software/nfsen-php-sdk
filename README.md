@@ -1,6 +1,8 @@
 # NFSe Nacional
 
 [![CI](https://github.com/OwnerPro-Software/nfsen/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OwnerPro-Software/nfsen/actions)
+[![codecov](https://codecov.io/gh/OwnerPro-Software/nfsen/graph/badge.svg)](https://codecov.io/gh/OwnerPro-Software/nfsen)
+[![PHPStan Level 10](https://img.shields.io/badge/PHPStan-level%2010-brightgreen.svg)](https://phpstan.org/)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
 [![PHP Version](https://img.shields.io/packagist/php-v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
 [![License](https://img.shields.io/packagist/l/ownerpro/nfsen.svg)](LICENSE)
