@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen\Dps\DTO\Valores;
 
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+
 /**
  * @phpstan-import-type PiscofinsArray from Piscofins
  *
@@ -16,7 +18,11 @@ final readonly class TribFed
         public ?string $vRetCP = null,
         public ?string $vRetIRRF = null,
         public ?string $vRetCSLL = null,
-    ) {}
+    ) {
+        if (! $piscofins instanceof Piscofins && $vRetCP === null && $vRetIRRF === null && $vRetCSLL === null) {
+            throw new InvalidDpsArgument('tribFed deve conter ao menos um campo preenchido.');
+        }
+    }
 
     /** @phpstan-param TribFedArray $data */
     public static function fromArray(array $data): self

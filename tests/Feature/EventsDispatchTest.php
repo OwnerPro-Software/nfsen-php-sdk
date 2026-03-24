@@ -16,11 +16,12 @@ use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfseClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
+use OwnerPro\Nfsen\Operations\NfseConsulter;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Support\GzipCompressor;
 
-covers(NfseCanceller::class, NfseEmitter::class, NfseSubstitutor::class);
+covers(NfseCanceller::class, NfseConsulter::class, NfseEmitter::class, NfseSubstitutor::class);
 
 it('dispatches NfseRequested and NfseEmitted on successful emitir', function (DpsData $data) {
     Event::fake();

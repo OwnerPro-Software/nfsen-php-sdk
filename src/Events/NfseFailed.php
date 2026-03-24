@@ -8,6 +8,6 @@ final readonly class NfseFailed
 {
     public function __construct(
         public string $operacao,
-        public string $message,
+        public string $mensagem,
     ) {}
 }

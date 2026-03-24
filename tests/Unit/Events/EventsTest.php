@@ -37,10 +37,10 @@ it('NfseQueried carries operacao', function () {
     expect($event->operacao)->toBe('nfse');
 });
 
-it('NfseFailed carries operacao and message', function () {
+it('NfseFailed carries operacao and mensagem', function () {
     $event = new NfseFailed('emitir', 'Connection timeout');
     expect($event->operacao)->toBe('emitir');
-    expect($event->message)->toBe('Connection timeout');
+    expect($event->mensagem)->toBe('Connection timeout');
 });
 
 it('NfseRejected carries operacao and codigo', function () {

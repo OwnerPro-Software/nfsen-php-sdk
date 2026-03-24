@@ -1,11 +1,11 @@
-# Reescrita nfse-nacional — Plano de Implementação
+# Reescrita nfsen — Plano de Implementação
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 > **Parte 1 de 3** — Tasks 1–7 (Fundação): bootstrap, enums, exceptions, DTOs, certificates, prefeitura resolver, XML signer.
 
 
-**Goal:** Reescrever o pacote nfse-nacional com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
+**Goal:** Reescrever o pacote nfsen com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
 **Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `OwnerPro\Nfsen`); código legado coexiste em `src/` (namespace `Hadder\Nfsen`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
 
@@ -79,7 +79,7 @@
   "prefer-stable": true,
   "extra": {
     "laravel": {
-      "providers": ["OwnerPro\\Nfsen\\NfseNacionalServiceProvider"]
+      "providers": ["OwnerPro\\Nfsen\\NfsenServiceProvider"]
     }
   }
 }

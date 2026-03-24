@@ -20,7 +20,7 @@ it('throws CertificateExpiredException for an expired cert', function () {
     $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/expired.pfx');
 
     expect(fn () => new CertificateManager($pfxContent, 'secret'))
-        ->toThrow(CertificateExpiredException::class, 'expired');
+        ->toThrow(CertificateExpiredException::class, 'expirado');
 });
 
 it('throws CertificateException for wrong password', function () {

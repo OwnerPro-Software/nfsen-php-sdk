@@ -3,13 +3,13 @@
 namespace OwnerPro\Nfsen\Tests;
 
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use OwnerPro\Nfsen\NfseNacionalServiceProvider;
+use OwnerPro\Nfsen\NfsenServiceProvider;
 
 abstract class TestCase extends OrchestraTestCase
 {
     protected function getPackageProviders($app): array
     {
-        return [NfseNacionalServiceProvider::class];
+        return [NfsenServiceProvider::class];
     }
 
     protected function resolveApplicationConfiguration($app): void

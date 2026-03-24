@@ -178,6 +178,40 @@ it('casts integer parameter values to string in template', function () use ($jso
     expect($path)->toBe('nfse/ABC123/eventos/101101/1');
 });
 
+it('resolves default query_dps operation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+    $path = $resolver->resolveOperation('9999999', 'query_dps', ['id' => 'DPS456']);
+    expect($path)->toBe('dps/DPS456');
+});
+
+it('resolves default query_events operation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+    $path = $resolver->resolveOperation('9999999', 'query_events', [
+        'chave' => 'CHAVE1',
+        'tipoEvento' => '101101',
+        'nSequencial' => '1',
+    ]);
+    expect($path)->toBe('nfse/CHAVE1/eventos/101101/1');
+});
+
+it('resolves default query_danfse operation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+    $path = $resolver->resolveOperation('9999999', 'query_danfse', ['chave' => 'CHAVE2']);
+    expect($path)->toBe('danfse/CHAVE2');
+});
+
+it('resolves default emit_nfse operation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+    $path = $resolver->resolveOperation('9999999', 'emit_nfse');
+    expect($path)->toBe('nfse');
+});
+
+it('resolves default cancel_nfse operation', function () use ($jsonPath) {
+    $resolver = new PrefeituraResolver($jsonPath);
+    $path = $resolver->resolveOperation('9999999', 'cancel_nfse', ['chave' => 'CHAVE3']);
+    expect($path)->toBe('nfse/CHAVE3/eventos');
+});
+
 it('clearCache resets the static cache', function () use ($jsonPath) {
     // Load data into cache
     $resolver = new PrefeituraResolver($jsonPath);

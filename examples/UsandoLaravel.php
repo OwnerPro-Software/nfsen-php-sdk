@@ -16,15 +16,15 @@ declare(strict_types=1);
 //   NFSE_SIGNING_ALGORITHM=sha1
 //   NFSE_SSL_VERIFY=true
 //
-// Publicar a config: php artisan vendor:publish --tag=nfse-nacional-config
+// Publicar a config: php artisan vendor:publish --tag=nfsen-config
 // -------------------------------------------------------------------
 
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Enums\TipoEvento;
-use OwnerPro\Nfsen\Facades\NfseNacional;
+use OwnerPro\Nfsen\Facades\Nfsen;
 
 // -- Emitir NFSe ---------------------------------------------------
-$response = NfseNacional::emitir([
+$response = Nfsen::emitir([
     'infDPS' => [
         'tpAmb' => '2',
         'dhEmi' => now()->format('Y-m-d\TH:i:sP'),
@@ -72,25 +72,25 @@ $response = NfseNacional::emitir([
 ]);
 
 // -- Cancelar NFSe -------------------------------------------------
-$response = NfseNacional::cancelar(
+$response = Nfsen::cancelar(
     chave: '00000000000000000000000000000000000000000000000000',
     codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
     descricao: 'Erro na emissão',
 );
 
 // -- Consultar NFSe ------------------------------------------------
-$response = NfseNacional::consultar()->nfse('00000000000000000000000000000000000000000000000000');
+$response = Nfsen::consultar()->nfse('00000000000000000000000000000000000000000000000000');
 
 // -- Consultar DANFSE (URL do PDF) --------------------------------
-$danfse = NfseNacional::consultar()->danfse('00000000000000000000000000000000000000000000000000');
+$danfse = Nfsen::consultar()->danfse('00000000000000000000000000000000000000000000000000');
 
 // -- Consultar eventos ---------------------------------------------
-$eventos = NfseNacional::consultar()->eventos(
+$eventos = Nfsen::consultar()->eventos(
     chave: '00000000000000000000000000000000000000000000000000',
     tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
     nSequencial: 1,
 );
 
 // -- Usar certificado diferente por requisição ---------------------
-$client = NfseNacional::for($pfxContent, $senha, 'PREFEITURA');
+$client = Nfsen::for($pfxContent, $senha, 'PREFEITURA');
 $response = $client->emitir($dps);

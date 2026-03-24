@@ -1,8 +1,8 @@
-# Reescrita nfse-nacional — Plano de Implementação
+# Reescrita nfsen — Plano de Implementação
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Reescrever o pacote nfse-nacional com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
+**Goal:** Reescrever o pacote nfsen com namespace `OwnerPro\Nfsen`, integração nativa com Laravel HTTP client (mTLS via tmpfile), testes automatizados e API pública fluente.
 
 **Architecture:** Pacote Laravel com suporte standalone. `NfseClient::for()` (via container) ou `NfseClient::forStandalone()` (sem Laravel) recebem cert PFX + prefeitura e retornam instância pronta; `emitir()`, `cancelar()` e `consultar()->nfse/dps/danfse/eventos()` orquestram builders XML, assinatura, compressão e HTTP. Código novo vive em `src-new/` (namespace `OwnerPro\Nfsen`); código legado coexiste em `src/` (namespace `Hadder\Nfsen`) via dual autoload até Task 18 (limpeza: `src/` → `src-old/`, `src-new/` → `src/`).
 
@@ -38,9 +38,9 @@
 > **Executar ANTES da Task 16 (NfseClient).** O ServiceProvider precisa existir para que os feature tests usem o path via container.
 
 **Files:**
-- Create: `src-new/NfseNacionalServiceProvider.php`
+- Create: `src-new/NfsenServiceProvider.php`
 - Create: `src-new/Facades/Nfsen.php`
-- Create: `config/nfse-nacional.php`
+- Create: `config/nfsen.php`
 - Create: `tests/Feature/ServiceProviderTest.php`
 
 **Step 1: Escrever teste**
@@ -61,8 +61,8 @@ it('Nfsen facade resolves NfseClient', function () {
     expect(Nfsen::getFacadeRoot())->toBeInstanceOf(NfseClient::class);
 });
 
-it('config nfse-nacional is published', function () {
-    expect(config('nfse-nacional.ambiente'))->not->toBeNull();
+it('config nfsen is published', function () {
+    expect(config('nfsen.ambiente'))->not->toBeNull();
 });
 ```
 
@@ -75,7 +75,7 @@ Expected: FAIL
 
 **Step 3: Criar config**
 
-`config/nfse-nacional.php`:
+`config/nfsen.php`:
 ```php
 <?php
 
@@ -96,7 +96,7 @@ return [
 
 **Step 4: Expandir ServiceProvider** (substitui o stub criado na Task 12)
 
-`src-new/NfseNacionalServiceProvider.php`:
+`src-new/NfsenServiceProvider.php`:
 ```php
 <?php
 
@@ -107,14 +107,14 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Services\PrefeituraResolver;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
 
-class NfseNacionalServiceProvider extends ServiceProvider
+class NfsenServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/nfse-nacional.php', 'nfse-nacional');
+        $this->mergeConfigFrom(__DIR__ . '/../config/nfsen.php', 'nfsen');
 
         $this->app->bind(NfseClient::class, function ($app) {
-            $config   = $app['config']['nfse-nacional'];
+            $config   = $app['config']['nfsen'];
             $jsonPath = __DIR__ . '/../storage/prefeituras.json';
 
             $client = new NfseClient(
@@ -144,8 +144,8 @@ class NfseNacionalServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/nfse-nacional.php' => config_path('nfse-nacional.php'),
-            ], 'nfse-nacional-config');
+                __DIR__ . '/../config/nfsen.php' => config_path('nfsen.php'),
+            ], 'nfsen-config');
         }
     }
 }
@@ -191,7 +191,7 @@ Expected: PASS (todos os testes)
 **Step 8: Commit**
 
 ```bash
-git add src-new/NfseNacionalServiceProvider.php src-new/Facades/ config/
+git add src-new/NfsenServiceProvider.php src-new/Facades/ config/
 git commit -m "feat: add ServiceProvider, Facade e config — NfseClient ligado ao container Laravel"
 ```
 
@@ -362,7 +362,7 @@ Expected: FAIL
 
 **Step 4: Implementar NfseClient**
 
-> **Nota multi-tenant:** `NfseClient::for()` sempre sobrescreve a configuração do container com os parâmetros passados. Isso é intencional para suportar multi-tenant (cada tenant com seu cert/prefeitura). Para single-tenant usando cert/prefeitura do `config/nfse-nacional.php`, usar `app(NfseClient::class)` direto sem `for()`.
+> **Nota multi-tenant:** `NfseClient::for()` sempre sobrescreve a configuração do container com os parâmetros passados. Isso é intencional para suportar multi-tenant (cada tenant com seu cert/prefeitura). Para single-tenant usando cert/prefeitura do `config/nfsen.php`, usar `app(NfseClient::class)` direto sem `for()`.
 
 `src-new/NfseClient.php`:
 ```php
@@ -466,7 +466,7 @@ class NfseClient implements NfseClientContract
     {
         if ($this->certManager === null || $this->prefeitura === null || $this->httpClient === null) {
             throw new \OwnerPro\Nfsen\Exceptions\NfseException(
-                'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
+                'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfsen.php.'
             );
         }
     }

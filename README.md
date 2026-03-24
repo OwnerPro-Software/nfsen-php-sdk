@@ -1,6 +1,8 @@
 # NFSe Nacional
 
 [![CI](https://github.com/OwnerPro-Software/nfsen/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/OwnerPro-Software/nfsen/actions)
+[![codecov](https://codecov.io/gh/OwnerPro-Software/nfsen/graph/badge.svg)](https://codecov.io/gh/OwnerPro-Software/nfsen)
+[![PHPStan Level 10](https://img.shields.io/badge/PHPStan-level%2010-brightgreen.svg)](https://phpstan.org/)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
 [![PHP Version](https://img.shields.io/packagist/php-v/ownerpro/nfsen.svg)](https://packagist.org/packages/ownerpro/nfsen)
 [![License](https://img.shields.io/packagist/l/ownerpro/nfsen.svg)](LICENSE)
@@ -38,13 +40,13 @@ composer require ownerpro/nfsen
 Publique o arquivo de configuração:
 
 ```bash
-php artisan vendor:publish --tag=nfse-nacional-config
+php artisan vendor:publish --tag=nfsen-config
 ```
 
 Adicione as variáveis de ambiente no `.env`:
 
 ```env
-NFSE_AMBIENTE=2                   # 1 = Producao, 2 = Homologacao
+NFSE_AMBIENTE=2                   # 1 = Producao, 2 = Homologacao (aceita: 'producao', 'production', 'homologacao', 'homologation')
 NFSE_PREFEITURA=3550308           # Codigo IBGE do municipio (7 digitos)
 NFSE_CERT_PATH=/caminho/cert.pfx  # Caminho do certificado PFX/P12
 NFSE_CERT_SENHA=senha             # Senha do certificado
@@ -136,6 +138,15 @@ if ($response->sucesso) {
 }
 ```
 
+### Emitir NFSe por decisão judicial
+
+Utiliza endpoint diferente (`emit_court_order`) para notas emitidas por determinação judicial:
+
+```php
+$response = $client->emitirDecisaoJudicial($dps);
+// Mesma estrutura de DPS e mesmo NfseResponse do emitir()
+```
+
 ### Cancelar NFSe
 
 ```php
@@ -194,12 +205,14 @@ $response = $client->consultar()->danfse($chave);
 // $response->pdf contém o conteúdo binário do PDF
 file_put_contents('danfse.pdf', $response->pdf);
 
-// Consultar eventos
+// Consultar eventos (tipoEvento é obrigatório)
 $response = $client->consultar()->eventos(
     chave: $chave,
-    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador, // e101101
     nSequencial: 1,
 );
+// Tipos disponíveis: CancelamentoPorIniciativaPrestador, CancelamentoPorIniciativaFisco,
+// CancelamentoPorSubstituicao, AnulacaoCancelamento
 
 // Verificar se DPS foi processada
 $processada = $client->consultar()->verificarDps($idDps); // true ou false
@@ -208,26 +221,26 @@ $processada = $client->consultar()->verificarDps($idDps); // true ou false
 ### Laravel Facade
 
 ```php
-use OwnerPro\Nfsen\Facades\NfseNacional;
+use OwnerPro\Nfsen\Facades\Nfsen;
 
 // Emitir
-$response = NfseNacional::emitir($dps);
+$response = Nfsen::emitir($dps);
 
 // Cancelar
-$response = NfseNacional::cancelar($chave, $motivo, $descricao);
+$response = Nfsen::cancelar($chave, $motivo, $descricao);
 
 // Consultar
-$response = NfseNacional::consultar()->nfse($chave);
-$danfse   = NfseNacional::consultar()->danfse($chave);
+$response = Nfsen::consultar()->nfse($chave);
+$danfse   = Nfsen::consultar()->danfse($chave);
 
 // Usar certificado diferente por requisicao
-$client = NfseNacional::for($pfxContent, $senha, '3550308');
+$client = Nfsen::for($pfxContent, $senha, '3550308');
 $response = $client->emitir($dps);
 
 // Sobrescrever ambiente (ignorar config)
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
-$client = NfseNacional::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
+$client = Nfsen::for($pfxContent, $senha, '3550308', NfseAmbiente::PRODUCAO);
 $response = $client->emitir($dps);
 ```
 
@@ -243,10 +256,92 @@ O pacote dispara eventos Laravel que podem ser escutados na sua aplicação:
 | `NfseQueried` | `operacao` | Consulta realizada |
 | `NfseRequested` | `operacao`, `metadata` | Operação iniciada |
 | `NfseRejected` | `operacao`, `codigoErro` | Operação rejeitada pela API |
-| `NfseFailed` | `operacao`, `message` | Falha na operação |
+| `NfseFailed` | `operacao`, `mensagem` | Falha na operação |
 
 **Substituição:** como `substituir` delega ao `emitir` internamente, a sequência de eventos disparados é:
 `NfseRequested('emitir')` → `NfseEmitted` → `NfseSubstituted`
+
+## Objetos de Resposta
+
+Cada operação retorna um DTO tipado e imutável:
+
+### `NfseResponse`
+
+Retornado por `emitir()`, `emitirDecisaoJudicial()`, `cancelar()`, `substituir()`, `consultar()->nfse()` e `consultar()->dps()`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `sucesso` | `bool` | Se a operação foi aceita |
+| `chave` | `?string` | Chave de acesso da NFSe (50 dígitos) |
+| `xml` | `?string` | XML da NFSe processada |
+| `idDps` | `?string` | Identificador da DPS |
+| `alertas` | `list<ProcessingMessage>` | Alertas não-bloqueantes |
+| `erros` | `list<ProcessingMessage>` | Erros de processamento |
+| `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
+| `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
+| `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+
+### `DanfseResponse`
+
+Retornado por `consultar()->danfse()`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `sucesso` | `bool` | Se o PDF foi obtido |
+| `pdf` | `?string` | Conteúdo binário do PDF |
+| `erros` | `list<ProcessingMessage>` | Erros de processamento |
+
+### `EventsResponse`
+
+Retornado por `consultar()->eventos()`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `sucesso` | `bool` | Se a consulta teve sucesso |
+| `xml` | `?string` | XML do evento |
+| `erros` | `list<ProcessingMessage>` | Erros de processamento |
+| `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
+| `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
+| `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+
+### `ProcessingMessage`
+
+Representa uma mensagem de erro ou alerta da API:
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `mensagem` | `?string` | Mensagem principal |
+| `codigo` | `?string` | Código do erro/alerta |
+| `descricao` | `?string` | Descrição detalhada |
+| `complemento` | `?string` | Informação complementar |
+
+## Exceções
+
+| Exceção | Pai | Quando |
+|---------|-----|--------|
+| `NfseException` | `RuntimeException` | Erros gerais (XML inválido, falha de compressão, etc.) |
+| `HttpException` | `NfseException` | Erros HTTP 5xx sem corpo JSON. Acesse `getResponseBody()` para detalhes |
+| `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
+| `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS |
+
+```php
+use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
+use OwnerPro\Nfsen\Exceptions\NfseException;
+
+try {
+    $response = $client->emitir($dps);
+} catch (CertificateExpiredException $e) {
+    // Certificado expirado -- renovar
+} catch (InvalidDpsArgument $e) {
+    // Dados da DPS inválidos -- corrigir payload
+} catch (HttpException $e) {
+    // Erro HTTP -- $e->getCode() para status, $e->getResponseBody() para corpo
+} catch (NfseException $e) {
+    // Outros erros (XML, compressão, etc.)
+}
+```
 
 ## Exemplos
 

@@ -99,7 +99,7 @@ Expected: All tests pass
 it('for() ambiente override takes precedence over config', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_HOMO'], 201)]);
 
-    config()->set('nfse-nacional.ambiente', NfseAmbiente::PRODUCAO->value);
+    config()->set('nfsen.ambiente', NfseAmbiente::PRODUCAO->value);
 
     // Config says PRODUCAO, but we override to HOMOLOGACAO
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::HOMOLOGACAO);

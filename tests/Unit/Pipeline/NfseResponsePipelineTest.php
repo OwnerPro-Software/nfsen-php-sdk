@@ -242,7 +242,7 @@ it('dispatches NfseFailed when executeAndDecompress throws', function (): void {
         // expected
     }
 
-    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->message === 'Connection failed');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->mensagem === 'Connection failed');
 });
 
 it('dispatches NfseFailed when executeHead throws', function (): void {
@@ -256,7 +256,7 @@ it('dispatches NfseFailed when executeHead throws', function (): void {
         // expected
     }
 
-    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->message === 'Timeout');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->mensagem === 'Timeout');
 });
 
 // --- executeAndDownload ---
@@ -284,5 +284,5 @@ it('dispatches NfseFailed when executeAndDownload throws', function (): void {
         // expected
     }
 
-    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->message === 'Connection failed');
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->mensagem === 'Connection failed');
 });

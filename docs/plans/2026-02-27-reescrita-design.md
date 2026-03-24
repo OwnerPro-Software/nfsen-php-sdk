@@ -1,4 +1,4 @@
-# Design: Reescrita do nfse-nacional
+# Design: Reescrita do nfsen
 
 **Data**: 2026-02-27
 **Abordagem escolhida**: B — Pacote Laravel pragmático com Laravel Http client
@@ -23,7 +23,7 @@ Pacote standalone instalável via Composer, usado dentro de uma **aplicação La
 
 ```
 src/
-├── NfseNacionalServiceProvider.php
+├── NfsenServiceProvider.php
 ├── Facades/
 │   └── Nfsen.php
 ├── NfseClient.php
@@ -61,7 +61,7 @@ src/
     ├── CertificateExpiredException.php
     └── HttpException.php
 config/
-    nfse-nacional.php
+    nfsen.php
 storage/
     prefeituras.json
     schemes/
@@ -122,7 +122,7 @@ Nfsen::for($pfxContent, $senha, '3501608')->consultar()->danfse($chave);
 Nfsen::for($pfxContent, $senha, '3501608')->consultar()->eventos($chave);
 ```
 
-### Configuração estática (config/nfse-nacional.php)
+### Configuração estática (config/nfsen.php)
 
 ```php
 return [
@@ -139,13 +139,13 @@ return [
 
 ## Service Provider e Facade
 
-`NfseNacionalServiceProvider` registra `NfseClient` no container como **transient**, injetando a configuração estática (ambiente, timeout, algoritmo de assinatura):
+`NfsenServiceProvider` registra `NfseClient` no container como **transient**, injetando a configuração estática (ambiente, timeout, algoritmo de assinatura):
 
 ```php
 $this->app->bind(NfseClient::class, fn ($app) => new NfseClient(
-    NfseAmbiente::from($app['config']['nfse-nacional.ambiente']),
-    $app['config']['nfse-nacional.timeout'],
-    $app['config']['nfse-nacional.signing_algorithm'],
+    NfseAmbiente::from($app['config']['nfsen.ambiente']),
+    $app['config']['nfsen.timeout'],
+    $app['config']['nfsen.signing_algorithm'],
 ));
 ```
 

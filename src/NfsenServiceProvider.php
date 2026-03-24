@@ -9,11 +9,11 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use RuntimeException;
 
-final class NfseNacionalServiceProvider extends ServiceProvider
+final class NfsenServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/nfse-nacional.php', 'nfse-nacional');
+        $this->mergeConfigFrom(__DIR__.'/../config/nfsen.php', 'nfsen');
 
         $this->app->bind(NfseClient::class, function (): NfseClient {
             /**
@@ -30,14 +30,14 @@ final class NfseNacionalServiceProvider extends ServiceProvider
              *     ssl_verify: bool,
              * } $config
              */
-            $config = config('nfse-nacional');
+            $config = config('nfsen');
             $certPath = $config['certificado']['path'];
             $certSenha = (string) $config['certificado']['senha']; // @pest-mutate-ignore RemoveStringCast — config always returns string
             $prefeitura = (string) $config['prefeitura'];
 
             if (! $certPath || ! $certSenha || ! $prefeitura || ! is_file($certPath)) {
                 throw new NfseException(
-                    'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfse-nacional.php.'
+                    'NfseClient não configurado. Use NfseClient::for() ou configure certificado/prefeitura no config/nfsen.php.'
                 );
             }
 
@@ -64,8 +64,8 @@ final class NfseNacionalServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/nfse-nacional.php' => config_path('nfse-nacional.php'),
-            ], 'nfse-nacional-config');
+                __DIR__.'/../config/nfsen.php' => config_path('nfsen.php'),
+            ], 'nfsen-config');
         }
     }
 }

@@ -104,7 +104,7 @@ it('forStandalone creates client without Laravel container', function (DpsData $
 it('for() falls back to forStandalone when config is null', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'STANDALONE_CHAVE'], 201)]);
 
-    config()->offsetUnset('nfse-nacional');
+    config()->offsetUnset('nfsen');
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
@@ -116,7 +116,7 @@ it('for() falls back to forStandalone when config is null', function (DpsData $d
 it('for() uses config values when config is present', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'PROD_CHAVE'], 201)]);
 
-    config()->set('nfse-nacional.ambiente', NfseAmbiente::PRODUCAO->value);
+    config()->set('nfsen.ambiente', NfseAmbiente::PRODUCAO->value);
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->emitir($data);
@@ -148,8 +148,8 @@ it('forStandalone uses custom prefeiturasJsonPath', function (DpsData $data) {
     }
 })->with('dpsData');
 
-it('forStandalone uses custom schemesPath', function (DpsData $data) {
-    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', schemesPath: '/nonexistent/schemas');
+it('forStandalone uses custom schemasPath', function (DpsData $data) {
+    $client = NfseClient::forStandalone(makePfxContent(), 'secret', '9999999', schemasPath: '/nonexistent/schemas');
 
     expect(fn () => $client->emitir($data))->toThrow(NfseException::class);
 })->with('dpsData');
@@ -479,7 +479,7 @@ it('for() uses ambiente override instead of config value', function (DpsData $da
 it('for() ambiente override takes precedence over config', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_HOMO'], 201)]);
 
-    config()->set('nfse-nacional.ambiente', NfseAmbiente::PRODUCAO->value);
+    config()->set('nfsen.ambiente', NfseAmbiente::PRODUCAO->value);
 
     // Config says PRODUCAO, but we override to HOMOLOGACAO
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::HOMOLOGACAO);
@@ -491,7 +491,7 @@ it('for() ambiente override takes precedence over config', function (DpsData $da
 it('for() uses ambiente override even when config is absent', function (DpsData $data) {
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_NO_CONFIG'], 201)]);
 
-    config()->offsetUnset('nfse-nacional');
+    config()->offsetUnset('nfsen');
 
     $client = NfseClient::for(makePfxContent(), 'secret', '9999999', NfseAmbiente::PRODUCAO);
     $client->emitir($data);

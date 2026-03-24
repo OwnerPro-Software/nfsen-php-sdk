@@ -12,6 +12,7 @@ use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\NfseClient;
 use OwnerPro\Nfsen\Responses\NfseResponse;
+use SensitiveParameter;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData
@@ -22,14 +23,14 @@ use OwnerPro\Nfsen\Responses\NfseResponse;
  * @method static NfseResponse substituir(string $chave, DpsData|DpsDataArray $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null)
  * @method static ConsultsNfse consultar()
  */
-final class NfseNacional extends Facade
+final class Nfsen extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
         return NfseClient::class;
     }
 
-    public static function for(string $pfxContent, string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): NfseClient
+    public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): NfseClient
     {
         return NfseClient::for($pfxContent, $senha, $prefeitura, $ambiente);
     }

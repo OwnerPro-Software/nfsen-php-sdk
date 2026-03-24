@@ -10,13 +10,13 @@ use OwnerPro\Nfsen\Exceptions\NfseException;
 final readonly class XsdValidator
 {
     public function __construct(
-        private string $schemesPath,
+        private string $schemasPath,
         private XmlDocumentLoader $xmlDocumentLoader = new XmlDocumentLoader,
     ) {}
 
     public function validate(string $xmlFragment, string $xsdFilename): void
     {
-        $xsdPath = $this->schemesPath.'/'.$xsdFilename;
+        $xsdPath = $this->schemasPath.'/'.$xsdFilename;
         if (! file_exists($xsdPath)) {
             throw new NfseException(sprintf("Schema XSD não encontrado: '%s'.", $xsdFilename));
         }

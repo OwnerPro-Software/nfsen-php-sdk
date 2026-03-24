@@ -7,17 +7,18 @@ namespace OwnerPro\Nfsen\Adapters;
 use NFePHP\Common\Certificate;
 use OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity;
 use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
+use SensitiveParameter;
 
 final readonly class CertificateManager implements ExtractsAuthorIdentity
 {
     private Certificate $certificate;
 
-    public function __construct(string $pfxContent, string $password)
+    public function __construct(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $password)
     {
         $this->certificate = Certificate::readPfx($pfxContent, $password);
 
         if ($this->certificate->isExpired()) {
-            throw new CertificateExpiredException('Certificate is expired.');
+            throw new CertificateExpiredException('Certificado expirado.');
         }
     }
 
