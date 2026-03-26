@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Signer;
 use OwnerPro\Nfsen\Contracts\Driven\SignsXml;
+use SensitiveParameter;
 
 final class XmlSigner implements SignsXml
 {
@@ -19,7 +20,7 @@ final class XmlSigner implements SignsXml
     private array $canonical = [true, false, null, null]; // @pest-mutate-ignore
 
     public function __construct(
-        private readonly Certificate $certificate,
+        #[SensitiveParameter] private readonly Certificate $certificate,
         string $signingAlgorithm = 'sha1',
     ) {
         $this->algorithm = match ($signingAlgorithm) {

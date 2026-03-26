@@ -146,6 +146,7 @@ function makeNfsenClient(
         authorIdentity: $certManager,
         prefeitura: $prefeitura,
         httpClient: $httpClient,
+        validateIdentity: false,
     );
 
     $queryExecutor = new NfseResponsePipeline($httpClient);

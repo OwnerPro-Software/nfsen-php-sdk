@@ -53,6 +53,8 @@ final readonly class NfseEmitter implements EmitsNfse
         return $this->withFailureEvent($operacao, function () use ($data, $operacao, $operationKey, $payloadKey): NfseResponse {
             $xml = $this->dpsBuilder->buildAndValidate($data);
 
+            $this->pipeline->validateIdentityAgainst($data);
+
             /**
              * @var array{
              *     erros?: list<MessageData>,

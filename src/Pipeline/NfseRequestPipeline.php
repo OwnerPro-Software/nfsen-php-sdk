@@ -8,6 +8,7 @@ use OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity;
 use OwnerPro\Nfsen\Contracts\Driven\ResolvesPrefeituras;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
 use OwnerPro\Nfsen\Contracts\Driven\SignsXml;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\GzipCompressor;
@@ -22,6 +23,7 @@ final readonly class NfseRequestPipeline
         private ExtractsAuthorIdentity $authorIdentity,
         private string $prefeitura,
         private SendsHttpRequests $httpClient,
+        private bool $validateIdentity = true,
     ) {}
 
     /**
@@ -58,5 +60,40 @@ final readonly class NfseRequestPipeline
         }
 
         return $identity;
+    }
+
+    public function validateIdentityAgainst(DpsData $data): void
+    {
+        if (! $this->validateIdentity) {
+            return;
+        }
+
+        $identity = $this->authorIdentity->extract();
+        $certCnpj = $identity['cnpj'];
+        $certCpf = $identity['cpf'];
+        $prestCnpj = $data->prest->CNPJ;
+        $prestCpf = $data->prest->CPF;
+
+        if ($certCnpj !== null && $prestCnpj !== null && $certCnpj !== $prestCnpj) {
+            throw new NfseException(
+                sprintf(
+                    'CNPJ do certificado (%s) não corresponde ao CNPJ do prestador (%s). '
+                    .'Use validateIdentity: false se o certificado pertence a um representante legal.',
+                    $certCnpj,
+                    $prestCnpj,
+                )
+            );
+        }
+
+        if ($certCpf !== null && $prestCpf !== null && $certCpf !== $prestCpf) {
+            throw new NfseException(
+                sprintf(
+                    'CPF do certificado (%s) não corresponde ao CPF do prestador (%s). '
+                    .'Use validateIdentity: false se o certificado pertence a um representante legal.',
+                    $certCpf,
+                    $prestCpf,
+                )
+            );
+        }
     }
 }

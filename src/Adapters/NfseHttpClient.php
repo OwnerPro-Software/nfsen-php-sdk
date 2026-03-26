@@ -11,11 +11,12 @@ use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\TempFileFactory;
+use SensitiveParameter;
 
 final readonly class NfseHttpClient implements SendsHttpRequests
 {
     public function __construct(
-        private Certificate $certificate,
+        #[SensitiveParameter] private Certificate $certificate,
         private int $timeout = 30,
         private int $connectTimeout = 10,
         private bool $sslVerify = true,

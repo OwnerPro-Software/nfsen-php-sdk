@@ -22,6 +22,11 @@ final readonly class CertificateManager implements ExtractsAuthorIdentity
         }
     }
 
+    /**
+     * @internal This method is not part of the public API.
+     *           The Certificate object contains private key material.
+     *           Do not log, serialize, or cache the returned object.
+     */
     public function getCertificate(): Certificate
     {
         return $this->certificate;

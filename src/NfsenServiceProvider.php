@@ -28,6 +28,7 @@ final class NfsenServiceProvider extends ServiceProvider
              *     connect_timeout: int,
              *     signing_algorithm: string,
              *     ssl_verify: bool,
+             *     validate_identity: bool,
              * } $config
              */
             $config = config('nfsen');
@@ -56,6 +57,7 @@ final class NfsenServiceProvider extends ServiceProvider
                 signingAlgorithm: $config['signing_algorithm'],
                 sslVerify: $config['ssl_verify'],
                 connectTimeout: $config['connect_timeout'],
+                validateIdentity: $config['validate_identity'],
             );
         });
     }

@@ -13,4 +13,5 @@ return [
     'connect_timeout' => (int) env('NFSE_CONNECT_TIMEOUT', 10),
     'signing_algorithm' => env('NFSE_SIGNING_ALGORITHM', 'sha1'),
     'ssl_verify' => (bool) env('NFSE_SSL_VERIFY', true),
+    'validate_identity' => (bool) env('NFSE_VALIDATE_IDENTITY', true),
 ];

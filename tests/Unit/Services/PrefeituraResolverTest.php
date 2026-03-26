@@ -226,3 +226,51 @@ it('clearCache resets the static cache', function () use ($jsonPath) {
 
     expect($url)->toBe('https://sefin.producaorestrita.nfse.gov.br/SefinNacional');
 });
+
+it('throws InvalidArgumentException when sefin url uses http scheme', function () {
+    $tmpFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
+    file_put_contents($tmpFile, json_encode([
+        '1234567' => ['urls' => ['sefin_staging' => 'http://insecure.example.com']],
+    ]));
+
+    try {
+        $resolver = new PrefeituraResolver($tmpFile);
+        expect(fn () => $resolver->resolveSeFinUrl('1234567', NfseAmbiente::HOMOLOGACAO))
+            ->toThrow(InvalidArgumentException::class, 'HTTPS');
+    } finally {
+        unlink($tmpFile);
+        PrefeituraResolver::clearCache();
+    }
+});
+
+it('throws InvalidArgumentException when adn url uses http scheme', function () {
+    $tmpFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
+    file_put_contents($tmpFile, json_encode([
+        '1234567' => ['urls' => ['adn_production' => 'http://insecure.example.com']],
+    ]));
+
+    try {
+        $resolver = new PrefeituraResolver($tmpFile);
+        expect(fn () => $resolver->resolveAdnUrl('1234567', NfseAmbiente::PRODUCAO))
+            ->toThrow(InvalidArgumentException::class, 'HTTPS');
+    } finally {
+        unlink($tmpFile);
+        PrefeituraResolver::clearCache();
+    }
+});
+
+it('accepts https urls from custom json', function () {
+    $tmpFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
+    file_put_contents($tmpFile, json_encode([
+        '1234567' => ['urls' => ['sefin_staging' => 'https://secure.example.com']],
+    ]));
+
+    try {
+        $resolver = new PrefeituraResolver($tmpFile);
+        $url = $resolver->resolveSeFinUrl('1234567', NfseAmbiente::HOMOLOGACAO);
+        expect($url)->toBe('https://secure.example.com');
+    } finally {
+        unlink($tmpFile);
+        PrefeituraResolver::clearCache();
+    }
+});

@@ -53,7 +53,10 @@ NFSE_TIMEOUT=30
 NFSE_CONNECT_TIMEOUT=10
 NFSE_SIGNING_ALGORITHM=sha1
 NFSE_SSL_VERIFY=true
+NFSE_VALIDATE_IDENTITY=true          # Valida CNPJ/CPF do certificado contra o prestador da DPS
 ```
+
+A variavel `NFSE_VALIDATE_IDENTITY` (padrao: `true`) controla se o SDK verifica que o CNPJ ou CPF do certificado digital corresponde ao prestador informado na DPS antes de enviar a requisicao. Desative (`false`) apenas quando um representante legal (contador ou procurador com procuracao eletronica) emite notas em nome de terceiros.
 
 ### Standalone (sem Laravel)
 
@@ -66,6 +69,18 @@ $client = NfsenClient::forStandalone(
     senha: 'senha_certificado',
     prefeitura: '3550308',
     ambiente: NfseAmbiente::HOMOLOGACAO,
+);
+```
+
+Para desabilitar a validacao de identidade (representante legal / contador):
+
+```php
+$client = NfsenClient::forStandalone(
+    pfxContent: file_get_contents('/caminho/certificado.pfx'),
+    senha: 'senha_certificado',
+    prefeitura: '3550308',
+    ambiente: NfseAmbiente::HOMOLOGACAO,
+    validateIdentity: false,
 );
 ```
 

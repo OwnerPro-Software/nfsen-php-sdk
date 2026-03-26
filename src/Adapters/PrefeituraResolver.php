@@ -77,16 +77,22 @@ final class PrefeituraResolver implements ResolvesPrefeituras
     {
         $this->validateIbge($codigoIbge);
         $key = $ambiente === NfseAmbiente::PRODUCAO ? 'sefin_production' : 'sefin_staging';
+        $url = $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
 
-        return $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
+        $this->validateHttps($url);
+
+        return $url;
     }
 
     public function resolveAdnUrl(string $codigoIbge, NfseAmbiente $ambiente): string
     {
         $this->validateIbge($codigoIbge);
         $key = $ambiente === NfseAmbiente::PRODUCAO ? 'adn_production' : 'adn_staging';
+        $url = $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
 
-        return $this->data[$codigoIbge]['urls'][$key] ?? self::DEFAULT_URLS[$key];
+        $this->validateHttps($url);
+
+        return $url;
     }
 
     /** @param array<string, int|string> $params */
@@ -112,6 +118,13 @@ final class PrefeituraResolver implements ResolvesPrefeituras
     {
         if (! preg_match('/^\d{7}$/', $code)) {
             throw new InvalidArgumentException(sprintf("Código IBGE inválido: '%s'. Esperado: 7 dígitos numéricos.", $code));
+        }
+    }
+
+    private function validateHttps(string $url): void
+    {
+        if (! str_starts_with($url, 'https://')) {
+            throw new InvalidArgumentException(sprintf("URL deve usar HTTPS: '%s'.", $url));
         }
     }
 }

@@ -4,6 +4,11 @@ use OwnerPro\Nfsen\Contracts\Driven\ExtractsAuthorIdentity;
 use OwnerPro\Nfsen\Contracts\Driven\ResolvesPrefeituras;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
 use OwnerPro\Nfsen\Contracts\Driven\SignsXml;
+use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
+use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
+use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
@@ -23,6 +28,7 @@ function buildRequestPipeline(
     string $signResult = '<Signed/>',
     array $postResult = ['status' => 'ok'],
     ?array $identity = null,
+    bool $validateIdentity = true,
 ): object {
     $ctx = new stdClass;
     $ctx->postedUrl = null;
@@ -109,6 +115,7 @@ function buildRequestPipeline(
         authorIdentity: $authorIdentity,
         prefeitura: '9999999',
         httpClient: $httpClient,
+        validateIdentity: $validateIdentity,
     );
 
     return $ctx;
@@ -212,3 +219,166 @@ it('throws when both cnpj and cpf are null', function (): void {
 
     $ctx->pipeline->extractAuthorIdentity('cancelar');
 })->throws(NfseException::class, 'cancelar');
+
+// --- validateIdentityAgainst ---
+
+it('passes when certificate cnpj matches prestador cnpj', function (): void {
+    $ctx = buildRequestPipeline(identity: ['cnpj' => '12345678000195', 'cpf' => null]);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $ctx->pipeline->validateIdentityAgainst($data);
+
+    expect(true)->toBeTrue();
+});
+
+it('throws when certificate cnpj does not match prestador cnpj', function (): void {
+    $ctx = buildRequestPipeline(identity: ['cnpj' => '11111111000188', 'cpf' => null]);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '99999999000199'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $ctx->pipeline->validateIdentityAgainst($data);
+})->throws(NfseException::class, 'CNPJ do certificado (11111111000188) não corresponde ao CNPJ do prestador (99999999000199). Use validateIdentity: false');
+
+it('skips validation when validateIdentity is false', function (): void {
+    $ctx = buildRequestPipeline(
+        identity: ['cnpj' => '11111111000188', 'cpf' => null],
+        validateIdentity: false,
+    );
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '99999999000199'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $ctx->pipeline->validateIdentityAgainst($data);
+
+    expect(true)->toBeTrue();
+});
+
+it('passes when certificate has cnpj but prestador uses cpf only', function (): void {
+    $ctx = buildRequestPipeline(identity: ['cnpj' => '12345678000195', 'cpf' => null]);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: new Prest(
+            CPF: '12345678901',
+            regTrib: new RegTrib(
+                opSimpNac: OpSimpNac::NaoOptante,
+                regEspTrib: RegEspTrib::Nenhum,
+            ),
+        ),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $ctx->pipeline->validateIdentityAgainst($data);
+
+    expect(true)->toBeTrue();
+});
+
+it('throws when certificate cpf does not match prestador cpf', function (): void {
+    $ctx = buildRequestPipeline(identity: ['cnpj' => null, 'cpf' => '11111111111']);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: new Prest(
+            CPF: '99999999999',
+            regTrib: new RegTrib(
+                opSimpNac: OpSimpNac::NaoOptante,
+                regEspTrib: RegEspTrib::Nenhum,
+            ),
+        ),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $ctx->pipeline->validateIdentityAgainst($data);
+})->throws(NfseException::class, 'CPF do certificado (11111111111) não corresponde ao CPF do prestador (99999999999). Use validateIdentity: false');
+
+it('validates identity by default when validateIdentity is not specified', function (): void {
+    $authorIdentity = new class implements ExtractsAuthorIdentity
+    {
+        /** @return array{cnpj: ?string, cpf: ?string} */
+        public function extract(): array
+        {
+            return ['cnpj' => '11111111000188', 'cpf' => null];
+        }
+    };
+
+    $pipeline = new NfseRequestPipeline(
+        ambiente: NfseAmbiente::HOMOLOGACAO,
+        prefeituraResolver: new class implements ResolvesPrefeituras
+        {
+            public function resolveSeFinUrl(string $codigoIbge, NfseAmbiente $ambiente): string
+            {
+                return '';
+            }
+
+            public function resolveAdnUrl(string $codigoIbge, NfseAmbiente $ambiente): string
+            {
+                return '';
+            }
+
+            /** @param array<string, int|string> $params */
+            public function resolveOperation(string $codigoIbge, string $operacao, array $params = []): string
+            {
+                return '';
+            }
+        },
+        gzipCompressor: new GzipCompressor,
+        signer: new class implements SignsXml
+        {
+            public function sign(string $xml, string $tagname, string $rootname): string
+            {
+                return '';
+            }
+        },
+        authorIdentity: $authorIdentity,
+        prefeitura: '9999999',
+        httpClient: new class implements SendsHttpRequests
+        {
+            /** @param array<string, string> $payload */
+            public function post(string $url, array $payload): array
+            {
+                return [];
+            }
+
+            public function get(string $url): array
+            {
+                return [];
+            }
+
+            public function getBytes(string $url): string
+            {
+                return '';
+            }
+
+            public function head(string $url): int
+            {
+                return 200;
+            }
+        },
+    );
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '99999999000199'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $pipeline->validateIdentityAgainst($data);
+})->throws(NfseException::class, 'CNPJ do certificado');

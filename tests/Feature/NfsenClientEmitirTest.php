@@ -498,3 +498,39 @@ it('for() uses ambiente override even when config is absent', function (DpsData 
 
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.nfse.gov.br/SefinNacional/nfse');
 })->with('dpsData');
+
+it('emitir throws when certificate cnpj does not match prestador cnpj', function (): void {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'SHOULD_NOT_REACH'], 201)]);
+
+    $client = NfsenClient::forStandalone(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '99999999000199'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    expect(fn () => $client->emitir($data))
+        ->toThrow(NfseException::class, 'CNPJ do certificado');
+
+    Http::assertNothingSent();
+});
+
+it('emitir skips identity validation when validateIdentity is false', function (): void {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_SKIP_VALID'], 201)]);
+
+    $client = NfsenClient::forStandalone(makeIcpBrPfxContent(), 'secret', '9999999', validateIdentity: false);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '99999999000199'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue();
+    expect($response->chave)->toBe('CHAVE_SKIP_VALID');
+});

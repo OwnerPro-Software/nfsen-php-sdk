@@ -45,7 +45,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
     public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): self
     {
         if (function_exists('config') && config('nfsen') !== null) {
-            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool} $config */
+            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool} $config */
             $config = config('nfsen');
 
             return self::forStandalone(
@@ -57,6 +57,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
                 signingAlgorithm: $config['signing_algorithm'],
                 sslVerify: $config['ssl_verify'],
                 connectTimeout: $config['connect_timeout'],
+                validateIdentity: $config['validate_identity'],
             );
         }
 
@@ -74,6 +75,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
         ?string $prefeiturasJsonPath = null,
         ?string $schemasPath = null,
         int $connectTimeout = 10,
+        bool $validateIdentity = true,
     ): self {
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
         $schemasPath ??= __DIR__.'/../storage/schemes';
@@ -94,6 +96,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
             authorIdentity: $certManager,
             prefeitura: $prefeitura,
             httpClient: $httpClient,
+            validateIdentity: $validateIdentity,
         );
 
         $queryExecutor = new NfseResponsePipeline($httpClient);
