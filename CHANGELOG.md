@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Suporte a Laravel 13 (`illuminate/http`, `illuminate/support`, `illuminate/contracts` `^13.0`)
 - Suporte a `orchestra/testbench` `^11.0` (testbench v11 = Laravel 13)
+- CI com matrix PHP 8.2/8.3/8.4 × Laravel 11/12/13
 
 ## [1.0.1] - 2026-03-26
 
