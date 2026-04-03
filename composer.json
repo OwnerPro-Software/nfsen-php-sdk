@@ -21,9 +21,9 @@
   "require": {
     "php": "^8.2",
     "nfephp-org/sped-common": "^5.1",
-    "illuminate/http": "^11.0|^12.0",
-    "illuminate/support": "^11.0|^12.0",
-    "illuminate/contracts": "^11.0|^12.0",
+    "illuminate/http": "^11.0|^12.0|^13.0",
+    "illuminate/support": "^11.0|^12.0|^13.0",
+    "illuminate/contracts": "^11.0|^12.0|^13.0",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-zlib": "*",
@@ -34,7 +34,7 @@
   "require-dev": {
     "pestphp/pest": "^3.0",
     "pestphp/pest-plugin-laravel": "^3.0",
-    "orchestra/testbench": "^9.0|^10.0",
+    "orchestra/testbench": "^9.0|^10.0|^11.0",
     "pestphp/pest-plugin-type-coverage": "^3.6",
     "rector/rector": "^2.3",
     "driftingly/rector-laravel": "^2.1",

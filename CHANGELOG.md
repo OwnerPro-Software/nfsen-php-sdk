@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-04-03
+
+### Added
+- Suporte a Laravel 13 (`illuminate/http`, `illuminate/support`, `illuminate/contracts` `^13.0`)
+- Suporte a `orchestra/testbench` `^11.0` (testbench v11 = Laravel 13)
+
+## [1.0.1] - 2026-03-26
+
+### Security
+- Validação HTTPS obrigatória nas URLs de prefeitura em ambiente de produção
+- Cross-check de identidade: CNPJ do certificado digital é verificado contra o CNPJ do prestador na DPS antes do envio
+- Remoção de exposição de chave privada em mensagens de erro do `CertificateManager`
+
 ## [1.0.0] - 2026-03-24
 
 Primeira versão estável sob o namespace `OwnerPro\Nfsen` e pacote `ownerpro/nfsen-php-sdk`.
