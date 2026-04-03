@@ -22,9 +22,9 @@ final readonly class DpsBuilder
 {
     use CreatesTextElements;
 
-    private const VERSION = '1.01';
+    private const string VERSION = '1.01';
 
-    private const XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
+    private const string XMLNS = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function __construct(
         private XsdValidator $xsdValidator,

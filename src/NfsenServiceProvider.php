@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen;
 
 use Illuminate\Support\ServiceProvider;
+use Override;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use RuntimeException;
 
 final class NfsenServiceProvider extends ServiceProvider
 {
+    #[Override]
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/nfsen.php', 'nfsen');

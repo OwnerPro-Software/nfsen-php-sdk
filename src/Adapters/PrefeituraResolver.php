@@ -21,14 +21,14 @@ final class PrefeituraResolver implements ResolvesPrefeituras
      */
     private static array $cache = [];
 
-    private const DEFAULT_URLS = [
+    private const array DEFAULT_URLS = [
         'sefin_staging' => 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional',
         'sefin_production' => 'https://sefin.nfse.gov.br/SefinNacional',
         'adn_staging' => 'https://adn.producaorestrita.nfse.gov.br',
         'adn_production' => 'https://adn.nfse.gov.br',
     ];
 
-    private const DEFAULT_OPERATIONS = [
+    private const array DEFAULT_OPERATIONS = [
         'query_nfse' => 'nfse/{chave}',
         'query_dps' => 'dps/{id}',
         'verify_dps' => 'dps/{id}',

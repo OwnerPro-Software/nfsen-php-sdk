@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclarationDocblocks\Rector\Class_\ClassMethodArrayDocblockParamFromLocalCallsRector;
 use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddParamArrayDocblockFromDimFetchAccessRector;
-use RectorLaravel\Rector\MethodCall\ContainerBindConcreteWithClosureOnlyRector;
 use RectorLaravel\Set\LaravelSetProvider;
 
 return RectorConfig::configure()
@@ -26,7 +25,7 @@ return RectorConfig::configure()
         earlyReturn: true,
         rectorPreset: true,
     )
-    ->withPhpSets(php82: true)
+    ->withPhpSets(php83: true)
     ->withImportNames(removeUnusedImports: true)
     ->withSkip([
         // fromArray() methods use @phpstan-param with typed array shapes — this rule would add redundant @param array<string, mixed>
@@ -36,6 +35,4 @@ return RectorConfig::configure()
         // mas os métodos interconectados (emitir→doEmitir→sendEvento→dispatchEvent)
         // causam re-análise cíclica infinita, travando o processo por >2 minutos.
         ClassMethodArrayDocblockParamFromLocalCallsRector::class,
-        // Falso positivo: remove o primeiro argumento (concrete class) do bind(), quebrando o container.
-        ContainerBindConcreteWithClosureOnlyRector::class,
     ]);

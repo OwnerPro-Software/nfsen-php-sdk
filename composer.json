@@ -19,7 +19,7 @@
     "source": "https://github.com/OwnerPro-Software/nfsen-php-sdk"
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.3",
     "nfephp-org/sped-common": "^5.1",
     "illuminate/http": "^11.0|^12.0|^13.0",
     "illuminate/support": "^11.0|^12.0|^13.0",
@@ -32,10 +32,10 @@
     "ext-libxml": "*"
   },
   "require-dev": {
-    "pestphp/pest": "^3.0",
-    "pestphp/pest-plugin-laravel": "^3.0",
+    "pestphp/pest": "^4.0",
+    "pestphp/pest-plugin-laravel": "^4.1",
     "orchestra/testbench": "^9.0|^10.0|^11.0",
-    "pestphp/pest-plugin-type-coverage": "^3.6",
+    "pestphp/pest-plugin-type-coverage": "^4.0",
     "rector/rector": "^2.3",
     "driftingly/rector-laravel": "^2.1",
     "larastan/larastan": "^3.9",

@@ -2,12 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.0] - 2026-04-03
+## [2.0.0] - 2026-04-03
 
 ### Added
 - Suporte a Laravel 13 (`illuminate/http`, `illuminate/support`, `illuminate/contracts` `^13.0`)
 - Suporte a `orchestra/testbench` `^11.0` (testbench v11 = Laravel 13)
-- CI com matrix PHP 8.2/8.3/8.4 × Laravel 11/12/13
+- Typed constants (`const array`, `const string`) via PHP 8.3
+- Atributo `#[Override]` em métodos sobrescritos
+- CI com matrix PHP 8.3/8.4 × Laravel 11/12/13
+
+### Changed
+- Requisito mínimo de PHP alterado de **8.2** para **8.3**
+- Pest 3 → Pest 4, pest-plugin-laravel 3 → 4.1, pest-plugin-type-coverage 3 → 4
+
+### Breaking Changes
+- **PHP 8.2 não é mais suportado** — requisito mínimo agora é PHP 8.3
 
 ## [1.0.1] - 2026-03-26
 
