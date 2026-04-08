@@ -171,5 +171,23 @@ it('returns rejection response when StatusProcessamento key is missing', functio
         ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
         ->lote->toBeEmpty()
         ->erros->toHaveCount(1);
-    expect($response->erros[0]->codigo)->toBe('INVALID_RESPONSE');
+    expect($response->erros[0])
+        ->codigo->toBe('INVALID_RESPONSE')
+        ->descricao->toBe('Campo StatusProcessamento ausente ou inválido. Keys: []')
+        ->complemento->toBe('[]');
+});
+
+it('includes raw API response when StatusProcessamento is invalid', function () {
+    $result = ['descrição' => 'caminho/para/recurso', 'StatusProcessamento' => 'UNKNOWN_VALUE'];
+
+    $response = DistribuicaoResponse::fromApiResult($result);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])
+        ->codigo->toBe('INVALID_RESPONSE')
+        ->descricao->toBe('Campo StatusProcessamento ausente ou inválido. Keys: [descrição, StatusProcessamento]')
+        ->complemento->toBe('{"descrição":"caminho/para/recurso","StatusProcessamento":"UNKNOWN_VALUE"}');
 });

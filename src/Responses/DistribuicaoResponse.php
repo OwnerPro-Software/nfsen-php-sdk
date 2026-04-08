@@ -32,6 +32,9 @@ final readonly class DistribuicaoResponse
         $status = StatusDistribuicao::tryFrom($statusRaw);
 
         if ($status === null) {
+            $rawKeys = implode(', ', array_keys($result));
+            $rawJson = json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
             return new self(
                 sucesso: false,
                 statusProcessamento: StatusDistribuicao::Rejeicao,
@@ -40,7 +43,8 @@ final readonly class DistribuicaoResponse
                 erros: [new ProcessingMessage(
                     mensagem: 'Resposta inválida da API',
                     codigo: 'INVALID_RESPONSE',
-                    descricao: 'Campo StatusProcessamento ausente ou inválido.',
+                    descricao: sprintf('Campo StatusProcessamento ausente ou inválido. Keys: [%s]', $rawKeys),
+                    complemento: $rawJson !== false ? $rawJson : null, // @pest-mutate-ignore FalseToTrue — json_encode on a plain array never returns false
                 )],
                 tipoAmbiente: null,
                 versaoAplicativo: null,
