@@ -162,3 +162,43 @@ it('fromApiResult normalizes capitalized keys in erros list', function () {
     expect($list[0]->codigo)->toBe('E0037');
     expect($list[0]->descricao)->toBe('Município inexistente');
 });
+
+it('constructs with parametros', function () {
+    $msg = new ProcessingMessage(
+        mensagem: 'Msg',
+        codigo: 'E001',
+        parametros: ['param1', 'param2'],
+    );
+
+    expect($msg->parametros)->toBe(['param1', 'param2']);
+});
+
+it('defaults parametros to empty array', function () {
+    $msg = new ProcessingMessage;
+
+    expect($msg->parametros)->toBe([]);
+});
+
+it('creates from array with Parametros key', function () {
+    $msg = ProcessingMessage::fromArray([
+        'Codigo' => 'E001',
+        'Parametros' => ['param1', 'param2'],
+    ]);
+
+    expect($msg->parametros)->toBe(['param1', 'param2']);
+    expect($msg->codigo)->toBe('E001');
+});
+
+it('creates from array with lowercase parametros key', function () {
+    $msg = ProcessingMessage::fromArray([
+        'parametros' => ['p1'],
+    ]);
+
+    expect($msg->parametros)->toBe(['p1']);
+});
+
+it('defaults parametros to empty array when key absent in fromArray', function () {
+    $msg = ProcessingMessage::fromArray(['codigo' => 'E001']);
+
+    expect($msg->parametros)->toBe([]);
+});

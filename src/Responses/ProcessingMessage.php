@@ -10,6 +10,7 @@ namespace OwnerPro\Nfsen\Responses;
  *     codigo?: string, Codigo?: string,
  *     descricao?: string, Descricao?: string,
  *     complemento?: string, Complemento?: string,
+ *     parametros?: list<string>, Parametros?: list<string>,
  * }
  */
 final readonly class ProcessingMessage
@@ -19,6 +20,8 @@ final readonly class ProcessingMessage
         public ?string $codigo = null,
         public ?string $descricao = null,
         public ?string $complemento = null,
+        /** @var list<string> */
+        public array $parametros = [],
     ) {}
 
     /** @phpstan-param MessageData $data */
@@ -29,6 +32,7 @@ final readonly class ProcessingMessage
             codigo: $data['codigo'] ?? $data['Codigo'] ?? null,
             descricao: $data['descricao'] ?? $data['Descricao'] ?? null,
             complemento: $data['complemento'] ?? $data['Complemento'] ?? null,
+            parametros: $data['parametros'] ?? $data['Parametros'] ?? [],
         );
     }
 

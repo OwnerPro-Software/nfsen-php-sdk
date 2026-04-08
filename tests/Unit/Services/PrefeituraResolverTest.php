@@ -274,3 +274,20 @@ it('accepts https urls from custom json', function () {
         PrefeituraResolver::clearCache();
     }
 });
+
+it('resolves distribute_documents operation', function () {
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+
+    $path = $resolver->resolveOperation('9999999', 'distribute_documents', ['NSU' => 42]);
+
+    expect($path)->toBe('contribuintes/DFe/42');
+});
+
+it('resolves distribute_events operation', function () {
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $chave = makeChaveAcesso();
+
+    $path = $resolver->resolveOperation('9999999', 'distribute_events', ['ChaveAcesso' => $chave]);
+
+    expect($path)->toBe('contribuintes/NFSe/'.$chave.'/Eventos');
+});

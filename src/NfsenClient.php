@@ -10,7 +10,9 @@ use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 use OwnerPro\Nfsen\Adapters\XmlSigner;
 use OwnerPro\Nfsen\Contracts\Driving\CancelsNfse;
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\DistributesNfse;
 use OwnerPro\Nfsen\Contracts\Driving\EmitsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\QueriesDistribuicao;
 use OwnerPro\Nfsen\Contracts\Driving\QueriesNfse;
 use OwnerPro\Nfsen\Contracts\Driving\SubstitutesNfse;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
@@ -19,6 +21,7 @@ use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Operations\NfseDistributor;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
@@ -33,13 +36,14 @@ use SensitiveParameter;
 /**
  * @phpstan-import-type DpsDataArray from DpsData
  */
-final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse, SubstitutesNfse
+final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistribuicao, QueriesNfse, SubstitutesNfse
 {
     public function __construct(
         private EmitsNfse $emitter,
         private CancelsNfse $canceller,
         private SubstitutesNfse $substitutor,
         private ConsultsNfse $consulter,
+        private DistributesNfse $distributor,
     ) {}
 
     public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): self
@@ -102,6 +106,8 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
         $queryExecutor = new NfseResponsePipeline($httpClient);
         $seFinUrl = $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
         $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
+        $identity = $certManager->extract();
+        $cnpjAutor = $identity['cnpj'] ?? ''; // @pest-mutate-ignore CoalesceRemoveLeft,EmptyStringToNotEmpty — cnpj may be null for CPF-only certs
 
         $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
 
@@ -110,6 +116,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
             canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
             substitutor: new NfseSubstitutor($emitter),
             consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
+            distributor: new NfseDistributor($httpClient, $prefeituraResolver, $prefeitura, $adnUrl, $cnpjAutor),
         );
     }
 
@@ -139,5 +146,10 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
     public function consultar(): ConsultsNfse
     {
         return $this->consulter;
+    }
+
+    public function distribuicao(): DistributesNfse
+    {
+        return $this->distributor;
     }
 }

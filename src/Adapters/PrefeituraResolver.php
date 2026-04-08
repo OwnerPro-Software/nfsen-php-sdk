@@ -37,6 +37,8 @@ final class PrefeituraResolver implements ResolvesPrefeituras
         'emit_nfse' => 'nfse',
         'emit_court_order' => 'decisao-judicial/nfse',
         'cancel_nfse' => 'nfse/{chave}/eventos',
+        'distribute_documents' => 'contribuintes/DFe/{NSU}',
+        'distribute_events' => 'contribuintes/NFSe/{ChaveAcesso}/Eventos',
     ];
 
     /** @var array<string, array{urls?: array<string, string>, operations?: array<string, string>}> */

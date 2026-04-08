@@ -24,6 +24,7 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Operations\NfseDistributor;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
@@ -160,5 +161,6 @@ function makeNfsenClient(
         canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
         substitutor: new NfseSubstitutor($emitter),
         consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
+        distributor: new NfseDistributor($httpClient, $prefeituraResolver, $prefeitura, $adnUrl, $certManager->extract()['cnpj'] ?? ''),
     );
 }

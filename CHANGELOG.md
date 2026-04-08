@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Distribuição de documentos fiscais via ADN Contribuinte (`$client->distribuicao()`)
+  - `documentos(int $nsu)` — consulta em lote por NSU
+  - `documento(int $nsu)` — consulta unitária por NSU
+  - `eventos(string $chave)` — consulta todos os eventos de uma NFS-e
+- Novos DTOs: `DistribuicaoResponse`, `DocumentoFiscal`
+- Novos enums: `StatusDistribuicao`, `TipoDocumentoFiscal`, `TipoEventoDistribuicao`
+- Campo `parametros` adicionado ao `ProcessingMessage`
+
 ## [2.0.0] - 2026-04-03
 
 ### Added
