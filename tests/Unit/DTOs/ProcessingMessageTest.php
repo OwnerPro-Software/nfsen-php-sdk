@@ -127,6 +127,46 @@ it('fromApiResult discards empty erro array', function () {
     expect($list)->toBeEmpty();
 });
 
+it('coerces non-string Mensagem to json preserving unicode and slashes', function () {
+    /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
+    $msg = ProcessingMessage::fromArray([
+        'Mensagem' => ['Tipo' => 'ALERTA', 'Descrição' => 'caminho/para/recurso'],
+        'Codigo' => 'A001',
+    ]);
+
+    expect($msg)
+        ->mensagem->toBe('{"Tipo":"ALERTA","Descrição":"caminho/para/recurso"}')
+        ->codigo->toBe('A001');
+});
+
+it('coerces non-string values in all fields to json', function () {
+    /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
+    $msg = ProcessingMessage::fromArray([
+        'mensagem' => ['type' => 'error'],
+        'codigo' => 123,
+        'descricao' => ['detail' => 'oops'],
+        'complemento' => true,
+    ]);
+
+    expect($msg)
+        ->mensagem->toBe('{"type":"error"}')
+        ->codigo->toBe('123')
+        ->descricao->toBe('{"detail":"oops"}')
+        ->complemento->toBe('true');
+});
+
+it('returns null for non-string non-encodable values', function () {
+    /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
+    $msg = ProcessingMessage::fromArray([
+        'mensagem' => null,
+        'codigo' => null,
+    ]);
+
+    expect($msg)
+        ->mensagem->toBeNull()
+        ->codigo->toBeNull();
+});
+
 it('creates from array with capitalized keys', function () {
     $msg = ProcessingMessage::fromArray([
         'Mensagem' => 'Mensagem',

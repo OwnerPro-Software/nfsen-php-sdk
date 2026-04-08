@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.1] - 2026-04-08
+
+### Fixed
+- `ProcessingMessage::fromArray()` agora converte valores não-string (arrays/objetos retornados pela API) para JSON em vez de falhar com type error. Corrige crash quando campo `Mensagem` vem como objeto Enum do Swagger do ADN.
+
 ## [2.2.0] - 2026-04-08
 
 ### Added
@@ -15,6 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - Respostas HTTP 4xx com body vazio (ex: 429 rate limiting), redirects (3xx) e respostas 2xx com corpo vazio agora são diagnosticáveis — o `DistribuicaoResponse` inclui o status code no `codigo` do erro e o body raw no `complemento`.
+- `ProcessingMessage::fromArray()` agora converte valores não-string (arrays/objetos retornados pela API) para JSON em vez de falhar com type error. Corrige crash quando campo `Mensagem` vem como objeto Enum do Swagger do ADN.
 
 ## [2.1.1] - 2026-04-08
 
