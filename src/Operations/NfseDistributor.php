@@ -5,20 +5,17 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Operations;
 
 use OwnerPro\Nfsen\Contracts\Driven\ResolvesOperations;
-use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Driven\SendsRawHttpRequests;
 use OwnerPro\Nfsen\Contracts\Driving\DistributesNfse;
-use OwnerPro\Nfsen\Enums\StatusDistribuicao;
-use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Pipeline\Concerns\ValidatesChaveAcesso;
 use OwnerPro\Nfsen\Responses\DistribuicaoResponse;
-use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
 final readonly class NfseDistributor implements DistributesNfse
 {
     use ValidatesChaveAcesso;
 
     public function __construct(
-        private SendsHttpRequests $httpClient,
+        private SendsRawHttpRequests $httpClient,
         private ResolvesOperations $resolver,
         private string $codigoIbge,
         private string $adnBaseUrl,
@@ -58,41 +55,9 @@ final readonly class NfseDistributor implements DistributesNfse
 
     private function executeRequest(string $url): DistribuicaoResponse
     {
-        try {
-            /** @var array<string, mixed> $result */
-            $result = $this->httpClient->get($url);
+        $httpResponse = $this->httpClient->getResponse($url);
 
-            return DistribuicaoResponse::fromApiResult($result);
-        } catch (HttpException $httpException) {
-            return $this->handleHttpError($httpException);
-        }
-    }
-
-    private function handleHttpError(HttpException $e): DistribuicaoResponse
-    {
-        $body = $e->getResponseBody();
-
-        /** @var array<string, mixed>|null $decoded */
-        $decoded = json_decode($body, true);
-
-        if (is_array($decoded) && isset($decoded['StatusProcessamento'])) {
-            return DistribuicaoResponse::fromApiResult($decoded);
-        }
-
-        return new DistribuicaoResponse(
-            sucesso: false,
-            statusProcessamento: StatusDistribuicao::Rejeicao,
-            lote: [],
-            alertas: [],
-            erros: [new ProcessingMessage(
-                mensagem: 'HTTP error: '.$e->getCode(),
-                codigo: (string) $e->getCode(),
-                descricao: $e->getResponseBody(),
-            )],
-            tipoAmbiente: null,
-            versaoAplicativo: null,
-            dataHoraProcessamento: null,
-        );
+        return DistribuicaoResponse::fromHttpResponse($httpResponse);
     }
 
     private function buildUrl(string $baseUrl, string $path): string

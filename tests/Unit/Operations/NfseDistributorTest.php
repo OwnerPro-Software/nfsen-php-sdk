@@ -1,15 +1,15 @@
 <?php
 
 use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
-use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Driven\SendsRawHttpRequests;
 use OwnerPro\Nfsen\Enums\StatusDistribuicao;
 use OwnerPro\Nfsen\Enums\TipoDocumentoFiscal;
-use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Operations\NfseDistributor;
+use OwnerPro\Nfsen\Responses\HttpResponse;
 
 covers(NfseDistributor::class);
 
-function makeFakeDistribuicaoResponse(string $status = 'DOCUMENTOS_LOCALIZADOS', ?array $lote = null): array
+function makeFakeDistribuicaoJson(string $status = 'DOCUMENTOS_LOCALIZADOS', ?array $lote = null): array
 {
     $xml = '<NFSe/>';
     $gzipB64 = base64_encode((string) gzencode($xml));
@@ -27,49 +27,45 @@ function makeFakeDistribuicaoResponse(string $status = 'DOCUMENTOS_LOCALIZADOS',
     ];
 }
 
-function makeFakeHttpClient(array $response): SendsHttpRequests
+function makeFakeRawHttpClient(int $statusCode, array $json, ?string $body = null): SendsRawHttpRequests
 {
-    return new class($response) implements SendsHttpRequests
+    return new class($statusCode, $json, $body) implements SendsRawHttpRequests
     {
         /** @var list<string> */
         public array $urls = [];
 
-        public function __construct(private readonly array $response) {}
+        public function __construct(
+            private readonly int $statusCode,
+            private readonly array $json,
+            private readonly ?string $body,
+        ) {}
 
-        public function post(string $url, array $payload): array
-        {
-            return [];
-        }
-
-        public function get(string $url): array
+        public function getResponse(string $url): HttpResponse
         {
             $this->urls[] = $url;
 
-            return $this->response;
-        }
-
-        public function getBytes(string $url): string
-        {
-            return '';
-        }
-
-        public function head(string $url): int
-        {
-            return 200;
+            return new HttpResponse(
+                $this->statusCode,
+                $this->json,
+                $this->body ?? json_encode($this->json, JSON_THROW_ON_ERROR),
+            );
         }
     };
 }
 
-function makeNfseDistributor(SendsHttpRequests $httpClient): NfseDistributor
+function makeDistributor(SendsRawHttpRequests $httpClient): NfseDistributor
 {
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
 
     return new NfseDistributor($httpClient, $resolver, '9999999', 'https://adn.base', '12345678000195');
 }
 
+// --- URL construction tests ---
+
 it('documentos sends GET with lote=true and default cnpjConsulta', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
-    $distributor = makeNfseDistributor($httpClient);
+    $json = makeFakeDistribuicaoJson();
+    $httpClient = makeFakeRawHttpClient(200, $json);
+    $distributor = makeDistributor($httpClient);
 
     $response = $distributor->documentos(0);
 
@@ -81,8 +77,8 @@ it('documentos sends GET with lote=true and default cnpjConsulta', function () {
 });
 
 it('documentos uses provided cnpjConsulta over default', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
-    $distributor = makeNfseDistributor($httpClient);
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient);
 
     $distributor->documentos(0, '99999999000100');
 
@@ -90,8 +86,8 @@ it('documentos uses provided cnpjConsulta over default', function () {
 });
 
 it('documento sends GET with lote=false', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
-    $distributor = makeNfseDistributor($httpClient);
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient);
 
     $distributor->documento(42);
 
@@ -99,8 +95,8 @@ it('documento sends GET with lote=false', function () {
 });
 
 it('documento uses provided cnpjConsulta', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
-    $distributor = makeNfseDistributor($httpClient);
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient);
 
     $distributor->documento(42, '99999999000100');
 
@@ -108,8 +104,8 @@ it('documento uses provided cnpjConsulta', function () {
 });
 
 it('eventos sends GET with chave in URL', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
-    $distributor = makeNfseDistributor($httpClient);
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient);
     $chave = makeChaveAcesso();
 
     $response = $distributor->eventos($chave);
@@ -119,16 +115,18 @@ it('eventos sends GET with chave in URL', function () {
 });
 
 it('eventos throws InvalidArgumentException for invalid chave', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
-    $distributor = makeNfseDistributor($httpClient);
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient);
 
     expect(fn () => $distributor->eventos('INVALID'))
         ->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
 });
 
+// --- Status handling tests ---
+
 it('handles NENHUM_DOCUMENTO_LOCALIZADO status', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse('NENHUM_DOCUMENTO_LOCALIZADO', []));
-    $distributor = makeNfseDistributor($httpClient);
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson('NENHUM_DOCUMENTO_LOCALIZADO', []));
+    $distributor = makeDistributor($httpClient);
 
     $response = $distributor->documentos(999);
 
@@ -138,7 +136,7 @@ it('handles NENHUM_DOCUMENTO_LOCALIZADO status', function () {
 });
 
 it('handles REJEICAO status with errors', function () {
-    $httpClient = makeFakeHttpClient([
+    $json = [
         'StatusProcessamento' => 'REJEICAO',
         'LoteDFe' => null,
         'Alertas' => null,
@@ -146,8 +144,9 @@ it('handles REJEICAO status with errors', function () {
         'TipoAmbiente' => 'HOMOLOGACAO',
         'VersaoAplicativo' => '1.0',
         'DataHoraProcessamento' => '2026-04-08T15:00:00',
-    ]);
-    $distributor = makeNfseDistributor($httpClient);
+    ];
+    $httpClient = makeFakeRawHttpClient(200, $json);
+    $distributor = makeDistributor($httpClient);
 
     $response = $distributor->documentos(0);
 
@@ -157,36 +156,31 @@ it('handles REJEICAO status with errors', function () {
     expect($response->erros[0]->descricao)->toBe('CNPJ inválido');
 });
 
-it('handles HttpException with structured body', function () {
-    $httpClient = new class implements SendsHttpRequests
-    {
-        public function post(string $url, array $payload): array
-        {
-            return [];
-        }
+// --- HTTP error handling tests ---
 
-        public function get(string $url): array
-        {
-            throw HttpException::fromResponse(500, json_encode([
-                'StatusProcessamento' => 'REJEICAO',
-                'Erros' => [['Codigo' => 'E500', 'Descricao' => 'Erro interno']],
-                'TipoAmbiente' => 'HOMOLOGACAO',
-                'DataHoraProcessamento' => '2026-04-08T15:00:00',
-            ]));
-        }
+it('handles HTTP 500 with non-JSON body', function () {
+    $httpClient = makeFakeRawHttpClient(500, [], 'Server Error');
+    $distributor = makeDistributor($httpClient);
 
-        public function getBytes(string $url): string
-        {
-            return '';
-        }
+    $response = $distributor->documentos(0);
 
-        public function head(string $url): int
-        {
-            return 200;
-        }
-    };
+    expect($response->sucesso)->toBeFalse();
+    expect($response->statusProcessamento)->toBe(StatusDistribuicao::Rejeicao);
+    expect($response->erros[0])
+        ->codigo->toBe('HTTP_500')
+        ->complemento->toBe('Server Error');
+});
 
-    $distributor = makeNfseDistributor($httpClient);
+it('handles HTTP 500 with structured ADN JSON body', function () {
+    $json = [
+        'StatusProcessamento' => 'REJEICAO',
+        'Erros' => [['Codigo' => 'E500', 'Descricao' => 'Erro interno']],
+        'TipoAmbiente' => 'HOMOLOGACAO',
+        'DataHoraProcessamento' => '2026-04-08T15:00:00',
+    ];
+    $httpClient = makeFakeRawHttpClient(500, $json);
+    $distributor = makeDistributor($httpClient);
+
     $response = $distributor->documentos(0);
 
     expect($response->sucesso)->toBeFalse();
@@ -194,71 +188,43 @@ it('handles HttpException with structured body', function () {
     expect($response->erros[0]->descricao)->toBe('Erro interno');
 });
 
-it('handles HttpException with non-JSON body', function () {
-    $httpClient = new class implements SendsHttpRequests
-    {
-        public function post(string $url, array $payload): array
-        {
-            return [];
-        }
+it('handles HTTP 500 with JSON missing StatusProcessamento', function () {
+    $json = ['message' => 'Internal Server Error'];
+    $httpClient = makeFakeRawHttpClient(500, $json);
+    $distributor = makeDistributor($httpClient);
 
-        public function get(string $url): array
-        {
-            throw HttpException::fromResponse(500, 'Server Error');
-        }
-
-        public function getBytes(string $url): string
-        {
-            return '';
-        }
-
-        public function head(string $url): int
-        {
-            return 200;
-        }
-    };
-
-    $distributor = makeNfseDistributor($httpClient);
     $response = $distributor->documentos(0);
 
     expect($response->sucesso)->toBeFalse();
     expect($response->statusProcessamento)->toBe(StatusDistribuicao::Rejeicao);
-    expect($response->erros[0]->mensagem)->toBe('HTTP error: 500');
-    expect($response->erros[0]->codigo)->toBe('500');
-    expect($response->erros[0]->descricao)->toBe('Server Error');
+    expect($response->erros[0]->codigo)->toBe('HTTP_500');
 });
 
-it('handles HttpException with JSON body missing StatusProcessamento', function () {
-    $httpClient = new class implements SendsHttpRequests
-    {
-        public function post(string $url, array $payload): array
-        {
-            return [];
-        }
+it('handles HTTP 429 rate limiting', function () {
+    $httpClient = makeFakeRawHttpClient(429, [], 'Too Many Requests');
+    $distributor = makeDistributor($httpClient);
 
-        public function get(string $url): array
-        {
-            throw HttpException::fromResponse(500, json_encode(['message' => 'Internal Server Error']));
-        }
-
-        public function getBytes(string $url): string
-        {
-            return '';
-        }
-
-        public function head(string $url): int
-        {
-            return 200;
-        }
-    };
-
-    $distributor = makeNfseDistributor($httpClient);
     $response = $distributor->documentos(0);
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->statusProcessamento)->toBe(StatusDistribuicao::Rejeicao);
-    expect($response->erros[0]->mensagem)->toBe('HTTP error: 500');
+    expect($response->erros[0])
+        ->codigo->toBe('HTTP_429')
+        ->complemento->toBe('Too Many Requests');
 });
+
+it('handles HTTP 200 with empty body', function () {
+    $httpClient = makeFakeRawHttpClient(200, [], '');
+    $distributor = makeDistributor($httpClient);
+
+    $response = $distributor->documentos(0);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros[0])
+        ->codigo->toBe('EMPTY_RESPONSE')
+        ->descricao->toBe('A API retornou HTTP 200 com corpo vazio.');
+});
+
+// --- URL construction edge cases ---
 
 it('buildUrl trims leading slash from path', function () {
     $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
@@ -266,7 +232,7 @@ it('buildUrl trims leading slash from path', function () {
         '9999998' => ['operations' => ['distribute_documents' => '/contribuintes/DFe/{NSU}']],
     ]));
 
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
 
     try {
         $resolver = new PrefeituraResolver($tmpJson);
@@ -285,7 +251,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
         '9999998' => ['operations' => ['distribute_documents' => '']],
     ]));
 
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
 
     try {
         $resolver = new PrefeituraResolver($tmpJson);
@@ -299,7 +265,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
 });
 
 it('buildUrl trims trailing slash from baseUrl', function () {
-    $httpClient = makeFakeHttpClient(makeFakeDistribuicaoResponse());
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
     $distributor = new NfseDistributor($httpClient, $resolver, '9999999', 'https://adn.base/', '12345678000195');
 

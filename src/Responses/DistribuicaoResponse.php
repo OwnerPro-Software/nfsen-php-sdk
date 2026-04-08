@@ -73,6 +73,57 @@ final readonly class DistribuicaoResponse
         );
     }
 
+    public static function fromHttpResponse(HttpResponse $response): self
+    {
+        if ($response->statusCode >= 300) {
+            return self::fromNon2xxResponse($response);
+        }
+
+        if ($response->json === []) {
+            return new self(
+                sucesso: false,
+                statusProcessamento: StatusDistribuicao::Rejeicao,
+                lote: [],
+                alertas: [],
+                erros: [new ProcessingMessage(
+                    mensagem: 'Resposta vazia da API',
+                    codigo: 'EMPTY_RESPONSE',
+                    descricao: sprintf('A API retornou HTTP %d com corpo vazio.', $response->statusCode),
+                )],
+                tipoAmbiente: null,
+                versaoAplicativo: null,
+                dataHoraProcessamento: null,
+            );
+        }
+
+        return self::fromApiResult($response->json);
+    }
+
+    private static function fromNon2xxResponse(HttpResponse $response): self
+    {
+        if ($response->json !== [] && isset($response->json['StatusProcessamento'])) {
+            return self::fromApiResult($response->json);
+        }
+
+        $body = $response->body;
+
+        return new self(
+            sucesso: false,
+            statusProcessamento: StatusDistribuicao::Rejeicao,
+            lote: [],
+            alertas: [],
+            erros: [new ProcessingMessage(
+                mensagem: sprintf('HTTP error: %d', $response->statusCode),
+                codigo: sprintf('HTTP_%d', $response->statusCode),
+                descricao: sprintf('A API retornou HTTP %d.', $response->statusCode),
+                complemento: $body !== '' ? $body : null,
+            )],
+            tipoAmbiente: null,
+            versaoAplicativo: null,
+            dataHoraProcessamento: null,
+        );
+    }
+
     private static function mapTipoAmbiente(mixed $value): ?int
     {
         return match ($value) {

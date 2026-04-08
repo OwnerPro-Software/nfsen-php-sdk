@@ -4,6 +4,7 @@ use OwnerPro\Nfsen\Enums\StatusDistribuicao;
 use OwnerPro\Nfsen\Enums\TipoDocumentoFiscal;
 use OwnerPro\Nfsen\Responses\DistribuicaoResponse;
 use OwnerPro\Nfsen\Responses\DocumentoFiscal;
+use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
 covers(DistribuicaoResponse::class);
@@ -190,4 +191,141 @@ it('includes raw API response when StatusProcessamento is invalid', function () 
         ->codigo->toBe('INVALID_RESPONSE')
         ->descricao->toBe('Campo StatusProcessamento ausente ou inválido. Keys: [descrição, StatusProcessamento]')
         ->complemento->toBe('{"descrição":"caminho/para/recurso","StatusProcessamento":"UNKNOWN_VALUE"}');
+});
+
+it('fromHttpResponse delegates to fromApiResult on 2xx with valid JSON', function () {
+    $json = [
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => [],
+        'Alertas' => [],
+        'Erros' => [],
+        'TipoAmbiente' => 'HOMOLOGACAO',
+        'VersaoAplicativo' => '1.0',
+        'DataHoraProcessamento' => '2026-04-08T15:00:00',
+    ];
+
+    $httpResponse = new HttpResponse(200, $json, json_encode($json));
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeTrue()
+        ->statusProcessamento->toBe(StatusDistribuicao::DocumentosLocalizados);
+});
+
+it('fromHttpResponse returns EMPTY_RESPONSE on 2xx with empty body', function () {
+    $httpResponse = new HttpResponse(200, [], '');
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])
+        ->codigo->toBe('EMPTY_RESPONSE')
+        ->descricao->toBe('A API retornou HTTP 200 com corpo vazio.');
+});
+
+it('fromHttpResponse returns EMPTY_RESPONSE on 204 with empty body', function () {
+    $httpResponse = new HttpResponse(204, [], '');
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])
+        ->codigo->toBe('EMPTY_RESPONSE')
+        ->descricao->toBe('A API retornou HTTP 204 com corpo vazio.');
+});
+
+it('fromHttpResponse returns HTTP error on 429 with text body', function () {
+    $httpResponse = new HttpResponse(429, [], 'Rate limit exceeded');
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])
+        ->codigo->toBe('HTTP_429')
+        ->descricao->toBe('A API retornou HTTP 429.')
+        ->complemento->toBe('Rate limit exceeded');
+});
+
+it('fromHttpResponse returns HTTP error on 500 with JSON body', function () {
+    $json = ['error' => 'Internal Server Error'];
+    $body = json_encode($json);
+
+    $httpResponse = new HttpResponse(500, $json, $body);
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])
+        ->codigo->toBe('HTTP_500')
+        ->descricao->toBe('A API retornou HTTP 500.')
+        ->complemento->toBe($body);
+});
+
+it('fromHttpResponse treats 299 as 2xx', function () {
+    $httpResponse = new HttpResponse(299, [], '');
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response->erros[0])->codigo->toBe('EMPTY_RESPONSE');
+});
+
+it('fromHttpResponse returns HTTP error on 300 boundary', function () {
+    $httpResponse = new HttpResponse(300, [], '');
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])
+        ->codigo->toBe('HTTP_300');
+});
+
+it('fromHttpResponse returns HTTP error on 302 redirect', function () {
+    $httpResponse = new HttpResponse(302, [], '');
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])
+        ->codigo->toBe('HTTP_302')
+        ->descricao->toBe('A API retornou HTTP 302.')
+        ->complemento->toBeNull();
+});
+
+it('fromHttpResponse parses structured ADN error on non-2xx with StatusProcessamento', function () {
+    $json = [
+        'StatusProcessamento' => 'REJEICAO',
+        'Erros' => [['Codigo' => 'E001', 'Descricao' => 'CNPJ inválido']],
+        'TipoAmbiente' => 'HOMOLOGACAO',
+        'DataHoraProcessamento' => '2026-04-08T15:00:00',
+    ];
+    $body = json_encode($json);
+
+    $httpResponse = new HttpResponse(400, $json, $body);
+
+    $response = DistribuicaoResponse::fromHttpResponse($httpResponse);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0]->descricao)->toBe('CNPJ inválido');
 });

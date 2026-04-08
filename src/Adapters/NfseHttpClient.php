@@ -8,12 +8,14 @@ use Closure;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Driven\SendsRawHttpRequests;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Support\TempFileFactory;
 use SensitiveParameter;
 
-final readonly class NfseHttpClient implements SendsHttpRequests
+final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRequests
 {
     public function __construct(
         #[SensitiveParameter] private Certificate $certificate,
@@ -77,6 +79,27 @@ final readonly class NfseHttpClient implements SendsHttpRequests
             }
 
             return $response->body();
+        });
+    }
+
+    public function getResponse(string $url): HttpResponse
+    {
+        return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): HttpResponse {
+            $response = Http::connectTimeout($this->connectTimeout)
+                ->timeout($this->timeout)
+                ->acceptJson()
+                ->withOptions([
+                    'verify' => $this->sslVerify,
+                    'cert' => $certPath,
+                    'ssl_key' => $keyPath,
+                    'allow_redirects' => false,
+                ])
+                ->get($url);
+
+            /** @var array<string, mixed> $json */
+            $json = (array) ($response->json() ?? []);
+
+            return new HttpResponse($response->status(), $json, $response->body());
         });
     }
 

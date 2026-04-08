@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2026-04-08
+
+### Added
+- `HttpResponse` DTO com `statusCode`, `json` e `body` para respostas HTTP completas.
+- Interface `SendsRawHttpRequests` com método `getResponse()` para acesso a respostas HTTP sem perda de informação.
+- `DistribuicaoResponse::fromHttpResponse()` — novo factory method que preserva HTTP status code e body raw em cenários de erro.
+- `NfseHttpClient` agora implementa `SendsRawHttpRequests` além de `SendsHttpRequests`.
+
+### Changed
+- `NfseDistributor` usa `SendsRawHttpRequests::getResponse()` em vez de `SendsHttpRequests::get()`, preservando HTTP status code e body raw em todas as respostas de erro.
+
+### Fixed
+- Respostas HTTP 4xx com body vazio (ex: 429 rate limiting), redirects (3xx) e respostas 2xx com corpo vazio agora são diagnosticáveis — o `DistribuicaoResponse` inclui o status code no `codigo` do erro e o body raw no `complemento`.
+
 ## [2.1.1] - 2026-04-08
 
 ### Fixed

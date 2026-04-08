@@ -128,3 +128,35 @@ it('distribuicao()->eventos throws on invalid chave', function () {
     expect(fn () => $client->distribuicao()->eventos('INVALID'))
         ->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
 });
+
+it('distribuicao()->documentos preserves HTTP status code on 429', function () {
+    Http::fake(['*' => Http::response('Too Many Requests', 429)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->distribuicao()->documentos(0);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros[0])
+        ->codigo->toBe('HTTP_429')
+        ->complemento->toBe('Too Many Requests');
+});
+
+it('distribuicao()->documentos handles empty 200 response', function () {
+    Http::fake(['*' => Http::response(null, 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->distribuicao()->documentos(0);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros[0])->codigo->toBe('EMPTY_RESPONSE');
+});
+
+it('distribuicao()->documentos handles 302 redirect', function () {
+    Http::fake(['*' => Http::response(null, 302, ['Location' => 'https://other.com'])]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->distribuicao()->documentos(0);
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros[0])->codigo->toBe('HTTP_302');
+});
