@@ -1,7 +1,11 @@
 includes:
     - vendor/larastan/larastan/extension.neon
+    - vendor/tomasvotruba/cognitive-complexity/config/extension.neon
 
 parameters:
     paths:
         - src
     level: 10
+    cognitive_complexity:
+        class: 45
+        function: 40

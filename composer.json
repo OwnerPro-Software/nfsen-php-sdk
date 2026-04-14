@@ -41,7 +41,8 @@
     "larastan/larastan": "^3.9",
     "laravel/pint": "^1.27",
     "roave/security-advisories": "dev-latest",
-    "vimeo/psalm": "^6.15"
+    "vimeo/psalm": "^6.15",
+    "tomasvotruba/cognitive-complexity": "^1.1"
   },
   "autoload": {
     "psr-4": {
