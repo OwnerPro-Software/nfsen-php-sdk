@@ -10,7 +10,7 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Support\FileReader;
 
 /**
- * @api
+ * @internal
  */
 final class PrefeituraResolver implements ResolvesPrefeituras
 {
@@ -69,11 +69,6 @@ final class PrefeituraResolver implements ResolvesPrefeituras
         }
 
         $this->data = self::$cache[$jsonPath];
-    }
-
-    public static function clearCache(): void
-    {
-        self::$cache = [];
     }
 
     public function resolveSeFinUrl(string $codigoIbge, NfseAmbiente $ambiente): string

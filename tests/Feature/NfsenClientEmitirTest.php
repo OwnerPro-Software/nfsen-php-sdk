@@ -5,7 +5,6 @@ use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
@@ -137,13 +136,11 @@ it('forStandalone uses custom prefeiturasJsonPath', function (DpsData $data) {
     ]));
 
     try {
-        PrefeituraResolver::clearCache();
         $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999', prefeiturasJsonPath: $tmpJson);
         $client->emitir($data);
 
         Http::assertSent(fn (Request $req) => $req->url() === 'https://custom.sefin.test/nfse');
     } finally {
-        PrefeituraResolver::clearCache();
         unlink($tmpJson);
     }
 })->with('dpsData');

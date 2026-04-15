@@ -16,6 +16,9 @@ use OwnerPro\Nfsen\Responses\NfseResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
 use OwnerPro\Nfsen\Support\GzipCompressor;
 
+/**
+ * @internal
+ */
 final readonly class NfseConsulter implements ConsultsNfse
 {
     use ValidatesChaveAcesso;

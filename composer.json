@@ -43,7 +43,8 @@
     "roave/security-advisories": "dev-latest",
     "vimeo/psalm": "^6.15",
     "tomasvotruba/cognitive-complexity": "^1.1",
-    "tomasvotruba/unused-public": "^2.2"
+    "tomasvotruba/unused-public": "^2.2",
+    "shipmonk/dead-code-detector": "^1.0"
   },
   "autoload": {
     "psr-4": {

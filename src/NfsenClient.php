@@ -32,6 +32,8 @@ use SensitiveParameter;
 
 /**
  * @phpstan-import-type DpsDataArray from DpsData
+ *
+ * @api
  */
 final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse, SubstitutesNfse
 {

@@ -6,8 +6,6 @@ use OwnerPro\Nfsen\Support\FileReader;
 
 $jsonPath = __DIR__.'/../../../storage/prefeituras.json';
 
-afterEach(fn () => PrefeituraResolver::clearCache());
-
 it('resolves default sefin url for unknown prefeitura in homologacao', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
@@ -124,12 +122,18 @@ it('throws InvalidArgumentException for missing json file', function () {
         ->toThrow(InvalidArgumentException::class, 'não encontrado');
 });
 
-it('throws InvalidArgumentException when file_get_contents fails', function () use ($jsonPath) {
-    $reader = Mockery::mock(FileReader::class);
-    $reader->shouldReceive('__invoke')->with($jsonPath)->andReturn(false);
+it('throws InvalidArgumentException when file_get_contents fails', function () {
+    $tmpPath = tempnam(sys_get_temp_dir(), 'nfse_unreadable_');
 
-    expect(fn () => new PrefeituraResolver($jsonPath, $reader))
-        ->toThrow(InvalidArgumentException::class, 'Falha ao ler');
+    try {
+        $reader = Mockery::mock(FileReader::class);
+        $reader->shouldReceive('__invoke')->with($tmpPath)->andReturn(false);
+
+        expect(fn () => new PrefeituraResolver($tmpPath, $reader))
+            ->toThrow(InvalidArgumentException::class, 'Falha ao ler');
+    } finally {
+        unlink($tmpPath);
+    }
 });
 
 it('throws InvalidArgumentException for invalid json content with parse error detail', function () {
@@ -212,21 +216,6 @@ it('resolves default cancel_nfse operation', function () use ($jsonPath) {
     expect($path)->toBe('nfse/CHAVE3/eventos');
 });
 
-it('clearCache resets the static cache', function () use ($jsonPath) {
-    // Load data into cache
-    $resolver = new PrefeituraResolver($jsonPath);
-    $resolver->resolveSeFinUrl('9999999', NfseAmbiente::HOMOLOGACAO);
-
-    // Clear cache
-    PrefeituraResolver::clearCache();
-
-    // Should still work after clearing cache (re-reads file)
-    $resolver2 = new PrefeituraResolver($jsonPath);
-    $url = $resolver2->resolveSeFinUrl('9999999', NfseAmbiente::HOMOLOGACAO);
-
-    expect($url)->toBe('https://sefin.producaorestrita.nfse.gov.br/SefinNacional');
-});
-
 it('throws InvalidArgumentException when sefin url uses http scheme', function () {
     $tmpFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
     file_put_contents($tmpFile, json_encode([
@@ -239,7 +228,6 @@ it('throws InvalidArgumentException when sefin url uses http scheme', function (
             ->toThrow(InvalidArgumentException::class, 'HTTPS');
     } finally {
         unlink($tmpFile);
-        PrefeituraResolver::clearCache();
     }
 });
 
@@ -255,7 +243,6 @@ it('throws InvalidArgumentException when adn url uses http scheme', function () 
             ->toThrow(InvalidArgumentException::class, 'HTTPS');
     } finally {
         unlink($tmpFile);
-        PrefeituraResolver::clearCache();
     }
 });
 
@@ -271,6 +258,5 @@ it('accepts https urls from custom json', function () {
         expect($url)->toBe('https://secure.example.com');
     } finally {
         unlink($tmpFile);
-        PrefeituraResolver::clearCache();
     }
 });

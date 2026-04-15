@@ -9,6 +9,9 @@ use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
+/**
+ * @api
+ */
 interface ConsultsNfse
 {
     public function nfse(string $chave): NfseResponse;

@@ -6,6 +6,9 @@ namespace OwnerPro\Nfsen\Contracts\Driven;
 
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
+/**
+ * @api
+ */
 interface ResolvesPrefeituras extends ResolvesOperations
 {
     public function resolveSeFinUrl(string $codigoIbge, NfseAmbiente $ambiente): string;

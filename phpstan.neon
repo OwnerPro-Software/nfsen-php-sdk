@@ -2,6 +2,7 @@ includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/tomasvotruba/cognitive-complexity/config/extension.neon
     - vendor/tomasvotruba/unused-public/config/extension.neon
+    - vendor/shipmonk/dead-code-detector/rules.neon
 
 parameters:
     paths:
