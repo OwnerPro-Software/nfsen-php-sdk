@@ -292,11 +292,12 @@ it('detects ambiente Homologacao from fixture', function () {
     expect($data->ambiente)->toBe(NfseAmbiente::HOMOLOGACAO);
 });
 
-it('defaults ambiente to PRODUCAO when tpAmb is invalid', function () {
+it('falls back to HOMOLOGACAO when tpAmb is invalid', function () {
+    // Fail-safe visual: XML suspeito renderiza com watermark "SEM VALIDADE JURÍDICA".
     $xml = str_replace('<tpAmb>1</tpAmb>', '<tpAmb>99</tpAmb>', $this->xml);
     $data = $this->builder->build($xml);
 
-    expect($data->ambiente)->toBe(NfseAmbiente::PRODUCAO);
+    expect($data->ambiente)->toBe(NfseAmbiente::HOMOLOGACAO);
 });
 
 it('throws for empty XML', function () {
@@ -323,6 +324,13 @@ it('throws for XML in NFSe namespace but missing infNFSe', function () {
     $xml = '<?xml version="1.0"?><NFSe xmlns="http://www.sped.fazenda.gov.br/nfse"><outro/></NFSe>';
     expect(fn () => $this->builder->build($xml))
         ->toThrow(XmlParseException::class, 'XML não contém infNFSe.');
+});
+
+it('throws for XML missing DPS/infDPS block', function () {
+    $xml = '<?xml version="1.0"?><NFSe xmlns="http://www.sped.fazenda.gov.br/nfse">'
+        .'<infNFSe Id="NFS123"><outro/></infNFSe></NFSe>';
+    expect(fn () => $this->builder->build($xml))
+        ->toThrow(XmlParseException::class, 'XML não contém DPS/infDPS.');
 });
 
 it('returns empty tomador when toma block is absent', function () {

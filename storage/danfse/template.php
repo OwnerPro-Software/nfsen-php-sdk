@@ -3,6 +3,7 @@
 /** @var \OwnerPro\Nfsen\Danfse\MunicipalityBranding|null $municipality */
 /** @var string|null $logo */
 /** @var string $qrCode */
+/** @var string $css */
 /** @var \Closure(string):string $h */
 ?>
 <!DOCTYPE html>
@@ -11,7 +12,7 @@
     <meta charset="UTF-8">
     <title>DANFSe - <?= $h($data->numeroNfse) ?></title>
     <style>
-        <?= file_get_contents(__DIR__ . "/template.css") ?>
+        <?= $css ?>
     </style>
 </head>
 <body>

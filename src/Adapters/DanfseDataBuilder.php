@@ -63,6 +63,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             throw new XmlParseException('XML não contém infNFSe.');
         }
 
+        if (! isset($children->infNFSe->DPS->infDPS)) {
+            throw new XmlParseException('XML não contém DPS/infDPS.');
+        }
+
         return $this->fromInf($children->infNFSe);
     }
 
@@ -85,9 +89,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $totTrib = $trib->totTrib;
         $valNfse = $inf->valores;
 
-        // Fallback final para PRODUCAO cobre XMLs inválidos com tpAmb fora de {1,2} —
-        // o default do str() já é '1' para o caso normal de tpAmb ausente.
-        $ambiente = NfseAmbiente::tryFrom($this->str($infDps->tpAmb, '1')) ?? NfseAmbiente::PRODUCAO;
+        // Fallback fail-safe: tpAmb ausente → PRODUCAO (default do str '1'); tpAmb inválido
+        // → HOMOLOGACAO pra não suprimir o watermark "SEM VALIDADE JURÍDICA" em XML suspeito.
+        $ambiente = NfseAmbiente::tryFrom($this->str($infDps->tpAmb, '1')) ?? NfseAmbiente::HOMOLOGACAO;
 
         $intermediario = isset($infDps->interm) ? $this->buildIntermediario($infDps->interm) : null;
 

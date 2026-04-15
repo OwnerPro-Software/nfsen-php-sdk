@@ -15,6 +15,7 @@ final readonly class DompdfHtmlToPdfConverter implements ConvertsHtmlToPdf
         $options = new Options;
         $options->set('isHtml5ParserEnabled', true); // @pest-mutate-ignore TrueToFalse,RemoveMethodCall — opção cosmética do Dompdf; PDF continua válido.
         $options->set('isRemoteEnabled', false); // @pest-mutate-ignore FalseToTrue,RemoveMethodCall — invariante de segurança (evita XXE/SSRF); não inverter.
+        $options->set('isPhpEnabled', false); // @pest-mutate-ignore FalseToTrue,RemoveMethodCall — invariante de segurança (evita RCE via <?php no HTML); não inverter.
         $options->set('defaultFont', 'DejaVu Sans'); // @pest-mutate-ignore RemoveMethodCall — fonte default é cosmética, PDF continua válido.
         $options->set('isFontSubsettingEnabled', true); // @pest-mutate-ignore TrueToFalse,RemoveMethodCall — otimização de fonte; não afeta conteúdo.
 
