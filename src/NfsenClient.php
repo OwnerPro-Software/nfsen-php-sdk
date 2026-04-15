@@ -148,13 +148,15 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
     }
 
     /**
+     * Semântica do parâmetro `$danfse`:
+     * - `null` (default): sem auto-render.
+     * - `[]` (array vazio): tratado como "sem config válida" — sem auto-render.
+     * - array não-vazio: ativa auto-render. Chave `enabled` dentro do array é ignorada
+     *   aqui — só tem efeito em `NfsenClient::for()` lendo config global.
+     * - `false`: sentinel; em `forStandalone()` equivale a `null` (sem auto-render).
+     *   Útil em `NfsenClient::for()` para sobrescrever `config.enabled=true`.
+     *
      * @param  array<string, mixed>|false|null  $danfse
-     *                                                   - `null` (default): sem auto-render.
-     *                                                   - `[]` (array vazio): tratado como "sem config válida" — sem auto-render.
-     *                                                   - array não-vazio: ativa auto-render. Chave `enabled` dentro do array é
-     *                                                   ignorada aqui — só tem efeito em `NfsenClient::for()` lendo config global.
-     *                                                   - `false`: sentinel; em `forStandalone()` equivale a `null` (sem auto-render).
-     *                                                   Útil em `NfsenClient::for()` para sobrescrever `config.enabled=true`.
      */
     public static function forStandalone(
         #[SensitiveParameter] string $pfxContent,
