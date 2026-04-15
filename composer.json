@@ -42,7 +42,8 @@
     "laravel/pint": "^1.27",
     "roave/security-advisories": "dev-latest",
     "vimeo/psalm": "^6.15",
-    "tomasvotruba/cognitive-complexity": "^1.1"
+    "tomasvotruba/cognitive-complexity": "^1.1",
+    "tomasvotruba/unused-public": "^2.2"
   },
   "autoload": {
     "psr-4": {

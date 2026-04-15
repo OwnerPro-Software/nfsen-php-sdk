@@ -9,6 +9,9 @@ use OwnerPro\Nfsen\Contracts\Driven\ResolvesPrefeituras;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Support\FileReader;
 
+/**
+ * @api
+ */
 final class PrefeituraResolver implements ResolvesPrefeituras
 {
     /**

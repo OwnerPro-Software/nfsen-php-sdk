@@ -22,6 +22,8 @@ use SensitiveParameter;
  * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao)
  * @method static NfseResponse substituir(string $chave, DpsData|DpsDataArray $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null)
  * @method static ConsultsNfse consultar()
+ *
+ * @api
  */
 final class Nfsen extends Facade
 {

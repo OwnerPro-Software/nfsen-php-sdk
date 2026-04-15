@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen\Responses;
 
+/**
+ * @api
+ */
 final readonly class NfseResponse
 {
     /**

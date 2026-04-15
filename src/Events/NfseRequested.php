@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen\Events;
 
+/**
+ * @api
+ */
 final readonly class NfseRequested
 {
     /** @param array<string, mixed> $metadata */

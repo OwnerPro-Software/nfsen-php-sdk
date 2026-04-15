@@ -11,6 +11,8 @@ namespace OwnerPro\Nfsen\Responses;
  *     descricao?: string, Descricao?: string,
  *     complemento?: string, Complemento?: string,
  * }
+ *
+ * @api
  */
 final readonly class ProcessingMessage
 {
