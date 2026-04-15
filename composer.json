@@ -31,7 +31,8 @@
     "ext-zlib": "*",
     "ext-openssl": "*",
     "ext-mbstring": "*",
-    "ext-libxml": "*"
+    "ext-libxml": "*",
+    "ext-simplexml": "*"
   },
   "require-dev": {
     "pestphp/pest": "^4.0",

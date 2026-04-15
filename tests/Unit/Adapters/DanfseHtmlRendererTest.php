@@ -13,7 +13,7 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 covers(DanfseHtmlRenderer::class);
 
-// Helpers `fakeQrGen()`, `sampleParte()`, `sampleData()` vêm de tests/helpers/danfse.php (Task 16.5).
+// Helpers `fakeQrGen()`, `sampleParticipante()`, `sampleData()` vêm de tests/helpers/danfse.php (Task 16.5).
 
 it('produces HTML containing chave de acesso', function (): void {
     $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
@@ -63,7 +63,7 @@ it('shows "NÃO IDENTIFICADO" when there is no intermediario', function (): void
 it('shows intermediario block when present', function (): void {
     $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
 
-    $interm = sampleParte('INTERMEDIÁRIO LTDA');
+    $interm = sampleParticipante('INTERMEDIÁRIO LTDA');
     $html = $r->render(sampleData(interm: $interm));
 
     expect($html)->toContain('INTERMEDIÁRIO LTDA');
@@ -111,12 +111,12 @@ it('omits logo when logoPath is false', function (): void {
 });
 
 it('escapes HTML in data fields (XSS prevention)', function (): void {
-    $malicious = sampleParte("<script>alert('xss')</script>");
+    $malicious = sampleParticipante("<script>alert('xss')</script>");
     $data = new NfseData(
         chaveAcesso: 'X', numeroNfse: '1', competencia: '-', emissaoNfse: '-',
         numeroDps: '1', serieDps: '1', emissaoDps: '-',
         ambiente: NfseAmbiente::PRODUCAO,
-        emitente: $malicious, tomador: sampleParte(), intermediario: null,
+        emitente: $malicious, tomador: sampleParticipante(), intermediario: null,
         servico: new DanfseServico('-', '-', '-', '-', '-', '-', '-'),
         tribMun: new DanfseTributacaoMunicipal('-', '-', '-', '-', '-', '-', '-', '-'),
         tribFed: new DanfseTributacaoFederal('-', '-', '-', '-', '-'),

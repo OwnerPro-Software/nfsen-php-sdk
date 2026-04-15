@@ -150,8 +150,8 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
     /**
      * @param  array<string, mixed>|false|null  $danfse
      *                                                   - `null` (default): sem auto-render.
-     *                                                   - array (incluindo `[]`): ativa auto-render. Array vazio produz `DanfseConfig`
-     *                                                   default (logo padrão, sem município). Chave `enabled` dentro do array é
+     *                                                   - `[]` (array vazio): tratado como "sem config válida" — sem auto-render.
+     *                                                   - array não-vazio: ativa auto-render. Chave `enabled` dentro do array é
      *                                                   ignorada aqui — só tem efeito em `NfsenClient::for()` lendo config global.
      *                                                   - `false`: sentinel; em `forStandalone()` equivale a `null` (sem auto-render).
      *                                                   Útil em `NfsenClient::for()` para sobrescrever `config.enabled=true`.
@@ -198,11 +198,10 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
 
         $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
         $canceller = new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente);
-        // IMPORTANTE: $emitter cru (não decorado). Invariante de wiring — senão PDF renderiza 2x em substituir().
         $substitutor = new NfseSubstitutor($emitter);
         $consulter = new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura);
 
-        if ($danfse === null || $danfse === false) {
+        if (in_array($danfse, [null, false, []], true)) {
             return new self(
                 emitter: $emitter,
                 canceller: $canceller,

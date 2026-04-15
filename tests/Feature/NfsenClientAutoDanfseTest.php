@@ -228,7 +228,7 @@ it('defesa em profundidade: municipality {name: null} vira ausente — emit tamb
     expect($resp->pdfErrors)->toBe([]);
 })->with('dpsData');
 
-it('for(danfse: []) ativa auto-render com defaults (logo padrão, sem município)', function (DpsData $data) {
+it('for(danfse: []) NÃO ativa auto-render — array vazio = sem config válida', function (DpsData $data) {
     Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
 
     config(['nfsen.validate_identity' => false]);
@@ -237,6 +237,23 @@ it('for(danfse: []) ativa auto-render com defaults (logo padrão, sem município
 
     $resp = $client->emitir($data);
 
-    expect($resp->pdf)->not->toBeNull();
-    expect($resp->pdf)->toStartWith('%PDF-');
+    expect($resp->pdf)->toBeNull();
+    expect($resp->pdfErrors)->toBe([]);
+})->with('dpsData');
+
+it('forStandalone(danfse: []) NÃO ativa auto-render — paridade com `for()`', function (DpsData $data) {
+    Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
+
+    $client = NfsenClient::forStandalone(
+        pfxContent: makePfxContent(),
+        senha: 'secret',
+        prefeitura: '9999999',
+        validateIdentity: false,
+        danfse: [],
+    );
+
+    $resp = $client->emitir($data);
+
+    expect($resp->pdf)->toBeNull();
+    expect($resp->pdfErrors)->toBe([]);
 })->with('dpsData');

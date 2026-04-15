@@ -32,9 +32,4 @@ final readonly class SubstitutorWithDanfse implements SubstitutesNfse
     ): NfseResponse {
         return $this->attachPdf($this->inner->substituir($chave, $dps, $codigoMotivo, $descricao));
     }
-
-    private function renderer(): RendersDanfse
-    {
-        return $this->renderer;
-    }
 }

@@ -10,7 +10,7 @@ namespace OwnerPro\Nfsen\Danfse\Data;
  *
  * @api
  */
-final readonly class DanfseParte
+final readonly class DanfseParticipante
 {
     public function __construct(
         public string $nome,

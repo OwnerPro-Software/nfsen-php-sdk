@@ -11,7 +11,7 @@ use OwnerPro\Nfsen\Tests\Fakes\FakeRendersDanfse;
 covers(AttachesDanfsePdf::class);
 
 // Harness mínimo expondo attachPdf() para testes isolados.
-// Implementa renderer() exigido pelo trait (abstract private).
+// Trait lê $this->renderer direto (promoted property).
 function makeAttacher(RendersDanfse $r): object
 {
     return new class($r)
@@ -21,11 +21,6 @@ function makeAttacher(RendersDanfse $r): object
         }
 
         public function __construct(private readonly RendersDanfse $renderer) {}
-
-        private function renderer(): RendersDanfse
-        {
-            return $this->renderer;
-        }
     };
 }
 
@@ -87,6 +82,23 @@ it('popula pdfErrors quando render falha', function () {
     expect($result->pdf)->toBeNull();
     expect($result->pdfErrors)->toHaveCount(1);
     expect($result->pdfErrors[0]->descricao)->toBe('render quebrou');
+});
+
+it('idempotente: não re-renderiza quando response já tem pdf (defende wiring contra double-wrap)', function () {
+    $spy = new FakeRendersDanfse;
+    $attacher = makeAttacher($spy);
+
+    $alreadyRendered = new NfseResponse(
+        sucesso: true,
+        chave: 'K',
+        xml: '<x/>',
+        pdf: '%PDF-pré-existente',
+    );
+    $result = $attacher->attachPdf($alreadyRendered);
+
+    expect($spy->toPdfCalls)->toBe(0);
+    expect($result)->toBe($alreadyRendered);
+    expect($result->pdf)->toBe('%PDF-pré-existente');
 });
 
 it('preserva todos os campos do NfseResponse original ao anexar pdf', function () {

@@ -24,7 +24,7 @@ it('substituir sucesso anexa pdf — render chamado exatamente 1x', function (Dp
     );
 
     expect($inner->substituirCalls)->toBe(1);
-    expect($renderer->toPdfCalls)->toBe(1);  // invariante de wiring: emit interno do substitutor é cru.
+    expect($renderer->toPdfCalls)->toBe(1);
     expect($resp->chave)->toBe('CHAVE_SUBST');
     expect($resp->pdf)->toBe('%PDF-1.4 fake');
 })->with('dpsData');

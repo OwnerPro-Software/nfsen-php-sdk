@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Adapters;
 
 use OwnerPro\Nfsen\Contracts\Driven\BuildsDanfseData;
-use OwnerPro\Nfsen\Danfse\Data\DanfseParte;
+use OwnerPro\Nfsen\Danfse\Data\DanfseParticipante;
 use OwnerPro\Nfsen\Danfse\Data\DanfseServico;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotais;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotaisTributos;
@@ -116,7 +116,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         );
     }
 
-    private function buildEmitente(SimpleXMLElement $emit, SimpleXMLElement $inf, SimpleXMLElement $regTrib): DanfseParte
+    private function buildEmitente(SimpleXMLElement $emit, SimpleXMLElement $inf, SimpleXMLElement $regTrib): DanfseParticipante
     {
         $ender = $emit->enderNac;
         $doc = $this->firstNonEmpty($emit->CNPJ, $emit->CPF, $emit->NIF);
@@ -131,7 +131,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             default => '-',
         };
 
-        return new DanfseParte(
+        return new DanfseParticipante(
             nome: $this->str($emit->xNome, '-'),
             cnpjCpf: $this->fmt->cnpjCpf($doc),
             im: '-',
@@ -145,10 +145,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         );
     }
 
-    private function buildTomador(SimpleXMLElement $toma): DanfseParte
+    private function buildTomador(SimpleXMLElement $toma): DanfseParticipante
     {
         if ($toma->count() === 0) {
-            return $this->emptyParte();
+            return $this->emptyParticipante();
         }
 
         $end = $toma->end;
@@ -159,7 +159,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         $im = $this->str($toma->IM);
 
-        return new DanfseParte(
+        return new DanfseParticipante(
             nome: $this->str($toma->xNome, '-'),
             cnpjCpf: $this->fmt->cnpjCpf($doc),
             im: $im !== '' ? $im : '-',
@@ -171,7 +171,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         );
     }
 
-    private function buildIntermediario(SimpleXMLElement $interm): DanfseParte
+    private function buildIntermediario(SimpleXMLElement $interm): DanfseParticipante
     {
         $end = $interm->end;
         $endNac = $end->endNac;
@@ -181,7 +181,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         $im = $this->str($interm->IMPrestMun);
 
-        return new DanfseParte(
+        return new DanfseParticipante(
             nome: $this->str($interm->xNome, '-'),
             cnpjCpf: $this->fmt->cnpjCpf($doc),
             im: $im !== '' ? $im : '-',
@@ -193,9 +193,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         );
     }
 
-    private function emptyParte(): DanfseParte
+    private function emptyParticipante(): DanfseParticipante
     {
-        return new DanfseParte('-', '-', '-', '-', '-', '-', '-', '-');
+        return new DanfseParticipante('-', '-', '-', '-', '-', '-', '-', '-');
     }
 
     private function buildServico(SimpleXMLElement $inf, SimpleXMLElement $serv, SimpleXMLElement $cServ): DanfseServico

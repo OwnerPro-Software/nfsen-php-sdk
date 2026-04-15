@@ -10,19 +10,23 @@ use OwnerPro\Nfsen\Responses\NfseResponse;
 /**
  * Anexa PDF e erros de render a um NfseResponse.
  *
- * Classes hospedeiras devem implementar `renderer()` retornando seu `RendersDanfse`.
+ * Classes hospedeiras devem declarar `private readonly RendersDanfse $renderer`.
+ *
+ * Idempotente: se o response recebido já tem `pdf !== null`, retorna como está.
+ * Defende a wiring de `NfsenClient::forStandalone` contra double-render caso alguém
+ * acidentalmente decore o emitter interno do `NfseSubstitutor`.
+ *
+ * @property-read RendersDanfse $renderer
  */
 trait AttachesDanfsePdf
 {
-    abstract private function renderer(): RendersDanfse;
-
     private function attachPdf(NfseResponse $r): NfseResponse
     {
-        if (! $r->sucesso || $r->xml === null) {
+        if (! $r->sucesso || $r->xml === null || $r->pdf !== null) {
             return $r;
         }
 
-        $danfse = $this->renderer()->toPdf($r->xml);
+        $danfse = $this->renderer->toPdf($r->xml);
 
         return new NfseResponse(
             sucesso: $r->sucesso,

@@ -33,9 +33,4 @@ final readonly class EmitterWithDanfse implements EmitsNfse
     {
         return $this->attachPdf($this->inner->emitirDecisaoJudicial($data));
     }
-
-    private function renderer(): RendersDanfse
-    {
-        return $this->renderer;
-    }
 }

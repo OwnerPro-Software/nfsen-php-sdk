@@ -50,9 +50,4 @@ final readonly class ConsulterWithDanfse implements ConsultsNfse
     {
         return $this->inner->verificarDps($id);
     }
-
-    private function renderer(): RendersDanfse
-    {
-        return $this->renderer;
-    }
 }

@@ -6,7 +6,7 @@ use OwnerPro\Nfsen\Contracts\Driven\BuildsDanfseData;
 use OwnerPro\Nfsen\Contracts\Driven\ConvertsHtmlToPdf;
 use OwnerPro\Nfsen\Contracts\Driven\GeneratesQrCode;
 use OwnerPro\Nfsen\Contracts\Driven\RendersDanfseHtml;
-use OwnerPro\Nfsen\Danfse\Data\DanfseParte;
+use OwnerPro\Nfsen\Danfse\Data\DanfseParticipante;
 use OwnerPro\Nfsen\Danfse\Data\DanfseServico;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotais;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotaisTributos;
@@ -26,9 +26,9 @@ function fakeQrGen(): GeneratesQrCode
     };
 }
 
-function sampleParte(string $nome = 'ACME LTDA'): DanfseParte
+function sampleParticipante(string $nome = 'ACME LTDA'): DanfseParticipante
 {
-    return new DanfseParte(
+    return new DanfseParticipante(
         nome: $nome, cnpjCpf: '11.222.333/0001-81', im: '-',
         telefone: '(11) 3333-4444', email: 'acme@example.com',
         endereco: 'Rua X, 100, Centro', municipio: 'São Paulo - SP',
@@ -36,15 +36,15 @@ function sampleParte(string $nome = 'ACME LTDA'): DanfseParte
     );
 }
 
-function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParte $interm = null): NfseData
+function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null): NfseData
 {
     return new NfseData(
         chaveAcesso: '3303302112233450000195000000000000100000000001',
         numeroNfse: '10', competencia: '15/01/2026', emissaoNfse: '15/01/2026 14:30:00',
         numeroDps: '5', serieDps: '20261', emissaoDps: '15/01/2026 14:00:00',
         ambiente: $ambiente,
-        emitente: sampleParte('EMITENTE LTDA'),
-        tomador: sampleParte('TOMADOR S.A.'),
+        emitente: sampleParticipante('EMITENTE LTDA'),
+        tomador: sampleParticipante('TOMADOR S.A.'),
         intermediario: $interm,
         servico: new DanfseServico(
             codigoTribNacional: '01.07.00', descTribNacional: 'Desenvolvimento de software',
