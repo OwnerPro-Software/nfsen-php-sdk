@@ -25,13 +25,13 @@ beforeEach(function () {
     $this->xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
 
     // Usa o helper makeNfsenClient() (tests/helpers.php) — cria NfsenClient pronto
-    // com cert fake + senha correta. Prefeitura é irrelevante para danfe() (que só
+    // com cert fake + senha correta. Prefeitura é irrelevante para danfse() (que só
     // consome XML; não bate em nenhum endpoint).
     $this->client = makeNfsenClient();
 });
 
 it('generates DANFSE PDF end-to-end', function () {
-    $resp = $this->client->danfe()->toPdf($this->xml);
+    $resp = $this->client->danfse()->toPdf($this->xml);
 
     expect($resp)->toBeInstanceOf(DanfseResponse::class);
     expect($resp->sucesso)->toBeTrue();
@@ -39,7 +39,7 @@ it('generates DANFSE PDF end-to-end', function () {
 });
 
 it('generated PDF contains chave de acesso and emitente', function () {
-    $resp = $this->client->danfe()->toPdf($this->xml);
+    $resp = $this->client->danfse()->toPdf($this->xml);
 
     $text = (new PdfParser)->parseContent($resp->pdf)->getText();
 
@@ -48,7 +48,7 @@ it('generated PDF contains chave de acesso and emitente', function () {
 });
 
 it('returns failure DanfseResponse for malformed XML', function () {
-    $resp = $this->client->danfe()->toPdf('<not-xml');
+    $resp = $this->client->danfse()->toPdf('<not-xml');
 
     expect($resp->sucesso)->toBeFalse();
     expect($resp->pdf)->toBeNull();
@@ -56,14 +56,14 @@ it('returns failure DanfseResponse for malformed XML', function () {
 });
 
 it('toHtml returns HTML string', function () {
-    $html = $this->client->danfe()->toHtml($this->xml);
+    $html = $this->client->danfse()->toHtml($this->xml);
 
     expect($html)->toContain('DANFSe');
     expect($html)->toContain('3303302112233450000195000000000000100000000001');
 });
 
 it('toHtml throws on malformed XML', function () {
-    expect(fn () => $this->client->danfe()->toHtml('<not-xml'))
+    expect(fn () => $this->client->danfse()->toHtml('<not-xml'))
         ->toThrow(XmlParseException::class);
 });
 
@@ -83,7 +83,7 @@ it('escapes HTML entities in XML fields end-to-end (XSS prevention)', function (
         $xml,
     );
 
-    $html = $this->client->danfe()->toHtml($xml);
+    $html = $this->client->danfse()->toHtml($xml);
 
     // Raw payload must NOT survive; escaped version must appear.
     expect($html)->not->toContain("<script>alert('pwn')</script>");
@@ -102,8 +102,29 @@ it('applies MunicipalityBranding in rendered PDF', function () {
         ),
     );
 
-    $html = $this->client->danfe($config)->toHtml($this->xml);
+    $html = $this->client->danfse($config)->toHtml($this->xml);
 
     expect($html)->toContain('Município de Teste');
     expect($html)->toContain('Secretaria X');
+});
+
+it('aceita array payload equivalente a DanfseConfig', function () {
+    $respObj = $this->client->danfse(new DanfseConfig(
+        municipality: new MunicipalityBranding(name: 'X'),
+    ))->toHtml($this->xml);
+
+    $respArr = $this->client->danfse([
+        'municipality' => ['name' => 'X'],
+    ])->toHtml($this->xml);
+
+    // HTMLs iguais (mesmo template, mesmos dados).
+    expect($respArr)->toBe($respObj);
+});
+
+it('danfse() sem argumento usa defaults (inclui logo padrão do pacote)', function () {
+    $html = $this->client->danfse()->toHtml($this->xml);
+
+    expect($html)->toContain('DANFSe');
+    // Default DanfseConfig carrega storage/danfse/logo-nfse.png via data URI.
+    expect($html)->toContain('data:image/png;base64,');
 });

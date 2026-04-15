@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen;
 
+use InvalidArgumentException;
 use OwnerPro\Nfsen\Adapters\BaconQrCodeGenerator;
 use OwnerPro\Nfsen\Adapters\CertificateManager;
 use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
@@ -23,6 +24,9 @@ use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Operations\Decorators\ConsulterWithDanfse;
+use OwnerPro\Nfsen\Operations\Decorators\EmitterWithDanfse;
+use OwnerPro\Nfsen\Operations\Decorators\SubstitutorWithDanfse;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
 use OwnerPro\Nfsen\Operations\NfseDanfseRenderer;
@@ -51,10 +55,73 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
         private ConsultsNfse $consulter,
     ) {}
 
-    public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): self
+    /**
+     * @param  array<string, mixed>|false|null  $danfse
+     */
+    public static function for(
+        #[SensitiveParameter] string $pfxContent,
+        #[SensitiveParameter] string $senha,
+        string $prefeitura,
+        ?NfseAmbiente $ambiente = null,
+        array|false|null $danfse = null,
+    ): self {
+        // Sentinel: false força desligar, ignora config global.
+        if ($danfse === false) {
+            return self::buildFor($pfxContent, $senha, $prefeitura, $ambiente, null);
+        }
+
+        // null + config global ativo: usa config.
+        // $fromConfig é mixed; isDanfseEnabled narra para array<string, mixed> via @phpstan-assert-if-true.
+        if ($danfse === null && function_exists('config')) {
+            $fromConfig = config('nfsen.danfse');
+            if (self::isDanfseEnabled($fromConfig)) {
+                $danfse = $fromConfig;
+            }
+        }
+
+        return self::buildFor($pfxContent, $senha, $prefeitura, $ambiente, $danfse);
+    }
+
+    /**
+     * Gate DRY usado por `for()` e por `NfsenServiceProvider`.
+     *
+     * Contrato: config/nfsen.php aplica `(bool)` cast em `enabled`, logo o valor chegando
+     * aqui é bool. Strict `=== true` enforces o contrato — se alguém publicar um config
+     * com `'enabled' => 1`, o auto-render silenciosamente não ativa. Intencional:
+     * falha fechada é mais segura que ativar por coerção frouxa.
+     *
+     * Visibilidade public obrigatória: consumido por `NfsenServiceProvider`. Marcada como
+     * `@api` preemptivamente: `NfsenServiceProvider` é um consumidor externo efetivo do
+     * helper (mesma lib, mas acoplamento cross-class). `@api` garante que `tomasvotruba/unused-public`
+     * não reclame em Task 15 Step 5 sem precisar de retry-com-edit.
+     *
+     * @phpstan-assert-if-true array<string, mixed> $block
+     *
+     * @api
+     */
+    public static function isDanfseEnabled(mixed $block): bool
     {
+        if (! is_array($block)) {
+            return false; // @pest-mutate-ignore RemoveEarlyReturn — fallthrough em não-array acessa offset e retorna false via `?? false`, comportamento equivalente.
+        }
+
+        return ($block['enabled'] ?? false) === true;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $danfse
+     */
+    private static function buildFor(
+        #[SensitiveParameter] string $pfxContent,
+        #[SensitiveParameter] string $senha,
+        string $prefeitura,
+        ?NfseAmbiente $ambiente,
+        ?array $danfse,
+    ): self {
+        // Chave `danfse?` opcional no shape: cobre instalações antigas cujo config/nfsen.php
+        // publicado não tem o bloco novo (buildFor não acessa essa chave, mas o ServiceProvider sim).
         if (function_exists('config') && config('nfsen') !== null) {
-            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool} $config */
+            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool, danfse?: array<string, mixed>} $config */
             $config = config('nfsen');
 
             return self::forStandalone(
@@ -67,12 +134,28 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
                 sslVerify: $config['ssl_verify'],
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
+                danfse: $danfse,
             );
         }
 
-        return self::forStandalone($pfxContent, $senha, $prefeitura, $ambiente ?? NfseAmbiente::HOMOLOGACAO);
+        return self::forStandalone(
+            pfxContent: $pfxContent,
+            senha: $senha,
+            prefeitura: $prefeitura,
+            ambiente: $ambiente ?? NfseAmbiente::HOMOLOGACAO,
+            danfse: $danfse,
+        );
     }
 
+    /**
+     * @param  array<string, mixed>|false|null  $danfse
+     *                                                   - `null` (default): sem auto-render.
+     *                                                   - array (incluindo `[]`): ativa auto-render. Array vazio produz `DanfseConfig`
+     *                                                   default (logo padrão, sem município). Chave `enabled` dentro do array é
+     *                                                   ignorada aqui — só tem efeito em `NfsenClient::for()` lendo config global.
+     *                                                   - `false`: sentinel; em `forStandalone()` equivale a `null` (sem auto-render).
+     *                                                   Útil em `NfsenClient::for()` para sobrescrever `config.enabled=true`.
+     */
     public static function forStandalone(
         #[SensitiveParameter] string $pfxContent,
         #[SensitiveParameter] string $senha,
@@ -85,6 +168,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
         ?string $schemasPath = null,
         int $connectTimeout = 10,
         bool $validateIdentity = true,
+        array|false|null $danfse = null,
     ): self {
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
         $schemasPath ??= __DIR__.'/../storage/schemes';
@@ -113,12 +197,27 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
         $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
 
         $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
+        $canceller = new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente);
+        // IMPORTANTE: $emitter cru (não decorado). Invariante de wiring — senão PDF renderiza 2x em substituir().
+        $substitutor = new NfseSubstitutor($emitter);
+        $consulter = new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura);
+
+        if ($danfse === null || $danfse === false) {
+            return new self(
+                emitter: $emitter,
+                canceller: $canceller,
+                substitutor: $substitutor,
+                consulter: $consulter,
+            );
+        }
+
+        $renderer = self::buildDanfseRenderer(DanfseConfig::fromArray($danfse));
 
         return new self(
-            emitter: $emitter,
-            canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
-            substitutor: new NfseSubstitutor($emitter),
-            consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
+            emitter: new EmitterWithDanfse($emitter, $renderer),
+            canceller: $canceller,
+            substitutor: new SubstitutorWithDanfse($substitutor, $renderer),
+            consulter: new ConsulterWithDanfse($consulter, $renderer),
         );
     }
 
@@ -150,13 +249,30 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
         return $this->consulter;
     }
 
-    public function danfe(?DanfseConfig $config = null): RendersDanfse
+    /**
+     * @param  DanfseConfig|array<string, mixed>|null  $config
+     *
+     * @throws InvalidArgumentException quando `$config` é array com shape inválido
+     *                                  (chave desconhecida, tipo incorreto, `name` vazio).
+     *                                  Validação é eager (na chamada `danfse()`), não no
+     *                                  `toPdf()`/`toHtml()` subsequente.
+     */
+    public function danfse(DanfseConfig|array|null $config = null): RendersDanfse
+    {
+        $resolved = $config instanceof DanfseConfig
+            ? $config
+            : DanfseConfig::fromArray($config ?? []);
+
+        return self::buildDanfseRenderer($resolved);
+    }
+
+    private static function buildDanfseRenderer(DanfseConfig $config): RendersDanfse
     {
         return new NfseDanfseRenderer(
             new DanfseDataBuilder,
             new DanfseHtmlRenderer(
                 new BaconQrCodeGenerator,
-                $config ?? new DanfseConfig,
+                $config,
             ),
             new DompdfHtmlToPdfConverter,
         );

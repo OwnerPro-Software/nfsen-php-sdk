@@ -31,6 +31,7 @@ final class NfsenServiceProvider extends ServiceProvider
              *     signing_algorithm: string,
              *     ssl_verify: bool,
              *     validate_identity: bool,
+             *     danfse?: array<string, mixed>,
              * } $config
              */
             $config = config('nfsen');
@@ -50,6 +51,9 @@ final class NfsenServiceProvider extends ServiceProvider
                 throw new RuntimeException('Falha ao ler arquivo de certificado digital.');
             }
 
+            $danfseBlock = $config['danfse'] ?? null;
+            $danfsePayload = NfsenClient::isDanfseEnabled($danfseBlock) ? $danfseBlock : null;
+
             return NfsenClient::forStandalone(
                 pfxContent: $certContent,
                 senha: $certSenha,
@@ -60,6 +64,7 @@ final class NfsenServiceProvider extends ServiceProvider
                 sslVerify: $config['ssl_verify'],
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
+                danfse: $danfsePayload,
             );
         });
     }

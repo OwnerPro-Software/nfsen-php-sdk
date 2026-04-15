@@ -369,11 +369,28 @@ use OwnerPro\Nfsen\NfsenClient;
 $client = NfsenClient::for($pfx, $senha, $prefeitura);
 $response = $client->emitir($dps);
 
-$pdf = $client->danfe()->toPdf($response->xml);
+$pdf = $client->danfse()->toPdf($response->xml);
 file_put_contents('danfse.pdf', $pdf->pdf);
 ```
 
-### Customização: logo da empresa e identificação do município
+### Customização via array
+
+```php
+$resp = $client->danfse([
+    'logo_path' => '/path/to/custom-logo.png',
+    'municipality' => [
+        'name' => 'São Paulo',
+        'department' => 'SF/SUBTES',
+        'email' => 'nfse@sp.gov.br',
+    ],
+])->toPdf($response->xml);
+
+if ($resp->sucesso) {
+    file_put_contents('danfse.pdf', $resp->pdf);
+}
+```
+
+### Customização via DTO (equivalente)
 
 ```php
 use OwnerPro\Nfsen\Danfse\DanfseConfig;
@@ -389,15 +406,64 @@ $config = new DanfseConfig(
     ),
 );
 
-$pdf = $client->danfe($config)->toPdf($response->xml);
+$pdf = $client->danfse($config)->toPdf($response->xml);
 ```
 
 ### Debug: obter o HTML intermediário
 
 ```php
-$html = $client->danfe()->toHtml($response->xml);
+$html = $client->danfse()->toHtml($response->xml);
 file_put_contents('danfse.html', $html);
 ```
+
+### Geração automática do DANFSE
+
+O PDF é anexado ao `NfseResponse` em `emitir()`, `emitirDecisaoJudicial()`, `substituir()`
+e `consultar()->nfse()` quando a DANFSE é configurada.
+
+**Modo Laravel simples** — via `config/nfsen.php`:
+
+```env
+NFSE_DANFSE_AUTO=true
+NFSE_DANFSE_LOGO_PATH=/path/to/logo.png
+NFSE_DANFSE_MUN_NAME="São Paulo"
+NFSE_DANFSE_MUN_DEPT="SF/SUBTES"
+NFSE_DANFSE_MUN_EMAIL=nfse@sp.gov.br
+```
+
+```php
+$resp = NfsenClient::for($pfx, $senha, $ibge)->emitir($dps);
+echo $resp->pdf;                 // string com o PDF (ou null se render falhou)
+print_r($resp->pdfErrors);       // list<ProcessingMessage> quando render falha
+```
+
+**Modo multi-tenant** — passe o array por requisição:
+
+```php
+$client = NfsenClient::for($pfx, $senha, $tenant->ibge, danfse: [
+    'logo_path' => $tenant->logoPath,
+    'municipality' => [
+        'name' => $tenant->municipio,
+        'email' => $tenant->emailPrefeitura,
+    ],
+]);
+
+$resp = $client->emitir($dps);
+```
+
+**Desligar pontualmente** (mesmo com `NFSE_DANFSE_AUTO=true`):
+
+```php
+$client = NfsenClient::for($pfx, $senha, $ibge, danfse: false);
+```
+
+**Quando o PDF falha** (`$resp->sucesso === true` mas `$resp->pdf === null`): a NFS-e
+foi emitida com sucesso. Tente regenerar sob demanda com
+`$client->danfse($config)->toPdf($resp->xml)`.
+
+**Gotcha do `enabled`**: a flag `nfsen.danfse.enabled` é checada com `=== true` estrito.
+O config publicado aplica `(bool)` cast; se consumir config de outra fonte (ex.: banco de
+dados) garanta o tipo bool. `1`, `'true'`, ou `'on'` **não** ativam auto-render.
 
 ### Atribuição
 

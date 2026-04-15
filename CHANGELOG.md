@@ -6,7 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Renderização local do DANFSE (PDF e HTML) a partir do XML da NFS-e autorizada via `NfsenClient::danfe($config)->toPdf($xml)` / `->toHtml($xml)`. Alternativa ao endpoint ADN oficial quando este estiver indisponível.
+- `NfsenClient::for()` e `NfsenClient::forStandalone()` ganham parâmetro `array|false|null $danfse`
+  que ativa auto-geração de DANFSE PDF em `emitir()`, `emitirDecisaoJudicial()`, `substituir()`
+  e `consultar()->nfse()`. Sentinel `false` força desligar quando config global está ativa.
+- Campos `pdf: ?string` e `pdfErrors: list<ProcessingMessage>` em `NfseResponse`.
+- `DanfseConfig::fromArray()` e `MunicipalityBranding::fromArray()` com validação schema-like
+  (whitelist de chaves + tipos + regras de negócio; `InvalidArgumentException` no boot).
+- Bloco `danfse` em `config/nfsen.php` com `enabled` gate e envs `NFSE_DANFSE_*`.
+- `NfsenClient::danfse()` — gera DANFSE (PDF e HTML) a partir do XML da NFS-e autorizada. Aceita `DanfseConfig|array|null`.
 - Customização via `DanfseConfig` (logo de empresa) e `MunicipalityBranding` (identificação do município emissor).
 - Métodos `label()` e `labelOf(?string)` nos enums `OpSimpNac`, `RegApTribSN`, `RegEspTrib`, `TpRetISSQN`, `TribISSQN` e `NfseAmbiente`.
 - Exceção `XmlParseException`.

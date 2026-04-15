@@ -12,6 +12,7 @@ final readonly class NfseResponse
     /**
      * @param  list<ProcessingMessage>  $alertas
      * @param  list<ProcessingMessage>  $erros
+     * @param  list<ProcessingMessage>  $pdfErrors
      */
     public function __construct(
         public bool $sucesso,
@@ -23,5 +24,7 @@ final readonly class NfseResponse
         public ?int $tipoAmbiente = null,
         public ?string $versaoAplicativo = null,
         public ?string $dataHoraProcessamento = null,
+        public ?string $pdf = null,
+        public array $pdfErrors = [],
     ) {}
 }

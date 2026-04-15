@@ -152,6 +152,51 @@ it('casts integer prefeitura config to string', function () {
     expect($client)->toBeInstanceOf(NfsenClient::class);
 });
 
+it('SP ativa auto-danfse quando config.danfse.enabled=true — emit retorna pdf', function (DpsData $data) {
+    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
+    $gzip = base64_encode((string) gzencode($xml));
+
+    Http::fake(['*' => Http::response([
+        'chaveAcesso' => 'CHAVE_SP_AUTO',
+        'nfseXmlGZipB64' => $gzip,
+        'idDps' => 'DPS1',
+        'tipoAmbiente' => 2,
+        'versaoAplicativo' => '1.0',
+        'dataHoraProcessamento' => '2026-04-15T10:00:00-03:00',
+    ], 201)]);
+
+    config([
+        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfsen.certificado.senha' => 'secret',
+        'nfsen.prefeitura' => '3501608',
+        'nfsen.validate_identity' => false,
+        'nfsen.danfse.enabled' => true,
+        'nfsen.danfse.logo_path' => false,
+        'nfsen.danfse.municipality' => null,
+    ]);
+
+    $resp = app(NfsenClient::class)->emitir($data);
+
+    expect($resp->pdf)->not->toBeNull();
+    expect($resp->pdf)->toStartWith('%PDF-');
+})->with('dpsData');
+
+it('SP não ativa auto-danfse quando config.danfse ausente — emit retorna pdf null', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE'], 201)]);
+
+    config([
+        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfsen.certificado.senha' => 'secret',
+        'nfsen.prefeitura' => '3501608',
+        'nfsen.validate_identity' => false,
+        'nfsen.danfse' => null, // bloco ausente ⇒ isDanfseEnabled(null) = false ⇒ sem auto-render.
+    ]);
+
+    $resp = app(NfsenClient::class)->emitir($data);
+
+    expect($resp->pdf)->toBeNull();
+})->with('dpsData');
+
 it('publishes config file in console', function () {
     $paths = ServiceProvider::pathsToPublish(
         NfsenServiceProvider::class,
