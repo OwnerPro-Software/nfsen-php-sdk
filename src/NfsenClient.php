@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen;
 
+use OwnerPro\Nfsen\Adapters\BaconQrCodeGenerator;
 use OwnerPro\Nfsen\Adapters\CertificateManager;
+use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
+use OwnerPro\Nfsen\Adapters\DanfseHtmlRenderer;
+use OwnerPro\Nfsen\Adapters\DompdfHtmlToPdfConverter;
 use OwnerPro\Nfsen\Adapters\NfseHttpClient;
 use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 use OwnerPro\Nfsen\Adapters\XmlSigner;
@@ -12,13 +16,16 @@ use OwnerPro\Nfsen\Contracts\Driving\CancelsNfse;
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
 use OwnerPro\Nfsen\Contracts\Driving\EmitsNfse;
 use OwnerPro\Nfsen\Contracts\Driving\QueriesNfse;
+use OwnerPro\Nfsen\Contracts\Driving\RendersDanfse;
 use OwnerPro\Nfsen\Contracts\Driving\SubstitutesNfse;
+use OwnerPro\Nfsen\Danfse\DanfseConfig;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Operations\NfseDanfseRenderer;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
@@ -141,5 +148,17 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
     public function consultar(): ConsultsNfse
     {
         return $this->consulter;
+    }
+
+    public function danfe(?DanfseConfig $config = null): RendersDanfse
+    {
+        return new NfseDanfseRenderer(
+            new DanfseDataBuilder,
+            new DanfseHtmlRenderer(
+                new BaconQrCodeGenerator,
+                $config ?? new DanfseConfig,
+            ),
+            new DompdfHtmlToPdfConverter,
+        );
     }
 }

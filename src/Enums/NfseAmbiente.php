@@ -28,4 +28,23 @@ enum NfseAmbiente: string
             ),
         };
     }
+
+    /**
+     * @api
+     */
+    public function label(): string
+    {
+        return match ($this) {
+            self::PRODUCAO => 'Produção',
+            self::HOMOLOGACAO => 'Homologação',
+        };
+    }
+
+    /**
+     * @api
+     */
+    public function isHomologacao(): bool
+    {
+        return $this === self::HOMOLOGACAO;
+    }
 }

@@ -21,6 +21,8 @@
   "require": {
     "php": "^8.3",
     "nfephp-org/sped-common": "^5.1",
+    "dompdf/dompdf": "^3.0",
+    "bacon/bacon-qr-code": "^3.0",
     "illuminate/http": "^11.0|^12.0|^13.0",
     "illuminate/support": "^11.0|^12.0|^13.0",
     "illuminate/contracts": "^11.0|^12.0|^13.0",
@@ -44,7 +46,8 @@
     "vimeo/psalm": "^6.15",
     "tomasvotruba/cognitive-complexity": "^1.1",
     "tomasvotruba/unused-public": "^2.2",
-    "shipmonk/dead-code-detector": "^1.0"
+    "shipmonk/dead-code-detector": "^1.0",
+    "smalot/pdfparser": "^2.10"
   },
   "autoload": {
     "psr-4": {

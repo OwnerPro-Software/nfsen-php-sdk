@@ -12,5 +12,13 @@
         <include>
             <directory>src</directory>
         </include>
+        <exclude>
+            <!--
+                Pure data DTOs: readonly classes com apenas parâmetros promovidos
+                e corpo de construtor vazio. Não têm lógica para testar, e pcov/xdebug
+                não rastreiam construtores sem statements executáveis.
+            -->
+            <directory>src/Danfse/Data</directory>
+        </exclude>
     </source>
 </phpunit>

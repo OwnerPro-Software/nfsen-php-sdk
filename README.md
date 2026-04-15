@@ -357,6 +357,52 @@ try {
 }
 ```
 
+## Renderização local do DANFSE
+
+O SDK gera o DANFSE (PDF ou HTML) localmente a partir do XML da NFS-e autorizada, útil como alternativa quando o endpoint ADN oficial está indisponível ou quando você precisa renderizar offline.
+
+### Uso básico
+
+```php
+use OwnerPro\Nfsen\NfsenClient;
+
+$client = NfsenClient::for($pfx, $senha, $prefeitura);
+$response = $client->emitir($dps);
+
+$pdf = $client->danfe()->toPdf($response->xml);
+file_put_contents('danfse.pdf', $pdf->pdf);
+```
+
+### Customização: logo da empresa e identificação do município
+
+```php
+use OwnerPro\Nfsen\Danfse\DanfseConfig;
+use OwnerPro\Nfsen\Danfse\MunicipalityBranding;
+
+$config = new DanfseConfig(
+    logoPath: '/caminho/para/logo.png',
+    municipality: new MunicipalityBranding(
+        name: 'Município de Canela',
+        department: '(54) 3282-5155',
+        email: 'issqn@canela.rs.gov.br',
+        logoPath: '/caminho/para/brasao.png',
+    ),
+);
+
+$pdf = $client->danfe($config)->toPdf($response->xml);
+```
+
+### Debug: obter o HTML intermediário
+
+```php
+$html = $client->danfe()->toHtml($response->xml);
+file_put_contents('danfse.html', $html);
+```
+
+### Atribuição
+
+A renderização do DANFSE foi portada da biblioteca [`andrevabo/danfse-nacional`](https://github.com/andrevabo/danfse-nacional) (MIT) e adaptada à arquitetura deste SDK. A tabela de municípios IBGE vem de [`kelvins/municipios-brasileiros`](https://github.com/kelvins/municipios-brasileiros) (MIT).
+
 ## Exemplos
 
 Exemplos completos de cada operação estão disponíveis no diretório [`examples/`](examples/).

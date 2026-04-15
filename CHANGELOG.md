@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Renderização local do DANFSE (PDF e HTML) a partir do XML da NFS-e autorizada via `NfsenClient::danfe($config)->toPdf($xml)` / `->toHtml($xml)`. Alternativa ao endpoint ADN oficial quando este estiver indisponível.
+- Customização via `DanfseConfig` (logo de empresa) e `MunicipalityBranding` (identificação do município emissor).
+- Métodos `label()` e `labelOf(?string)` nos enums `OpSimpNac`, `RegApTribSN`, `RegEspTrib`, `TpRetISSQN`, `TribISSQN` e `NfseAmbiente`.
+- Exceção `XmlParseException`.
+
 ## [2.0.0] - 2026-04-03
 
 ### Added

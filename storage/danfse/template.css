@@ -1,0 +1,116 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 7pt;
+    color: #000;
+    margin: 7pt;
+    padding: 4pt 7pt;
+    border: 1pt #000 solid;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+td {
+    padding: 1pt 2pt;
+    border: none;
+    vertical-align: top;
+}
+
+table > tbody > tr > td {
+    padding-bottom: 3pt;
+}
+
+.bordered-section {
+    margin-bottom: 1pt;
+    border-bottom: 1px solid #000;
+}
+
+.bordered-section:last-of-type {
+    border-bottom: none;
+}
+
+.first-section table td {
+    padding-bottom: 0 !important;
+}
+
+.label {
+    font-size: 7pt;
+    font-weight: bold;
+    color: #000;
+    display: block;
+    margin-bottom: 2pt;
+}
+
+.value {
+    font-size: 8pt;
+    font-weight: normal;
+    color: #000;
+}
+
+.section-header {
+    font-weight: bold;
+    font-size: 8pt;
+    text-align: left;
+    padding: 3pt;
+}
+
+.section-title {
+    font-size: 8pt;
+}
+
+.header-table {
+    margin-bottom: 2pt;
+    border-bottom: 1px solid #000;
+}
+
+.header-table td {
+    border: none;
+    padding-bottom: 1pt !important;
+}
+
+.logo-cell {
+    width: 130pt;
+    text-align: left;
+}
+
+.title-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.municipality-cell {
+    width: 150pt;
+    text-align: left;
+    font-size: 5.5pt;
+    vertical-align: top;
+}
+
+.qr-container {
+    text-align: center;
+    /*padding: 3pt;*/
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+/* Watermark para homologação */
+.watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 48pt;
+    font-weight: bold;
+    color: rgba(200, 200, 200, 0.3);
+    z-index: -1;
+    white-space: nowrap;
+}

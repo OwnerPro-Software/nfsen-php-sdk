@@ -162,3 +162,5 @@ function makeNfsenClient(
         consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
     );
 }
+
+require_once __DIR__.'/helpers/danfse.php';

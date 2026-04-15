@@ -56,3 +56,16 @@ it('fromConfig accepts uppercase string values', function () {
     expect(NfseAmbiente::fromConfig('PRODUCAO'))->toBe(NfseAmbiente::PRODUCAO);
     expect(NfseAmbiente::fromConfig('HOMOLOGACAO'))->toBe(NfseAmbiente::HOMOLOGACAO);
 });
+
+it('label for PRODUCAO', function () {
+    expect(NfseAmbiente::PRODUCAO->label())->toBe('Produção');
+});
+
+it('label for HOMOLOGACAO', function () {
+    expect(NfseAmbiente::HOMOLOGACAO->label())->toBe('Homologação');
+});
+
+it('isHomologacao is true only for HOMOLOGACAO', function () {
+    expect(NfseAmbiente::HOMOLOGACAO->isHomologacao())->toBeTrue();
+    expect(NfseAmbiente::PRODUCAO->isHomologacao())->toBeFalse();
+});
