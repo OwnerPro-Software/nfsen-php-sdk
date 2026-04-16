@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [2.3.0] - 2026-04-15
 
 ### Added
 
@@ -17,6 +17,11 @@ All notable changes to this project will be documented in this file.
 - Customização via `DanfseConfig` (logo de empresa) e `MunicipalityBranding` (identificação do município emissor).
 - Métodos `label()` e `labelOf(?string)` nos enums `OpSimpNac`, `RegApTribSN`, `RegEspTrib`, `TpRetISSQN`, `TribISSQN` e `NfseAmbiente`.
 - Exceção `XmlParseException`.
+
+### Changed
+
+- `DanfseDataBuilder`: fallback de `tpAmb` inválido (fora de `{1,2}`) mudou de `PRODUCAO` para `HOMOLOGACAO`. Fail-safe visual — XML suspeito renderiza com watermark "SEM VALIDADE JURÍDICA". Não afeta NFS-e autorizadas reais; SEFIN sempre emite `tpAmb` válido.
+- `config/nfsen.php`: envs vazias (`NFSE_DANFSE_LOGO_PATH=`, `NFSE_DANFSE_LOGO_DATA_URI=`, `NFSE_DANFSE_MUN_LOGO_PATH=`, `NFSE_DANFSE_MUN_LOGO_DATA_URI=`) agora viram `null` em vez de string vazia — evita `InvalidArgumentException` no boot ao tentar carregar arquivo com path `''`.
 
 ## [2.2.1] - 2026-04-08
 
