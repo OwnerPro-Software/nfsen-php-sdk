@@ -125,6 +125,13 @@ final class Formatter
             return $value;
         }
 
-        return mb_substr($value, 0, $limit).$end;
+        $cut = mb_substr($value, 0, $limit);
+        $lastSpace = mb_strrpos($cut, ' ');
+
+        if ($lastSpace !== false) {
+            return mb_substr($cut, 0, $lastSpace).$end;
+        }
+
+        return $cut.$end;
     }
 }

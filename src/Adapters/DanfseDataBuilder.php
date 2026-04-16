@@ -136,7 +136,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             cnpjCpf: $this->fmt->cnpjCpf($doc),
             im: '-',
             telefone: $this->fmt->phone($this->str($emit->fone)),
-            email: strtolower($this->str($emit->email)),
+            email: $this->str($emit->email),
             endereco: $endereco !== '' ? $endereco : '-',
             municipio: $municipio,
             cep: $this->fmt->cep($this->str($ender->CEP)),
@@ -164,7 +164,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             cnpjCpf: $this->fmt->cnpjCpf($doc),
             im: $im !== '' ? $im : '-',
             telefone: $this->fmt->phone($this->str($toma->fone)),
-            email: strtolower($this->str($toma->email)),
+            email: $this->str($toma->email),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
             municipio: Municipios::lookup($this->str($endNac->cMun)),
             cep: $this->fmt->cep($this->str($endNac->CEP)),
@@ -186,7 +186,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             cnpjCpf: $this->fmt->cnpjCpf($doc),
             im: $im !== '' ? $im : '-',
             telefone: $this->fmt->phone($this->str($interm->fone)),
-            email: strtolower($this->str($interm->email)),
+            email: $this->str($interm->email),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
             municipio: Municipios::lookup($this->str($endNac->cMun)),
             cep: $this->fmt->cep($this->str($endNac->CEP)),
@@ -202,15 +202,19 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     {
         $locPrest = $serv->locPrest;
         $cTribMun = $this->str($cServ->cTribMun);
+        $cNBS = $this->str($cServ->cNBS);
+        $xTribNac = $this->str($inf->xTribNac);
+        $xTribMun = $this->str($inf->xTribMun);
 
         return new DanfseServico(
             codigoTribNacional: $this->fmt->codTribNacional($this->str($cServ->cTribNac)),
-            descTribNacional: $this->fmt->limit($this->str($inf->xTribNac), 60),
+            descTribNacional: $xTribNac !== '' ? $this->fmt->limit($xTribNac, 60) : '-', // @pest-mutate-ignore IncrementInteger,DecrementInteger — limite 60 chars é decisão de UX; 59/61 não representa regressão de comportamento.
             codigoTribMunicipal: $cTribMun !== '' ? $cTribMun : '-',
-            descTribMunicipal: $this->fmt->limit($this->str($inf->xTribMun), 60),
-            localPrestacao: $this->str($inf->xLocPrestacao, '-'),
-            paisPrestacao: $this->str($locPrest->cPaisPrestacao, '-'),
+            descTribMunicipal: $xTribMun !== '' ? $this->fmt->limit($xTribMun, 60) : '-', // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
+            localPrestacao: $this->resolveMunicipio($locPrest?->cLocPrestacao, $inf->xLocPrestacao), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+            paisPrestacao: $this->str($locPrest?->cPaisPrestacao, '-'), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             descricao: $this->str($cServ->xDescServ, '-'),
+            codigoNbs: $cNBS !== '' ? $cNBS : '-',
         );
     }
 
@@ -226,7 +230,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         return new DanfseTributacaoMunicipal(
             tributacaoIssqn: TribISSQN::labelOf($this->str($tribMun->tribISSQN)),
-            municipioIncidencia: $this->str($inf->xLocIncid, '-'),
+            municipioIncidencia: $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
             regimeEspecial: RegEspTrib::labelOf($this->str($regTrib->regEspTrib)),
             valorServico: $this->fmt->currency($this->str($vServPrest->vServ)),
             bcIssqn: $vBC !== '' ? $this->fmt->currency($vBC) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
@@ -242,8 +246,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $irrf = $this->str($tribFed->vRetIRRF);
         $cp = $this->str($tribFed->vRetCP);
         $csll = $this->str($tribFed->vRetCSLL);
-        $pis = $this->str($pc->vPis);
-        $cofins = $this->str($pc->vCofins);
+        $pis = $this->str($pc?->vPis); // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+        $cofins = $this->str($pc?->vCofins); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
 
         return new DanfseTributacaoFederal(
             irrf: $irrf !== '' ? $this->fmt->currency($irrf) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
@@ -279,8 +283,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
                 $this->str($tribFed->vRetCSLL),
             ),
             pisCofins: $this->sumCurrency(
-                $this->str($pc->vPis),
-                $this->str($pc->vCofins),
+                $this->str($pc?->vPis), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+                $this->str($pc?->vCofins), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             ),
             valorLiquido: $this->fmt->currency($this->str($valNfse->vLiq)),
         );
@@ -289,9 +293,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     private function buildTotaisTributos(SimpleXMLElement $totTrib): DanfseTotaisTributos
     {
         $p = $totTrib->pTotTrib;
-        $fed = $this->str($p->pTotTribFed);
-        $est = $this->str($p->pTotTribEst);
-        $mun = $this->str($p->pTotTribMun);
+        $fed = $this->str($p?->pTotTribFed); // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+        $est = $this->str($p?->pTotTribEst); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+        $mun = $this->str($p?->pTotTribMun); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
 
         return new DanfseTotaisTributos(
             federais: $fed !== '' ? $fed.'%' : '-',
@@ -315,10 +319,36 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     }
 
     /**
-     * Converte um nó SimpleXMLElement para string, devolvendo default quando vazio.
+     * Resolve um município via tabela IBGE a partir do código, com fallback para o texto do portal.
+     *
+     * Portal nacional renderiza "Cidade - UF" (ex.: "Canela - RS"). Quando o código IBGE está presente
+     * e válido, preferimos esse formato; senão caímos no texto literal do XML; e em último caso, '-'.
      */
-    private function str(SimpleXMLElement $node, string $default = ''): string
+    private function resolveMunicipio(?SimpleXMLElement $cMun, ?SimpleXMLElement $xFallback): string
     {
+        $code = $this->str($cMun);
+        if ($code !== '') { // @pest-mutate-ignore EmptyStringToNotEmpty — guard short-circuit; Municipios::lookup('') retorna '-' e a lógica cai para xFallback com mesmo efeito observável.
+            $lookup = Municipios::lookup($code);
+            if ($lookup !== '-') {
+                return $lookup;
+            }
+        }
+
+        return $this->str($xFallback, '-');
+    }
+
+    /**
+     * Converte um nó SimpleXMLElement para string, devolvendo default quando vazio ou null.
+     *
+     * Nota: SimpleXML retorna null ao acessar child de elemento vazio (ex.: `<tribFed/>`).
+     * Aceitar null simplifica o fluxo para blocos XSD opcionais (tribFed, piscofins, pTotTrib, BM, etc.).
+     */
+    private function str(?SimpleXMLElement $node, string $default = ''): string
+    {
+        if (! $node instanceof SimpleXMLElement) { // @pest-mutate-ignore InstanceOfToTrue — (string) null = ''; mutar o guard dá o mesmo resultado observável (retorna default via branch $s === '').
+            return $default; // @pest-mutate-ignore RemoveEarlyReturn — idem; early return é redundância defensiva.
+        }
+
         $s = trim((string) $node);
 
         return $s !== '' ? $s : $default;

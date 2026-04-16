@@ -126,3 +126,20 @@ it('limit preserves exact-length strings at boundary', function () {
 it('limit respects custom suffix', function () {
     expect($this->fmt->limit('abcdefghij', 5, '>>'))->toBe('abcde>>');
 });
+
+it('limit breaks at word boundary instead of mid-word', function () {
+    // Portal corta em palavra completa para manter legibilidade visual.
+    $value = 'Licenciamento ou cessão de direito de uso de programas de computação.';
+    // 60 chars bruto corta no "co" ("programas de co"). Deve retroceder ao último espaço.
+    expect($this->fmt->limit($value, 60))->toBe('Licenciamento ou cessão de direito de uso de programas de...');
+});
+
+it('limit preserves long single word when no space exists before limit', function () {
+    // Fallback: string sem espaço até o limite, trunca no limite bruto (sem perder info silenciosamente).
+    expect($this->fmt->limit('abcdefghijklmnop', 5))->toBe('abcde...');
+});
+
+it('limit preserves short strings even when they contain spaces', function () {
+    // Boundary: string <= limit não deve ser tocada, mesmo com espaços.
+    expect($this->fmt->limit('ab cd', 5))->toBe('ab cd');
+});

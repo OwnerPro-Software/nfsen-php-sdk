@@ -110,6 +110,56 @@ it('omits logo when logoPath is false', function (): void {
     expect($dataUriCount)->toBe(1); // apenas o QR
 });
 
+it('renders single dash for codigoTribMunicipal when codigo and desc are both empty', function (): void {
+    // Sem cTribMun nem xTribMun, template não deve renderizar "- -" (traço duplo com espaço).
+    $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
+    $base = sampleData();
+    $data = new NfseData(
+        chaveAcesso: $base->chaveAcesso, numeroNfse: $base->numeroNfse,
+        competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
+        numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
+        ambiente: $base->ambiente, emitente: $base->emitente, tomador: $base->tomador,
+        intermediario: $base->intermediario,
+        servico: new DanfseServico(
+            codigoTribNacional: '01.07.00', descTribNacional: 'Desenvolvimento',
+            codigoTribMunicipal: '-', descTribMunicipal: '-',
+            localPrestacao: 'São Paulo', paisPrestacao: '-', descricao: 'X', codigoNbs: '-',
+        ),
+        tribMun: $base->tribMun, tribFed: $base->tribFed, totais: $base->totais,
+        totaisTributos: $base->totaisTributos, informacoesComplementares: $base->informacoesComplementares,
+    );
+
+    $html = $r->render($data);
+
+    expect($html)->not->toContain('- -');
+});
+
+it('prefixes NBS code in informações complementares when codigoNbs is present', function (): void {
+    $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
+
+    $html = $r->render(sampleData(codigoNbs: '111032200'));
+
+    expect($html)->toContain('NBS:');
+    expect($html)->toContain('111032200');
+});
+
+it('bolds the NBS label in informações complementares to match portal', function (): void {
+    // Portal nacional renderiza "NBS:" em negrito. Espelhar paridade visual.
+    $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
+
+    $html = $r->render(sampleData(codigoNbs: '111032200'));
+
+    expect($html)->toContain('<strong>NBS:</strong>');
+});
+
+it('omits NBS prefix when codigoNbs is dash', function (): void {
+    $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
+
+    $html = $r->render(sampleData(codigoNbs: '-'));
+
+    expect($html)->not->toContain('NBS: ');
+});
+
 it('escapes HTML in data fields (XSS prevention)', function (): void {
     $malicious = sampleParticipante("<script>alert('xss')</script>");
     $data = new NfseData(
@@ -117,7 +167,7 @@ it('escapes HTML in data fields (XSS prevention)', function (): void {
         numeroDps: '1', serieDps: '1', emissaoDps: '-',
         ambiente: NfseAmbiente::PRODUCAO,
         emitente: $malicious, tomador: sampleParticipante(), intermediario: null,
-        servico: new DanfseServico('-', '-', '-', '-', '-', '-', '-'),
+        servico: new DanfseServico('-', '-', '-', '-', '-', '-', '-', '-'),
         tribMun: new DanfseTributacaoMunicipal('-', '-', '-', '-', '-', '-', '-', '-'),
         tribFed: new DanfseTributacaoFederal('-', '-', '-', '-', '-'),
         totais: new DanfseTotais('-', '-', '-', '-', '-', '-', '-'),

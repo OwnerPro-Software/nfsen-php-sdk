@@ -17,5 +17,6 @@ final readonly class DanfseServico
         public string $localPrestacao,
         public string $paisPrestacao,
         public string $descricao,
+        public string $codigoNbs,
     ) {}
 }

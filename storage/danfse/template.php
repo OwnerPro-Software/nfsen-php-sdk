@@ -29,8 +29,8 @@
                 <?php endif; ?>
             </td>
             <td class="title-cell">
-                <div style="font-size: 10pt; font-weight: bold;">DANFSe v1.0</div>
-                <div style="font-size: 8pt; font-weight: bold;">Documento Auxiliar da NFS-e</div>
+                <div style="font-size: 9pt; font-weight: bold;">DANFSe v1.0</div>
+                <div style="font-size: 7pt; font-weight: bold;">Documento Auxiliar da NFS-e</div>
                 <?php if ($data->ambiente->isHomologacao()): ?>
                     <div style="color: red; font-weight: bold;">NFS-e SEM VALIDADE JURÍDICA</div>
                 <?php endif; ?>
@@ -60,7 +60,7 @@
 
     <!-- Grade de Identificação -->
     <div class="bordered-section first-section">
-        <table style="min-height: 110px;">
+        <table style="min-height: 100px;">
             <tr>
                 <td colspan="3">
                     <span class="label">Chave de Acesso da NFS-e</span>
@@ -68,8 +68,8 @@
                 </td>
                 <td style="width: 25%; position: relative;" rowspan="3">
                     <div class="qr-container">
-                        <img src="<?= $h($qrCode) ?>" alt="QR Code" style="width: 70px; height: 70px; display: block; margin: 0 auto;" />
-                        <div style="font-size: 6pt; padding-top: 2pt; text-align: left; line-height: 1.2;">
+                        <img src="<?= $h($qrCode) ?>" alt="QR Code" style="width: 60px; height: 60px; display: block; margin: 0 auto;" />
+                        <div style="font-size: 5pt; padding-top: 1pt; text-align: left; line-height: 1.15;">
                             A autenticidade desta NFS-e pode ser verificada pela leitura deste código QR ou pela consulta da chave de acesso no portal nacional da NFS-e
                         </div>
                     </div>
@@ -275,11 +275,11 @@
             <tr>
                 <td style="width: 25%;">
                     <span class="label">Código de Tributação Nacional</span>
-                    <span class="value"><?= $h($data->servico->codigoTribNacional) ?> - <?= $h($data->servico->descTribNacional) ?></span>
+                    <span class="value"><?= $h($data->servico->codigoTribNacional) ?><?= $data->servico->descTribNacional !== '-' ? ' - '.$h($data->servico->descTribNacional) : '' ?></span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Código de Tributação Municipal</span>
-                    <span class="value"><?= $h($data->servico->codigoTribMunicipal) ?> - <?= $h($data->servico->descTribMunicipal) ?></span>
+                    <span class="value"><?= $h($data->servico->codigoTribMunicipal) ?><?= $data->servico->descTribMunicipal !== '-' ? ' - '.$h($data->servico->descTribMunicipal) : '' ?></span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Local da Prestação</span>
@@ -293,7 +293,7 @@
             <tr>
                 <td colspan="4">
                     <span class="label">Descrição do Serviço</span>
-                    <span class="value"><?= $h($data->servico->descricao) ?></span>
+                    <div class="value expandable-text"><?= $h($data->servico->descricao) ?></div>
                 </td>
             </tr>
         </table>
@@ -459,8 +459,13 @@
                 </td>
             </tr>
             <tr>
-                <td style="min-height: 30pt; padding: 5pt;">
-                    <span class="value"><?= $h($data->informacoesComplementares) ?></span>
+                <td style="min-height: 20pt; padding: 3pt 5pt;">
+                    <div class="expandable-text">
+                        <?php if ($data->servico->codigoNbs !== '-'): ?>
+                        <span class="value"><strong>NBS:</strong> <?= $h($data->servico->codigoNbs) ?></span><br>
+                        <?php endif; ?>
+                        <span class="value"><?= $h($data->informacoesComplementares) ?></span>
+                    </div>
                 </td>
             </tr>
         </table>

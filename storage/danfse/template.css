@@ -4,13 +4,20 @@
     box-sizing: border-box;
 }
 
+@page {
+    size: A4 portrait;
+    margin: 0;
+}
+
 body {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 7pt;
+    font-size: 6.5pt;
     color: #000;
     margin: 7pt;
     padding: 4pt 7pt;
     border: 1pt #000 solid;
+    max-height: 814pt;
+    overflow: hidden;
 }
 
 table {
@@ -20,17 +27,17 @@ table {
 }
 
 td {
-    padding: 1pt 2pt;
+    padding: 0.5pt 2pt;
     border: none;
     vertical-align: top;
 }
 
 table > tbody > tr > td {
-    padding-bottom: 3pt;
+    padding-bottom: 2pt;
 }
 
 .bordered-section {
-    margin-bottom: 1pt;
+    margin-bottom: 0;
     border-bottom: 1px solid #000;
 }
 
@@ -43,32 +50,32 @@ table > tbody > tr > td {
 }
 
 .label {
-    font-size: 7pt;
+    font-size: 6.5pt;
     font-weight: bold;
     color: #000;
     display: block;
-    margin-bottom: 2pt;
+    margin-bottom: 1pt;
 }
 
 .value {
-    font-size: 8pt;
+    font-size: 7pt;
     font-weight: normal;
     color: #000;
 }
 
 .section-header {
     font-weight: bold;
-    font-size: 8pt;
+    font-size: 7pt;
     text-align: left;
-    padding: 3pt;
+    padding: 2pt;
 }
 
 .section-title {
-    font-size: 8pt;
+    font-size: 7pt;
 }
 
 .header-table {
-    margin-bottom: 2pt;
+    margin-bottom: 1pt;
     border-bottom: 1px solid #000;
 }
 
@@ -96,7 +103,6 @@ table > tbody > tr > td {
 
 .qr-container {
     text-align: center;
-    /*padding: 3pt;*/
     position: absolute;
     right: 0;
     top: 0;
@@ -113,4 +119,10 @@ table > tbody > tr > td {
     color: rgba(200, 200, 200, 0.3);
     z-index: -1;
     white-space: nowrap;
+}
+
+/* Overflow protection: garante 1 página mesmo com descrições longas */
+.expandable-text {
+    max-height: 60pt;
+    overflow: hidden;
 }

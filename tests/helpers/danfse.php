@@ -36,7 +36,7 @@ function sampleParticipante(string $nome = 'ACME LTDA'): DanfseParticipante
     );
 }
 
-function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null): NfseData
+function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null, string $codigoNbs = '-'): NfseData
 {
     return new NfseData(
         chaveAcesso: '3303302112233450000195000000000000100000000001',
@@ -50,6 +50,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
             codigoTribNacional: '01.07.00', descTribNacional: 'Desenvolvimento de software',
             codigoTribMunicipal: '007', descTribMunicipal: 'Desenvolvimento',
             localPrestacao: 'São Paulo', paisPrestacao: '-', descricao: 'Projeto Pulsar',
+            codigoNbs: $codigoNbs,
         ),
         tribMun: new DanfseTributacaoMunicipal(
             tributacaoIssqn: 'Operação Tributável', municipioIncidencia: 'São Paulo - SP',
