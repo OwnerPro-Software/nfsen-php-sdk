@@ -14,6 +14,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 - Cancelamento de NFSe (`cancelar`)
 - Substituição de NFSe (`substituir`)
 - Consulta por chave de acesso, DPS, DANFSE (URL do PDF), eventos e verificação de DPS
+- Distribuição de documentos fiscais via ADN — consulta em lote por NSU (`distribuicao`)
 - Assinatura digital XML com certificado A1 (PFX/P12)
 - Validação XSD dos documentos
 - Eventos Laravel opcionais (`NfseEmitted`, `NfseCancelled`, `NfseRejected`, etc.)
@@ -232,6 +233,38 @@ $response = $client->consultar()->eventos(
 $processada = $client->consultar()->verificarDps($idDps); // true ou false
 ```
 
+### Distribuição (ADN Contribuinte)
+
+Consulta em lote de documentos fiscais via NSU (Número Sequencial Único) através do ADN (Ambiente de Dados Nacional). Útil para importação em massa de NFS-e.
+
+```php
+// Buscar lote de documentos a partir do NSU 0
+$response = $client->distribuicao()->documentos(0);
+
+if ($response->sucesso) {
+    foreach ($response->lote as $doc) {
+        echo "NSU: {$doc->nsu} | Tipo: {$doc->tipoDocumento->value} | Chave: {$doc->chaveAcesso}\n";
+        // $doc->arquivoXml contém o XML já descomprimido
+    }
+}
+
+// Buscar documento unitário pelo NSU
+$response = $client->distribuicao()->documento(42);
+
+// Buscar todos os eventos de uma NFS-e
+$response = $client->distribuicao()->eventos($chave);
+
+// Usar CNPJ diferente do certificado (procurador/filiais)
+$response = $client->distribuicao()->documentos(0, '99999999000100');
+```
+
+O fluxo típico de importação:
+
+1. Comece com NSU `0`
+2. Chame `documentos($nsu)` — receba um lote
+3. Guarde o maior NSU do lote
+4. Repita com o próximo NSU até `statusProcessamento` ser `NenhumDocumentoLocalizado`
+
 ### Laravel Facade
 
 ```php
@@ -318,6 +351,34 @@ Retornado por `consultar()->eventos()`.
 | `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
 | `dataHoraProcessamento` | `?string` | Data/hora do processamento |
 
+### `DistribuicaoResponse`
+
+Retornado por `distribuicao()->documentos()`, `distribuicao()->documento()` e `distribuicao()->eventos()`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `sucesso` | `bool` | `true` quando `statusProcessamento` é `DocumentosLocalizados` |
+| `statusProcessamento` | `StatusDistribuicao` | Status: `Rejeicao`, `NenhumDocumentoLocalizado`, `DocumentosLocalizados` |
+| `lote` | `list<DocumentoFiscal>` | Documentos fiscais retornados |
+| `alertas` | `list<ProcessingMessage>` | Alertas não-bloqueantes |
+| `erros` | `list<ProcessingMessage>` | Erros de processamento |
+| `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
+| `versaoAplicativo` | `?string` | Versão do aplicativo |
+| `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+
+### `DocumentoFiscal`
+
+Cada item do lote na `DistribuicaoResponse`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `nsu` | `?int` | Número Sequencial Único |
+| `chaveAcesso` | `?string` | Chave de acesso da NFS-e |
+| `tipoDocumento` | `TipoDocumentoFiscal` | Tipo: `Nfse`, `Dps`, `Evento`, `Cnc`, `PedidoRegistroEvento`, `Nenhum` |
+| `tipoEvento` | `?TipoEventoDistribuicao` | Tipo do evento (quando `tipoDocumento` é `Evento`) |
+| `arquivoXml` | `?string` | XML do documento (já descomprimido) |
+| `dataHoraGeracao` | `?string` | Data/hora de geração |
+
 ### `ProcessingMessage`
 
 Representa uma mensagem de erro ou alerta da API:
@@ -328,6 +389,7 @@ Representa uma mensagem de erro ou alerta da API:
 | `codigo` | `?string` | Código do erro/alerta |
 | `descricao` | `?string` | Descrição detalhada |
 | `complemento` | `?string` | Informação complementar |
+| `parametros` | `list<string>` | Parâmetros adicionais da mensagem |
 
 ## Exceções
 

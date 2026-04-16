@@ -420,3 +420,66 @@ it('getBytes does not send Accept: application/json header', function () {
 
     Http::assertSent(fn (Request $req) => ! str_contains($req->header('Accept')[0] ?? '', 'application/json'));
 });
+
+it('getResponse returns HttpResponse with status, json, and body on 200', function () {
+    $jsonBody = ['StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS', 'LoteDFe' => []];
+    Http::fake(['*' => Http::response($jsonBody, 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+    $response = $client->getResponse('https://example.com/adn/DFe/0');
+
+    expect($response)
+        ->statusCode->toBe(200)
+        ->body->toBe(json_encode($jsonBody));
+    expect($response->json)->toBe($jsonBody);
+});
+
+it('getResponse returns HttpResponse on 429 with text body', function () {
+    Http::fake(['*' => Http::response('Rate limit exceeded', 429)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+    $response = $client->getResponse('https://example.com/adn/DFe/0');
+
+    expect($response)
+        ->statusCode->toBe(429)
+        ->body->toBe('Rate limit exceeded');
+    expect($response->json)->toBe([]);
+});
+
+it('getResponse returns HttpResponse on 302 redirect without following', function () {
+    Http::fake(['*' => Http::response(null, 302, ['Location' => 'https://other.com'])]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+    $response = $client->getResponse('https://example.com/adn/DFe/0');
+
+    expect($response)
+        ->statusCode->toBe(302);
+    expect($response->json)->toBe([]);
+
+    Http::assertSentCount(1);
+});
+
+it('getResponse returns HttpResponse on 500 with json body', function () {
+    $errorBody = ['error' => 'Internal Server Error'];
+    Http::fake(['*' => Http::response($errorBody, 500)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+    $response = $client->getResponse('https://example.com/adn/DFe/0');
+
+    expect($response)
+        ->statusCode->toBe(500)
+        ->body->toBe(json_encode($errorBody));
+    expect($response->json)->toBe($errorBody);
+});
+
+it('getResponse returns HttpResponse on 200 with empty body', function () {
+    Http::fake(['*' => Http::response(null, 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+    $response = $client->getResponse('https://example.com/adn/DFe/0');
+
+    expect($response)
+        ->statusCode->toBe(200)
+        ->body->toBe('');
+    expect($response->json)->toBe([]);
+});

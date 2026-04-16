@@ -15,7 +15,9 @@ use OwnerPro\Nfsen\Adapters\PrefeituraResolver;
 use OwnerPro\Nfsen\Adapters\XmlSigner;
 use OwnerPro\Nfsen\Contracts\Driving\CancelsNfse;
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\DistributesNfse;
 use OwnerPro\Nfsen\Contracts\Driving\EmitsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\QueriesDistribuicao;
 use OwnerPro\Nfsen\Contracts\Driving\QueriesNfse;
 use OwnerPro\Nfsen\Contracts\Driving\RendersDanfse;
 use OwnerPro\Nfsen\Contracts\Driving\SubstitutesNfse;
@@ -30,6 +32,7 @@ use OwnerPro\Nfsen\Operations\Decorators\SubstitutorWithDanfse;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
 use OwnerPro\Nfsen\Operations\NfseDanfseRenderer;
+use OwnerPro\Nfsen\Operations\NfseDistributor;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 use OwnerPro\Nfsen\Operations\NfseSubstitutor;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
@@ -46,13 +49,14 @@ use SensitiveParameter;
  *
  * @api
  */
-final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse, SubstitutesNfse
+final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistribuicao, QueriesNfse, SubstitutesNfse
 {
     public function __construct(
         private EmitsNfse $emitter,
         private CancelsNfse $canceller,
         private SubstitutesNfse $substitutor,
         private ConsultsNfse $consulter,
+        private DistributesNfse $distributor,
     ) {}
 
     /**
@@ -197,11 +201,14 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
         $queryExecutor = new NfseResponsePipeline($httpClient);
         $seFinUrl = $prefeituraResolver->resolveSeFinUrl($prefeitura, $ambiente);
         $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
+        $identity = $certManager->extract();
+        $cnpjAutor = $identity['cnpj'] ?? ''; // @pest-mutate-ignore CoalesceRemoveLeft,EmptyStringToNotEmpty — cnpj may be null for CPF-only certs
 
         $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
         $canceller = new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente);
         $substitutor = new NfseSubstitutor($emitter);
         $consulter = new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura);
+        $distributor = new NfseDistributor($httpClient, $prefeituraResolver, $prefeitura, $adnUrl, $cnpjAutor);
 
         if (in_array($danfse, [null, false, []], true)) {
             return new self(
@@ -209,6 +216,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
                 canceller: $canceller,
                 substitutor: $substitutor,
                 consulter: $consulter,
+                distributor: $distributor,
             );
         }
 
@@ -219,6 +227,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
             canceller: $canceller,
             substitutor: new SubstitutorWithDanfse($substitutor, $renderer),
             consulter: new ConsulterWithDanfse($consulter, $renderer),
+            distributor: $distributor,
         );
     }
 
@@ -248,6 +257,11 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesNfse,
     public function consultar(): ConsultsNfse
     {
         return $this->consulter;
+    }
+
+    public function distribuicao(): DistributesNfse
+    {
+        return $this->distributor;
     }
 
     /**

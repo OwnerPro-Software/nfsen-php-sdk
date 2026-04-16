@@ -18,6 +18,42 @@ All notable changes to this project will be documented in this file.
 - Métodos `label()` e `labelOf(?string)` nos enums `OpSimpNac`, `RegApTribSN`, `RegEspTrib`, `TpRetISSQN`, `TribISSQN` e `NfseAmbiente`.
 - Exceção `XmlParseException`.
 
+## [2.2.1] - 2026-04-08
+
+### Fixed
+- `ProcessingMessage::fromArray()` agora converte valores não-string (arrays/objetos retornados pela API) para JSON em vez de falhar com type error. Corrige crash quando campo `Mensagem` vem como objeto Enum do Swagger do ADN.
+
+## [2.2.0] - 2026-04-08
+
+### Added
+- `HttpResponse` DTO com `statusCode`, `json` e `body` para respostas HTTP completas.
+- Interface `SendsRawHttpRequests` com método `getResponse()` para acesso a respostas HTTP sem perda de informação.
+- `DistribuicaoResponse::fromHttpResponse()` — novo factory method que preserva HTTP status code e body raw em cenários de erro.
+- `NfseHttpClient` agora implementa `SendsRawHttpRequests` além de `SendsHttpRequests`.
+
+### Changed
+- `NfseDistributor` usa `SendsRawHttpRequests::getResponse()` em vez de `SendsHttpRequests::get()`, preservando HTTP status code e body raw em todas as respostas de erro.
+
+### Fixed
+- Respostas HTTP 4xx com body vazio (ex: 429 rate limiting), redirects (3xx) e respostas 2xx com corpo vazio agora são diagnosticáveis — o `DistribuicaoResponse` inclui o status code no `codigo` do erro e o body raw no `complemento`.
+- `ProcessingMessage::fromArray()` agora converte valores não-string (arrays/objetos retornados pela API) para JSON em vez de falhar com type error. Corrige crash quando campo `Mensagem` vem como objeto Enum do Swagger do ADN.
+
+## [2.1.1] - 2026-04-08
+
+### Fixed
+- `DistribuicaoResponse::fromApiResult()` agora inclui o JSON completo da API no campo `complemento` e as chaves presentes no `descricao` quando `StatusProcessamento` é ausente ou inválido, facilitando o diagnóstico de respostas inesperadas.
+
+## [2.1.0] - 2026-04-08
+
+### Added
+- Distribuição de documentos fiscais via ADN Contribuinte (`$client->distribuicao()`)
+  - `documentos(int $nsu)` — consulta em lote por NSU
+  - `documento(int $nsu)` — consulta unitária por NSU
+  - `eventos(string $chave)` — consulta todos os eventos de uma NFS-e
+- Novos DTOs: `DistribuicaoResponse`, `DocumentoFiscal`
+- Novos enums: `StatusDistribuicao`, `TipoDocumentoFiscal`, `TipoEventoDistribuicao`
+- Campo `parametros` adicionado ao `ProcessingMessage`
+
 ## [2.0.0] - 2026-04-03
 
 ### Added

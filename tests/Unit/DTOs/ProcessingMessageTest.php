@@ -127,6 +127,46 @@ it('fromApiResult discards empty erro array', function () {
     expect($list)->toBeEmpty();
 });
 
+it('coerces non-string Mensagem to json preserving unicode and slashes', function () {
+    /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
+    $msg = ProcessingMessage::fromArray([
+        'Mensagem' => ['Tipo' => 'ALERTA', 'Descrição' => 'caminho/para/recurso'],
+        'Codigo' => 'A001',
+    ]);
+
+    expect($msg)
+        ->mensagem->toBe('{"Tipo":"ALERTA","Descrição":"caminho/para/recurso"}')
+        ->codigo->toBe('A001');
+});
+
+it('coerces non-string values in all fields to json', function () {
+    /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
+    $msg = ProcessingMessage::fromArray([
+        'mensagem' => ['type' => 'error'],
+        'codigo' => 123,
+        'descricao' => ['detail' => 'oops'],
+        'complemento' => true,
+    ]);
+
+    expect($msg)
+        ->mensagem->toBe('{"type":"error"}')
+        ->codigo->toBe('123')
+        ->descricao->toBe('{"detail":"oops"}')
+        ->complemento->toBe('true');
+});
+
+it('returns null for non-string non-encodable values', function () {
+    /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
+    $msg = ProcessingMessage::fromArray([
+        'mensagem' => null,
+        'codigo' => null,
+    ]);
+
+    expect($msg)
+        ->mensagem->toBeNull()
+        ->codigo->toBeNull();
+});
+
 it('creates from array with capitalized keys', function () {
     $msg = ProcessingMessage::fromArray([
         'Mensagem' => 'Mensagem',
@@ -161,4 +201,44 @@ it('fromApiResult normalizes capitalized keys in erros list', function () {
     expect($list)->toHaveCount(1);
     expect($list[0]->codigo)->toBe('E0037');
     expect($list[0]->descricao)->toBe('Município inexistente');
+});
+
+it('constructs with parametros', function () {
+    $msg = new ProcessingMessage(
+        mensagem: 'Msg',
+        codigo: 'E001',
+        parametros: ['param1', 'param2'],
+    );
+
+    expect($msg->parametros)->toBe(['param1', 'param2']);
+});
+
+it('defaults parametros to empty array', function () {
+    $msg = new ProcessingMessage;
+
+    expect($msg->parametros)->toBe([]);
+});
+
+it('creates from array with Parametros key', function () {
+    $msg = ProcessingMessage::fromArray([
+        'Codigo' => 'E001',
+        'Parametros' => ['param1', 'param2'],
+    ]);
+
+    expect($msg->parametros)->toBe(['param1', 'param2']);
+    expect($msg->codigo)->toBe('E001');
+});
+
+it('creates from array with lowercase parametros key', function () {
+    $msg = ProcessingMessage::fromArray([
+        'parametros' => ['p1'],
+    ]);
+
+    expect($msg->parametros)->toBe(['p1']);
+});
+
+it('defaults parametros to empty array when key absent in fromArray', function () {
+    $msg = ProcessingMessage::fromArray(['codigo' => 'E001']);
+
+    expect($msg->parametros)->toBe([]);
 });
