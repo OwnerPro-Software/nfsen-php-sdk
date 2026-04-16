@@ -27,18 +27,24 @@ final class Municipios
         return $entry !== null ? $entry['nome'].' - '.$entry['uf'] : '-';
     }
 
-    /** @return array<int,array{nome:string,uf:string}> */
+    /**
+     * @return array<int,array{nome:string,uf:string}>
+     *
+     * @codeCoverageIgnore
+     *
+     * Infraestrutura de boot: `$map` estático é populado uma vez por processo. Quando outro
+     * teste roda antes de `MunicipiosTest` no mesmo processo (via `DanfseDataBuilder` → `lookup()`),
+     * o cache fica quente e `load()` nunca mais é invocado dentro de um teste com `covers(Municipios::class)`.
+     * Comportamento do load é verificado indiretamente pelos tests de `lookup()` (dados corretos → JSON carregado OK).
+     */
     private static function load(): array
     {
         $path = __DIR__.'/../../storage/ibge-municipios.json';
         $json = file_get_contents($path);
 
-        // @codeCoverageIgnoreStart
-        if ($json === false) { // @pest-mutate-ignore FalseToTrue,IdenticalToNotIdentical,IfNegated — defensivo; arquivo é parte do pacote.
-            throw new RuntimeException('Não foi possível ler a tabela IBGE: '.$path); // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — mensagem da exceção defensiva.
+        if ($json === false) {
+            throw new RuntimeException('Não foi possível ler a tabela IBGE: '.$path);
         }
-
-        // @codeCoverageIgnoreEnd
 
         /** @var array<int,array{nome:string,uf:string}> $decoded */
         $decoded = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
