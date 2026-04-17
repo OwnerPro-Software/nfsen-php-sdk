@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.1] - 2026-04-16
+
+### Added
+
+- Campo `codigoNbs` em `DanfseServico` — código NBS (Nomenclatura Brasileira de Serviços) extraído de `cServ/cNBS`.
+- Renderização de **NBS:** (label em negrito) no bloco INFORMAÇÕES COMPLEMENTARES do DANFSE quando `cNBS` presente na NFS-e.
+- Resolução de município via tabela IBGE para Local da Prestação (`cLocPrestacao`) e Município de Incidência (`cLocIncid`), produzindo "Cidade - UF" em paridade com o portal nacional.
+
+### Fixed
+
+- `DanfseDataBuilder`: crash ao processar XMLs sem blocos opcionais (`tribFed`, `piscofins`, `pTotTrib`, `end` do tomador/intermediário). Método `str()` agora aceita `?SimpleXMLElement`; acessos a filhos opcionais usam `?->`.
+- `DanfseDataBuilder`: Código de Tributação Municipal exibia "- -" quando `cTribMun` e `xTribMun` ausentes. Agora exibe "-".
+- `DanfseDataBuilder`: `descTribNacional`/`descTribMunicipal` retornavam string vazia (em vez de "-") quando `xTribNac`/`xTribMun` ausentes, causando concatenação espúria no template.
+- `DanfseDataBuilder`: email de emitente/tomador/intermediário era forçado a minúsculas via `strtolower()`. Portal nacional preserva o case do XML; SDK agora também preserva.
+- `Formatter::limit()`: truncava no meio de palavra (ex.: "programas de co..."). Agora retrocede ao último espaço antes do limite (ex.: "programas de...").
+
+### Changed
+
+- DANFSE CSS compactado para maior paridade visual com o portal nacional: fontes reduzidas (body 7pt→6.5pt, labels 7pt→6.5pt, values 8pt→7pt), padding reduzido, QR Code 70px→60px. Adicionado `@page { size: A4 }`, `max-height` e `overflow: hidden` para garantir renderização em página única.
+
 ## [2.3.0] - 2026-04-15
 
 ### Added
