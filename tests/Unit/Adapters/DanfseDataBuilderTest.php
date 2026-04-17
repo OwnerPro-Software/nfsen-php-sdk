@@ -447,6 +447,30 @@ it('returns empty tomador when toma block is absent', function () {
     expect($data->tomador->municipio)->toBe('-');
 });
 
+it('builds tomador gracefully when end block is absent', function () {
+    // Tomador com CNPJ/xNome mas sem <end> — endereço opcional no XSD (minOccurs=0).
+    // SimpleXML retorna null para filhos de elemento vazio; builder não deve crashar.
+    $xml = preg_replace('|<end>.*?</end>|s', '', $this->xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->tomador->nome)->toBe('CLIENTE FICTICIO COMERCIO S.A.');
+    expect($data->tomador->cnpjCpf)->toBe('91.712.343/0001-34');
+    expect($data->tomador->endereco)->toBe('-');
+    expect($data->tomador->municipio)->toBe('-');
+    expect($data->tomador->cep)->toBe('-');
+});
+
+it('builds intermediario gracefully when end block is absent', function () {
+    // Intermediário com CNPJ/xNome mas sem <end>.
+    $xml = preg_replace('|(<interm>.*?)<end>.*?</end>(.*?</interm>)|s', '$1$2', $this->xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->intermediario?->nome)->toBe('INTERMEDIARIO FICTICIO LTDA');
+    expect($data->intermediario?->endereco)->toBe('-');
+    expect($data->intermediario?->municipio)->toBe('-');
+    expect($data->intermediario?->cep)->toBe('-');
+});
+
 it('handles emitente without CNPJ CPF or NIF', function () {
     $xml = preg_replace('|<CNPJ>[^<]+</CNPJ>|', '', $this->xml, 1);
     $data = $this->builder->build((string) $xml);

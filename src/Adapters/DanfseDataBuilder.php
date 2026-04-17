@@ -155,7 +155,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $endNac = $end->endNac;
         $doc = $this->firstNonEmpty($toma->CNPJ, $toma->CPF, $toma->NIF);
 
-        $endereco = $this->joinAddress($end->xLgr, $end->nro, $end->xBairro);
+        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
         $im = $this->str($toma->IM);
 
@@ -166,8 +166,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             telefone: $this->fmt->phone($this->str($toma->fone)),
             email: $this->str($toma->email),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
-            municipio: Municipios::lookup($this->str($endNac->cMun)),
-            cep: $this->fmt->cep($this->str($endNac->CEP)),
+            municipio: Municipios::lookup($this->str($endNac?->cMun)), // @pest-mutate-ignore RemoveNullSafeOperator — endNac null quando <end> ausente.
+            cep: $this->fmt->cep($this->str($endNac?->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
         );
     }
 
@@ -177,7 +177,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $endNac = $end->endNac;
         $doc = $this->firstNonEmpty($interm->CNPJ, $interm->CPF, $interm->NIF);
 
-        $endereco = $this->joinAddress($end->xLgr, $end->nro, $end->xBairro);
+        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
         $im = $this->str($interm->IMPrestMun);
 
@@ -188,8 +188,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             telefone: $this->fmt->phone($this->str($interm->fone)),
             email: $this->str($interm->email),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
-            municipio: Municipios::lookup($this->str($endNac->cMun)),
-            cep: $this->fmt->cep($this->str($endNac->CEP)),
+            municipio: Municipios::lookup($this->str($endNac?->cMun)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            cep: $this->fmt->cep($this->str($endNac?->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
         );
     }
 
@@ -366,7 +366,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         return '';
     }
 
-    private function joinAddress(SimpleXMLElement $xLgr, SimpleXMLElement $nro, SimpleXMLElement $xBairro): string
+    private function joinAddress(?SimpleXMLElement $xLgr, ?SimpleXMLElement $nro, ?SimpleXMLElement $xBairro): string
     {
         return implode(', ', array_filter([
             trim((string) $xLgr),
