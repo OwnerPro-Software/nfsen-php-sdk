@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0] - 2026-05-11
+
+### Added
+
+- Campos `mensagemErro` e `correcao` no evento `NfseRejected` para facilitar debug e logs operacionais sem precisar inspecionar o payload da resposta. `mensagemErro` é preenchido com `ProcessingMessage::descricao` (fallback `mensagem`); `correcao` espelha `ProcessingMessage::complemento`. Ambos são `?string` com default `null` — retrocompatível com listeners que só leem `operacao`/`codigoErro`.
+
 ## [2.3.1] - 2026-04-16
 
 ### Added

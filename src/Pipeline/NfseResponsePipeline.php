@@ -44,7 +44,13 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
 
             if (! empty($result['erros']) || isset($result['erro'])) {
                 $erros = ProcessingMessage::fromApiResult($result);
-                $this->dispatchEvent(new NfseRejected($operacao, $erros[0]->codigo ?? 'UNKNOWN'));
+                $firstError = $erros[0] ?? null;
+                $this->dispatchEvent(new NfseRejected(
+                    $operacao,
+                    $firstError->codigo ?? 'UNKNOWN',
+                    $firstError->descricao ?? $firstError->mensagem ?? null,
+                    $firstError->complemento ?? null,
+                ));
 
                 return new NfseResponse(
                     sucesso: false,
@@ -102,7 +108,13 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
 
             if (! empty($result['erros']) || isset($result['erro'])) {
                 $erros = ProcessingMessage::fromApiResult($result);
-                $this->dispatchEvent(new NfseRejected($operacao, $erros[0]->codigo ?? 'UNKNOWN'));
+                $firstError = $erros[0] ?? null;
+                $this->dispatchEvent(new NfseRejected(
+                    $operacao,
+                    $firstError->codigo ?? 'UNKNOWN',
+                    $firstError->descricao ?? $firstError->mensagem ?? null,
+                    $firstError->complemento ?? null,
+                ));
             } else {
                 $this->dispatchEvent(new NfseQueried($operacao));
             }

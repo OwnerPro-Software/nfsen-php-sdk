@@ -12,5 +12,7 @@ final readonly class NfseRejected
     public function __construct(
         public string $operacao,
         public string $codigoErro,
+        public ?string $mensagemErro = null,
+        public ?string $correcao = null,
     ) {}
 }

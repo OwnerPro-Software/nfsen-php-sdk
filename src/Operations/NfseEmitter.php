@@ -73,8 +73,13 @@ final readonly class NfseEmitter implements EmitsNfse
 
             if (! empty($result['erros']) || isset($result['erro'])) {
                 $erros = ProcessingMessage::fromApiResult($result);
-                $codigo = $erros[0]->codigo ?? 'UNKNOWN';
-                $this->dispatchEvent(new NfseRejected($operacao, $codigo));
+                $firstError = $erros[0] ?? null;
+                $this->dispatchEvent(new NfseRejected(
+                    $operacao,
+                    $firstError->codigo ?? 'UNKNOWN',
+                    $firstError->descricao ?? $firstError->mensagem ?? null,
+                    $firstError->complemento ?? null,
+                ));
 
                 return new NfseResponse(
                     sucesso: false,

@@ -86,14 +86,32 @@ it('dispatches NfseRejected on emitir when response has no chaveAcesso', functio
     Event::assertNotDispatched(NfseEmitted::class);
 })->with('dpsData');
 
-it('dispatches NfseRejected on emitir rejection', function (DpsData $data) {
+it('dispatches NfseRejected on emitir rejection with mensagemErro and correcao', function (DpsData $data) {
     Event::fake();
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Erro', 'codigo' => 'E001']]], 200)]);
+    Http::fake(['*' => Http::response([
+        'erros' => [[
+            'descricao' => 'CNPJ inválido',
+            'codigo' => 'E001',
+            'complemento' => 'Verifique o CNPJ do prestador',
+        ]],
+    ], 200)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $client->emitir($data);
 
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E001');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E001' && $e->mensagemErro === 'CNPJ inválido' && $e->correcao === 'Verifique o CNPJ do prestador');
+})->with('dpsData');
+
+it('falls back to mensagem when descricao is missing on emitir rejection', function (DpsData $data) {
+    Event::fake();
+    Http::fake(['*' => Http::response([
+        'erros' => [['codigo' => 'E001', 'mensagem' => 'Apenas mensagem']],
+    ], 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $client->emitir($data);
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->mensagemErro === 'Apenas mensagem');
 })->with('dpsData');
 
 it('dispatches NfseRejected on cancelar rejection', function () {
@@ -104,7 +122,7 @@ it('dispatches NfseRejected on cancelar rejection', function () {
     $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'cancelar');
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E404' && $e->mensagemErro === 'NFSe não encontrada');
 });
 
 it('dispatches NfseRequested and NfseQueried on consultar danfse', function () {

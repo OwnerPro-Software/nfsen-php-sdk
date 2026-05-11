@@ -150,6 +150,34 @@ it('dispatches NfseRejected with error code on executeAndDecompress error', func
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->operacao === 'consultar' && $e->codigoErro === 'ERR_42');
 });
 
+it('dispatches NfseRejected with mensagemErro and correcao on executeAndDecompress error', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(getResult: [
+        'erros' => [[
+            'codigo' => 'ERR_42',
+            'descricao' => 'CNPJ inválido',
+            'complemento' => 'Verifique o CNPJ do prestador',
+        ]],
+    ]);
+
+    $pipeline->executeAndDecompress('https://example.com/nfse');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->mensagemErro === 'CNPJ inválido' && $e->correcao === 'Verifique o CNPJ do prestador');
+});
+
+it('falls back to mensagem when descricao is missing on executeAndDecompress error', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(getResult: [
+        'erros' => [['codigo' => 'ERR_42', 'mensagem' => 'Apenas mensagem']],
+    ]);
+
+    $pipeline->executeAndDecompress('https://example.com/nfse');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->mensagemErro === 'Apenas mensagem');
+});
+
 it('uses UNKNOWN as fallback error code when codigo is missing on executeAndDecompress', function (): void {
     Event::fake();
 
@@ -182,12 +210,16 @@ it('returns raw result and dispatches NfseRejected on execute error', function (
     Event::fake();
 
     $pipeline = buildResponsePipeline(getResult: [
-        'erros' => [['codigo' => 'RAW_ERR', 'mensagem' => 'Raw error']],
+        'erros' => [[
+            'codigo' => 'RAW_ERR',
+            'descricao' => 'Raw error',
+            'complemento' => 'Tente novamente',
+        ]],
     ]);
 
     $pipeline->execute('https://example.com/dps');
 
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'RAW_ERR');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'RAW_ERR' && $e->mensagemErro === 'Raw error' && $e->correcao === 'Tente novamente');
     Event::assertNotDispatched(NfseQueried::class);
 });
 
@@ -200,7 +232,7 @@ it('uses UNKNOWN as fallback error code on execute error without codigo', functi
 
     $pipeline->execute('https://example.com/dps');
 
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN');
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN' && $e->mensagemErro === 'No code');
 });
 
 // --- executeHead ---

@@ -302,7 +302,7 @@ O pacote dispara eventos Laravel que podem ser escutados na sua aplicação:
 | `NfseSubstituted` | `chave`, `chaveSubstituta` | NFSe substituída com sucesso |
 | `NfseQueried` | `operacao` | Consulta realizada |
 | `NfseRequested` | `operacao`, `metadata` | Operação iniciada |
-| `NfseRejected` | `operacao`, `codigoErro` | Operação rejeitada pela API |
+| `NfseRejected` | `operacao`, `codigoErro`, `mensagemErro`, `correcao` | Operação rejeitada pela API (`mensagemErro` e `correcao` ficam `null` quando a API não retorna os campos correspondentes ou no fallback `SEM_CHAVE`) |
 | `NfseFailed` | `operacao`, `mensagem` | Falha na operação |
 
 **Substituição:** como `substituir` delega ao `emitir` internamente, a sequência de eventos disparados é:

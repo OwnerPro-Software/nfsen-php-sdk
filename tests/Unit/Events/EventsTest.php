@@ -47,4 +47,12 @@ it('NfseRejected carries operacao and codigo', function () {
     $event = new NfseRejected('emitir', 'E001');
     expect($event->operacao)->toBe('emitir');
     expect($event->codigoErro)->toBe('E001');
+    expect($event->mensagemErro)->toBeNull();
+    expect($event->correcao)->toBeNull();
+});
+
+it('NfseRejected carries mensagemErro and correcao when provided', function () {
+    $event = new NfseRejected('emitir', 'E001', 'CNPJ inválido', 'Verifique o CNPJ do prestador');
+    expect($event->mensagemErro)->toBe('CNPJ inválido');
+    expect($event->correcao)->toBe('Verifique o CNPJ do prestador');
 });
