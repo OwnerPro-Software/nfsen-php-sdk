@@ -2,11 +2,14 @@
 
 use Illuminate\Support\Facades\Event;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
+use OwnerPro\Nfsen\Contracts\Driven\SendsRawHttpRequests;
 use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Pipeline\NfseResponsePipeline;
+use OwnerPro\Nfsen\Responses\HttpResponse;
 
 covers(NfseResponsePipeline::class);
 
@@ -20,8 +23,9 @@ function buildResponsePipeline(
     ?Throwable $throwOnHead = null,
     ?string $getBytesResult = null,
     ?Throwable $throwOnGetBytes = null,
+    ?HttpResponse $rawResult = null,
 ): NfseResponsePipeline {
-    $httpClient = new class($getResult ?? [], $headResult ?? 200, $throwOnGet, $throwOnHead, $getBytesResult, $throwOnGetBytes) implements SendsHttpRequests
+    $httpClient = new class($getResult ?? [], $headResult ?? 200, $throwOnGet, $throwOnHead, $getBytesResult, $throwOnGetBytes, $rawResult) implements SendsHttpRequests, SendsRawHttpRequests
     {
         public function __construct(
             private readonly array $getResult,
@@ -30,7 +34,13 @@ function buildResponsePipeline(
             private readonly ?Throwable $throwOnHead,
             private readonly ?string $getBytesResult,
             private readonly ?Throwable $throwOnGetBytes,
+            private readonly ?HttpResponse $rawResult,
         ) {}
+
+        public function getResponse(string $url): HttpResponse
+        {
+            return $this->rawResult ?? new HttpResponse(200, [], '');
+        }
 
         /** @param array<string, string> $payload */
         public function post(string $url, array $payload): array
@@ -235,6 +245,96 @@ it('uses UNKNOWN as fallback error code on execute error without codigo', functi
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN' && $e->mensagemErro === 'No code');
 });
 
+// --- executeRaw ---
+
+it('returns raw HttpResponse and dispatches NfseQueried on 200 executeRaw', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(200, ['chaveAcesso' => 'CHAVE123'], '{"chaveAcesso":"CHAVE123"}');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $response = $pipeline->executeRaw('https://example.com/dps/DPS1');
+
+    expect($response)->toBe($raw);
+    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e): bool => $e->operacao === 'consultar');
+    Event::assertDispatched(NfseQueried::class);
+    Event::assertNotDispatched(NfseRejected::class);
+});
+
+it('returns raw HttpResponse and dispatches NfseQueried on 201 executeRaw', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(201, ['chaveAcesso' => 'CHAVE123'], '{"chaveAcesso":"CHAVE123"}');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $response = $pipeline->executeRaw('https://example.com/dps/DPS1');
+
+    expect($response)->toBe($raw);
+    Event::assertDispatched(NfseQueried::class);
+    Event::assertNotDispatched(NfseRejected::class);
+});
+
+it('returns raw HttpResponse and dispatches NfseQueried on 404 without error body on executeRaw', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(404, [], ''));
+
+    $response = $pipeline->executeRaw('https://example.com/dps/DPS1');
+
+    expect($response->statusCode)->toBe(404);
+    Event::assertDispatched(NfseQueried::class);
+});
+
+it('dispatches NfseRejected and returns response when executeRaw body has erros', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(400, ['erros' => [['codigo' => 'E42', 'descricao' => 'Rejeitada', 'complemento' => 'Corrija']]], '');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $response = $pipeline->executeRaw('https://example.com/dps/DPS1');
+
+    expect($response)->toBe($raw);
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'E42' && $e->mensagemErro === 'Rejeitada' && $e->correcao === 'Corrija');
+    Event::assertNotDispatched(NfseQueried::class);
+});
+
+it('returns response when executeRaw gets 500 with structured error body', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(500, ['erro' => ['codigo' => 'E500', 'descricao' => 'Falha interna']], '');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $response = $pipeline->executeRaw('https://example.com/dps/DPS1');
+
+    expect($response->statusCode)->toBe(500);
+    Event::assertDispatched(NfseRejected::class);
+});
+
+it('throws HttpException and dispatches NfseFailed when executeRaw gets unexpected status without error body', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(500, [], 'Server Error'));
+
+    try {
+        $pipeline->executeRaw('https://example.com/dps/DPS1');
+        test()->fail('Expected HttpException');
+    } catch (HttpException $e) {
+        expect($e->getCode())->toBe(500)
+            ->and($e->getResponseBody())->toBe('Server Error');
+    }
+
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar');
+});
+
+it('throws HttpException when executeRaw gets redirect without error body', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(302, [], ''));
+
+    expect(fn () => $pipeline->executeRaw('https://example.com/dps/DPS1'))
+        ->toThrow(HttpException::class, 'HTTP error: 302');
+});
+
 // --- executeHead ---
 
 it('returns 200 and dispatches NfseQueried on executeHead', function (): void {
@@ -249,7 +349,7 @@ it('returns 200 and dispatches NfseQueried on executeHead', function (): void {
     Event::assertDispatched(NfseQueried::class);
 });
 
-it('returns non-200 status without dispatching NfseQueried on executeHead', function (): void {
+it('returns 404 without dispatching NfseQueried on executeHead', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(headResult: 404);
@@ -260,6 +360,28 @@ it('returns non-200 status without dispatching NfseQueried on executeHead', func
     Event::assertDispatched(NfseRequested::class);
     Event::assertNotDispatched(NfseQueried::class);
 });
+
+it('throws HttpException and dispatches NfseFailed on executeHead for any status other than 200 and 404', function (int $status): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(headResult: $status);
+
+    try {
+        $pipeline->executeHead('https://example.com/nfse');
+        test()->fail('Expected HttpException');
+    } catch (HttpException $e) {
+        expect($e->getCode())->toBe($status)
+            ->and($e->getResponseBody())->toBe('');
+    }
+
+    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar');
+    Event::assertNotDispatched(NfseQueried::class);
+})->with([
+    'unauthorized' => 401,
+    'forbidden' => 403,
+    'rate limit' => 429,
+    'redirect' => 302,
+]);
 
 // --- Exception propagation ---
 

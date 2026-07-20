@@ -18,6 +18,8 @@ use OwnerPro\Nfsen\Support\GzipCompressor;
 
 /**
  * @internal
+ *
+ * @phpstan-import-type MessageData from ProcessingMessage
  */
 final readonly class NfseConsulter implements ConsultsNfse
 {
@@ -42,11 +44,41 @@ final readonly class NfseConsulter implements ConsultsNfse
     public function dps(string $id): NfseResponse
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'query_dps', ['id' => $id]);
-        $result = $this->client->execute($this->buildUrl($this->seFinBaseUrl, $path));
+        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path));
+
+        /**
+         * @var array{
+         *     erros?: list<MessageData>,
+         *     erro?: MessageData,
+         *     chaveAcesso?: string,
+         *     idDps?: string,
+         *     tipoAmbiente?: int,
+         *     versaoAplicativo?: string,
+         *     dataHoraProcessamento?: string,
+         * } $result
+         */
+        $result = $response->json;
 
         $tipoAmbiente = $result['tipoAmbiente'] ?? null;
         $versaoAplicativo = $result['versaoAplicativo'] ?? null;
         $dataHoraProcessamento = $result['dataHoraProcessamento'] ?? null;
+
+        if ($response->statusCode === 404) {
+            return new NfseResponse(
+                sucesso: false,
+                erros: [
+                    new ProcessingMessage(
+                        mensagem: 'DPS não encontrada',
+                        codigo: NfseResponse::DPS_NOT_FOUND,
+                        descricao: 'A SEFIN respondeu 404: não existe DPS com o identificador informado.',
+                    ),
+                    ...ProcessingMessage::fromApiResult($result),
+                ],
+                tipoAmbiente: $tipoAmbiente,
+                versaoAplicativo: $versaoAplicativo,
+                dataHoraProcessamento: $dataHoraProcessamento,
+            );
+        }
 
         if (! empty($result['erros']) || isset($result['erro'])) {
             return new NfseResponse(
@@ -139,9 +171,9 @@ final readonly class NfseConsulter implements ConsultsNfse
     public function verificarDps(string $id): bool
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'verify_dps', ['id' => $id]);
-        $status = $this->client->executeHead($this->buildUrl($this->seFinBaseUrl, $path));
 
-        return $status === 200;
+        // executeHead só retorna 200 ou 404; qualquer outro status lança lá.
+        return $this->client->executeHead($this->buildUrl($this->seFinBaseUrl, $path)) === 200;
     }
 
     /** @return list<ProcessingMessage> */

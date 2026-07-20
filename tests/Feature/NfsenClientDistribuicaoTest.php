@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Contracts\Driving\DistributesNfse;
 use OwnerPro\Nfsen\Enums\StatusDistribuicao;
 use OwnerPro\Nfsen\Enums\TipoDocumentoFiscal;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\NfsenClient;
 
 covers(NfsenClient::class);
@@ -141,14 +142,23 @@ it('distribuicao()->documentos preserves HTTP status code on 429', function () {
         ->complemento->toBe('Too Many Requests');
 });
 
-it('distribuicao()->documentos handles empty 200 response', function () {
-    Http::fake(['*' => Http::response(null, 200)]);
+it('distribuicao()->documentos handles empty 200 json object response', function () {
+    Http::fake(['*' => Http::response('{}', 200)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->distribuicao()->documentos(0);
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros[0])->codigo->toBe('EMPTY_RESPONSE');
+});
+
+it('distribuicao()->documentos throws IndeterminateResultException on 200 with unreadable body', function () {
+    Http::fake(['*' => Http::response('', 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->distribuicao()->documentos(0))
+        ->toThrow(IndeterminateResultException::class);
 });
 
 it('distribuicao()->documentos handles 302 redirect', function () {

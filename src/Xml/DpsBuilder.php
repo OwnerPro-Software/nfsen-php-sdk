@@ -10,6 +10,7 @@ use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
+use OwnerPro\Nfsen\Support\DpsId;
 use OwnerPro\Nfsen\Support\XsdValidator;
 use OwnerPro\Nfsen\Xml\Builders\CreatesTextElements;
 use OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder;
@@ -49,7 +50,17 @@ final readonly class DpsBuilder
         $dps->setAttribute('xmlns', self::XMLNS);
 
         $infDps = $doc->createElement('infDPS');
-        $infDps->setAttribute('Id', $this->generateId($data));
+        $infDps->setAttribute('Id', DpsId::generate(
+            cLocEmi: $data->infDPS->cLocEmi,
+            cnpj: $data->prest->CNPJ,
+            cpf: $data->prest->CPF,
+            serie: $data->infDPS->serie,
+            nDps: $data->infDPS->nDPS,
+            // Prest exige exatamente 1 de CNPJ/CPF/NIF/cNaoNIF: se CNPJ e CPF
+            // são null aqui, o prestador é estrangeiro e a inscrição zerada é a
+            // forma correta do identificador.
+            allowEmptyInscricao: true,
+        ));
 
         $d = $data->infDPS;
         $infDps->appendChild($this->text($doc, 'tpAmb', $d->tpAmb->value));
@@ -108,19 +119,5 @@ final readonly class DpsBuilder
         $doc->appendChild($dps);
 
         return (string) $doc->saveXML($doc->documentElement); // @pest-mutate-ignore RemoveStringCast: saveXML returns string|false, cast is type-safety guard
-    }
-
-    private function generateId(DpsData $data): string
-    {
-        $d = $data->infDPS;
-        $p = $data->prest;
-        $id = 'DPS';
-        $id .= substr($d->cLocEmi, 0, 7);
-        $id .= $p->CNPJ !== null ? '2' : '1';
-        $inscricao = $p->CNPJ ?? $p->CPF ?? '';
-        $id .= str_pad($inscricao, 14, '0', STR_PAD_LEFT);
-        $id .= str_pad($d->serie, 5, '0', STR_PAD_LEFT);
-
-        return $id.str_pad($d->nDPS, 15, '0', STR_PAD_LEFT);
     }
 }

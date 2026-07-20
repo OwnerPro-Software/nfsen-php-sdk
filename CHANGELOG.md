@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.5.0] - 2026-07-20
+
+Suporte a reconciliação de resultado indeterminado: permite descobrir o estado real de uma DPS após falha de comunicação antes de qualquer retry, eliminando o risco de dupla emissão.
+
+### Added
+
+- `Support\DpsId::generate()` — builder público do identificador de 45 posições da DPS (`TSIdDPS`), fonte única da regra fiscal de formação do ID. `Xml\DpsBuilder` passou a delegar para ele. Valida o retorno contra o padrão `DPS[0-9]{42}` e lança `InvalidDpsArgument` em entrada inválida — inclusive quando CNPJ e CPF são ambos `null` (inscrição zerada silenciosa seria um ID fiscalmente inválido; o caso legítimo de prestador estrangeiro com NIF/cNaoNIF requer `allowEmptyInscricao: true`).
+- `Exceptions\IndeterminateResultException` — lançada quando o SDK não consegue obter uma resposta completa e legível em qualquer caminho HTTP (`post`, `get`, `getBytes`, `getResponse`, `head`). Cobre três situações: falha antes de qualquer resposta (timeout, DNS, conexão recusada, TLS), falha no meio da transferência (conexão resetada, corpo truncado — cURL 18/56/92) e resposta 2xx com corpo ilegível (JSON inválido ou vazio). Propriedade `phase` (`connect`|`dns`|`read`|`tls`|`transfer`|`body`|`null`) indica a fase da falha quando detectável. Contrato: capturá-la significa que a SEFIN pode ou não ter processado a requisição — **nunca faça retry cego**; reconcilie via `DpsId::generate()` + `consultar()->dps($id)` antes; qualquer outra exceção ou resposta é definitiva.
+- `NfseResponse::DPS_NOT_FOUND` — código de erro dedicado retornado em `erros[0]->codigo` quando `consultar()->dps($id)` recebe HTTP 404 da SEFIN (DPS comprovadamente inexistente, distinto de erro transitório). Erros originais da SEFIN, se presentes, são preservados a partir de `erros[1]`.
+- `ExecutesNfseRequests::executeRaw()` — retorna a resposta HTTP crua (status + JSON + corpo) para consultas que precisam distinguir status; lança `HttpException` para status inesperado (≠ 200/201/404) sem corpo de erro estruturado.
+- Dependência explícita de `guzzlehttp/guzzle` (já era transitiva via `illuminate/http`) — o SDK agora captura `TransferException` do Guzzle diretamente para cobrir versões do Laravel que não a envelopam.
+
+### Changed
+
+- **`consultar()->verificarDps()`** retorna `false` **apenas em HTTP 404**. Qualquer outro status ≠ 200 (401, 403, 429, redirect…) agora lança `HttpException` — antes retornava `false`, o que podia ser lido como "DPS não existe" e induzir dupla emissão. O throw acontece dentro do pipeline de eventos, disparando `NfseFailed` (paridade com 5xx). Falha de transporte lança `IndeterminateResultException`.
+- **Falhas de conexão** que antes vazavam como `Illuminate\Http\Client\ConnectionException` crua (ou `RequestException`/`TransferException`, conforme a versão do Laravel) agora chegam ao integrador como `IndeterminateResultException` (exceção original em `getPrevious()`). Quem capturava `ConnectionException` diretamente deve migrar o catch.
+- **Respostas 2xx com corpo ilegível** (JSON inválido, vazio ou escalar) em `post`/`get`/`getResponse` agora lançam `IndeterminateResultException` — antes viravam array vazio e podiam propagar como falso sucesso (ex.: `consultar()->dps()` reconciliando contra um 200 de load balancer com página HTML retornava `sucesso: true` com `chave: null`). Em `distribuicao()`, o caso 200 com corpo vazio que antes retornava `EMPTY_RESPONSE` agora também lança (corpo `{}` válido continua retornando `EMPTY_RESPONSE`).
+- **Respostas de erro sem corpo estruturado** em `post`/`get` agora lançam `HttpException` para qualquer status não-2xx (antes apenas 5xx; um redirect ou 4xx com corpo vazio retornava array vazio silencioso). Redirects continuam não sendo seguidos.
+- `consultar()->dps()` com HTTP 5xx/redirect sem corpo de erro estruturado agora lança `HttpException` de forma consistente (antes um redirect com corpo vazio era interpretado como sucesso).
+
 ## [2.4.0] - 2026-05-11
 
 ### Added

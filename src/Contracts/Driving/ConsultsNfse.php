@@ -16,11 +16,24 @@ interface ConsultsNfse
 {
     public function nfse(string $chave): NfseResponse;
 
+    /**
+     * Quando a SEFIN responde 404 (DPS inexistente), retorna falha com
+     * `erros[0]->codigo === NfseResponse::DPS_NOT_FOUND` — sinal inequívoco,
+     * distinto de erros transitórios. Falha de transporte lança
+     * `IndeterminateResultException`.
+     */
     public function dps(string $id): NfseResponse;
 
     public function danfse(string $chave): DanfseResponse;
 
     public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventsResponse;
 
+    /**
+     * Retorna `true` para HTTP 200 e `false` APENAS para HTTP 404.
+     * Qualquer outro status (401, 403, 429, redirect, 5xx…) lança
+     * `HttpException`; falha de transporte lança
+     * `IndeterminateResultException` — nesses casos a existência da DPS é
+     * indeterminada e NÃO é seguro re-emitir.
+     */
     public function verificarDps(string $id): bool;
 }

@@ -1,10 +1,13 @@
 <?php
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfsenClient;
+use OwnerPro\Nfsen\Responses\NfseResponse;
 
 covers(NfsenClient::class);
 
@@ -130,6 +133,64 @@ it('consultar()->verificarDps returns false on 404', function () {
     $result = $client->consultar()->verificarDps('DPS123');
 
     expect($result)->toBeFalse();
+});
+
+it('consultar()->dps returns DPS_NOT_FOUND failure on 404', function () {
+    Http::fake(['*' => Http::response('', 404)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->consultar()->dps('DPS123');
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros[0]->codigo)->toBe(NfseResponse::DPS_NOT_FOUND);
+
+    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/dps/DPS123' &&
+        $req->method() === 'GET'
+    );
+});
+
+it('consultar()->dps throws IndeterminateResultException on 200 with unreadable body', function () {
+    Http::fake(['*' => Http::response('<html>Service Unavailable</html>', 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->consultar()->dps('DPS123');
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        expect($e->phase)->toBe('body');
+    }
+});
+
+it('consultar()->dps throws IndeterminateResultException on connection failure', function () {
+    Http::fake(['*' => function (): never {
+        throw new ConnectionException('cURL error 28: Operation timed out after 30000 milliseconds with 0 bytes received');
+    }]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->dps('DPS123'))
+        ->toThrow(IndeterminateResultException::class);
+});
+
+it('consultar()->verificarDps throws HttpException on 401 instead of returning false', function () {
+    Http::fake(['*' => Http::response('', 401)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->verificarDps('DPS123'))
+        ->toThrow(HttpException::class, 'HTTP error: 401');
+});
+
+it('consultar()->verificarDps throws IndeterminateResultException on connection failure', function () {
+    Http::fake(['*' => function (): never {
+        throw new ConnectionException('cURL error 7: Failed to connect to sefin.nfse.gov.br port 443: Connection refused');
+    }]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->verificarDps('DPS123'))
+        ->toThrow(IndeterminateResultException::class);
 });
 
 it('consultar()->verificarDps throws HttpException on server error', function () {

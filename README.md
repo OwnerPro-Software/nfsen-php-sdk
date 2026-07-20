@@ -214,6 +214,11 @@ $response = $client->consultar()->nfse($chave);
 
 // Consultar DPS por ID
 $response = $client->consultar()->dps($idDps);
+// Quando a SEFIN responde 404 (DPS inexistente), a resposta traz um erro
+// dedicado: $response->erros[0]->codigo === NfseResponse::DPS_NOT_FOUND.
+// Sinal inequívoco de "não existe" — distinto de erros transitórios
+// (401/403/429/5xx lançam HttpException; falha de transporte lança
+// IndeterminateResultException).
 
 // Obter PDF do DANFSE
 $response = $client->consultar()->danfse($chave);
@@ -230,7 +235,62 @@ $response = $client->consultar()->eventos(
 // CancelamentoPorSubstituicao, AnulacaoCancelamento
 
 // Verificar se DPS foi processada
+// true em HTTP 200; false APENAS em HTTP 404 (comprovadamente não existe).
+// Qualquer outro status (401, 403, 429, redirect, 5xx…) lança HttpException;
+// falha de transporte lança IndeterminateResultException — nesses casos a
+// existência é indeterminada e NÃO é seguro re-emitir.
 $processada = $client->consultar()->verificarDps($idDps); // true ou false
+```
+
+#### Gerar o ID da DPS sem montar o XML
+
+O identificador de 45 posições da DPS (`TSIdDPS`) pode ser calculado fora da
+emissão — útil para reconciliar após um timeout, consultando a DPS antes de
+qualquer retry:
+
+```php
+use OwnerPro\Nfsen\Support\DpsId;
+
+// "DPS" + cLocEmi(7) + tpInsc(1=CPF|2=CNPJ) + inscrição(14, zero-pad)
+//       + série(5, zero-pad) + nDPS(15, zero-pad)
+$idDps = DpsId::generate(
+    cLocEmi: '3550308',
+    cnpj: '12345678000195',
+    cpf: null,
+    serie: '1',
+    nDps: '42',
+);
+// => "DPS3550308212345678000195000010000000000000042"
+```
+
+`DpsId` é a fonte única da regra fiscal de formação do ID — o mesmo código usado
+internamente na construção do XML da DPS. O retorno é validado contra o padrão
+`DPS[0-9]{42}` do schema nacional; entrada inválida lança `InvalidDpsArgument`.
+Informe o **mesmo** CNPJ ou CPF usado na emissão — ambos `null` lança
+`InvalidDpsArgument` (inscrição zerada só é válida para prestador estrangeiro
+com NIF/cNaoNIF, via `allowEmptyInscricao: true`).
+
+#### Reconciliação após resultado indeterminado na emissão
+
+```php
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
+use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Support\DpsId;
+
+try {
+    $response = $client->emitir($payload);
+} catch (IndeterminateResultException $e) {
+    // O SDK não conseguiu ler o resultado — a nota pode ou não ter sido emitida.
+    $idDps = DpsId::generate($cLocEmi, $cnpj, null, $serie, (string) $nDps);
+
+    $lookup = $client->consultar()->dps($idDps);
+
+    if ($lookup->sucesso) {
+        // A nota FOI emitida: salvar chave e continuar o fluxo normal.
+    } elseif (($lookup->erros[0]->codigo ?? null) === NfseResponse::DPS_NOT_FOUND) {
+        // A emissão NÃO aconteceu: seguro re-emitir com o mesmo nDPS.
+    }
+}
 ```
 
 ### Distribuição (ADN Contribuinte)
@@ -396,13 +456,15 @@ Representa uma mensagem de erro ou alerta da API:
 | Exceção | Pai | Quando |
 |---------|-----|--------|
 | `NfseException` | `RuntimeException` | Erros gerais (XML inválido, falha de compressão, etc.) |
-| `HttpException` | `NfseException` | Erros HTTP 5xx sem corpo JSON. Acesse `getResponseBody()` para detalhes |
+| `IndeterminateResultException` | `NfseException` | **Resultado indeterminado**: o SDK não obteve resposta completa e legível — a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`) |
+| `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (5xx, redirect, 4xx vazio; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes |
 | `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
-| `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS |
+| `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS; ID de DPS fora do padrão `TSIdDPS` |
 
 ```php
 use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 
@@ -412,12 +474,33 @@ try {
     // Certificado expirado -- renovar
 } catch (InvalidDpsArgument $e) {
     // Dados da DPS inválidos -- corrigir payload
+} catch (IndeterminateResultException $e) {
+    // Resultado INDETERMINADO -- a nota pode ou não ter sido emitida.
+    // NUNCA re-emita sem antes reconciliar com consultar()->dps($idDps).
 } catch (HttpException $e) {
-    // Erro HTTP -- $e->getCode() para status, $e->getResponseBody() para corpo
+    // Resposta HTTP recebida com erro -- $e->getCode() para status, $e->getResponseBody() para corpo
 } catch (NfseException $e) {
     // Outros erros (XML, compressão, etc.)
 }
 ```
+
+**Contrato de indeterminação:** capturar `IndeterminateResultException`
+significa que a SEFIN pode ou não ter recebido e processado a requisição. Ela
+cobre três situações:
+
+1. **Falha antes de qualquer resposta** (timeout, DNS, conexão recusada, TLS)
+   — a requisição pode nem ter chegado ao servidor;
+2. **Falha no meio da transferência** (conexão resetada, corpo truncado) — o
+   servidor processou, mas o resultado não pôde ser lido;
+3. **Resposta 2xx com corpo ilegível** (JSON inválido ou vazio) — o servidor
+   confirmou o processamento, mas o resultado não pôde ser interpretado.
+
+Nos três casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
+pode já existir e um retry causaria dupla emissão). Calcule o ID com
+`DpsId::generate()` e consulte `consultar()->dps($id)`: se encontrou, a nota
+foi emitida; se retornar `NfseResponse::DPS_NOT_FOUND`, é seguro re-emitir com
+o mesmo nDPS. Qualquer outra exceção ou resposta do SDK é uma resposta
+definitiva do servidor.
 
 ## Renderização local do DANFSE
 

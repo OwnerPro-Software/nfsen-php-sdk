@@ -2,6 +2,7 @@
 
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -11,6 +12,7 @@ use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
@@ -41,6 +43,30 @@ it('emitir returns success NfseResponse', function (DpsData $data) {
         $req->method() === 'POST' &&
         isset($req['dpsXmlGZipB64'])
     );
+})->with('dpsData');
+
+it('emitir throws IndeterminateResultException on timeout', function (DpsData $data) {
+    Http::fake(['*' => function (): never {
+        throw new ConnectionException('cURL error 28: Operation timed out after 30000 milliseconds with 0 bytes received');
+    }]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->emitir($data))
+        ->toThrow(IndeterminateResultException::class);
+})->with('dpsData');
+
+it('emitir throws IndeterminateResultException on 200 with unreadable body', function (DpsData $data) {
+    Http::fake(['*' => Http::response('{"chaveAcesso":"NFS3550', 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->emitir($data);
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        expect($e->phase)->toBe('body');
+    }
 })->with('dpsData');
 
 it('consultar()->nfse returns success NfseResponse', function () {
@@ -146,6 +172,10 @@ it('forStandalone uses custom prefeiturasJsonPath', function (DpsData $data) {
 })->with('dpsData');
 
 it('forStandalone uses custom schemasPath', function (DpsData $data) {
+    // Fake garante que, se o schemasPath custom for ignorado (XSD default
+    // válido), a emissão completa sem lançar — falhando o toThrow rapidamente.
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'IGNORED'], 201)]);
+
     $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999', schemasPath: '/nonexistent/schemas');
 
     expect(fn () => $client->emitir($data))->toThrow(NfseException::class);

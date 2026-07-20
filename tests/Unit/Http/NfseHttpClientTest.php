@@ -1,9 +1,14 @@
 <?php
 
+use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use GuzzleHttp\Psr7\Response;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Adapters\NfseHttpClient;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\TempFileFactory;
 
@@ -170,26 +175,24 @@ it('head throws NfseException when tmpfile fails', function () {
         ->toThrow(NfseException::class, 'arquivos temporários');
 });
 
-it('does not follow redirects on post', function () {
+it('does not follow redirects on post and throws HttpException', function () {
     Http::fake(['*' => Http::response(null, 302, ['Location' => 'https://attacker.com/capture'])]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
-    $response = $client->post('https://example.com/nfse', ['dps' => 'xml']);
-
-    expect($response)->toBe([]);
+    expect(fn () => $client->post('https://example.com/nfse', ['dps' => 'xml']))
+        ->toThrow(HttpException::class, 'HTTP error: 302');
 
     Http::assertSentCount(1);
 });
 
-it('does not follow redirects on get', function () {
+it('does not follow redirects on get and throws HttpException', function () {
     Http::fake(['*' => Http::response(null, 302, ['Location' => 'https://attacker.com/capture'])]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
-    $response = $client->get('https://example.com/nfse/CHAVE123');
-
-    expect($response)->toBe([]);
+    expect(fn () => $client->get('https://example.com/nfse/CHAVE123'))
+        ->toThrow(HttpException::class, 'HTTP error: 302');
 
     Http::assertSentCount(1);
 });
@@ -232,14 +235,13 @@ it('throws when only one fwrite fails', function () {
         ->toThrow(NfseException::class, 'escrever certificado');
 });
 
-it('casts non-array json response to array', function () {
-    Http::fake(['*' => Http::response('123', 200)]);
+it('throws HttpException on 4xx with empty body', function () {
+    Http::fake(['*' => Http::response('', 404)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
-    $result = $client->post('https://example.com/nfse', []);
-
-    expect($result)->toBeArray();
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(HttpException::class, 'HTTP error: 404');
 });
 
 it('closes first handle when second tmpfile fails', function () {
@@ -472,14 +474,133 @@ it('getResponse returns HttpResponse on 500 with json body', function () {
     expect($response->json)->toBe($errorBody);
 });
 
-it('getResponse returns HttpResponse on 200 with empty body', function () {
-    Http::fake(['*' => Http::response(null, 200)]);
+it('converts connection failure into IndeterminateResultException on every request path', function (string $path) {
+    Http::fake(['*' => function (): never {
+        throw new ConnectionException('cURL error 28: Operation timed out after 30000 milliseconds with 0 bytes received');
+    }]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $call = match ($path) {
+        'post' => fn () => $client->post('https://example.com/nfse', []),
+        'get' => fn () => $client->get('https://example.com/nfse/CHAVE123'),
+        'getBytes' => fn () => $client->getBytes('https://example.com/danfse/CHAVE123'),
+        'getResponse' => fn () => $client->getResponse('https://example.com/adn/DFe/0'),
+        'head' => fn () => $client->head('https://example.com/dps/DPS123'),
+    };
+
+    try {
+        $call();
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        expect($e->getPrevious())->toBeInstanceOf(ConnectionException::class)
+            ->and($e->phase)->toBe('read')
+            ->and($e->getMessage())->toContain('Resultado indeterminado');
+    }
+})->with(['post', 'get', 'getBytes', 'getResponse', 'head']);
+
+it('converts mid-transfer guzzle failure into IndeterminateResultException', function () {
+    Http::fake(['*' => function (): never {
+        throw new GuzzleRequestException(
+            'cURL error 56: Recv failure: Connection reset by peer',
+            new GuzzleRequest('POST', 'https://example.com/nfse'),
+        );
+    }]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    try {
+        $client->post('https://example.com/nfse', []);
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        // Laravel 13+ envelopa a RequestException do Guzzle em ConnectionException;
+        // versões anteriores a propagam crua. O contrato garante apenas a conversão.
+        expect($e->getPrevious())->not->toBeNull()
+            ->and($e->phase)->toBe('transfer')
+            ->and($e->getMessage())->toContain('cURL error 56');
+    }
+});
+
+it('converts mid-transfer failure with partial error response into IndeterminateResultException', function () {
+    Http::fake(['*' => function (): never {
+        throw new GuzzleRequestException(
+            'cURL error 18: transfer closed with outstanding read data remaining',
+            new GuzzleRequest('GET', 'https://example.com/nfse'),
+            new Response(500, [], 'corpo parcial'),
+        );
+    }]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    try {
+        $client->get('https://example.com/nfse/CHAVE123');
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        // O marshalling do Laravel (toException) descarta a mensagem cURL
+        // original neste caminho, então a fase não é detectável — o que o
+        // contrato garante é a conversão, não o diagnóstico.
+        expect($e->phase)->toBeNull()
+            ->and($e->getMessage())->toContain('Resultado indeterminado');
+    }
+});
+
+it('does not convert non-transport exceptions into IndeterminateResultException', function () {
+    Http::fake(['*' => function (): never {
+        throw new RuntimeException('Erro inesperado');
+    }]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(RuntimeException::class, 'Erro inesperado');
+});
+
+it('throws IndeterminateResultException on 2xx with unreadable body', function (string $body) {
+    Http::fake(['*' => Http::response($body, 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    try {
+        $client->post('https://example.com/nfse', []);
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        expect($e->phase)->toBe('body')
+            ->and($e->getMessage())->toContain('HTTP 200');
+    }
+})->with([
+    'empty body' => [''],
+    'invalid json' => ['<html>Gateway error</html>'],
+    'scalar json' => ['123'],
+    'truncated json' => ['{"chaveAcesso":"NFS3550'],
+]);
+
+it('getResponse throws IndeterminateResultException on 2xx with unreadable body', function (string $body) {
+    Http::fake(['*' => Http::response($body, 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    try {
+        $client->getResponse('https://example.com/adn/DFe/0');
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        expect($e->phase)->toBe('body')
+            ->and($e->getMessage())->toContain('HTTP 200');
+    }
+})->with([
+    'empty body' => [''],
+    'html error page' => ['<html>Service Unavailable</html>'],
+    'scalar json' => ['123'],
+    'truncated json' => ['{"LoteDFe":['],
+]);
+
+it('getResponse returns HttpResponse on 200 with empty json object body', function () {
+    Http::fake(['*' => Http::response('{}', 200)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
     $response = $client->getResponse('https://example.com/adn/DFe/0');
 
     expect($response)
         ->statusCode->toBe(200)
-        ->body->toBe('');
+        ->body->toBe('{}');
     expect($response->json)->toBe([]);
 });

@@ -5,6 +5,7 @@ use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
 covers(NfseConsulter::class);
@@ -14,6 +15,8 @@ class FakeNfsenClientForConsulta implements ExecutesNfseRequests
     public array $calls = [];
 
     public int $headStatus = 200;
+
+    public ?HttpResponse $rawResponse = null;
 
     public function executeAndDecompress(string $url): NfseResponse
     {
@@ -42,6 +45,13 @@ class FakeNfsenClientForConsulta implements ExecutesNfseRequests
 
         return $this->headStatus;
     }
+
+    public function executeRaw(string $url): HttpResponse
+    {
+        $this->calls[] = $url;
+
+        return $this->rawResponse ?? new HttpResponse(200, ['chaveAcesso' => null], '');
+    }
 }
 
 function makeNfseConsulter(FakeNfsenClientForConsulta $fakeClient): NfseConsulter
@@ -62,7 +72,7 @@ it('calls executeAndDecompress with nfse url for nfse query', function () {
     expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/'.$chave);
 });
 
-it('calls execute with dps url', function () {
+it('calls executeRaw with dps url', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);
 
@@ -72,67 +82,21 @@ it('calls execute with dps url', function () {
 });
 
 it('dps returns failure when erros key present', function () {
-    $fakeClient = new class implements ExecutesNfseRequests
-    {
-        public function executeAndDecompress(string $url): NfseResponse
-        {
-            return new NfseResponse(true);
-        }
-
-        /** @return array{erros: list<array{descricao: string}>} */
-        public function execute(string $url): array
-        {
-            return ['erros' => [['descricao' => 'DPS não encontrada']]];
-        }
-
-        public function executeAndDownload(string $url): string
-        {
-            return '';
-        }
-
-        public function executeHead(string $url): int
-        {
-            return 200;
-        }
-    };
-
-    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(400, ['erros' => [['descricao' => 'DPS rejeitada']]], '');
+    $builder = makeNfseConsulter($fakeClient);
 
     $response = $builder->dps('DPS123');
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros)->toHaveCount(1);
-    expect($response->erros[0]->descricao)->toBe('DPS não encontrada');
+    expect($response->erros[0]->descricao)->toBe('DPS rejeitada');
 });
 
 it('dps returns success with idDps', function () {
-    $fakeClient = new class implements ExecutesNfseRequests
-    {
-        public function executeAndDecompress(string $url): NfseResponse
-        {
-            return new NfseResponse(true);
-        }
-
-        /** @return array{chaveAcesso: string, idDps: string, tipoAmbiente: int, versaoAplicativo: string, dataHoraProcessamento: string} */
-        public function execute(string $url): array
-        {
-            return ['chaveAcesso' => 'CHAVE_DPS', 'idDps' => 'DPS001', 'tipoAmbiente' => 2, 'versaoAplicativo' => '1.0.0', 'dataHoraProcessamento' => '2026-01-01T00:00:00'];
-        }
-
-        public function executeAndDownload(string $url): string
-        {
-            return '';
-        }
-
-        public function executeHead(string $url): int
-        {
-            return 200;
-        }
-    };
-
-    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(200, ['chaveAcesso' => 'CHAVE_DPS', 'idDps' => 'DPS001', 'tipoAmbiente' => 2, 'versaoAplicativo' => '1.0.0', 'dataHoraProcessamento' => '2026-01-01T00:00:00'], '');
+    $builder = makeNfseConsulter($fakeClient);
 
     $response = $builder->dps('DPS123');
 
@@ -142,6 +106,38 @@ it('dps returns success with idDps', function () {
     expect($response->tipoAmbiente)->toBe(2);
     expect($response->versaoAplicativo)->toBe('1.0.0');
     expect($response->dataHoraProcessamento)->toBe('2026-01-01T00:00:00');
+});
+
+it('dps returns DPS_NOT_FOUND failure on 404 without error body', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(404, [], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->dps('DPS123');
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->codigo)->toBe(NfseResponse::DPS_NOT_FOUND);
+    expect($response->erros[0]->mensagem)->toBe('DPS não encontrada');
+});
+
+it('dps prepends DPS_NOT_FOUND and preserves SEFIN errors on 404 with error body', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(
+        404,
+        ['erros' => [['codigo' => 'E404', 'descricao' => 'DPS inexistente']], 'tipoAmbiente' => 2],
+        '',
+    );
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->dps('DPS123');
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros)->toHaveCount(2);
+    expect($response->erros[0]->codigo)->toBe(NfseResponse::DPS_NOT_FOUND);
+    expect($response->erros[1]->codigo)->toBe('E404');
+    expect($response->erros[1]->descricao)->toBe('DPS inexistente');
+    expect($response->tipoAmbiente)->toBe(2);
 });
 
 it('danfse returns success with pdf bytes', function () {
@@ -165,6 +161,11 @@ it('danfse returns success with pdf bytes', function () {
         public function executeHead(string $url): int
         {
             return 200;
+        }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
         }
     };
 
@@ -198,6 +199,11 @@ it('danfse returns failure on empty response', function () {
         public function executeHead(string $url): int
         {
             return 200;
+        }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
         }
     };
 
@@ -236,6 +242,11 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
         {
             return 200;
         }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
@@ -269,6 +280,11 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
         public function executeHead(string $url): int
         {
             return 200;
+        }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
         }
     };
 
@@ -309,6 +325,11 @@ it('danfse returns failure with parsed singular erro on HttpException', function
         {
             return 200;
         }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
@@ -346,6 +367,11 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
         {
             return 200;
         }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
@@ -381,6 +407,11 @@ it('eventos returns failure when erros key present', function () {
         {
             return 200;
         }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
@@ -415,6 +446,11 @@ it('eventos returns failure when singular erro key present', function () {
         public function executeHead(string $url): int
         {
             return 200;
+        }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
         }
     };
 
@@ -455,6 +491,11 @@ it('eventos returns success with decompressed xml', function () {
         public function executeHead(string $url): int
         {
             return 200;
+        }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
         }
     };
 
@@ -501,6 +542,11 @@ it('buildUrl returns baseUrl when path is empty', function () {
         public function executeHead(string $url): int
         {
             return 200;
+        }
+
+        public function executeRaw(string $url): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
         }
     };
 

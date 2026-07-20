@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Adapters;
 
 use Closure;
+use GuzzleHttp\Exception\TransferException;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
 use OwnerPro\Nfsen\Contracts\Driven\SendsRawHttpRequests;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Support\TempFileFactory;
@@ -43,7 +48,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     public function head(string $url): int
     {
         return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): int {
-            $response = Http::connectTimeout($this->connectTimeout)
+            $response = $this->guardTransport(fn (): Response => Http::connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->withOptions([
                     'verify' => $this->sslVerify,
@@ -51,7 +56,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
                     'ssl_key' => $keyPath,
                     'allow_redirects' => false,
                 ])
-                ->head($url);
+                ->head($url));
 
             if ($response->serverError()) {
                 throw HttpException::fromResponse($response->status(), $response->body());
@@ -64,7 +69,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     public function getBytes(string $url): string
     {
         return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): string {
-            $response = Http::connectTimeout($this->connectTimeout)
+            $response = $this->guardTransport(fn (): Response => Http::connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->withOptions([
                     'verify' => $this->sslVerify,
@@ -72,7 +77,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
                     'ssl_key' => $keyPath,
                     'allow_redirects' => false,
                 ])
-                ->get($url);
+                ->get($url));
 
             if (! $response->successful()) {
                 throw HttpException::fromResponse($response->status(), $response->body());
@@ -85,7 +90,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     public function getResponse(string $url): HttpResponse
     {
         return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): HttpResponse {
-            $response = Http::connectTimeout($this->connectTimeout)
+            $response = $this->guardTransport(fn (): Response => Http::connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->acceptJson()
                 ->withOptions([
@@ -94,10 +99,18 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
                     'ssl_key' => $keyPath,
                     'allow_redirects' => false,
                 ])
-                ->get($url);
+                ->get($url));
+
+            $decoded = json_decode($response->body(), true);
+
+            // Mesma regra de request(): 2xx sem JSON legível nunca vira
+            // resposta "vazia" — é estado indeterminado.
+            if ($response->successful() && ! is_array($decoded)) {
+                throw IndeterminateResultException::fromUnreadableResponse($response->status(), $response->body());
+            }
 
             /** @var array<string, mixed> $json */
-            $json = (array) ($response->json() ?? []);
+            $json = is_array($decoded) ? $decoded : [];
 
             return new HttpResponse($response->status(), $json, $response->body());
         });
@@ -120,19 +133,56 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
                     'allow_redirects' => false,
                 ]);
 
-            $response = $method === 'post'
+            $response = $this->guardTransport(fn (): Response => $method === 'post'
                 ? $pending->post($url, $payload)
-                : $pending->get($url);
+                : $pending->get($url));
 
-            /** @var array<string, mixed> $json */
-            $json = (array) ($response->json() ?? []);
+            $decoded = json_decode($response->body(), true);
 
-            if ($json === [] && $response->serverError()) {
-                throw HttpException::fromResponse($response->status(), $response->body());
+            // 2xx sem JSON legível: o servidor confirmou o processamento mas o
+            // resultado não pôde ser interpretado — estado indeterminado, nunca
+            // um sucesso silencioso.
+            if ($response->successful()) {
+                if (! is_array($decoded)) {
+                    throw IndeterminateResultException::fromUnreadableResponse($response->status(), $response->body());
+                }
+
+                /** @var array<string, mixed> $decoded */
+                return $decoded;
             }
 
-            return $json;
+            if (is_array($decoded) && $decoded !== []) {
+                /** @var array<string, mixed> $decoded */
+                return $decoded;
+            }
+
+            throw HttpException::fromResponse($response->status(), $response->body());
         });
+    }
+
+    /**
+     * Envia a requisição convertendo falha de transporte em
+     * IndeterminateResultException — falha antes de qualquer resposta
+     * (timeout, DNS, recusa, TLS) e falha no meio da transferência (conexão
+     * resetada, corpo truncado — cURL 18/56/92).
+     *
+     * Os três catches cobrem as variações de marshalling entre versões do
+     * Laravel: ConnectionException (falha de conexão em todas; no Laravel 13+
+     * também RequestException do Guzzle sem response), RequestException do
+     * Laravel (13+: falha do Guzzle com response parcial ≥ 400 — nunca
+     * produzida por status HTTP aqui, pois o SDK não usa throw()) e
+     * TransferException do Guzzle (11/12: falha na transferência propagada
+     * crua).
+     *
+     * @param  Closure(): Response  $send
+     */
+    private function guardTransport(Closure $send): Response
+    {
+        try {
+            return $send();
+        } catch (ConnectionException|RequestException|TransferException $transportFailure) {
+            throw IndeterminateResultException::fromTransportFailure($transportFailure);
+        }
     }
 
     /**

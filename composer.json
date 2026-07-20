@@ -23,6 +23,7 @@
     "nfephp-org/sped-common": "^5.1",
     "dompdf/dompdf": "^3.0",
     "bacon/bacon-qr-code": "^3.0",
+    "guzzlehttp/guzzle": "^7.5",
     "illuminate/http": "^11.0|^12.0|^13.0",
     "illuminate/support": "^11.0|^12.0|^13.0",
     "illuminate/contracts": "^11.0|^12.0|^13.0",
