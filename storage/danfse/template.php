@@ -31,6 +31,7 @@
             <td class="title-cell">
                 <div style="font-size: 9pt; font-weight: bold;">DANFSe v1.0</div>
                 <div style="font-size: 7pt; font-weight: bold;">Documento Auxiliar da NFS-e</div>
+                <div style="font-size: 6pt;"><?= $h($data->ambienteGerador) ?></div>
                 <?php if ($data->ambiente->isHomologacao()): ?>
                     <div style="color: red; font-weight: bold;">NFS-e SEM VALIDADE JURÍDICA</div>
                 <?php endif; ?>
@@ -489,6 +490,81 @@
         </table>
     </div>
 
+    <!-- Tributação IBS / CBS -->
+    <div class="bordered-section">
+        <table>
+            <tr>
+                <td colspan="4" class="section-header">
+                  <span class="section-title">TRIBUTAÇÃO IBS / CBS</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">CST / cClassTrib</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->cstClassTrib) ?></span>
+                </td>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Indicador de Operação / Código IBGE Incidência / Município Incidência / Sigla UF</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->indicadorOperacao) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 25%;">
+                    <span class="label">Exclusões e Reduções da Base de Cálculo</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->exclusoesReducoes) ?></span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">Base de Cálculo Após Exclusões e Reduções</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->baseCalculo) ?></span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">Red. Alíquota IBS / Red. Alíquota CBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->reducaoAliquotas) ?></span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">Alíquota - IBS UF / IBS Mun</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->aliquotaIbs) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Alíq. Efetiva Municipal - IBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->aliquotaEfetivaMunicipal) ?></span>
+                </td>
+                <td>
+                    <span class="label">Valor Apurado Municipal - IBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->valorApuradoMunicipal) ?></span>
+                </td>
+                <td>
+                    <span class="label">Alíq. Efetiva Estadual - IBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->aliquotaEfetivaEstadual) ?></span>
+                </td>
+                <td>
+                    <span class="label">Valor Apurado Estadual - IBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->valorApuradoEstadual) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <span class="label">Valor Total Apurado - IBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->valorTotalIbs) ?></span>
+                </td>
+                <td>
+                    <span class="label">Alíquota - CBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->aliquotaCbs) ?></span>
+                </td>
+                <td>
+                    <span class="label">Alíquota Efetiva - CBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->aliquotaEfetivaCbs) ?></span>
+                </td>
+                <td>
+                    <span class="label">Valor Total Apurado - CBS</span>
+                    <span class="value"><?= $h($data->tribIbsCbs->valorTotalCbs) ?></span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
     <!-- Valor Total -->
     <div class="bordered-section">
         <table>
@@ -524,6 +600,16 @@
                     <span class="label">PIS/COFINS - Débito Apur. Própria</span>
                     <span class="value"><?= $h($data->totais->pisCofins) ?></span>
                 </td>
+                <td>
+                    <span class="label">Total do IBS/CBS</span>
+                    <span class="value"><?= $h($data->totais->totalIbsCbs) ?></span>
+                </td>
+                <td>
+                    <span class="label">Valor Líquido da NFS-e + IBS/CBS</span>
+                    <span class="value"><?= $h($data->totais->valorLiquidoComIbsCbs) ?></span>
+                </td>
+            </tr>
+            <tr>
                 <td>
                     <span class="label">Valor Líquido da NFS-e</span>
                     <span class="value" style="font-weight: bold;"><?= $h($data->totais->valorLiquido) ?></span>

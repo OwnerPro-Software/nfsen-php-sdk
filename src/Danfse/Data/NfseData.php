@@ -31,6 +31,8 @@ final readonly class NfseData
         public string $finalidade,
         /** Descrição de `infDPS/tpEmit` — campo "EMITENTE DA NFS-e" da NT 008. */
         public string $emitidaPor,
+        /** Descrição de `infNFSe/ambGer` — campo "AMBIENTE GERADOR" da NT 008. */
+        public string $ambienteGerador,
         public DanfseParticipante $emitente,
         public DanfseParticipante $tomador,
         public ?DanfseParticipante $intermediario,
@@ -46,6 +48,7 @@ final readonly class NfseData
         public DanfseServico $servico,
         public DanfseTributacaoMunicipal $tribMun,
         public DanfseTributacaoFederal $tribFed,
+        public DanfseTributacaoIbsCbs $tribIbsCbs,
         public DanfseTotais $totais,
         public DanfseTotaisTributos $totaisTributos,
         public string $informacoesComplementares,

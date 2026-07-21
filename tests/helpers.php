@@ -319,6 +319,9 @@ function nfsenXmlReaderFiles(): array
                 'tribMun' => $d.'/valores/trib/tribMun', 'exigSusp' => $d.'/valores/trib/tribMun/exigSusp', 'tribFed' => $d.'/valores/trib/tribFed',
                 'pc' => $d.'/valores/trib/tribFed/piscofins', 'totTrib' => $d.'/valores/trib/totTrib',
                 'p' => $d.'/valores/trib/totTrib/pTotTrib',
+                // Bloco IBS/CBS: valores apurados em infNFSe/IBSCBS, declarações em infDPS/IBSCBS.
+                'ibsNfse' => $n.'/IBSCBS', 'valIbs' => $n.'/IBSCBS/valores',
+                'totCibs' => $n.'/IBSCBS/totCIBS', 'gIbsCbs' => $d.'/IBSCBS/valores/trib/gIBSCBS',
             ],
             'porMetodo' => [],
         ],

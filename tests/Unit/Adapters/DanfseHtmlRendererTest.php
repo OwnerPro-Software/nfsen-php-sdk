@@ -6,6 +6,7 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseServico;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotais;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotaisTributos;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoFederal;
+use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoIbsCbs;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\MunicipalityBranding;
@@ -119,7 +120,7 @@ it('renders single dash for codigoTribMunicipal when codigo and desc are both em
         competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
         numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
         ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
-        emitidaPor: $base->emitidaPor,
+        emitidaPor: $base->emitidaPor, ambienteGerador: $base->ambienteGerador,
         emitente: $base->emitente, tomador: $base->tomador,
         intermediario: $base->intermediario, destinatario: $base->destinatario, destinatarioEhTomador: $base->destinatarioEhTomador,
         servico: new DanfseServico(
@@ -127,7 +128,7 @@ it('renders single dash for codigoTribMunicipal when codigo and desc are both em
             codigoTribMunicipal: '-', descTribMunicipal: '-',
             localPrestacao: 'São Paulo', paisPrestacao: '-', descricao: 'X', codigoNbs: '-',
         ),
-        tribMun: $base->tribMun, tribFed: $base->tribFed, totais: $base->totais,
+        tribMun: $base->tribMun, tribFed: $base->tribFed, tribIbsCbs: $base->tribIbsCbs, totais: $base->totais,
         totaisTributos: $base->totaisTributos, informacoesComplementares: $base->informacoesComplementares,
     );
 
@@ -168,12 +169,13 @@ it('escapes HTML in data fields (XSS prevention)', function (): void {
         chaveAcesso: 'X', numeroNfse: '1', competencia: '-', emissaoNfse: '-',
         numeroDps: '1', serieDps: '1', emissaoDps: '-',
         ambiente: NfseAmbiente::PRODUCAO,
-        situacao: '-', finalidade: '-', emitidaPor: '-',
+        situacao: '-', finalidade: '-', emitidaPor: '-', ambienteGerador: '-',
         emitente: $malicious, tomador: sampleParticipante(), intermediario: null, destinatario: null, destinatarioEhTomador: false,
         servico: new DanfseServico('-', '-', '-', '-', '-', '-', '-', '-'),
         tribMun: new DanfseTributacaoMunicipal('-', '-', '-', '-', '-', '-', '-', '-', '-', false, false, '-', '-', '-', '-', '-'),
-        tribFed: new DanfseTributacaoFederal('-', '-', '-', '-', '-'),
-        totais: new DanfseTotais('-', '-', '-', '-', '-', '-', '-'),
+        tribFed: new DanfseTributacaoFederal('-', '-', '-', '-', '-', '-'),
+        tribIbsCbs: new DanfseTributacaoIbsCbs('-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'),
+        totais: new DanfseTotais('-', '-', '-', '-', '-', '-', '-', '-', '-'),
         totaisTributos: new DanfseTotaisTributos('-', '-', '-'),
         informacoesComplementares: '',
     );
@@ -196,10 +198,10 @@ it('states the destinatário is the tomador instead of calling it unidentified',
         competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
         numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
         ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
-        emitidaPor: $base->emitidaPor,
+        emitidaPor: $base->emitidaPor, ambienteGerador: $base->ambienteGerador,
         emitente: $base->emitente, tomador: $base->tomador, intermediario: null,
         destinatario: null, destinatarioEhTomador: true,
-        servico: $base->servico, tribMun: $base->tribMun, tribFed: $base->tribFed,
+        servico: $base->servico, tribMun: $base->tribMun, tribFed: $base->tribFed, tribIbsCbs: $base->tribIbsCbs,
         totais: $base->totais, totaisTributos: $base->totaisTributos,
         informacoesComplementares: $base->informacoesComplementares,
     );

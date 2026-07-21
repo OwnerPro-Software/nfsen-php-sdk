@@ -15,5 +15,7 @@ final readonly class DanfseTributacaoFederal
         public string $csll,
         public string $pis,
         public string $cofins,
+        /** Descrição de `tribFed/piscofins/tpRetPisCofins` (NT 008). */
+        public string $descricaoContribuicoesRetidas,
     ) {}
 }

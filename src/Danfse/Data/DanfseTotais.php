@@ -17,5 +17,8 @@ final readonly class DanfseTotais
         public string $retencoesFederais,
         public string $pisCofins,
         public string $valorLiquido,
+        /** NT 008: totais da reforma, somados ao líquido da NFS-e. */
+        public string $totalIbsCbs,
+        public string $valorLiquidoComIbsCbs,
     ) {}
 }

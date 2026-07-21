@@ -11,6 +11,7 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseServico;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotais;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotaisTributos;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoFederal;
+use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoIbsCbs;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
@@ -45,7 +46,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
         ambiente: $ambiente,
         situacao: 'NFS-e Gerada',
         finalidade: 'NFS-e regular',
-        emitidaPor: 'Prestador',
+        emitidaPor: 'Prestador', ambienteGerador: 'Sistema Nacional da NFS-e',
         emitente: sampleParticipante('EMITENTE LTDA'),
         tomador: sampleParticipante('TOMADOR S.A.'),
         intermediario: $interm,
@@ -66,11 +67,13 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
         ),
         tribFed: new DanfseTributacaoFederal(
             irrf: 'R$ 22,50', cp: 'R$ 15,00', csll: '-', pis: 'R$ 9,75', cofins: 'R$ 45,00',
+            descricaoContribuicoesRetidas: '-',
         ),
+        tribIbsCbs: new DanfseTributacaoIbsCbs('-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'),
         totais: new DanfseTotais(
             valorServico: 'R$ 1.500,00', descontoCondicionado: '-', descontoIncondicionado: '-',
             issqnRetido: 'R$ 27,00', retencoesFederais: 'R$ 52,50', pisCofins: 'R$ 54,75',
-            valorLiquido: 'R$ 1.292,75',
+            valorLiquido: 'R$ 1.292,75', totalIbsCbs: '-', valorLiquidoComIbsCbs: '-',
         ),
         totaisTributos: new DanfseTotaisTributos(federais: '4.50%', estaduais: '0.10%', municipais: '2.00%'),
         informacoesComplementares: 'Referente ao contrato 2026-001',

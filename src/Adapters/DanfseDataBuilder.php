@@ -10,6 +10,7 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseServico;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotais;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotaisTributos;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoFederal;
+use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoIbsCbs;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\Formatter;
@@ -20,8 +21,10 @@ use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
+use OwnerPro\Nfsen\Enums\AmbienteGerador;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Enums\SituacaoNfse;
 use OwnerPro\Nfsen\Enums\TipoBeneficioMunicipal;
@@ -131,6 +134,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             situacao: SituacaoNfse::labelOf($this->str($inf->cStat)),
             finalidade: FinNFSe::labelOf($this->str($infDps->IBSCBS->finNFSe)),
             emitidaPor: TpEmit::labelOf($this->str($infDps->tpEmit)),
+            ambienteGerador: AmbienteGerador::labelOf($this->str($inf->ambGer)),
             emitente: $this->participantes->prestador($emit, $inf, $prest),
             tomador: $this->participantes->tomador($toma),
             intermediario: $intermediario,
@@ -139,7 +143,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             servico: $this->buildServico($inf, $serv, $cServ),
             tribMun: $this->buildTribMun($inf, $tribMun, $valores, $regTrib),
             tribFed: $this->buildTribFed($tribFed),
-            totais: $this->buildTotais($tribMun, $tribFed, $valores, $valNfse),
+            tribIbsCbs: $this->buildTribIbsCbs($inf, $infDps, $valores, $trib),
+            totais: $this->buildTotais($tribMun, $tribFed, $valores, $valNfse, $inf),
             totaisTributos: $this->buildTotaisTributos($totTrib),
             informacoesComplementares: $this->str($serv->infoCompl->xInfComp),
         );
@@ -266,7 +271,90 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             csll: $csll !== '' ? $this->fmt->currency($csll) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
             pis: $pis !== '' ? $this->fmt->currency($pis) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
             cofins: $cofins !== '' ? $this->fmt->currency($cofins) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
+            descricaoContribuicoesRetidas: TpRetPisCofins::labelOf($this->str($pc?->tpRetPisCofins)), // @pest-mutate-ignore RemoveNullSafeOperator — piscofins é minOccurs=0.
         );
+    }
+
+    /**
+     * Bloco "TRIBUTAÇÃO IBS / CBS" (NT 008, item 2.1.10).
+     *
+     * As alíquotas e valores apurados ficam em `infNFSe/IBSCBS` — lado do fisco —
+     * enquanto CST, classificação tributária e indicador de operação vêm do que a
+     * DPS declarou em `infDPS/IBSCBS`. Todo o grupo é minOccurs=0: NFS-e anterior
+     * à reforma não o traz e o bloco sai com traços.
+     */
+    private function buildTribIbsCbs(
+        SimpleXMLElement $inf,
+        SimpleXMLElement $infDps,
+        SimpleXMLElement $valores,
+        SimpleXMLElement $trib,
+    ): DanfseTributacaoIbsCbs {
+        // Todo o grupo é opcional, e SimpleXML devolve null ao acessar filho de
+        // elemento vazio — sem `?->` cada nível seguinte emite warning na maioria
+        // das NFS-e, que são anteriores à reforma.
+        $ibsNfse = $inf->IBSCBS;
+        $valIbs = $ibsNfse?->valores; // @pest-mutate-ignore RemoveNullSafeOperator — IBSCBS é minOccurs=0.
+        $totCibs = $ibsNfse?->totCIBS; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+        $gIbsCbs = $infDps->IBSCBS?->valores?->trib?->gIBSCBS; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+
+        return new DanfseTributacaoIbsCbs(
+            cstClassTrib: $this->joinWithSlash(
+                $this->str($gIbsCbs?->CST),
+                $this->str($gIbsCbs?->cClassTrib),
+            ),
+            // Concatena código da operação, código IBGE, município e UF da incidência.
+            indicadorOperacao: $this->joinWithSlash(
+                $this->str($infDps->IBSCBS?->cIndOp), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                $this->str($ibsNfse?->cLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                $this->resolveMunicipio($ibsNfse?->cLocalidadeIncid, $ibsNfse?->xLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            ),
+            // A NT define este campo como o somatório de cinco origens distintas.
+            exclusoesReducoes: $this->sumCurrency(
+                $this->str($valores->vDescCondIncond->vDescIncond),
+                $this->str($valIbs?->vCalcReeRepRes), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                $this->str($inf->valores->vISSQN),
+                $this->str($trib->tribFed->piscofins?->vPis), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                $this->str($trib->tribFed->piscofins?->vCofins), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            ),
+            baseCalculo: $this->currencyOrDash($this->str($valIbs?->vBC)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            reducaoAliquotas: $this->joinWithSlash(
+                $this->percentOrEmpty($valIbs?->uf?->pRedAliqUF), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                $this->percentOrEmpty($valIbs?->mun?->pRedAliqMun), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                $this->percentOrEmpty($valIbs?->fed?->pRedAliqCBS), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            ),
+            aliquotaIbs: $this->joinWithSlash(
+                $this->percentOrEmpty($valIbs?->uf?->pIBSUF), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                $this->percentOrEmpty($valIbs?->mun?->pIBSMun), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            ),
+            aliquotaEfetivaMunicipal: $this->percentOrDash($valIbs?->mun?->pAliqEfetMun), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            valorApuradoMunicipal: $this->currencyOrDash($this->str($totCibs?->gIBS?->gIBSMunTot?->vIBSMun)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            aliquotaEfetivaEstadual: $this->percentOrDash($valIbs?->uf?->pAliqEfetUF), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            valorApuradoEstadual: $this->currencyOrDash($this->str($totCibs?->gIBS?->gIBSUFTot?->vIBSUF)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            valorTotalIbs: $this->currencyOrDash($this->str($totCibs?->gIBS?->vIBSTot)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            aliquotaCbs: $this->percentOrDash($valIbs?->fed?->pCBS), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            aliquotaEfetivaCbs: $this->percentOrDash($valIbs?->fed?->pAliqEfetCBS), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            valorTotalCbs: $this->currencyOrDash($this->str($totCibs?->gCBS?->vCBS)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+        );
+    }
+
+    /** Junta com " / " os pedaços presentes, ou '-' quando nenhum veio. */
+    private function joinWithSlash(string ...$partes): string
+    {
+        $preenchidos = array_filter($partes, fn (string $p): bool => $p !== '' && $p !== '-');
+
+        return $preenchidos !== [] ? implode(' / ', $preenchidos) : '-';
+    }
+
+    private function percentOrEmpty(?SimpleXMLElement $node): string
+    {
+        $valor = $this->str($node);
+
+        return $valor !== '' ? $valor.'%' : '';
+    }
+
+    private function percentOrDash(?SimpleXMLElement $node): string
+    {
+        return $this->percentOrEmpty($node) ?: '-';
     }
 
     private function buildTotais(
@@ -274,7 +362,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         SimpleXMLElement $tribFed,
         SimpleXMLElement $valores,
         SimpleXMLElement $valNfse,
+        SimpleXMLElement $inf,
     ): DanfseTotais {
+        $totCibs = $inf->IBSCBS?->totCIBS; // @pest-mutate-ignore RemoveNullSafeOperator — IBSCBS é minOccurs=0.
         $vISSQN = $this->str($valNfse->vISSQN);
         $tpRet = $this->str($tribMun->tpRetISSQN, '1');
         $issqnRetido = ($vISSQN !== '' && $tpRet !== '1') ? $this->fmt->currency($vISSQN) : '-'; // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
@@ -302,6 +392,13 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
                 $this->str($pc?->vCofins), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             ),
             valorLiquido: $this->fmt->currency($this->str($valNfse->vLiq)),
+            // NT 008: "TOTAL DO IBS/CBS" é vIBSTot + vCBS; o líquido com os dois é
+            // vTotNF, já somado pelo fisco — não recalculado aqui.
+            totalIbsCbs: $this->sumCurrency(
+                $this->str($totCibs?->gIBS?->vIBSTot), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+                $this->str($totCibs?->gCBS?->vCBS), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            ),
+            valorLiquidoComIbsCbs: $this->currencyOrDash($this->str($totCibs?->vTotNF)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
         );
     }
 

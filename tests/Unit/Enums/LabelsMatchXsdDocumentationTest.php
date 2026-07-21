@@ -8,8 +8,10 @@ use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
+use OwnerPro\Nfsen\Enums\AmbienteGerador;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Enums\SituacaoNfse;
 use OwnerPro\Nfsen\Enums\TipoBeneficioMunicipal;
@@ -39,6 +41,8 @@ $TIPO_XSD_POR_ENUM = [
     TpImunidade::class => 'TSTipoImunidadeISSQN',
     TpSusp::class => 'TSOpExigSuspensa',
     TipoBeneficioMunicipal::class => 'TBMISSQN',
+    TpRetPisCofins::class => 'TSTipoRetPISCofins',
+    AmbienteGerador::class => 'TSAmbGeradorNFSe',
 ];
 
 /**

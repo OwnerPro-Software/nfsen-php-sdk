@@ -42,6 +42,7 @@ $TIPO_EXPLICITO = [
     'OwnerPro\Nfsen\Enums\NfseAmbiente' => 'TSTipoAmbiente',
     'OwnerPro\Nfsen\Enums\SituacaoNfse' => 'TStat',
     'OwnerPro\Nfsen\Enums\TipoBeneficioMunicipal' => 'TBMISSQN',
+    'OwnerPro\Nfsen\Enums\AmbienteGerador' => 'TSAmbGeradorNFSe',
 ];
 
 /**

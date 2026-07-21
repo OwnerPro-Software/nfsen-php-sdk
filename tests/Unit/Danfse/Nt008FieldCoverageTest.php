@@ -111,27 +111,6 @@ it('carries a field table that still matches the XSD', function () use ($FIXTURE
  * daqui quebra a suíte, e é assim que o inventário não envelhece sozinho.
  */
 $NAO_LIDOS = [
-    // Campos que o SDK simplesmente não coleta.
-    'QUADRO DA IDENT. MUNICÍPIO/AMBIENTE :: AMBIENTE GERADOR',
-    'TRIBUTAÇÃO FEDERAL (EXCETO CBS) :: DESCRIÇÃO CONTRIB. SOCIAIS - RETIDAS',
-    'VALOR TOTAL DA NFS-E :: TOTAL DO IBS/CBS',
-    'VALOR TOTAL DA NFS-E :: VALOR LÍQUIDO DA NFS-e + IBS/CBS',
-
-    // Bloco inteiro ausente: tributação IBS/CBS (reforma tributária).
-    'TRIBUTAÇÃO IBS / CBS :: CST / CCLASSTRIB',
-    'TRIBUTAÇÃO IBS / CBS :: INDICADOR DE OPERAÇÃO / CÓDIGO IBGE INCIDÊNCIA / MUNICÍPIO INCIDÊNCIA / SIGLA UF',
-    'TRIBUTAÇÃO IBS / CBS :: BASE DE CÁLCULO APÓS EXCLUSÕES E REDUÇÕES',
-    'TRIBUTAÇÃO IBS / CBS :: RED. ALÍQUOTA IBS / RED. ALÍQUOTA CBS',
-    'TRIBUTAÇÃO IBS / CBS :: ALÍQUOTA - IBS UF / IBS MUN',
-    'TRIBUTAÇÃO IBS / CBS :: ALÍQ. EFETIVA MUNICIPAL - IBS',
-    'TRIBUTAÇÃO IBS / CBS :: VALOR APURADO MUNICIPAL - IBS',
-    'TRIBUTAÇÃO IBS / CBS :: ALÍQ. EFETIVA ESTADUAL - IBS',
-    'TRIBUTAÇÃO IBS / CBS :: VALOR APURADO ESTADUAL - IBS',
-    'TRIBUTAÇÃO IBS / CBS :: VALOR TOTAL APURADO - IBS',
-    'CBS :: ALÍQUOTA - CBS',
-    'CBS :: ALÍQUOTA EFETIVA - CBS',
-    'CBS :: VALOR TOTAL APURADO - CBS',
-
 ];
 
 /**

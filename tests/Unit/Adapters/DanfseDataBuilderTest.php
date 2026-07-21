@@ -1052,3 +1052,67 @@ it('keeps the benefit row when only the unconditional discount is present', func
     expect($data->tribMun->exibeRegimeEImunidade)->toBeFalse();
     expect($data->tribMun->exibeBeneficioEDeducoes)->toBeTrue();
 });
+
+// NT 008, item 2.1.10: bloco TRIBUTAÇÃO IBS / CBS. As alíquotas e valores apurados
+// vivem em infNFSe/IBSCBS (lado do fisco); CST, classificação e indicador de
+// operação vêm do que a DPS declarou em infDPS/IBSCBS.
+it('reads the IBS/CBS block from both the declared and the assessed sides', function () {
+    $xml = str_replace(
+        '</infDPS>',
+        '<IBSCBS><cIndOp>000001</cIndOp><valores><trib><gIBSCBS>'
+        .'<CST>000</CST><cClassTrib>000001</cClassTrib>'
+        .'</gIBSCBS></trib></valores></IBSCBS></infDPS>',
+        $this->xml,
+    );
+    $xml = str_replace(
+        '</infNFSe>',
+        '<IBSCBS><cLocalidadeIncid>3550308</cLocalidadeIncid>'
+        .'<valores><vBC>1000.00</vBC>'
+        .'<uf><pIBSUF>10.00</pIBSUF><pAliqEfetUF>9.00</pAliqEfetUF></uf>'
+        .'<mun><pIBSMun>2.00</pIBSMun><pAliqEfetMun>1.80</pAliqEfetMun></mun>'
+        .'<fed><pCBS>8.80</pCBS><pAliqEfetCBS>8.00</pAliqEfetCBS></fed>'
+        .'</valores>'
+        .'<totCIBS><gIBS><gIBSUFTot><vIBSUF>90.00</vIBSUF></gIBSUFTot>'
+        .'<gIBSMunTot><vIBSMun>18.00</vIBSMun></gIBSMunTot><vIBSTot>108.00</vIBSTot></gIBS>'
+        .'<gCBS><vCBS>80.00</vCBS></gCBS><vTotNF>1188.00</vTotNF></totCIBS></IBSCBS></infNFSe>',
+        $xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tribIbsCbs->cstClassTrib)->toBe('000 / 000001');
+    expect($data->tribIbsCbs->indicadorOperacao)->toBe('000001 / 3550308 / São Paulo - SP');
+    expect($data->tribIbsCbs->baseCalculo)->toBe('R$ 1.000,00');
+    expect($data->tribIbsCbs->aliquotaIbs)->toBe('10.00% / 2.00%');
+    expect($data->tribIbsCbs->aliquotaEfetivaEstadual)->toBe('9.00%');
+    expect($data->tribIbsCbs->valorApuradoEstadual)->toBe('R$ 90,00');
+    expect($data->tribIbsCbs->valorApuradoMunicipal)->toBe('R$ 18,00');
+    expect($data->tribIbsCbs->valorTotalIbs)->toBe('R$ 108,00');
+    expect($data->tribIbsCbs->aliquotaCbs)->toBe('8.80%');
+    expect($data->tribIbsCbs->valorTotalCbs)->toBe('R$ 80,00');
+    expect($data->totais->totalIbsCbs)->toBe('R$ 188,00');
+    expect($data->totais->valorLiquidoComIbsCbs)->toBe('R$ 1.188,00');
+});
+
+it('dashes the whole IBS/CBS block on an NFS-e predating the tax reform', function () {
+    // O grupo inteiro é minOccurs=0. Sem `?->` em cada nível, cada acesso emitia
+    // warning do PHP na maioria das notas — que não têm IBSCBS.
+    $data = $this->builder->build($this->xml);
+
+    expect($data->tribIbsCbs->cstClassTrib)->toBe('-');
+    expect($data->tribIbsCbs->baseCalculo)->toBe('-');
+    expect($data->tribIbsCbs->valorTotalIbs)->toBe('-');
+    expect($data->totais->valorLiquidoComIbsCbs)->toBe('-');
+    // Campos percentuais vazios não podem virar um '%' solto no documento.
+    expect($data->tribIbsCbs->reducaoAliquotas)->toBe('-');
+    expect($data->tribIbsCbs->aliquotaIbs)->toBe('-');
+    expect($data->tribIbsCbs->aliquotaCbs)->toBe('-');
+});
+
+it('describes the withheld social contributions and the generating environment', function () {
+    $xml = str_replace('<ambGer>1</ambGer>', '<ambGer>2</ambGer>', $this->xml);
+    $xml = str_replace('</piscofins>', '<tpRetPisCofins>3</tpRetPisCofins></piscofins>', $xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->ambienteGerador)->toBe('Sistema Nacional da NFS-e');
+    expect($data->tribFed->descricaoContribuicoesRetidas)->toBe('PIS/COFINS/CSLL Retidos');
+});
