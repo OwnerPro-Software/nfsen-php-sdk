@@ -286,107 +286,136 @@ function nfsenXsdPaths(): array
 }
 
 /**
- * Nós do XML que cada variável do `DanfseDataBuilder` guarda.
+ * Arquivos que leem o XML da NFS-e, e o nó que cada variável deles guarda.
  *
- * Escrito à mão a partir das atribuições do builder — e é por isso que uma variável
- * fora deste mapa faz o teste falhar em vez de ser ignorada. Ignorar em silêncio é
- * como a verificação vai ficando cega conforme o builder cresce.
+ * Escrito à mão a partir das atribuições de cada classe — e é por isso que uma
+ * variável fora deste mapa faz o teste falhar em vez de ser ignorada. Ignorar em
+ * silêncio é como a verificação vai ficando cega conforme o código cresce.
  *
- * @return array{globais: array<string, string>, porMetodo: array<string, array<string, string>>}
+ * A lista de arquivos importa tanto quanto os aliases: quando a montagem dos
+ * participantes saiu do `DanfseDataBuilder` para o `ParticipanteBuilder`, varrer
+ * só o primeiro deixaria metade dos caminhos sem verificação — e verde.
+ *
+ * Um alias pode apontar para mais de um nó quando o mesmo código percorre nós de
+ * tipo idêntico (tomador e intermediário são ambos TCInfoPessoa).
+ *
+ * @return list<array{arquivo: string, globais: array<string, string|list<string>>, porMetodo: array<string, array<string, string|list<string>>>}>
  */
-function nfsenDanfseBuilderAliases(): array
+function nfsenXmlReaderFiles(): array
 {
     $n = 'NFSe/infNFSe';
     $d = $n.'/DPS/infDPS';
 
     return [
-        'globais' => [
-            'root' => 'NFSe', 'children' => 'NFSe', 'inf' => $n,
-            'emit' => $n.'/emit', 'ender' => $n.'/emit/enderNac', 'valNfse' => $n.'/valores',
-            'infDps' => $d, 'prest' => $d.'/prest', 'regTrib' => $d.'/prest/regTrib',
-            'serv' => $d.'/serv', 'cServ' => $d.'/serv/cServ', 'locPrest' => $d.'/serv/locPrest',
-            'toma' => $d.'/toma', 'interm' => $d.'/interm', 'valores' => $d.'/valores',
-            'desc' => $d.'/valores/vDescCondIncond', 'trib' => $d.'/valores/trib',
-            'tribMun' => $d.'/valores/trib/tribMun', 'tribFed' => $d.'/valores/trib/tribFed',
-            'pc' => $d.'/valores/trib/tribFed/piscofins', 'totTrib' => $d.'/valores/trib/totTrib',
-            'p' => $d.'/valores/trib/totTrib/pTotTrib',
+        [
+            'arquivo' => __DIR__.'/../src/Adapters/DanfseDataBuilder.php',
+            'globais' => [
+                'root' => 'NFSe', 'children' => 'NFSe', 'inf' => $n,
+                'emit' => $n.'/emit', 'valNfse' => $n.'/valores',
+                'infDps' => $d, 'prest' => $d.'/prest', 'regTrib' => $d.'/prest/regTrib',
+                'serv' => $d.'/serv', 'cServ' => $d.'/serv/cServ', 'locPrest' => $d.'/serv/locPrest',
+                'toma' => $d.'/toma', 'valores' => $d.'/valores',
+                'desc' => $d.'/valores/vDescCondIncond', 'trib' => $d.'/valores/trib',
+                'tribMun' => $d.'/valores/trib/tribMun', 'tribFed' => $d.'/valores/trib/tribFed',
+                'pc' => $d.'/valores/trib/tribFed/piscofins', 'totTrib' => $d.'/valores/trib/totTrib',
+                'p' => $d.'/valores/trib/totTrib/pTotTrib',
+            ],
+            'porMetodo' => [],
         ],
-        'porMetodo' => [
-            'buildTomador' => ['end' => $d.'/toma/end', 'endNac' => $d.'/toma/end/endNac'],
-            'buildIntermediario' => ['end' => $d.'/interm/end', 'endNac' => $d.'/interm/end/endNac'],
+        [
+            'arquivo' => __DIR__.'/../src/Danfse/ParticipanteBuilder.php',
+            'globais' => [
+                'inf' => $n, 'emit' => $n.'/emit', 'enderEmit' => $n.'/emit/enderNac',
+                'prest' => $d.'/prest', 'regTrib' => $d.'/prest/regTrib', 'endPrest' => $d.'/prest/end',
+                'toma' => $d.'/toma', 'interm' => $d.'/interm',
+                // Tomador e intermediário são o mesmo complexType (TCInfoPessoa) e
+                // compartilham um método. O alias tem de render OS DOIS nós: mapeá-lo
+                // só para `toma` faria o intermediário sumir do inventário de campos
+                // cobertos — verde, e cego, que é o defeito que estes testes caçam.
+                'pessoa' => [$d.'/toma', $d.'/interm'],
+                'end' => [$d.'/toma/end', $d.'/interm/end'],
+                'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac'],
+            ],
+            'porMetodo' => [],
         ],
     ];
 }
 
 /**
- * Caminhos do XML que o `DanfseDataBuilder` efetivamente navega.
+ * Caminhos do XML que o SDK efetivamente navega para montar o DANFSe.
  *
  * @return array{caminhos: list<string>, problemas: list<string>, acessos: int}
  */
 function nfsenDanfseBuilderPaths(): array
 {
-    $fonte = (string) file_get_contents(__DIR__.'/../src/Adapters/DanfseDataBuilder.php');
     $xsd = nfsenXsdPaths();
-    $aliases = nfsenDanfseBuilderAliases();
-
     $caminhos = [];
     $problemas = [];
     $acessos = 0;
 
-    foreach (preg_split('/(?=\n    (?:private|public) function )/', $fonte) ?: [] as $bloco) {
-        preg_match('/function (\w+)/', $bloco, $m);
-        $metodo = $m[1] ?? '(topo)';
+    foreach (nfsenXmlReaderFiles() as $config) {
+        $rotulo = basename($config['arquivo']);
+        $fonte = (string) file_get_contents($config['arquivo']);
 
-        preg_match_all('/\$(\w+)((?:\s*\??->\s*\w+)+)\s*(\()?/', $bloco, $ocorrencias, PREG_SET_ORDER);
+        foreach (preg_split('/(?=\n    (?:private|public) function )/', $fonte) ?: [] as $bloco) {
+            preg_match('/function (\w+)/', $bloco, $m);
+            $metodo = $m[1] ?? '(topo)';
 
-        foreach ($ocorrencias as $o) {
-            $var = $o[1];
-            if ($var === 'this') {
-                continue; // colaborador do builder, não nó XML
-            }
+            preg_match_all('/\$(\w+)((?:\s*\??->\s*\w+)+)\s*(\()?/', $bloco, $ocorrencias, PREG_SET_ORDER);
 
-            $cadeia = array_values(array_filter(
-                array_map('trim', preg_split('/\??->/', trim($o[2])) ?: []),
-                fn (string $s): bool => $s !== '',
-            ));
+            foreach ($ocorrencias as $o) {
+                $var = $o[1];
+                if ($var === 'this') {
+                    continue; // colaborador, não nó XML
+                }
 
-            if (($o[3] ?? '') === '(') {
-                array_pop($cadeia); // último segmento é chamada de método
-            }
-            if ($cadeia === []) {
-                continue;
-            }
+                $cadeia = array_values(array_filter(
+                    array_map('trim', preg_split('/\??->/', trim($o[2])) ?: []),
+                    fn (string $s): bool => $s !== '',
+                ));
 
-            $acessos++;
-            $base = $aliases['porMetodo'][$metodo][$var] ?? $aliases['globais'][$var] ?? null;
+                if (($o[3] ?? '') === '(') {
+                    array_pop($cadeia); // último segmento é chamada de método
+                }
+                if ($cadeia === []) {
+                    continue;
+                }
 
-            if ($base === null) {
-                $problemas[] = sprintf(
-                    '%s(): variável $%s não está no mapa de aliases — declare o nó que ela guarda.',
-                    $metodo,
-                    $var,
-                );
+                $acessos++;
+                $base = $config['porMetodo'][$metodo][$var] ?? $config['globais'][$var] ?? null;
 
-                continue;
-            }
-
-            $atual = $base;
-            foreach ($cadeia as $segmento) {
-                $proximo = $atual.'/'.$segmento;
-                if (! array_key_exists($proximo, $xsd)) {
+                if ($base === null) {
                     $problemas[] = sprintf(
-                        '%s(): $%s->%s resolve para "%s", que não existe no XSD — SimpleXML devolveria null e o campo sairia "-" no PDF.',
+                        '%s %s(): variável $%s não está no mapa de aliases — declare o nó que ela guarda.',
+                        $rotulo,
                         $metodo,
                         $var,
-                        implode('->', $cadeia),
-                        $proximo,
                     );
 
-                    continue 2;
+                    continue;
                 }
-                $atual = $proximo;
+
+                foreach ((array) $base as $raiz) {
+                    $atual = $raiz;
+                    foreach ($cadeia as $segmento) {
+                        $proximo = $atual.'/'.$segmento;
+                        if (! array_key_exists($proximo, $xsd)) {
+                            $problemas[] = sprintf(
+                                '%s %s(): $%s->%s resolve para "%s", que não existe no XSD — SimpleXML devolveria null e o campo sairia "-" no PDF.',
+                                $rotulo,
+                                $metodo,
+                                $var,
+                                implode('->', $cadeia),
+                                $proximo,
+                            );
+
+                            continue 3;
+                        }
+                        $atual = $proximo;
+                    }
+                    $caminhos[$atual] = true;
+                }
             }
-            $caminhos[$atual] = true;
         }
     }
 

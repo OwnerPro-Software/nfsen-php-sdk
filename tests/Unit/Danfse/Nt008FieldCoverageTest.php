@@ -147,18 +147,6 @@ $NAO_LIDOS = [
     'CBS :: ALÍQUOTA EFETIVA - CBS',
     'CBS :: VALOR TOTAL APURADO - CBS',
 
-    // O bloco PRESTADOR / FORNECEDOR é lido do nó errado: a NT o amarra a
-    // `infDPS/prest/`, o builder lê de `infNFSe/emit/`. Os dois existem no XSD e
-    // costumam carregar a mesma empresa, então nada falha — é a mesma forma do
-    // defeito 3.0.0, e por isso está listado aqui em vez de contado como coberto.
-    'PRESTADOR / FORNECEDOR :: INDICADOR MUNICIPAL (INSCRIÇÃO)',
-    'PRESTADOR / FORNECEDOR :: TELEFONE',
-    'PRESTADOR / FORNECEDOR :: NOME / NOME EMPRESARIAL',
-    'PRESTADOR / FORNECEDOR :: MUNICÍPIO / SIGLA UF',
-    'PRESTADOR / FORNECEDOR :: CÓDIGO IBGE / CEP',
-    'PRESTADOR / FORNECEDOR :: ENDEREÇO',
-    'PRESTADOR / FORNECEDOR :: EMAIL',
-
     // Lidos, mas invisíveis para o extrator estático de caminhos:
     // a chave vem do atributo Id (`$inf->attributes()->Id`), e o total de retenções
     // é somado em código a partir de vRetIRRF/vRetCP/vRetCSLL.

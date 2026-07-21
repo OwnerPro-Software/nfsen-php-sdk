@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Adapters;
 
 use OwnerPro\Nfsen\Contracts\Driven\BuildsDanfseData;
-use OwnerPro\Nfsen\Danfse\Data\DanfseParticipante;
+use OwnerPro\Nfsen\Danfse\Concerns\ReadsXmlNodes;
 use OwnerPro\Nfsen\Danfse\Data\DanfseServico;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotais;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTotaisTributos;
@@ -13,10 +13,7 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoFederal;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\Formatter;
-use OwnerPro\Nfsen\Danfse\Identificacao;
-use OwnerPro\Nfsen\Danfse\Municipios;
-use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
-use OwnerPro\Nfsen\Dps\Enums\Prest\RegApTribSN;
+use OwnerPro\Nfsen\Danfse\ParticipanteBuilder;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
@@ -33,11 +30,13 @@ use Throwable;
  */
 final readonly class DanfseDataBuilder implements BuildsDanfseData
 {
+    use ReadsXmlNodes;
+
     private const string NFSE_NS = 'http://www.sped.fazenda.gov.br/nfse';
 
     public function __construct(
         private Formatter $fmt = new Formatter,
-        private Identificacao $identificacao = new Identificacao,
+        private ParticipanteBuilder $participantes = new ParticipanteBuilder,
     ) {}
 
     public function build(string $xmlNfse): NfseData
@@ -103,7 +102,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         // → HOMOLOGACAO pra não suprimir o watermark "SEM VALIDADE JURÍDICA" em XML suspeito.
         $ambiente = NfseAmbiente::tryFrom($this->str($infDps->tpAmb, '1')) ?? NfseAmbiente::HOMOLOGACAO;
 
-        $intermediario = isset($infDps->interm) ? $this->buildIntermediario($infDps->interm) : null;
+        $intermediario = isset($infDps->interm) ? $this->participantes->intermediario($infDps->interm) : null;
 
         return new NfseData(
             chaveAcesso: $chave,
@@ -114,8 +113,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             serieDps: $this->str($infDps->serie, '-'),
             emissaoDps: $this->fmt->dateTime($this->str($infDps->dhEmi)),
             ambiente: $ambiente,
-            emitente: $this->buildEmitente($emit, $inf, $prest),
-            tomador: $this->buildTomador($toma),
+            emitente: $this->participantes->prestador($emit, $inf, $prest),
+            tomador: $this->participantes->tomador($toma),
             intermediario: $intermediario,
             servico: $this->buildServico($inf, $serv, $cServ),
             tribMun: $this->buildTribMun($inf, $tribMun, $valores, $regTrib),
@@ -142,103 +141,6 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         }
 
         return $node;
-    }
-
-    private function buildEmitente(SimpleXMLElement $emit, SimpleXMLElement $inf, SimpleXMLElement $prest): DanfseParticipante
-    {
-        $regTrib = $prest->regTrib;
-        $ender = $emit->enderNac;
-        // TCEmitente abre com <xs:choice>CNPJ|CPF</xs:choice> obrigatório, sem NIF. O
-        // prestador estrangeiro existe — TCInfoPrestador aceita CNPJ|CPF|NIF|cNaoNIF —,
-        // mas quem o carrega é DPS/infDPS/prest, então o NIF vem de lá.
-        $identificacao = ($this->identificacao)(
-            $this->str($emit->CNPJ),
-            $this->str($emit->CPF),
-            $this->str($prest->NIF),
-            $this->str($prest->cNaoNIF),
-        );
-
-        $endereco = $this->joinAddress($ender->xLgr, $ender->nro, $ender->xCpl, $ender->xBairro);
-
-        $xLocEmi = $this->str($inf->xLocEmi);
-        $uf = $this->str($ender->UF);
-        $municipio = match (true) {
-            $xLocEmi !== '' && $uf !== '' => $xLocEmi.' - '.$uf,
-            $xLocEmi !== '' => $xLocEmi,
-            default => '-',
-        };
-
-        return new DanfseParticipante(
-            nome: $this->str($emit->xNome, '-'),
-            cnpjCpf: $identificacao,
-            im: $this->str($emit->IM, '-'),
-            telefone: $this->fmt->phone($this->str($emit->fone)),
-            email: $this->str($emit->email),
-            endereco: $endereco !== '' ? $endereco : '-',
-            municipio: $municipio,
-            cep: $this->fmt->cep($this->str($ender->CEP)),
-            simplesNacional: OpSimpNac::labelOf($this->str($regTrib->opSimpNac)),
-            regimeSN: RegApTribSN::labelOf($this->str($regTrib->regApTribSN)),
-        );
-    }
-
-    private function buildTomador(SimpleXMLElement $toma): DanfseParticipante
-    {
-        if ($toma->count() === 0) {
-            return $this->emptyParticipante();
-        }
-
-        $end = $toma->end;
-        $endNac = $end->endNac;
-        $identificacao = ($this->identificacao)(
-            $this->str($toma->CNPJ),
-            $this->str($toma->CPF),
-            $this->str($toma->NIF),
-            $this->str($toma->cNaoNIF),
-        );
-
-        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xCpl, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
-
-        return new DanfseParticipante(
-            nome: $this->str($toma->xNome, '-'),
-            cnpjCpf: $identificacao,
-            im: $this->str($toma->IM, '-'),
-            telefone: $this->fmt->phone($this->str($toma->fone)),
-            email: $this->str($toma->email),
-            endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
-            municipio: Municipios::lookup($this->str($endNac?->cMun)), // @pest-mutate-ignore RemoveNullSafeOperator — endNac null quando <end> ausente.
-            cep: $this->fmt->cep($this->str($endNac?->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-        );
-    }
-
-    private function buildIntermediario(SimpleXMLElement $interm): DanfseParticipante
-    {
-        $end = $interm->end;
-        $endNac = $end->endNac;
-        $identificacao = ($this->identificacao)(
-            $this->str($interm->CNPJ),
-            $this->str($interm->CPF),
-            $this->str($interm->NIF),
-            $this->str($interm->cNaoNIF),
-        );
-
-        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xCpl, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
-
-        return new DanfseParticipante(
-            nome: $this->str($interm->xNome, '-'),
-            cnpjCpf: $identificacao,
-            im: $this->str($interm->IM, '-'),
-            telefone: $this->fmt->phone($this->str($interm->fone)),
-            email: $this->str($interm->email),
-            endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
-            municipio: Municipios::lookup($this->str($endNac?->cMun)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-            cep: $this->fmt->cep($this->str($endNac?->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-        );
-    }
-
-    private function emptyParticipante(): DanfseParticipante
-    {
-        return new DanfseParticipante('-', '-', '-', '-', '-', '-', '-', '-');
     }
 
     private function buildServico(SimpleXMLElement $inf, SimpleXMLElement $serv, SimpleXMLElement $cServ): DanfseServico
@@ -383,63 +285,5 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         }
 
         return $hasValue ? $this->fmt->currency((string) $sum) : '-'; // @pest-mutate-ignore RemoveStringCast — currency aceita string|float; cast alinha com assinatura string-first.
-    }
-
-    /**
-     * Resolve um município via tabela IBGE a partir do código, com fallback para o texto do portal.
-     *
-     * Portal nacional renderiza "Cidade - UF" (ex.: "Canela - RS"). Quando o código IBGE está presente
-     * e válido, preferimos esse formato; senão caímos no texto literal do XML; e em último caso, '-'.
-     */
-    private function resolveMunicipio(?SimpleXMLElement $cMun, ?SimpleXMLElement $xFallback): string
-    {
-        $code = $this->str($cMun);
-        if ($code !== '') { // @pest-mutate-ignore EmptyStringToNotEmpty — guard short-circuit; Municipios::lookup('') retorna '-' e a lógica cai para xFallback com mesmo efeito observável.
-            $lookup = Municipios::lookup($code);
-            if ($lookup !== '-') {
-                return $lookup;
-            }
-        }
-
-        return $this->str($xFallback, '-');
-    }
-
-    /**
-     * Converte um nó SimpleXMLElement para string, devolvendo default quando vazio ou null.
-     *
-     * Nota: SimpleXML retorna null ao acessar child de elemento vazio (ex.: `<tribFed/>`).
-     * Aceitar null simplifica o fluxo para blocos XSD opcionais (tribFed, piscofins, pTotTrib, BM, etc.).
-     */
-    private function str(?SimpleXMLElement $node, string $default = ''): string
-    {
-        if (! $node instanceof SimpleXMLElement) { // @pest-mutate-ignore InstanceOfToTrue — (string) null = ''; mutar o guard dá o mesmo resultado observável (retorna default via branch $s === '').
-            return $default; // @pest-mutate-ignore RemoveEarlyReturn — idem; early return é redundância defensiva.
-        }
-
-        $s = trim((string) $node);
-
-        return $s !== '' ? $s : $default;
-    }
-
-    /**
-     * Monta o endereço na ordem que a NT 008 exige: logradouro, número, complemento
-     * e bairro (seções 2.1.3, 2.1.4 e 2.1.6).
-     *
-     * O complemento é opcional no XSD (`TSComplementoEndereco`) e some do resultado
-     * quando ausente — mas quando existe tem de sair impresso, senão o endereço do
-     * documento fiscal fica incompleto.
-     */
-    private function joinAddress(
-        ?SimpleXMLElement $xLgr,
-        ?SimpleXMLElement $nro,
-        ?SimpleXMLElement $xCpl,
-        ?SimpleXMLElement $xBairro,
-    ): string {
-        return implode(', ', array_filter([
-            trim((string) $xLgr),
-            trim((string) $nro),
-            trim((string) $xCpl),
-            trim((string) $xBairro),
-        ], fn (string $v): bool => $v !== ''));
     }
 }

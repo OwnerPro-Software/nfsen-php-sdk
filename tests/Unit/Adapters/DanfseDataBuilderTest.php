@@ -2,10 +2,11 @@
 
 use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
+use OwnerPro\Nfsen\Danfse\ParticipanteBuilder;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\XmlParseException;
 
-covers(DanfseDataBuilder::class);
+covers(DanfseDataBuilder::class, ParticipanteBuilder::class);
 
 beforeEach(function () {
     $this->builder = new DanfseDataBuilder;
@@ -27,23 +28,37 @@ it('extracts emitente fields completely', function () {
     expect($data->emitente->cnpjCpf)->toBe('11.222.333/0001-81');
     expect($data->emitente->im)->toBe('987654');
     expect($data->emitente->telefone)->toBe('(21) 3000-1234');
-    expect($data->emitente->email)->toBe('financeiro@example.org');
+    // A NT 008 amarra o bloco do prestador a infDPS/prest/, e a fixture traz e-mails
+    // diferentes nos dois nós — é este par que revela de qual deles o campo sai.
+    expect($data->emitente->email)->toBe('financeiro@empresaexemplo.com.br');
     expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Centro');
     expect($data->emitente->municipio)->toBe('Niterói - RJ');
     expect($data->emitente->cep)->toBe('24020-005');
     expect($data->emitente->simplesNacional)->toBe('Não Optante');
 });
 
+it('resolves the prestador city from the IBGE code, not from the header text', function () {
+    // NT 008: o município do bloco PRESTADOR sai de cMun, via tabela do IBGE. O
+    // xLocEmi descreve o local de emissão e alimenta o cabeçalho, não este campo.
+    $xml = preg_replace('|<xLocEmi>[^<]+</xLocEmi>|', '<xLocEmi>OUTRA CIDADE</xLocEmi>', $this->xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->emitente->municipio)->toBe('Niterói - RJ');
+});
+
 it('shows emitente city alone when UF is missing', function () {
-    // UF ausente não deve descartar xLocEmi — mostrar cidade isolada é mais útil que '-'.
-    $xml = preg_replace('|<UF>RJ</UF>|', '<UF></UF>', $this->xml);
+    // Sem cMun em lugar nenhum, cai no texto do portal: UF ausente não deve
+    // descartar xLocEmi — mostrar a cidade isolada é mais útil que '-'.
+    $xml = preg_replace('|<cMun>3303302</cMun>|', '<cMun></cMun>', $this->xml, 1);
+    $xml = preg_replace('|<UF>RJ</UF>|', '<UF></UF>', (string) $xml);
     $data = $this->builder->build((string) $xml);
 
     expect($data->emitente->municipio)->toBe('Niterói');
 });
 
 it('shows dash for emitente municipio when both xLocEmi and UF are missing', function () {
-    $xml = preg_replace('|<xLocEmi>[^<]+</xLocEmi>|', '<xLocEmi></xLocEmi>', $this->xml);
+    $xml = preg_replace('|<cMun>3303302</cMun>|', '<cMun></cMun>', $this->xml, 1);
+    $xml = preg_replace('|<xLocEmi>[^<]+</xLocEmi>|', '<xLocEmi></xLocEmi>', (string) $xml);
     $xml = preg_replace('|<UF>RJ</UF>|', '<UF></UF>', (string) $xml);
     $data = $this->builder->build((string) $xml);
 
@@ -52,7 +67,8 @@ it('shows dash for emitente municipio when both xLocEmi and UF are missing', fun
 
 it('shows dash for emitente municipio when xLocEmi is missing but UF is present', function () {
     // Sem xLocEmi não dá para compor "Cidade - UF"; devolver '-' em vez de " - RJ".
-    $xml = preg_replace('|<xLocEmi>[^<]+</xLocEmi>|', '<xLocEmi></xLocEmi>', $this->xml);
+    $xml = preg_replace('|<cMun>3303302</cMun>|', '<cMun></cMun>', $this->xml, 1);
+    $xml = preg_replace('|<xLocEmi>[^<]+</xLocEmi>|', '<xLocEmi></xLocEmi>', (string) $xml);
     $data = $this->builder->build((string) $xml);
 
     expect($data->emitente->municipio)->toBe('-');
@@ -60,10 +76,10 @@ it('shows dash for emitente municipio when xLocEmi is missing but UF is present'
 
 it('preserves emitente email case', function () {
     // Portal nacional preserva o case do XML. Lowercasing perdia info (ex.: WEB@JONATHANMARTINS.COM.BR).
-    $xml = str_replace('<email>financeiro@example.org</email>', '<email>Financeiro@EXAMPLE.org</email>', $this->xml);
+    $xml = str_replace('<email>financeiro@empresaexemplo.com.br</email>', '<email>Financeiro@EMPRESAEXEMPLO.com.br</email>', $this->xml);
     $data = $this->builder->build($xml);
 
-    expect($data->emitente->email)->toBe('Financeiro@EXAMPLE.org');
+    expect($data->emitente->email)->toBe('Financeiro@EMPRESAEXEMPLO.com.br');
 });
 
 it('extracts tomador fields completely', function () {
@@ -541,7 +557,8 @@ it('builds intermediario gracefully when end block is absent', function () {
 });
 
 it('handles emitente without any identification at all', function () {
-    $xml = preg_replace('|<CNPJ>[^<]+</CNPJ>|', '', $this->xml, 1);
+    // Precisa zerar prest e emit: a identificação sai de prest, com emit de reserva.
+    $xml = preg_replace('|<CNPJ>[^<]+</CNPJ>|', '', $this->xml, 2);
     $data = $this->builder->build((string) $xml);
 
     expect($data->emitente->cnpjCpf)->toBe('-');
@@ -595,9 +612,12 @@ it('returns dash for emitente fields when text nodes are empty', function () {
     $xml = str_replace('<xLgr>Rua Visconde do Rio Branco</xLgr>', '<xLgr></xLgr>', $xml);
     $xml = str_replace('<nro>100</nro>', '<nro></nro>', $xml);
     $xml = str_replace('<xBairro>Centro</xBairro>', '<xBairro></xBairro>', $xml);
+    // Zera nos dois nós: cada campo do bloco sai de prest e cai em emit quando vazio.
     $xml = preg_replace('|<fone>2130001234</fone>|', '<fone></fone>', $xml);
+    $xml = str_replace('<email>financeiro@empresaexemplo.com.br</email>', '<email></email>', (string) $xml);
     $xml = str_replace('<email>financeiro@example.org</email>', '<email></email>', (string) $xml);
     $xml = str_replace('<CEP>24020005</CEP>', '<CEP></CEP>', (string) $xml);
+    $xml = preg_replace('|<cMun>3303302</cMun>|', '<cMun></cMun>', (string) $xml, 1);
     $xml = preg_replace('|<xLocEmi>[^<]+</xLocEmi>|', '<xLocEmi></xLocEmi>', (string) $xml);
     $xml = str_replace('<UF>RJ</UF>', '<UF></UF>', (string) $xml);
     $data = $this->builder->build((string) $xml);
@@ -741,4 +761,56 @@ it('shows a dash for the tax description when neither xTribMun nor xTribNac is p
     $data = $this->builder->build((string) $xml);
 
     expect($data->servico->descricaoTributacao)->toBe('-');
+});
+
+// A NT 008, item 2.4.5, amarra o bloco PRESTADOR / FORNECEDOR a infDPS/prest/. O
+// builder lia de infNFSe/emit/ — nó válido, nó errado, e nada falhava porque os
+// dois costumam carregar a mesma empresa. Aqui os dois nós divergem de propósito,
+// que é a única forma de provar de qual deles cada campo sai.
+it('reads the prestador block from prest, not from emit', function () {
+    $xml = str_replace(
+        '<prest>
+                    <CNPJ>11222333000181</CNPJ>',
+        '<prest>
+                    <CNPJ>11222333000181</CNPJ>
+                    <IM>111222</IM>
+                    <xNome>NOME DECLARADO NA DPS LTDA</xNome>
+                    <end>
+                        <endNac>
+                            <cMun>3550308</cMun>
+                            <CEP>01310100</CEP>
+                        </endNac>
+                        <xLgr>Rua Declarada</xLgr>
+                        <nro>77</nro>
+                        <xBairro>Bairro Declarado</xBairro>
+                    </end>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->emitente->nome)->toBe('NOME DECLARADO NA DPS LTDA');
+    expect($data->emitente->im)->toBe('111222');
+    expect($data->emitente->endereco)->toBe('Rua Declarada, 77, Bairro Declarado');
+    expect($data->emitente->municipio)->toBe('São Paulo - SP');
+    expect($data->emitente->cep)->toBe('01310-100');
+});
+
+it('falls back to emit for the prestador fields the DPS omits', function () {
+    // Em TCInfoPrestador xNome, end, IM e fone são minOccurs=0; em TCEmitente xNome e
+    // enderNac são obrigatórios. Trocar de nó sem fallback apagaria do documento o
+    // cadastro que só o fisco tem.
+    $data = $this->builder->build($this->xml);
+
+    expect($data->emitente->nome)->toBe('EMPRESA EXEMPLO DESENVOLVIMENTO LTDA');
+    expect($data->emitente->im)->toBe('987654');
+    expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Centro');
+});
+
+it('composes city and UF from the portal text when no IBGE code is available', function () {
+    // Último recurso do município do prestador: nem prest/end nem emit/enderNac têm
+    // cMun utilizável, então resta o texto do portal com a UF.
+    $xml = preg_replace('|<cMun>3303302</cMun>|', '<cMun></cMun>', $this->xml, 1);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->emitente->municipio)->toBe('Niterói - RJ');
 });
