@@ -34,6 +34,10 @@ final readonly class ProcessingMessage
             codigo: self::toString($data['codigo'] ?? $data['Codigo'] ?? null),
             descricao: self::toString($data['descricao'] ?? $data['Descricao'] ?? null),
             complemento: self::toString($data['complemento'] ?? $data['Complemento'] ?? null),
+            // `Parametros` é o único declarado (ADN). A variante minúscula é
+            // tolerância: a SEFIN nomeia todo o resto da mensagem em minúscula, logo
+            // seria esse o casing dela. Auditoria de 2026-07-21 confirmou que nenhum
+            // dos dois swaggers declara `parametros` — não remova achando que é typo.
             parametros: $data['parametros'] ?? $data['Parametros'] ?? [],
         );
     }

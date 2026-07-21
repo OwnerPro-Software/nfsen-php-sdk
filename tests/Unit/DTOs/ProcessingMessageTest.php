@@ -255,7 +255,13 @@ it('creates from array with Parametros key', function () {
     expect($msg->codigo)->toBe('E001');
 });
 
-it('creates from array with lowercase parametros key', function () {
+// Tolerância deliberada, não contrato: nenhum swagger declara `parametros` em
+// minúscula — o da SEFIN não traz o campo em casing algum, e o do ADN só declara
+// `Parametros`. A leitura existe porque a SEFIN nomeia todos os demais campos de
+// mensagem em minúscula (`mensagem`, `codigo`, `descricao`, `complemento`), então é
+// esse o casing que ela usaria se viesse a expor o campo. Manter é mais barato que
+// perder dado em silêncio caso o swagger esteja incompleto.
+it('tolerates a lowercase parametros key that no swagger declares', function () {
     $msg = ProcessingMessage::fromArray([
         'parametros' => ['p1'],
     ]);
