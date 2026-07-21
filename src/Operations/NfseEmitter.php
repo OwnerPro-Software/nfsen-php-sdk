@@ -71,7 +71,7 @@ final readonly class NfseEmitter implements EmitsNfse
              */
             $result = $this->pipeline->signCompressSend($xml, 'infDPS', 'DPS', $payloadKey, $operationKey);
 
-            if (! empty($result['erros']) || isset($result['erro'])) {
+            if (ProcessingMessage::hasApiError($result)) {
                 $erros = ProcessingMessage::fromApiResult($result);
                 $firstError = $erros[0] ?? null;
                 $this->dispatchEvent(new NfseRejected(
@@ -98,7 +98,14 @@ final readonly class NfseEmitter implements EmitsNfse
 
                 return new NfseResponse(
                     sucesso: false,
+                    // Sem chave, o idDps é o único identificador que resta para
+                    // reconciliar via consultar()->dps(); aceita as duas grafias
+                    // porque esta resposta não casa com nenhum dos dois envelopes.
+                    idDps: $result['idDps'] ?? $result['idDPS'] ?? null,
                     erros: [new ProcessingMessage(descricao: 'Resposta da API não contém chaveAcesso.')],
+                    tipoAmbiente: $result['tipoAmbiente'] ?? null,
+                    versaoAplicativo: $result['versaoAplicativo'] ?? null,
+                    dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
                 );
             }
 

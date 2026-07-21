@@ -170,3 +170,32 @@ it('distribuicao()->documentos handles 302 redirect', function () {
     expect($response->sucesso)->toBeFalse();
     expect($response->erros[0])->codigo->toBe('HTTP_302');
 });
+
+it('distribuicao()->documentos reports EMPTY_RESPONSE on HTTP 204', function () {
+    // 204 "No Content" define corpo vazio, então a ausência de JSON é a resposta
+    // correta — não um corpo ilegível. Antes virava IndeterminateResultException,
+    // que obriga o chamador a reconciliar por um simples "não há nada", e deixava
+    // inalcançável este branch de DistribuicaoResponse.
+    Http::fake(['*' => Http::response(null, 204)]);
+
+    $response = NfsenClient::for(makePfxContent(), 'secret', '9999999')
+        ->distribuicao()
+        ->documentos(0);
+
+    expect($response->sucesso)->toBeFalse()
+        ->and($response->statusProcessamento)->toBe(StatusDistribuicao::Rejeicao)
+        ->and($response->lote)->toBeEmpty()
+        ->and($response->erros[0]->codigo)->toBe('EMPTY_RESPONSE')
+        ->and($response->erros[0]->descricao)->toContain('HTTP 204');
+});
+
+it('distribuicao() keeps a 204 with a contradictory body indeterminate', function () {
+    // Corpo não-JSON num 204 contradiz o próprio status: sem evidência de qual dos
+    // dois vale, mantém-se a régua "classificação exige certeza".
+    Http::fake(['*' => Http::response('<html>Gateway</html>', 204)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->distribuicao()->documentos(0))
+        ->toThrow(IndeterminateResultException::class);
+});

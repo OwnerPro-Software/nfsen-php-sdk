@@ -2,6 +2,83 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - Não lançado
+
+### Fixed
+
+- **HTTP 204 deixa de ser tratado como resultado indeterminado.** `NfseHttpClient::getResponse()` classificava todo 2xx sem JSON legível como corpo ininterpretável — mas "204 No Content" define corpo vazio, então ali a ausência de JSON é a resposta correta. Na prática, um 204 lançava `IndeterminateResultException`, cujo contrato obriga o chamador a reconciliar antes de qualquer retry, por um simples "não há nada a retornar". Também deixava inalcançável o branch `EMPTY_RESPONSE` de `DistribuicaoResponse::fromHttpResponse()`, escrito justamente para esse caso e coberto apenas por um teste que montava `HttpResponse` à mão. `distribuicao()->documentos()` agora devolve `sucesso: false` com `EMPTY_RESPONSE`. Um 204 com corpo não-JSON contradiz o próprio status e segue indeterminado; num 200, corpo vazio continua indeterminado.
+
+- **`cancelar()` falhava em host cujo fuso tem offset de minuto quebrado.** `dhEvento` usava `date('c')`, mas `TSDateTimeUTC` só aceita offset com minuto zero e na faixa `-11..+12`. Em `Asia/Kolkata` (+05:30), `Asia/Kathmandu` (+05:45), `Pacific/Chatham` (+12:45) ou sob `+13:00`, a validação XSD reprovava e **todo** cancelamento falhava naquele host. Passou a usar `gmdate('c')`, que é sempre válido e representa o mesmo instante. Os exemplos de `dhEmi` no README e em `examples/` tinham o mesmo defeito latente — `dhEmi` é `TSDateTimeUTC` também — e foram corrigidos para `gmdate()`.
+
+- **`validateChaveAcesso()` aceitava chave com quebra de linha no fim.** Em PCRE, `$` casa também antes de um `\n` final, então `/^\d{50}$/` aprovava `"1…1\n"` apesar da mensagem prometer "exatamente 50 dígitos numéricos". A chave seguia interpolada na URL, produzindo requisição malformada em vez de `InvalidArgumentException`. Corrigido com o modificador `/D`.
+
+- **`emitir()` descartava os metadados quando a resposta não trazia `chaveAcesso`.** Dos três branches de resposta, o de `SEM_CHAVE` era o único que jogava fora `idDps`, `tipoAmbiente`, `versaoAplicativo` e `dataHoraProcessamento`, todos presentes no corpo. Sem a chave, o `idDps` é justamente o único identificador que resta para reconciliar via `consultar()->dps()`. Agora são preservados, aceitando as duas grafias (`idDps` e `idDPS`), já que essa resposta não casa com nenhum dos dois envelopes documentados.
+
+- **`HttpException::getResponseBody()` truncava o corpo em 500 bytes**, quebrando `NfseConsulter::parseHttpError()`, que faz `json_decode()` desse valor: um envelope de erro da SEFIN maior que o corte virava JSON inválido, e as mensagens estruturadas eram substituídas por um genérico `HTTP error: N` cuja `descricao` era um fragmento de JSON quebrado. O corpo agora é guardado inteiro — a mensagem da exceção nunca o incluiu, então não há impacto em log.
+
+- **`DanfseDataBuilder` desreferenciava nós ausentes.** `build()` validava apenas `infNFSe` e `DPS/infDPS`; a partir daí, um XML truncado fazia cada nível seguinte virar `null`, emitindo `Warning: Attempt to read property … on null` e terminando em `TypeError`. `toPdf()` tem `catch (Throwable)` e absorvia isso, mas `toHtml()` não tem catch algum, então o `TypeError` vazava para o chamador. Os grupos que o XSD declara obrigatórios (`infDPS/prest`, `prest/regTrib`, `infDPS/serv`, `serv/cServ`, `infDPS/valores`, `valores/trib`, `trib/tribMun`, `trib/totTrib`, `infNFSe/emit`, `infNFSe/valores`) passam a ser verificados na entrada, lançando `XmlParseException` que nomeia o grupo faltante. Os opcionais (`toma`, `tribFed`) seguem tolerados.
+
+- **BREAKING — template de operação sem placeholder deixa de descartar parâmetros em silêncio.** `PrefeituraResolver::resolveOperation()` fazia `str_replace('{chave}', …)` sobre um template que não continha placeholder algum: a substituição não fazia nada, o guard de placeholder residual passava (não sobrou nenhum) e `buildUrl()` devolvia a URL base pelada. O fallback `??` para os defaults nacionais não cobre isso, porque dispara em `null`, não em `''`.
+
+  Na prática: Americana/SP (IBGE `3501608`) declara `""` nas **seis** operações em `storage/prefeituras.json`. `consultar()->nfse($chave)` fazia GET na URL de recepção de DPS com a chave descartada, e `cancelar()` fazia **POST** de pedido de cancelamento nesse mesmo endpoint de recepção — ambos sem erro algum. Agora, uma operação que recebe parâmetros e cujo template não tem onde colocá-los lança `InvalidArgumentException` nomeando a operação, o município, o template e o arquivo a corrigir.
+
+  `""` continua válido para operações sem parâmetro (emissão), em que a URL base do município já é o path completo de recepção — o caso legítimo que a estrutura de dados foi feita para expressar. Emissão em Americana segue funcionando; consultas e cancelamento naquele município passam a falhar de forma explícita até que os templates reais sejam preenchidos.
+
+- **BREAKING — um documento ilegível deixa de derrubar o lote inteiro de distribuição.** `DocumentoFiscal::fromArray()` usava `TipoDocumentoFiscal::from()` sobre uma chave acessada sem checagem: um item sem `TipoDocumento` lançava `TypeError`, e um valor que esta versão do SDK não conhecesse lançava `ValueError` — que **não** é `NfseException` e escapava dos catches documentados. Um `ArquivoXml` corrompido lançava `NfseException`. Em qualquer um dos três, `distribuicao()->documentos()` perdia os outros 49 documentos do lote junto com o defeituoso. Nenhum campo de `DistribuicaoNSU` é obrigatório no swagger do ADN, e o governo pode passar a emitir tipos novos a qualquer momento.
+
+  Agora o item entra no lote com os campos afetados em `null` e o motivo em `DocumentoFiscal::$parseError`. O `nsu` é preservado em todos os cenários, para que o chamador consiga refazer a busca daquele documento em específico. Alinha o comportamento ao de `DistribuicaoResponse::fromApiResult()`, que já degradava graciosamente diante de um `StatusProcessamento` desconhecido.
+
+  **Migração.** `DocumentoFiscal::$tipoDocumento` passou de `TipoDocumentoFiscal` para `?TipoDocumentoFiscal`: quem faz `$doc->tipoDocumento->value` direto precisa checar `$doc->parseError === null` antes (ou usar `?->`). O construtor ganhou o sétimo parâmetro opcional `$parseError` no fim — chamadas posicionais e nomeadas existentes seguem válidas.
+
+- **BREAKING — 5xx sem rejeição estruturada da SEFIN em operação que altera estado passa a lançar `IndeterminateResultException`** (antes: `HttpException`, ou nenhuma exceção). Afeta `emitir()`, `emitirDecisaoJudicial()`, `cancelar()` e `substituir()`. Duas rotas levavam ao mesmo risco: um 5xx com JSON não-envelope (`{"message": "Internal server error"}` de proxy) era devolvido como resultado normal e virava `sucesso: false` definitivo; um 5xx com corpo ilegível (página HTML de gateway) lançava `HttpException`. Nos dois casos o contrato do SDK classifica como resposta definitiva do servidor, e o README autoriza reenviar com o mesmo `nDPS` — mas um 5xx de proxy não prova que a SEFIN deixou de processar a emissão. Risco de nota duplicada.
+
+  Um 5xx que **traz** `erros`/`erro` preenchido continua sendo rejeição definitiva: o envelope prova que a requisição chegou à SEFIN e foi processada. Consultas seguem lançando `HttpException` em 5xx — `GET` não altera estado, então não há o que reconciliar e o erro definitivo é a informação mais útil.
+
+  **Migração.** Quem captura `HttpException` em torno de `emitir`/`cancelar`/`substituir` para tratar falha de servidor precisa passar a capturar também `IndeterminateResultException` — e, nela, reconciliar antes de qualquer reenvio, conforme a seção de reconciliação do README. `catch (CommunicationException)` cobre o caso novo sem distinguir subtipos.
+
+- **`"erro": []` deixa de ser classificado como rejeição.** `ProcessingMessage::fromApiResult()` descartava a chave `erro` vazia desde a 2.3.1, mas os nove pontos que decidiam entre rejeição e processamento testavam `isset($result['erro'])` por conta própria. Um corpo `{"erro": [], "chaveAcesso": "35..."}` — forma que a API realmente produz — virava `sucesso: false` com `erros: []` (nenhuma mensagem), **descartando a `chaveAcesso` de uma nota autorizada** e disparando `NfseRejected('UNKNOWN', null)`. O caller perdia a chave e ficava sem base para reconciliar. Afetava `emitir()`, `substituir()`, `cancelar()`, `consultar()->nfse()`, `->dps()`, `->eventos()` e `->danfse()`.
+
+### Added
+
+- `IndeterminateResultException::fromServerError()` — 5xx sem rejeição estruturada da SEFIN. Sem `phase`: nenhuma fase de transporte falhou, a resposta chegou inteira; o que falta é evidência sobre o processamento.
+- `ProcessingMessage::hasApiError()` — critério único de "a resposta traz erro da SEFIN". Classificação e extração de mensagens agora derivam da mesma regra interna, o que impede a divergência acima de voltar. Também resolve o caso `{"erros": [], "erro": {...}}`, em que o plural vazio escondia o singular preenchido.
+
+### Changed
+
+- **BREAKING — `Enums\TipoEvento`: os 18 casos foram renomeados, sem exceção.** Os nomes anteriores foram atribuídos por posição sobre a lista numérica do swagger, sem conferir a documentação de cada elemento `eNNNNNN` em `storage/schemes/tiposEventos_v1.01.xsd`, e ficaram deslocados em relação ao evento real. Como o valor inteiro de cada caso nunca mudou, o defeito era silencioso: `consultar()->eventos()` montava a URL com um código válido, porém de outro evento, e devolvia o documento errado sem erro. Os códigos permanecem idênticos — apenas os nomes mudam.
+
+  | Antes | Código | Agora |
+  |---|---|---|
+  | `CancelamentoPorIniciativaPrestador` | 101101 | `Cancelamento` |
+  | `CancelamentoPorIniciativaFisco` | 101103 | `SolicitacaoCancelamentoAnaliseFiscal` |
+  | `CancelamentoPorDecisaoJudicial` | 105102 | `CancelamentoPorSubstituicao` |
+  | `CancelamentoPorDecisaoAdministrativa` | 105104 | `CancelamentoDeferidoAnaliseFiscal` |
+  | `CancelamentoPorOficio` | 105105 | `CancelamentoIndeferidoAnaliseFiscal` |
+  | `AnaliseParaCancelamento` | 202201 | `ConfirmacaoPrestador` |
+  | `AnaliseParaCancelamentoDecisaoJudicial` | 202205 | `RejeicaoPrestador` |
+  | `SolicitacaoCancelamento` | 203202 | `ConfirmacaoTomador` |
+  | `SolicitacaoCancelamentoDecisaoJudicial` | 203206 | `RejeicaoTomador` |
+  | `RejeicaoCancelamento` | 204203 | `ConfirmacaoIntermediario` |
+  | `RejeicaoCancelamentoDecisaoJudicial` | 204207 | `RejeicaoIntermediario` |
+  | `ConclusaoCancelamento` | 205204 | `ConfirmacaoTacita` |
+  | `ConclusaoCancelamentoDecisaoJudicial` | 205208 | `AnulacaoRejeicao` |
+  | `SubstituicaoPorIniciativaPrestador` | 305101 | `CancelamentoPorOficio` |
+  | `SubstituicaoPorIniciativaFisco` | 305102 | `BloqueioPorOficio` |
+  | `SubstituicaoPorOficio` | 305103 | `DesbloqueioPorOficio` |
+  | `BloqueioNfse` | 467201 | `InclusaoNfseDan` |
+  | `TravamentoNfse` | 907201 | `TributosNfseRecolhidos` |
+
+  **Migração.** Não há camada de compatibilidade: `CancelamentoPorOficio` existe nos dois esquemas apontando para códigos diferentes (105105 antes, 305101 agora), então um alias depreciado mudaria o significado desse nome em silêncio — exatamente a falha que a correção elimina. Migre por **código**, não por nome: localize o valor inteiro que seu código usava hoje na coluna do meio e adote o nome da coluna da direita. Quem passava `int` direto (`eventos($chave, 105102)`) não é afetado.
+
+  `Cancelamento` (101101) segue como default de `consultar()->eventos()` — só o nome mudou.
+
+- `TipoEvento` passou a compartilhar o vocabulário de `TipoEventoDistribuicao`: os mesmos eventos, vistos pelos canais de consulta e de distribuição, agora têm o mesmo nome nos dois enums.
+
+### Notas
+
+- Os templates reais de consulta e cancelamento de Americana/SP (`3501608`) continuam desconhecidos — o SDK não os inventa. Até que sejam preenchidos em `storage/prefeituras.json`, apenas a emissão funciona naquele município, e as demais operações falham com mensagem explícita em vez de montar uma URL silenciosamente errada.
+- 467201 e 907201 não constam em nenhum XSD — existem apenas no swagger da SEFIN Nacional. Seus nomes derivam da correspondência posicional com as duas últimas entradas de `TipoEventoDistribuicao`, cujas 16 primeiras conferem com o XSD elemento a elemento. Os 16 códigos documentados no XSD são verificados por teste.
+
 ## [2.7.0] - 2026-07-21
 
 Fecha o ciclo da reconciliação: o cancelamento indeterminado passa a ter os mesmos três desfechos ancorados em evidência que a emissão já tinha desde a 2.5.0 — registrou, comprovadamente não registrou, inconclusivo.

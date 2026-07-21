@@ -72,8 +72,40 @@ final readonly class ProcessingMessage
      */
     public static function fromApiResult(array $result): array
     {
-        $items = $result['erros'] ?? (isset($result['erro']) && $result['erro'] !== [] ? [$result['erro']] : []);
+        return self::fromArrayList(self::extractErrors($result));
+    }
 
-        return self::fromArrayList($items);
+    /**
+     * A resposta carrega erro da SEFIN? Único critério de rejeição aceito pelo SDK.
+     *
+     * Existe para que a classificação (rejeitado vs. processado) e a extração das
+     * mensagens não possam divergir: as duas derivam de {@see self::extractErrors()}.
+     * Testar a presença da chave `erro` por conta própria é o que fazia um corpo
+     * `{"erro": [], "chaveAcesso": "..."}` — forma que a API realmente produz —
+     * virar rejeição sem mensagem alguma, descartando a chave de uma nota autorizada.
+     *
+     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData}  $result
+     */
+    public static function hasApiError(array $result): bool
+    {
+        return self::extractErrors($result) !== [];
+    }
+
+    /**
+     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData}  $result
+     *
+     * @return list<MessageData>
+     */
+    private static function extractErrors(array $result): array
+    {
+        $erros = $result['erros'] ?? [];
+
+        if ($erros !== []) {
+            return $erros;
+        }
+
+        $erro = $result['erro'] ?? [];
+
+        return $erro !== [] ? [$erro] : [];
     }
 }

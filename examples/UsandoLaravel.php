@@ -87,7 +87,7 @@ $danfse = Nfsen::consultar()->danfse('000000000000000000000000000000000000000000
 // -- Consultar eventos ---------------------------------------------
 $eventos = Nfsen::consultar()->eventos(
     chave: '00000000000000000000000000000000000000000000000000',
-    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+    tipoEvento: TipoEvento::Cancelamento,
     nSequencial: 1,
 );
 

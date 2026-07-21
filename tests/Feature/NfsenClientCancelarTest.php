@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Events\NfseRequested;
-use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
@@ -122,7 +122,7 @@ it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {
     ))->toThrow(NfseException::class, 'Certificado não contém CNPJ nem CPF');
 });
 
-it('cancelar throws HttpException on server error', function () {
+it('cancelar throws IndeterminateResultException on server error', function () {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
     $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
@@ -131,7 +131,7 @@ it('cancelar throws HttpException on server error', function () {
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
         'Erro na emissao da nota fiscal'
-    ))->toThrow(HttpException::class);
+    ))->toThrow(IndeterminateResultException::class);
 });
 
 it('cancelar succeeds and reports error when event listener throws', function () {
@@ -177,15 +177,21 @@ it('cancelar succeeds and reports error when event listener throws', function ()
     expect($reported[0]->getMessage())->toBe('Listener exploded');
 });
 
-it('cancelar uses Americana custom URL without operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
+it('cancelar refuses to send when the municipality has no cancel template', function () {
+    // Americana traz `cancel_nfse: ""` em storage/prefeituras.json. Antes, a chave
+    // era descartada e o cancelamento ia parar no endpoint de recepção de DPS —
+    // sem erro. Agora falha alto, apontando o arquivo a corrigir.
+    Http::fake();
 
     $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
-    $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
-        isset($req['pedidoRegistroEventoXmlGZipB64'])
-    );
+    expect(fn () => $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal',
+    ))->toThrow(InvalidArgumentException::class, 'storage/prefeituras.json');
+
+    Http::assertNothingSent();
 });
 
 it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', function () {
@@ -207,6 +213,51 @@ it('cancelar throws InvalidArgumentException for invalid chaveAcesso', function 
         CodigoJustificativaCancelamento::ErroEmissao,
         'Erro na emissao da nota fiscal'
     ))->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
+});
+
+it('cancelar builds a valid dhEvento on a host whose offset has non-zero minutes', function (string $timezone) {
+    // TSDateTimeUTC só aceita offset com minuto zero e na faixa -11..+12, então
+    // date('c') gerava valor reprovado pelo XSD em host com timezone quebrado —
+    // todo cancelamento falhava por lá. gmdate('c') é sempre válido.
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode((string) gzencode('<Evento/>'))], 201)]);
+
+    $originalTimezone = date_default_timezone_get();
+    date_default_timezone_set($timezone);
+
+    try {
+        $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+        $response = $client->cancelar(
+            '12345678901234567890123456789012345678901234567890',
+            CodigoJustificativaCancelamento::ErroEmissao,
+            'Erro na emissao da nota fiscal',
+        );
+
+        expect($response->sucesso)->toBeTrue();
+    } finally {
+        date_default_timezone_set($originalTimezone);
+    }
+})->with([
+    'India +05:30' => ['Asia/Kolkata'],
+    'Nepal +05:45' => ['Asia/Kathmandu'],
+    'Chatham +12:45' => ['Pacific/Chatham'],
+    'Brasil -03:00' => ['America/Sao_Paulo'],
+]);
+
+it('cancelar rejects a chaveAcesso with a trailing newline', function () {
+    // `/^\d{50}$/` sem o modificador /D casa também antes de um \n final: a chave
+    // passava na validação e ia interpolada na URL, produzindo uma URL malformada
+    // em vez do InvalidArgumentException que a mensagem promete.
+    Http::fake();
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->cancelar(
+        str_repeat('1', 50)."\n",
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
+    ))->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
+
+    Http::assertNothingSent();
 });
 
 it('cancelar throws NfseException when gzip compression fails', function () {

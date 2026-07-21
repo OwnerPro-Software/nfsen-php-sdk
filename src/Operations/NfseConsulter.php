@@ -80,7 +80,7 @@ final readonly class NfseConsulter implements ConsultsNfse
             );
         }
 
-        if (! empty($result['erros']) || isset($result['erro'])) {
+        if (ProcessingMessage::hasApiError($result)) {
             return new NfseResponse(
                 sucesso: false,
                 erros: ProcessingMessage::fromApiResult($result),
@@ -129,7 +129,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         }
     }
 
-    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventsResponse
+    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::Cancelamento, int $nSequencial = 1): EventsResponse
     {
         $this->validateChaveAcesso($chave);
 
@@ -178,7 +178,7 @@ final readonly class NfseConsulter implements ConsultsNfse
             );
         }
 
-        if (! empty($result['erros']) || isset($result['erro'])) {
+        if (ProcessingMessage::hasApiError($result)) {
             return new EventsResponse(
                 sucesso: false,
                 erros: ProcessingMessage::fromApiResult($result),
@@ -223,11 +223,11 @@ final readonly class NfseConsulter implements ConsultsNfse
     {
         $body = $e->getResponseBody();
 
-        /** @var array<string, mixed>|null $decoded */
+        /** @var array{erros?: list<MessageData>, erro?: MessageData}|null $decoded */
         $decoded = json_decode($body, true);
 
-        if (is_array($decoded) && (! empty($decoded['erros']) || isset($decoded['erro']))) {
-            return ProcessingMessage::fromApiResult($decoded); // @phpstan-ignore argument.type (validated by condition above)
+        if (is_array($decoded) && ProcessingMessage::hasApiError($decoded)) {
+            return ProcessingMessage::fromApiResult($decoded);
         }
 
         return [new ProcessingMessage(
@@ -237,12 +237,13 @@ final readonly class NfseConsulter implements ConsultsNfse
         )];
     }
 
+    /**
+     * O path nunca é vazio aqui: toda operação destas classes passa parâmetro, e
+     * `resolveOperation()` rejeita template sem placeholder quando há parâmetros.
+     * O caso de path vazio (emissão) é tratado em NfseRequestPipeline.
+     */
     private function buildUrl(string $baseUrl, string $path): string
     {
-        if ($path === '') {
-            return $baseUrl;
-        }
-
         return rtrim($baseUrl, '/').'/'.ltrim($path, '/');
     }
 }

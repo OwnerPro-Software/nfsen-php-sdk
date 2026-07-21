@@ -243,6 +243,50 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
     expect($response->erros[0]->codigo)->toBe('404');
 });
 
+it('danfse parses a SEFIN error envelope larger than 500 bytes', function () {
+    // HttpException truncava o corpo em 500 bytes; parseHttpError() faz json_decode()
+    // dele, então um envelope maior que o corte virava JSON inválido e as mensagens
+    // estruturadas da SEFIN eram trocadas por um genérico "HTTP error: N".
+    $longDescription = str_repeat('detalhe do erro ', 60); // ~960 bytes
+
+    $fakeClient = new class($longDescription) implements ExecutesNfseRequests
+    {
+        public function __construct(private string $descricao) {}
+
+        public function executeAndDecompress(string $url): NfseResponse
+        {
+            return new NfseResponse(true);
+        }
+
+        public function executeAndDownload(string $url): string
+        {
+            throw HttpException::fromResponse(
+                400,
+                (string) json_encode(['erros' => [['descricao' => $this->descricao, 'codigo' => 'E999']]]),
+            );
+        }
+
+        public function executeHead(string $url): int
+        {
+            return 200;
+        }
+
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
+    };
+
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+
+    $response = $builder->danfse(makeChaveAcesso());
+
+    expect($response->sucesso)->toBeFalse()
+        ->and($response->erros[0]->codigo)->toBe('E999')
+        ->and($response->erros[0]->descricao)->toBe($longDescription);
+});
+
 it('danfse returns failure with raw error on non-JSON HttpException', function () {
     $fakeClient = new class implements ExecutesNfseRequests
     {
@@ -444,50 +488,6 @@ it('eventos returns success with decompressed xml', function () {
     expect($response->dataHoraProcessamento)->toBe('2026-01-01T00:00:00');
 });
 
-it('buildUrl returns baseUrl when path is empty', function () {
-    $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
-    file_put_contents($tmpJson, json_encode([
-        '9999998' => ['operations' => ['query_nfse' => '']],
-    ]));
-
-    $innerClient = new class implements ExecutesNfseRequests
-    {
-        public string $lastUrl = '';
-
-        public function executeAndDecompress(string $url): NfseResponse
-        {
-            $this->lastUrl = $url;
-
-            return new NfseResponse(true);
-        }
-
-        public function executeAndDownload(string $url): string
-        {
-            return '';
-        }
-
-        public function executeHead(string $url): int
-        {
-            return 200;
-        }
-
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
-        {
-            return new HttpResponse(200, [], '');
-        }
-    };
-
-    try {
-        $resolver = new PrefeituraResolver($tmpJson);
-        $builder = new NfseConsulter($innerClient, 'https://sefin.base', '', $resolver, '9999998');
-        $builder->nfse(makeChaveAcesso());
-
-        expect($innerClient->lastUrl)->toBe('https://sefin.base');
-    } finally {
-        unlink($tmpJson);
-    }
-});
-
 it('eventos uses default nSequencial = 1 in URL', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
     $fakeClient->rawResponse = makeEventoResponse();
@@ -505,7 +505,7 @@ it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
-    $builder->eventos($chave, TipoEvento::CancelamentoPorDecisaoJudicial, 2);
+    $builder->eventos($chave, TipoEvento::CancelamentoPorSubstituicao, 2);
 
     expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/'.$chave.'/eventos/105102/2');
 });

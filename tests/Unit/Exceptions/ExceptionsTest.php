@@ -31,12 +31,19 @@ it('HttpException::fromResponse creates with status code and message', function 
     expect($e->getResponseBody())->toBe('Internal Server Error');
 });
 
-it('HttpException::fromResponse truncates body to 500 characters', function () {
-    $longBody = str_repeat('x', 600);
+it('HttpException::fromResponse keeps the body whole, however long', function () {
+    // Truncar em 500 bytes quebrava NfseConsulter::parseHttpError(), que faz
+    // json_decode() deste valor: um envelope de erro maior que o corte virava JSON
+    // inválido e as mensagens da SEFIN sumiam. A mensagem da exceção não inclui o
+    // corpo, então guardá-lo inteiro não infla log nenhum.
+    $longBody = (string) json_encode(['erros' => [
+        ['codigo' => 'E001', 'descricao' => str_repeat('x', 600)],
+    ]]);
 
     $e = HttpException::fromResponse(422, $longBody);
 
-    expect($e->getResponseBody())->toHaveLength(500);
+    expect($e->getResponseBody())->toBe($longBody)
+        ->and(json_decode($e->getResponseBody(), true))->toBeArray();
 });
 
 it('HttpException has empty responseBody by default', function () {

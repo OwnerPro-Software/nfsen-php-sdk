@@ -127,6 +127,32 @@ it('fromApiResult discards empty erro array', function () {
     expect($list)->toBeEmpty();
 });
 
+it('fromApiResult prefers the singular erro when the plural key is empty', function () {
+    $list = ProcessingMessage::fromApiResult([
+        'erros' => [],
+        'erro' => ['codigo' => 'E777', 'descricao' => 'Só o singular veio preenchido'],
+    ]);
+
+    expect($list)->toHaveCount(1)
+        ->and($list[0]->codigo)->toBe('E777');
+});
+
+it('hasApiError agrees with fromApiResult on every shape the API produces', function (array $result, bool $expected) {
+    // A classificação (rejeitado vs. processado) e as mensagens extraídas têm de sair
+    // da mesma regra — divergir foi o que descartou a chaveAcesso de nota autorizada.
+    expect(ProcessingMessage::hasApiError($result))->toBe($expected)
+        ->and(ProcessingMessage::fromApiResult($result) !== [])->toBe($expected);
+})->with([
+    'sem chave de erro' => [[], false],
+    'erros preenchido' => [['erros' => [['codigo' => 'E001']]], true],
+    'erros vazio' => [['erros' => []], false],
+    'erro preenchido' => [['erro' => ['codigo' => 'E999']], true],
+    'erro vazio' => [['erro' => []], false],
+    'erro vazio junto de payload de sucesso' => [['erro' => [], 'chaveAcesso' => '35123'], false],
+    'ambos vazios' => [['erros' => [], 'erro' => []], false],
+    'plural vazio, singular preenchido' => [['erros' => [], 'erro' => ['codigo' => 'E777']], true],
+]);
+
 it('coerces non-string Mensagem to json preserving unicode and slashes', function () {
     /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
     $msg = ProcessingMessage::fromArray([

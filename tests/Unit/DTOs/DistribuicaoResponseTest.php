@@ -329,3 +329,25 @@ it('fromHttpResponse parses structured ADN error on non-2xx with StatusProcessam
         ->erros->toHaveCount(1);
     expect($response->erros[0]->descricao)->toBe('CNPJ inválido');
 });
+
+it('keeps the whole batch when a single document cannot be parsed', function () {
+    // Antes, um item ruim lançava e o chamador perdia os outros 49 do lote junto.
+    $gzipB64 = base64_encode((string) gzencode('<NFSe/>'));
+
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => [
+            ['NSU' => 1, 'TipoDocumento' => 'NFSE', 'ArquivoXml' => $gzipB64],
+            ['NSU' => 2, 'TipoDocumento' => 'NFSE', 'ArquivoXml' => 'nao-e-base64-valido!!'],
+            ['NSU' => 3, 'TipoDocumento' => 'NFSE', 'ArquivoXml' => $gzipB64],
+        ],
+    ]);
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->lote)->toHaveCount(3)
+        ->and($response->lote[0]->arquivoXml)->toBe('<NFSe/>')
+        ->and($response->lote[1]->arquivoXml)->toBeNull()
+        ->and($response->lote[1]->nsu)->toBe(2)
+        ->and($response->lote[1]->parseError)->not->toBeNull()
+        ->and($response->lote[2]->arquivoXml)->toBe('<NFSe/>');
+});

@@ -26,7 +26,7 @@ $client = NfsenClient::forStandalone(
 $dps = [
     'infDPS' => [
         'tpAmb' => '2',                                  // 1 = Produção, 2 = Homologação
-        'dhEmi' => date('Y-m-d\TH:i:sP'),               // Data/hora emissão
+        'dhEmi' => gmdate('Y-m-d\TH:i:sP'),             // Data/hora emissão (UTC: TSDateTimeUTC exige offset de minuto zero)
         'verAplic' => 'MeuSistema_v1.0',
         'serie' => '1',
         'nDPS' => '1',

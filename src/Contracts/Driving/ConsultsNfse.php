@@ -37,7 +37,7 @@ interface ConsultsNfse
      * operação normal e lança `IndeterminateResultException` — nunca vira
      * sucesso com `xml: null`.
      */
-    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventsResponse;
+    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::Cancelamento, int $nSequencial = 1): EventsResponse;
 
     /**
      * Retorna `true` para HTTP 200 e `false` APENAS para HTTP 404.

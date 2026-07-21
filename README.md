@@ -93,7 +93,7 @@ $client = NfsenClient::forStandalone(
 $response = $client->emitir([
     'infDPS' => [
         'tpAmb'    => '2',                          // 1 = Producao, 2 = Homologacao
-        'dhEmi'    => date('Y-m-d\TH:i:sP'),       // Data/hora emissao
+        'dhEmi'    => gmdate('Y-m-d\TH:i:sP'),      // Data/hora emissao (UTC: TSDateTimeUTC exige offset de minuto zero)
         'verAplic' => 'MeuSistema_v1.0',
         'serie'    => '1',
         'nDPS'     => '1',
@@ -217,8 +217,8 @@ $response = $client->consultar()->dps($idDps);
 // Quando a SEFIN responde 404 (DPS inexistente), a resposta traz um erro
 // dedicado: $response->erros[0]->codigo === NfseResponse::DPS_NOT_FOUND.
 // Sinal inequívoco de "não existe" — distinto de erros transitórios
-// (401/403/429/5xx lançam HttpException; falha de transporte lança
-// IndeterminateResultException).
+// (401/403/429/5xx lançam HttpException, pois consulta não altera estado;
+// falha de transporte lança IndeterminateResultException).
 
 // Obter PDF do DANFSE
 $response = $client->consultar()->danfse($chave);
@@ -228,11 +228,19 @@ file_put_contents('danfse.pdf', $response->pdf);
 // Consultar eventos (tipoEvento é obrigatório)
 $response = $client->consultar()->eventos(
     chave: $chave,
-    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador, // e101101
+    tipoEvento: TipoEvento::Cancelamento, // e101101
     nSequencial: 1,
 );
-// Tipos disponíveis: CancelamentoPorIniciativaPrestador, CancelamentoPorIniciativaFisco,
-// CancelamentoPorSubstituicao, AnulacaoCancelamento
+// Tipos disponíveis (nome — código, conforme tiposEventos_v1.01.xsd):
+// Cancelamento — 101101                          SolicitacaoCancelamentoAnaliseFiscal — 101103
+// CancelamentoPorSubstituicao — 105102           CancelamentoDeferidoAnaliseFiscal — 105104
+// CancelamentoIndeferidoAnaliseFiscal — 105105   ConfirmacaoPrestador — 202201
+// RejeicaoPrestador — 202205                     ConfirmacaoTomador — 203202
+// RejeicaoTomador — 203206                       ConfirmacaoIntermediario — 204203
+// RejeicaoIntermediario — 204207                 ConfirmacaoTacita — 205204
+// AnulacaoRejeicao — 205208                      CancelamentoPorOficio — 305101
+// BloqueioPorOficio — 305102                     DesbloqueioPorOficio — 305103
+// InclusaoNfseDan — 467201                       TributosNfseRecolhidos — 907201
 //
 // Quando a SEFIN responde 404 (evento inexistente), a resposta traz um erro
 // dedicado: $response->erros[0]->codigo === EventsResponse::EVENT_NOT_FOUND.
@@ -313,7 +321,7 @@ try {
 } catch (IndeterminateResultException $e) {
     $lookup = $client->consultar()->eventos(
         chave: $chave,
-        tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+        tipoEvento: TipoEvento::Cancelamento,
         nSequencial: 1,
     );
 
@@ -337,6 +345,15 @@ $response = $client->distribuicao()->documentos(0);
 
 if ($response->sucesso) {
     foreach ($response->lote as $doc) {
+        // Um item que o SDK não conseguiu interpretar por completo não interrompe o
+        // lote: os campos afetados vêm null e parseError diz o que faltou. O nsu é
+        // sempre preservado, então dá para refazer a busca daquele documento.
+        if ($doc->parseError !== null) {
+            echo "NSU {$doc->nsu} incompleto: {$doc->parseError}\n";
+
+            continue;
+        }
+
         echo "NSU: {$doc->nsu} | Tipo: {$doc->tipoDocumento->value} | Chave: {$doc->chaveAcesso}\n";
         // $doc->arquivoXml contém o XML já descomprimido
     }
@@ -472,10 +489,11 @@ Cada item do lote na `DistribuicaoResponse`.
 |-------------|------|-----------|
 | `nsu` | `?int` | Número Sequencial Único |
 | `chaveAcesso` | `?string` | Chave de acesso da NFS-e |
-| `tipoDocumento` | `TipoDocumentoFiscal` | Tipo: `Nfse`, `Dps`, `Evento`, `Cnc`, `PedidoRegistroEvento`, `Nenhum` |
-| `tipoEvento` | `?TipoEventoDistribuicao` | Tipo do evento (quando `tipoDocumento` é `Evento`) |
-| `arquivoXml` | `?string` | XML do documento (já descomprimido) |
+| `tipoDocumento` | `?TipoDocumentoFiscal` | Tipo: `Nfse`, `Dps`, `Evento`, `Cnc`, `PedidoRegistroEvento`, `Nenhum`. `null` quando ausente ou desconhecido — veja `parseError` |
+| `tipoEvento` | `?TipoEventoDistribuicao` | Tipo do evento (quando `tipoDocumento` é `Evento`). `null` quando ausente ou desconhecido |
+| `arquivoXml` | `?string` | XML do documento (já descomprimido). `null` quando ausente ou indecodificável |
 | `dataHoraGeracao` | `?string` | Data/hora de geração |
+| `parseError` | `?string` | Por que o documento não pôde ser interpretado por completo; `null` quando íntegro. Nenhum campo de `DistribuicaoNSU` é obrigatório no contrato do ADN, e o governo pode emitir tipos que esta versão do SDK ainda não conhece — nesses casos o item entra no lote com os campos afetados em `null`, em vez de derrubar o lote inteiro |
 
 ### `ProcessingMessage`
 
@@ -495,9 +513,9 @@ Representa uma mensagem de erro ou alerta da API:
 |---------|-----|--------|
 | `NfseException` | `RuntimeException` | Erros gerais (XML inválido, falha de compressão, etc.) |
 | `CommunicationException` | `NfseException` | Base abstrata das falhas de comunicação (nenhuma resposta completa e legível). Capture-a para tratar tudo como indeterminado; capture as subclasses para distinguir |
-| `IndeterminateResultException` | `CommunicationException` | **Resultado indeterminado**: a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`) |
+| `IndeterminateResultException` | `CommunicationException` | **Resultado indeterminado**: a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`); é `null` quando a resposta chegou inteira e o que falta é evidência de processamento, como num 5xx sem rejeição da SEFIN |
 | `RequestNotDeliveredException` | `CommunicationException` | **Não entregue**: a falha ocorreu comprovadamente antes de qualquer byte HTTP ser enviado (`phase`: `dns`, `connect` ou `tls`). A operação não foi processada — retry direto é seguro, sem reconciliação. Só é lançada com `detectNotDelivered: true` |
-| `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (5xx, redirect, 4xx vazio; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes |
+| `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (redirect, 4xx vazio, 5xx em consulta; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes. **Num 5xx a operações que alteram estado** (`emitir`, `cancelar`, `substituir`) o SDK lança `IndeterminateResultException`, não esta |
 | `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
 | `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS; ID de DPS fora do padrão `TSIdDPS` |
 
@@ -529,7 +547,7 @@ try {
 
 **Contrato de indeterminação:** capturar `IndeterminateResultException`
 significa que a SEFIN pode ou não ter recebido e processado a requisição. Ela
-cobre quatro situações:
+cobre cinco situações:
 
 1. **Falha antes de qualquer resposta** (timeout, DNS, conexão recusada, TLS)
    — a requisição pode nem ter chegado ao servidor;
@@ -540,9 +558,20 @@ cobre quatro situações:
 4. **Resposta 2xx com JSON válido porém sem o campo obrigatório da operação**
    (ex.: `consultar()->eventos()` sem `eventoXmlGZipB64`) — shape que não ocorre
    em operação normal; ausência comprovada é sinalizada por HTTP 404, nunca por
-   corpo vazio.
+   corpo vazio;
+5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
+   `emitirDecisaoJudicial`, `cancelar`, `substituir`) **sem rejeição estruturada
+   da SEFIN no corpo** — o erro pode ter vindo de um proxy antes da SEFIN, ou da
+   própria SEFIN depois de gravar a nota, e nada no corpo distingue os dois. Um
+   5xx que **traz** `erros`/`erro` preenchido é rejeição definitiva: prova que a
+   requisição chegou e foi processada. Em consultas, 5xx continua lançando
+   `HttpException` — não há estado a reconciliar.
 
-Nos quatro casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
+> **204 não entra nesta lista.** "No Content" define corpo vazio, então a ausência
+> de JSON ali é a resposta correta e não estado indeterminado — `distribuicao()`
+> devolve `sucesso: false` com o código `EMPTY_RESPONSE`.
+
+Nos cinco casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
 pode já existir e um retry causaria dupla emissão). Calcule o ID com
 `DpsId::generate()` e consulte `consultar()->dps($id)`: se encontrou, a nota
 foi emitida; se retornar `NfseResponse::DPS_NOT_FOUND`, é seguro re-emitir com
@@ -640,6 +669,10 @@ $pdf = $client->danfse($config)->toPdf($response->xml);
 $html = $client->danfse()->toHtml($response->xml);
 file_put_contents('danfse.html', $html);
 ```
+
+Diferente de `toPdf()`, que devolve `DanfseResponse` com `sucesso: false` em caso de
+falha, `toHtml()` retorna `string` e portanto **propaga** a exceção: `XmlParseException`
+quando o XML está malformado ou não traz algum grupo obrigatório da NFS-e.
 
 ### Geração automática do DANFSE
 

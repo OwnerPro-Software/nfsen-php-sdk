@@ -27,7 +27,7 @@ $chaveNfse = '00000000000000000000000000000000000000000000000000';
 
 $response = $client->consultar()->eventos(
     chave: $chaveNfse,
-    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+    tipoEvento: TipoEvento::Cancelamento,
     nSequencial: 1,
 );
 

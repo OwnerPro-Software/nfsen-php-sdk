@@ -1,0 +1,10 @@
+# Os scripts de examples/ não são código de biblioteca: não têm cobertura de teste e
+# nunca são executados pela suite, então referências mortas passam despercebidas.
+# O nível 0 é o suficiente para o que interessa aqui — símbolo inexistente (classe,
+# método, caso de enum renomeado) — sem exigir a rigidez de tipos do nível 10 de src,
+# que reclamaria de coisas legítimas em script ilustrativo (file_get_contents que
+# pode retornar false, variável definida em trecho omitido).
+parameters:
+    paths:
+        - examples
+    level: 0

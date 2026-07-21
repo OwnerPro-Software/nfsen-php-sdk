@@ -55,7 +55,7 @@ final readonly class DistribuicaoResponse
             );
         }
 
-        /** @var list<array{NSU?: int|null, ChaveAcesso?: string|null, TipoDocumento: string, TipoEvento?: string|null, ArquivoXml?: string|null, DataHoraGeracao?: string|null}> $loteDFe */
+        /** @var list<array{NSU?: int|null, ChaveAcesso?: string|null, TipoDocumento?: string|null, TipoEvento?: string|null, ArquivoXml?: string|null, DataHoraGeracao?: string|null}> $loteDFe */
         $loteDFe = $result['LoteDFe'] ?? [];
 
         /** @var list<array{mensagem?: string, Mensagem?: string, codigo?: string, Codigo?: string, descricao?: string, Descricao?: string, complemento?: string, Complemento?: string, parametros?: list<string>, Parametros?: list<string>}> $alertas */

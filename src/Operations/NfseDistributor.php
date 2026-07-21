@@ -60,12 +60,13 @@ final readonly class NfseDistributor implements DistributesNfse
         return DistribuicaoResponse::fromHttpResponse($httpResponse);
     }
 
+    /**
+     * O path nunca é vazio aqui: toda operação destas classes passa parâmetro, e
+     * `resolveOperation()` rejeita template sem placeholder quando há parâmetros.
+     * O caso de path vazio (emissão) é tratado em NfseRequestPipeline.
+     */
     private function buildUrl(string $baseUrl, string $path): string
     {
-        if ($path === '') {
-            return $baseUrl;
-        }
-
         return rtrim($baseUrl, '/').'/'.ltrim($path, '/');
     }
 }

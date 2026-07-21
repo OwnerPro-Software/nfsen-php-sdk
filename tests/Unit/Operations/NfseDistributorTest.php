@@ -245,25 +245,6 @@ it('buildUrl trims leading slash from path', function () {
     }
 });
 
-it('buildUrl returns baseUrl when path is empty', function () {
-    $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
-    file_put_contents($tmpJson, json_encode([
-        '9999998' => ['operations' => ['distribute_documents' => '']],
-    ]));
-
-    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
-
-    try {
-        $resolver = new PrefeituraResolver($tmpJson);
-        $distributor = new NfseDistributor($httpClient, $resolver, '9999998', 'https://adn.base', '12345678000195');
-        $distributor->documentos(0);
-
-        expect($httpClient->urls[0])->toStartWith('https://adn.base?');
-    } finally {
-        unlink($tmpJson);
-    }
-});
-
 it('buildUrl trims trailing slash from baseUrl', function () {
     $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');

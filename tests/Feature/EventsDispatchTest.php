@@ -13,6 +13,7 @@ use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Events\NfseSubstituted;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
@@ -258,7 +259,7 @@ it('dispatches NfseFailed on consultar dps non-HTTP exception', function () {
     Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'consultar');
 });
 
-it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
+it('dispatches NfseFailed on emitir IndeterminateResultException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
@@ -266,7 +267,7 @@ it('dispatches NfseFailed on emitir HttpException', function (DpsData $data) {
 
     try {
         $client->emitir($data);
-    } catch (HttpException) {
+    } catch (IndeterminateResultException) {
         // expected
     }
 

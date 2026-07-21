@@ -18,6 +18,9 @@ use Throwable;
  *   servidor recebeu e processou, mas o resultado não pôde ser lido.
  * - Resposta 2xx com corpo ilegível (JSON inválido ou vazio): o servidor
  *   confirmou o processamento, mas o resultado não pôde ser interpretado.
+ * - Resposta 5xx a uma operação que altera estado, sem rejeição estruturada da
+ *   SEFIN no corpo: o erro pode ter vindo de um proxy antes da SEFIN, ou da
+ *   própria SEFIN depois de gravar a nota — nada no corpo distingue os dois.
  *
  * Contrato: NUNCA faça retry cego de emissão após capturar esta exceção — a
  * NFS-e pode já ter sido emitida e um retry causaria dupla emissão. Reconcilie
@@ -95,6 +98,24 @@ final class IndeterminateResultException extends CommunicationException
                 $field,
             ),
             'body',
+        );
+    }
+
+    /**
+     * 5xx sem rejeição estruturada da SEFIN numa operação que altera estado.
+     *
+     * Sem `phase`: nenhuma fase de transporte falhou — a resposta chegou inteira.
+     * O que falta é evidência sobre o processamento, não sobre a comunicação.
+     */
+    public static function fromServerError(int $statusCode, string $body): self
+    {
+        return new self(
+            sprintf(
+                'Resultado indeterminado: o servidor respondeu HTTP %d sem rejeição estruturada da SEFIN; '.
+                'não há evidência de que a operação tenha ou não sido processada. Corpo: "%s"',
+                $statusCode,
+                substr($body, 0, 200),
+            ),
         );
     }
 

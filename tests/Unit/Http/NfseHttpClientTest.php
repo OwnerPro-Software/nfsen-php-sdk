@@ -38,7 +38,31 @@ it('performs GET request', function () {
     expect($response)->toHaveKey('nfseXmlGZipB64');
 });
 
-it('returns parsed JSON on 5xx when response has JSON body', function () {
+it('getResponse treats an empty 204 as no content, not an unreadable body', function () {
+    Http::fake(['*' => Http::response(null, 204)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $response = $client->getResponse('https://example.com/contribuintes/DFe/0');
+
+    expect($response->statusCode)->toBe(204)
+        ->and($response->json)->toBe([])
+        ->and($response->body)->toBe('');
+});
+
+it('getResponse keeps a 200 with an empty body indeterminate', function () {
+    // Só o 204 define corpo vazio; num 200 o corpo ausente segue ininterpretável.
+    Http::fake(['*' => Http::response(null, 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->getResponse('https://example.com/contribuintes/DFe/0'))
+        ->toThrow(IndeterminateResultException::class);
+});
+
+it('returns parsed JSON on 5xx when the body carries a SEFIN rejection', function () {
+    // Envelope de erro estruturado prova que a requisição chegou à SEFIN, foi
+    // processada e rejeitada — definitivo, apesar do 5xx.
     Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Falha', 'codigo' => 'E500']]], 500)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
@@ -49,18 +73,79 @@ it('returns parsed JSON on 5xx when response has JSON body', function () {
         ->and($result['erros'][0]['codigo'])->toBe('E500');
 });
 
-it('throws HttpException on 5xx when response has no JSON body', function () {
-    Http::fake(['*' => Http::response('Server Error', 500)]);
+it('throws IndeterminateResultException on POST 5xx without a SEFIN rejection', function (mixed $body, string $rotulo) {
+    // Sem rejeição estruturada, um 5xx não distingue "proxy falhou antes da SEFIN"
+    // de "SEFIN gravou a nota e falhou depois". Tratar como definitivo autorizaria
+    // o caller a reemitir com o mesmo nDPS.
+    Http::fake(['*' => Http::response($body, 500)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(IndeterminateResultException::class, 'sem rejeição estruturada da SEFIN')
+        ->and($rotulo)->not->toBeEmpty();
+})->with([
+    'corpo JSON de gateway' => [['message' => 'Internal server error'], 'gateway'],
+    'corpo não-JSON' => ['Server Error', 'html'],
+    'envelope de erro vazio' => [['erro' => []], 'vazio'],
+]);
+
+it('reports no transport phase for a server error, since the response arrived intact', function () {
+    Http::fake(['*' => Http::response(['message' => 'Bad gateway'], 502)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
     try {
         $client->post('https://example.com/nfse', []);
+        test()->fail('Expected IndeterminateResultException');
+    } catch (IndeterminateResultException $e) {
+        expect($e->phase)->toBeNull()
+            ->and($e->getMessage())->toContain('502')
+            ->and($e->getMessage())->toContain('Bad gateway');
+    }
+});
+
+it('keeps throwing HttpException on GET 5xx, which changes no state', function () {
+    // Consulta não tem efeito colateral: não há o que reconciliar, e o erro
+    // definitivo é a informação mais útil para o caller.
+    Http::fake(['*' => Http::response('Server Error', 500)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    try {
+        $client->get('https://example.com/nfse/CHAVE123');
         test()->fail('Expected HttpException');
     } catch (HttpException $e) {
         expect($e->getMessage())->toBe('HTTP error: 500');
         expect($e->getResponseBody())->toContain('Server Error');
     }
+});
+
+it('returns a non-envelope JSON body on 4xx, a definitive client error', function () {
+    // 4xx é definitivo mesmo sem envelope da SEFIN: o servidor recusou a requisição.
+    // O corpo volta ao chamador, que o classifica (sem chaveAcesso → sucesso: false).
+    Http::fake(['*' => Http::response(['message' => 'Unauthorized'], 401)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect($client->post('https://example.com/nfse', []))->toBe(['message' => 'Unauthorized']);
+});
+
+it('returns a non-envelope JSON body on GET 5xx, which changes no state', function () {
+    Http::fake(['*' => Http::response(['message' => 'Internal server error'], 500)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect($client->get('https://example.com/nfse/CHAVE123'))->toBe(['message' => 'Internal server error']);
+});
+
+it('keeps throwing HttpException on POST 4xx, a definitive client error', function () {
+    Http::fake(['*' => Http::response('Not Found', 404)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(HttpException::class, 'HTTP error: 404');
 });
 
 it('returns parsed JSON on 4xx response instead of throwing', function () {
