@@ -234,6 +234,37 @@ it('emitir dispatches NfseEmitted, not NfseRejected, when erro is an empty array
     Event::assertNotDispatched(NfseRejected::class);
 })->with('dpsData');
 
+it('emitir keeps the response metadata when chaveAcesso is missing', function (DpsData $data) {
+    // Sem chaveAcesso e sem envelope de erro, o idDps é o único identificador que
+    // resta para reconciliar via consultar()->dps(). Este era o único dos três
+    // branches de resposta que descartava tudo isso.
+    Http::fake(['*' => Http::response([
+        'idDps' => 'DPS_SEM_CHAVE',
+        'tipoAmbiente' => 2,
+        'versaoAplicativo' => '1.0.0',
+        'dataHoraProcessamento' => '2026-03-02T12:00:00-03:00',
+    ], 200)]);
+
+    $response = NfsenClient::for(makePfxContent(), 'secret', '9999999')->emitir($data);
+
+    expect($response->sucesso)->toBeFalse()
+        ->and($response->chave)->toBeNull()
+        ->and($response->idDps)->toBe('DPS_SEM_CHAVE')
+        ->and($response->tipoAmbiente)->toBe(2)
+        ->and($response->versaoAplicativo)->toBe('1.0.0')
+        ->and($response->dataHoraProcessamento)->toBe('2026-03-02T12:00:00-03:00')
+        ->and($response->erros[0]->descricao)->toContain('não contém chaveAcesso');
+})->with('dpsData');
+
+it('emitir accepts the uppercase idDPS spelling when chaveAcesso is missing', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['idDPS' => 'DPS_MAIUSCULO'], 200)]);
+
+    $response = NfsenClient::for(makePfxContent(), 'secret', '9999999')->emitir($data);
+
+    expect($response->sucesso)->toBeFalse()
+        ->and($response->idDps)->toBe('DPS_MAIUSCULO');
+})->with('dpsData');
+
 it('emitir returns idDps from lowercase key on rejection', function (DpsData $data) {
     Http::fake(['*' => Http::response([
         'idDps' => 'DPS_LOWER',

@@ -75,18 +75,25 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $id = (string) ($inf->attributes()->Id ?? '');
         $chave = str_starts_with($id, 'NFS') ? substr($id, 3) : $id;
 
+        // Grupos que o XSD marca como obrigatórios. Sem estas guardas, um XML truncado
+        // fazia cada nível seguinte virar null e o builder estourava com warnings do PHP
+        // e um TypeError — que escapava de toHtml(), sem o catch que toPdf() tem.
         $infDps = $inf->DPS->infDPS;
-        $prest = $infDps->prest;
-        $regTrib = $prest->regTrib;
+        $prest = $this->required($infDps->prest, 'infDPS/prest');
+        $regTrib = $this->required($prest->regTrib, 'infDPS/prest/regTrib');
+        $serv = $this->required($infDps->serv, 'infDPS/serv');
+        $cServ = $this->required($serv->cServ, 'infDPS/serv/cServ');
+        $valores = $this->required($infDps->valores, 'infDPS/valores');
+        $trib = $this->required($valores->trib, 'infDPS/valores/trib');
+        $tribMun = $this->required($trib->tribMun, 'infDPS/valores/trib/tribMun');
+        $totTrib = $this->required($trib->totTrib, 'infDPS/valores/trib/totTrib');
+        $emit = $this->required($inf->emit, 'infNFSe/emit');
+        $valNfse = $this->required($inf->valores, 'infNFSe/valores');
+
+        // Opcionais no XSD (minOccurs=0): ausentes, chegam como elemento vazio e os
+        // builders já os normalizam para '-'.
         $toma = $infDps->toma;
-        $serv = $infDps->serv;
-        $cServ = $serv->cServ;
-        $valores = $infDps->valores;
-        $trib = $valores->trib;
-        $tribMun = $trib->tribMun;
         $tribFed = $trib->tribFed;
-        $totTrib = $trib->totTrib;
-        $valNfse = $inf->valores;
 
         // Fallback fail-safe: tpAmb ausente → PRODUCAO (default do str '1'); tpAmb inválido
         // → HOMOLOGACAO pra não suprimir o watermark "SEM VALIDADE JURÍDICA" em XML suspeito.
@@ -103,7 +110,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             serieDps: $this->str($infDps->serie, '-'),
             emissaoDps: $this->fmt->dateTime($this->str($infDps->dhEmi)),
             ambiente: $ambiente,
-            emitente: $this->buildEmitente($inf->emit, $inf, $regTrib),
+            emitente: $this->buildEmitente($emit, $inf, $regTrib),
             tomador: $this->buildTomador($toma),
             intermediario: $intermediario,
             servico: $this->buildServico($inf, $serv, $cServ),
@@ -113,6 +120,24 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             totaisTributos: $this->buildTotaisTributos($totTrib),
             informacoesComplementares: $this->str($serv->infoCompl->xInfComp),
         );
+    }
+
+    /**
+     * Garante um grupo que o XSD declara obrigatório.
+     *
+     * Um filho ausente chega como SimpleXMLElement placeholder de lista vazia, e é o
+     * `count() === 0` que o detecta. O `instanceof` cobre o `null` que o SimpleXML
+     * devolve ao acessar propriedade de um placeholder desses — inalcançável enquanto
+     * as chamadas validarem de fora para dentro (o grupo faltante mais externo sempre
+     * lança antes), mas exigido pelo tipo anulável que o PHPStan infere.
+     */
+    private function required(?SimpleXMLElement $node, string $caminho): SimpleXMLElement
+    {
+        if (! $node instanceof SimpleXMLElement || $node->count() === 0) { // @pest-mutate-ignore InstanceOfToTrue — guarda de invariante: validando de fora para dentro, $node nunca chega null; ver docblock.
+            throw new XmlParseException(sprintf('XML da NFS-e não contém o grupo obrigatório %s.', $caminho));
+        }
+
+        return $node;
     }
 
     private function buildEmitente(SimpleXMLElement $emit, SimpleXMLElement $inf, SimpleXMLElement $regTrib): DanfseParticipante

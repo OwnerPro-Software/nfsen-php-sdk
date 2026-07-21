@@ -667,6 +667,10 @@ $html = $client->danfse()->toHtml($response->xml);
 file_put_contents('danfse.html', $html);
 ```
 
+Diferente de `toPdf()`, que devolve `DanfseResponse` com `sucesso: false` em caso de
+falha, `toHtml()` retorna `string` e portanto **propaga** a exceção: `XmlParseException`
+quando o XML está malformado ou não traz algum grupo obrigatório da NFS-e.
+
 ### Geração automática do DANFSE
 
 O PDF é anexado ao `NfseResponse` em `emitir()`, `emitirDecisaoJudicial()`, `substituir()`

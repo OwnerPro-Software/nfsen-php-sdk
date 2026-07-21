@@ -215,6 +215,23 @@ it('cancelar throws InvalidArgumentException for invalid chaveAcesso', function 
     ))->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
 });
 
+it('cancelar rejects a chaveAcesso with a trailing newline', function () {
+    // `/^\d{50}$/` sem o modificador /D casa também antes de um \n final: a chave
+    // passava na validação e ia interpolada na URL, produzindo uma URL malformada
+    // em vez do InvalidArgumentException que a mensagem promete.
+    Http::fake();
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->cancelar(
+        str_repeat('1', 50)."\n",
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
+    ))->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
+
+    Http::assertNothingSent();
+});
+
 it('cancelar throws NfseException when gzip compression fails', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 

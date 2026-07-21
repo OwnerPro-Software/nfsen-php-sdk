@@ -474,6 +474,32 @@ it('throws for XML missing DPS/infDPS block', function () {
         ->toThrow(XmlParseException::class, 'XML não contém DPS/infDPS.');
 });
 
+it('throws a typed error naming the missing required group', function (string $grupo, string $caminhoEsperado) {
+    // Antes, um XML truncado emitia "Attempt to read property on null" e estourava
+    // com TypeError — que escapava de toHtml(), sem o catch que toPdf() tem.
+    $xml = (string) preg_replace('|<'.$grupo.'>.*?</'.$grupo.'>|s', '', $this->xml);
+
+    expect(fn () => $this->builder->build($xml))
+        ->toThrow(XmlParseException::class, $caminhoEsperado);
+})->with([
+    'prest' => ['prest', 'infDPS/prest'],
+    'serv' => ['serv', 'infDPS/serv'],
+    'emit' => ['emit', 'infNFSe/emit'],
+]);
+
+it('throws a typed error when infDPS carries no required group at all', function (string $infDps) {
+    // O grupo faltante mais externo é o que deve ser reportado, tanto quando infDPS
+    // traz outros campos quanto quando está completamente vazio.
+    $xml = '<?xml version="1.0"?><NFSe xmlns="http://www.sped.fazenda.gov.br/nfse">'
+        .'<infNFSe Id="NFS123"><DPS>'.$infDps.'</DPS></infNFSe></NFSe>';
+
+    expect(fn () => $this->builder->build($xml))
+        ->toThrow(XmlParseException::class, 'infDPS/prest');
+})->with([
+    'infDPS com conteúdo, sem os grupos' => ['<infDPS><tpAmb>1</tpAmb></infDPS>'],
+    'infDPS totalmente vazio' => ['<infDPS/>'],
+]);
+
 it('returns empty tomador when toma block is absent', function () {
     $xml = preg_replace('|<toma>.*?</toma>|s', '', $this->xml);
     $data = $this->builder->build((string) $xml);

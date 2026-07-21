@@ -11,11 +11,20 @@ final class HttpException extends NfseException
     public static function fromResponse(int $statusCode, string $body): self
     {
         $exception = new self('HTTP error: '.$statusCode, $statusCode);
-        $exception->responseBody = substr($body, 0, 500);
+        $exception->responseBody = $body;
 
         return $exception;
     }
 
+    /**
+     * Corpo íntegro da resposta de erro — guardado sem corte, de propósito.
+     *
+     * Até a 3.0.0 era truncado em 500 bytes, o que quebrava quem precisa desserializá-lo:
+     * `NfseConsulter::parseHttpError()` faz `json_decode()` deste valor, e um envelope
+     * de erro da SEFIN maior que o corte virava JSON inválido — as mensagens
+     * estruturadas eram substituídas por um genérico "HTTP error: N". A mensagem da
+     * exceção nunca incluiu o corpo, então guardá-lo inteiro não infla log algum.
+     */
     public function getResponseBody(): string
     {
         return $this->responseBody;

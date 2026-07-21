@@ -243,6 +243,50 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
     expect($response->erros[0]->codigo)->toBe('404');
 });
 
+it('danfse parses a SEFIN error envelope larger than 500 bytes', function () {
+    // HttpException truncava o corpo em 500 bytes; parseHttpError() faz json_decode()
+    // dele, então um envelope maior que o corte virava JSON inválido e as mensagens
+    // estruturadas da SEFIN eram trocadas por um genérico "HTTP error: N".
+    $descricaoLonga = str_repeat('detalhe do erro ', 60); // ~960 bytes
+
+    $fakeClient = new class($descricaoLonga) implements ExecutesNfseRequests
+    {
+        public function __construct(private string $descricao) {}
+
+        public function executeAndDecompress(string $url): NfseResponse
+        {
+            return new NfseResponse(true);
+        }
+
+        public function executeAndDownload(string $url): string
+        {
+            throw HttpException::fromResponse(
+                400,
+                (string) json_encode(['erros' => [['descricao' => $this->descricao, 'codigo' => 'E999']]]),
+            );
+        }
+
+        public function executeHead(string $url): int
+        {
+            return 200;
+        }
+
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
+    };
+
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+
+    $response = $builder->danfse(makeChaveAcesso());
+
+    expect($response->sucesso)->toBeFalse()
+        ->and($response->erros[0]->codigo)->toBe('E999')
+        ->and($response->erros[0]->descricao)->toBe($descricaoLonga);
+});
+
 it('danfse returns failure with raw error on non-JSON HttpException', function () {
     $fakeClient = new class implements ExecutesNfseRequests
     {
