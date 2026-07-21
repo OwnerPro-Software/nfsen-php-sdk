@@ -44,6 +44,25 @@ Type coverage must remain at 100%. Any new or changed code must include complete
 
 If a line genuinely can't be killed by mutation testing (e.g. defensive null-coalesce on an invariant), suppress with an inline `// @pest-mutate-ignore <MutatorName> — <reason>` comment. Use sparingly — see `NfsenClient.php`, `Support/GzipCompressor.php`, `Xml/DpsBuilder.php` for precedent.
 
+## Comments
+
+Comment only what is critical and non-obvious. The default is no comment: well-named code explains itself, and a comment restating it is noise that rots.
+
+Write a comment when the reader would otherwise be unable to reconstruct **why**:
+
+- A rule that comes from outside the code — an NT 008 item, an XSD constraint, a leiaute quirk. Cite the source (`item 2.4.5, nota 10`).
+- A decision that looks wrong until you know the constraint (a magic number from measurement, a deliberate deviation from a spec, a guard against a defect that already happened).
+- A `@pest-mutate-ignore`, which by definition needs its reason inline.
+
+Do **not** comment:
+
+- What the next line already says (`// lê o arquivo` above `file_get_contents()`).
+- Restating a type, a name, or an obvious control flow.
+- Section banners inside a function (`// --- monta o header ---`).
+- Narration of a change you just made ("agora usa X em vez de Y") — that belongs in the commit message or CHANGELOG, not the source.
+
+When tempted to explain a block, prefer extracting it into a named method.
+
 ## Documentation
 
 Whenever the public API changes (new methods, renamed parameters, changed behavior), update `README.md` to reflect those changes.
