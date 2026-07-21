@@ -11,6 +11,7 @@ use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Pipeline\Concerns\DispatchesEvents;
 use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
@@ -77,50 +78,12 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
         });
     }
 
-    /**
-     * @return array{
-     *     erros?: list<MessageData>,
-     *     erro?: MessageData,
-     *     chaveAcesso?: string,
-     *     idDps?: string,
-     *     eventoXmlGZipB64?: string,
-     *     tipoAmbiente?: int,
-     *     versaoAplicativo?: string,
-     *     dataHoraProcessamento?: string,
-     * }
-     */
-    public function execute(string $url): array
+    public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
     {
         $operacao = 'consultar';
         $this->dispatchEvent(new NfseRequested($operacao));
 
-        return $this->withFailureEvent($operacao, function () use ($url, $operacao): array {
-            /**
-             * @var array{
-             *     erros?: list<MessageData>,
-             *     erro?: MessageData,
-             *     chaveAcesso?: string,
-             *     idDps?: string,
-             *     eventoXmlGZipB64?: string,
-             *     tipoAmbiente?: int,
-             *     versaoAplicativo?: string,
-             *     dataHoraProcessamento?: string,
-             * } $result
-             */
-            $result = $this->httpClient->get($url);
-
-            $this->dispatchResultEvents($result, $operacao);
-
-            return $result;
-        });
-    }
-
-    public function executeRaw(string $url): HttpResponse
-    {
-        $operacao = 'consultar';
-        $this->dispatchEvent(new NfseRequested($operacao));
-
-        return $this->withFailureEvent($operacao, function () use ($url, $operacao): HttpResponse {
+        return $this->withFailureEvent($operacao, function () use ($url, $operacao, $requiredField): HttpResponse {
             $response = $this->httpClient->getResponse($url);
 
             /** @var array{erros?: list<MessageData>, erro?: MessageData} $result */
@@ -128,8 +91,28 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
 
             $hasStructuredError = ! empty($result['erros']) || isset($result['erro']);
 
-            if (! $hasStructuredError && ! in_array($response->statusCode, [200, 201, 404], true)) {
-                throw HttpException::fromResponse($response->statusCode, $response->body);
+            if (! $hasStructuredError) {
+                if (! in_array($response->statusCode, [200, 201, 404], true)) {
+                    throw HttpException::fromResponse($response->statusCode, $response->body);
+                }
+
+                // 404 sem corpo de erro não é consulta bem-sucedida (o recurso
+                // não existe) nem rejeição da SEFIN — nenhum evento de resultado.
+                if ($response->statusCode === 404) {
+                    return $response;
+                }
+
+                // 2xx sem o campo exigido pela operação: corpo legível porém
+                // ininterpretável — indeterminado, nunca sucesso silencioso.
+                // Lançado aqui (e não no chamador) para que NfseFailed seja
+                // disparado no lugar de NfseQueried.
+                if ($requiredField !== null) {
+                    $field = $response->json[$requiredField] ?? null;
+
+                    if (! is_string($field) || $field === '') {
+                        throw IndeterminateResultException::fromMissingResponseField($response->statusCode, $requiredField);
+                    }
+                }
             }
 
             $this->dispatchResultEvents($result, $operacao);

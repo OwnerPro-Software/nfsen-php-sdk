@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.0] - 2026-07-21
+
+Fecha o ciclo da reconciliação: o cancelamento indeterminado passa a ter os mesmos três desfechos ancorados em evidência que a emissão já tinha desde a 2.5.0 — registrou, comprovadamente não registrou, inconclusivo.
+
+### Added
+
+- `EventsResponse::EVENT_NOT_FOUND` — código de erro dedicado retornado em `erros[0]->codigo` quando `consultar()->eventos()` recebe HTTP 404 da SEFIN (evento comprovadamente inexistente, distinto de erro transitório). Erros originais da SEFIN, se presentes no corpo do 404, são preservados a partir de `erros[1]` — mesma convenção de `NfseResponse::DPS_NOT_FOUND`. Na reconciliação de cancelamento, `EVENT_NOT_FOUND` é a prova de que o cancelamento não registrou e o reenvio é seguro; qualquer outro `sucesso: false` permanece inconclusivo.
+- `IndeterminateResultException::fromMissingResponseField()` — 2xx com JSON válido porém sem o campo obrigatório da operação.
+- `ExecutesNfseRequests::executeRaw()` ganhou o parâmetro opcional `$requiredField`: um 2xx cujo corpo não traga o campo como string não-vazia lança `IndeterminateResultException` de dentro do pipeline, disparando `NfseFailed` (nunca `NfseQueried`). Porta interna — ver nota de `@internal` abaixo.
+
+### Changed
+
+- **`consultar()->eventos()` com HTTP 404** retorna `sucesso: false` com `EVENT_NOT_FOUND` em `erros[0]` — antes o 404 sem corpo estruturado lançava `HttpException`, e com corpo estruturado virava um `sucesso: false` genérico, indistinguível de erro transitório.
+- **`ExecutesNfseRequests` marcado `@internal`** e **`ExecutesNfseRequests::execute()` removido** — `consultar()->eventos()` passou a usar `executeRaw()` (precisa do status para distinguir o 404), único consumidor restante do método. A interface é porta de wiring, construída apenas pelo `NfsenClient`: só afeta quem a implementa por conta própria; nenhum uso público muda.
+- **HTTP 404 sem corpo de erro não dispara mais `NfseQueried`** em `consultar()->dps()` e `consultar()->eventos()` — o recurso não existe, então não é consulta bem-sucedida (nem rejeição da SEFIN, que continua disparando `NfseRejected` quando o 404 traz `erros`/`erro`). `NfseRequested` continua sendo disparado. Listeners que contavam consultas bem-sucedidas deixam de contar 404s.
+- **`consultar()->eventos()` com 2xx sem `eventoXmlGZipB64`** (ex.: corpo `{}`) agora lança `IndeterminateResultException` — antes retornava `sucesso: true` com `xml: null`. 404 é o sinal canônico de ausência; 200 sem o campo obrigatório é anomalia ininterpretável, e a régua da 2.5.0/2.6.0 é "classificação exige certeza, viés para indeterminado". Quem tratava `xml: null` como "sem evento" deve migrar para o branch `EVENT_NOT_FOUND`. Nesse caminho os listeners observam `NfseRequested` → `NfseFailed`, como já acontece com 2xx de corpo ilegível.
+
 ## [2.6.0] - 2026-07-20
 
 Separa "não entregue" de "indeterminado": falhas de DNS, conexão TCP e handshake TLS acontecem antes de qualquer byte HTTP ser enviado — a requisição comprovadamente não chegou à SEFIN, e o retry direto é seguro sem reconciliação. Opt-in para não quebrar catches da 2.5.0.

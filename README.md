@@ -233,6 +233,12 @@ $response = $client->consultar()->eventos(
 );
 // Tipos disponíveis: CancelamentoPorIniciativaPrestador, CancelamentoPorIniciativaFisco,
 // CancelamentoPorSubstituicao, AnulacaoCancelamento
+//
+// Quando a SEFIN responde 404 (evento inexistente), a resposta traz um erro
+// dedicado: $response->erros[0]->codigo === EventsResponse::EVENT_NOT_FOUND.
+// Sinal inequívoco de "não existe" — qualquer outro sucesso: false é
+// inconclusivo. Um 2xx sem `eventoXmlGZipB64` não ocorre em operação normal e
+// lança IndeterminateResultException (nunca vira sucesso com xml: null).
 
 // Verificar se DPS foi processada
 // true em HTTP 200; false APENAS em HTTP 404 (comprovadamente não existe).
@@ -289,6 +295,34 @@ try {
         // A nota FOI emitida: salvar chave e continuar o fluxo normal.
     } elseif (($lookup->erros[0]->codigo ?? null) === NfseResponse::DPS_NOT_FOUND) {
         // A emissão NÃO aconteceu: seguro re-emitir com o mesmo nDPS.
+    }
+}
+```
+
+#### Reconciliação após resultado indeterminado no cancelamento
+
+Mesma régua da emissão, ancorada na consulta de eventos:
+
+```php
+use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
+use OwnerPro\Nfsen\Responses\EventsResponse;
+
+try {
+    $response = $client->cancelar($chave, $codigoMotivo, $descricao);
+} catch (IndeterminateResultException $e) {
+    $lookup = $client->consultar()->eventos(
+        chave: $chave,
+        tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+        nSequencial: 1,
+    );
+
+    if ($lookup->sucesso) {
+        // O cancelamento REGISTROU: siga o fluxo normal com $lookup->xml.
+    } elseif (($lookup->erros[0]->codigo ?? null) === EventsResponse::EVENT_NOT_FOUND) {
+        // O cancelamento NÃO registrou: seguro reenviar.
+    } else {
+        // Inconclusivo (401/429/5xx com corpo estruturado): aguarde e tente de novo.
     }
 }
 ```
@@ -405,11 +439,15 @@ Retornado por `consultar()->eventos()`.
 | Propriedade | Tipo | Descricao |
 |-------------|------|-----------|
 | `sucesso` | `bool` | Se a consulta teve sucesso |
-| `xml` | `?string` | XML do evento |
+| `xml` | `?string` | XML do evento (nunca `null` quando `sucesso` é `true`) |
 | `erros` | `list<ProcessingMessage>` | Erros de processamento |
 | `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
 | `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
 | `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+
+Constante `EventsResponse::EVENT_NOT_FOUND`: presente em `erros[0]->codigo`
+quando a SEFIN responde 404 — o evento comprovadamente não existe (distinto de
+erro transitório, que permanece `sucesso: false` sem esse código).
 
 ### `DistribuicaoResponse`
 
@@ -491,16 +529,20 @@ try {
 
 **Contrato de indeterminação:** capturar `IndeterminateResultException`
 significa que a SEFIN pode ou não ter recebido e processado a requisição. Ela
-cobre três situações:
+cobre quatro situações:
 
 1. **Falha antes de qualquer resposta** (timeout, DNS, conexão recusada, TLS)
    — a requisição pode nem ter chegado ao servidor;
 2. **Falha no meio da transferência** (conexão resetada, corpo truncado) — o
    servidor processou, mas o resultado não pôde ser lido;
 3. **Resposta 2xx com corpo ilegível** (JSON inválido ou vazio) — o servidor
-   confirmou o processamento, mas o resultado não pôde ser interpretado.
+   confirmou o processamento, mas o resultado não pôde ser interpretado;
+4. **Resposta 2xx com JSON válido porém sem o campo obrigatório da operação**
+   (ex.: `consultar()->eventos()` sem `eventoXmlGZipB64`) — shape que não ocorre
+   em operação normal; ausência comprovada é sinalizada por HTTP 404, nunca por
+   corpo vazio.
 
-Nos três casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
+Nos quatro casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
 pode já existir e um retry causaria dupla emissão). Calcule o ID com
 `DpsId::generate()` e consulte `consultar()->dps($id)`: se encontrou, a nota
 foi emitida; se retornar `NfseResponse::DPS_NOT_FOUND`, é seguro re-emitir com

@@ -66,14 +66,14 @@ final readonly class NfseConsulter implements ConsultsNfse
         if ($response->statusCode === 404) {
             return new NfseResponse(
                 sucesso: false,
-                erros: [
+                erros: $this->notFoundErrors(
                     new ProcessingMessage(
                         mensagem: 'DPS não encontrada',
                         codigo: NfseResponse::DPS_NOT_FOUND,
                         descricao: 'A SEFIN respondeu 404: não existe DPS com o identificador informado.',
                     ),
-                    ...ProcessingMessage::fromApiResult($result),
-                ],
+                    $result,
+                ),
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
@@ -143,11 +143,40 @@ final readonly class NfseConsulter implements ConsultsNfse
             'nSequencial' => $nSequencial,
         ]);
 
-        $result = $this->client->execute($this->buildUrl($this->seFinBaseUrl, $path));
+        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path), 'eventoXmlGZipB64');
+
+        /**
+         * @var array{
+         *     erros?: list<MessageData>,
+         *     erro?: MessageData,
+         *     eventoXmlGZipB64?: string,
+         *     tipoAmbiente?: int,
+         *     versaoAplicativo?: string,
+         *     dataHoraProcessamento?: string,
+         * } $result
+         */
+        $result = $response->json;
 
         $tipoAmbiente = $result['tipoAmbiente'] ?? null;
         $versaoAplicativo = $result['versaoAplicativo'] ?? null;
         $dataHoraProcessamento = $result['dataHoraProcessamento'] ?? null;
+
+        if ($response->statusCode === 404) {
+            return new EventsResponse(
+                sucesso: false,
+                erros: $this->notFoundErrors(
+                    new ProcessingMessage(
+                        mensagem: 'Evento não encontrado',
+                        codigo: EventsResponse::EVENT_NOT_FOUND,
+                        descricao: 'A SEFIN respondeu 404: não existe evento com os parâmetros informados.',
+                    ),
+                    $result,
+                ),
+                tipoAmbiente: $tipoAmbiente,
+                versaoAplicativo: $versaoAplicativo,
+                dataHoraProcessamento: $dataHoraProcessamento,
+            );
+        }
 
         if (! empty($result['erros']) || isset($result['erro'])) {
             return new EventsResponse(
@@ -161,6 +190,7 @@ final readonly class NfseConsulter implements ConsultsNfse
 
         return new EventsResponse(
             sucesso: true,
+            // executeRaw('eventoXmlGZipB64') garante string não-vazia neste ponto.
             xml: GzipCompressor::decompressB64($result['eventoXmlGZipB64'] ?? null),
             tipoAmbiente: $tipoAmbiente,
             versaoAplicativo: $versaoAplicativo,
@@ -174,6 +204,18 @@ final readonly class NfseConsulter implements ConsultsNfse
 
         // executeHead só retorna 200 ou 404; qualquer outro status lança lá.
         return $this->client->executeHead($this->buildUrl($this->seFinBaseUrl, $path)) === 200;
+    }
+
+    /**
+     * Erro dedicado de ausência comprovada (HTTP 404) seguido dos erros
+     * originais da SEFIN, quando o corpo do 404 os traz.
+     *
+     * @param  array{erros?: list<MessageData>, erro?: MessageData}  $result
+     * @return list<ProcessingMessage>
+     */
+    private function notFoundErrors(ProcessingMessage $marker, array $result): array
+    {
+        return [$marker, ...ProcessingMessage::fromApiResult($result)];
     }
 
     /** @return list<ProcessingMessage> */

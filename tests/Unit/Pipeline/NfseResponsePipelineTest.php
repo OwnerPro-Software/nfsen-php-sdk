@@ -8,6 +8,7 @@ use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Pipeline\NfseResponsePipeline;
 use OwnerPro\Nfsen\Responses\HttpResponse;
 
@@ -200,51 +201,6 @@ it('uses UNKNOWN as fallback error code when codigo is missing on executeAndDeco
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN');
 });
 
-// --- execute ---
-
-it('returns raw result and dispatches NfseQueried on successful execute', function (): void {
-    Event::fake();
-
-    $expected = ['chaveAcesso' => 'CHAVE123', 'idDps' => 'DPS456'];
-    $pipeline = buildResponsePipeline(getResult: $expected);
-
-    $result = $pipeline->execute('https://example.com/dps');
-
-    expect($result)->toBe($expected);
-    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e): bool => $e->operacao === 'consultar');
-    Event::assertDispatched(NfseQueried::class);
-    Event::assertNotDispatched(NfseRejected::class);
-});
-
-it('returns raw result and dispatches NfseRejected on execute error', function (): void {
-    Event::fake();
-
-    $pipeline = buildResponsePipeline(getResult: [
-        'erros' => [[
-            'codigo' => 'RAW_ERR',
-            'descricao' => 'Raw error',
-            'complemento' => 'Tente novamente',
-        ]],
-    ]);
-
-    $pipeline->execute('https://example.com/dps');
-
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'RAW_ERR' && $e->mensagemErro === 'Raw error' && $e->correcao === 'Tente novamente');
-    Event::assertNotDispatched(NfseQueried::class);
-});
-
-it('uses UNKNOWN as fallback error code on execute error without codigo', function (): void {
-    Event::fake();
-
-    $pipeline = buildResponsePipeline(getResult: [
-        'erros' => [['mensagem' => 'No code']],
-    ]);
-
-    $pipeline->execute('https://example.com/dps');
-
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN' && $e->mensagemErro === 'No code');
-});
-
 // --- executeRaw ---
 
 it('returns raw HttpResponse and dispatches NfseQueried on 200 executeRaw', function (): void {
@@ -274,7 +230,7 @@ it('returns raw HttpResponse and dispatches NfseQueried on 201 executeRaw', func
     Event::assertNotDispatched(NfseRejected::class);
 });
 
-it('returns raw HttpResponse and dispatches NfseQueried on 404 without error body on executeRaw', function (): void {
+it('returns raw HttpResponse without result events on 404 without error body on executeRaw', function (): void {
     Event::fake();
 
     $pipeline = buildResponsePipeline(rawResult: new HttpResponse(404, [], ''));
@@ -282,6 +238,67 @@ it('returns raw HttpResponse and dispatches NfseQueried on 404 without error bod
     $response = $pipeline->executeRaw('https://example.com/dps/DPS1');
 
     expect($response->statusCode)->toBe(404);
+    Event::assertDispatched(NfseRequested::class);
+    Event::assertNotDispatched(NfseQueried::class);
+    Event::assertNotDispatched(NfseRejected::class);
+});
+
+it('dispatches NfseRejected on 404 with structured error body on executeRaw', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(404, ['erros' => [['codigo' => 'E404', 'descricao' => 'DPS inexistente']]], '');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $pipeline->executeRaw('https://example.com/dps/DPS1');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'E404');
+    Event::assertNotDispatched(NfseQueried::class);
+});
+
+it('throws IndeterminateResultException and dispatches NfseFailed when requiredField is missing on executeRaw', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(200, [], '{}'));
+
+    expect(fn () => $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64'))
+        ->toThrow(IndeterminateResultException::class, 'eventoXmlGZipB64');
+
+    Event::assertDispatched(NfseFailed::class);
+    Event::assertNotDispatched(NfseQueried::class);
+});
+
+it('throws IndeterminateResultException when requiredField is empty or not a string on executeRaw', function (mixed $value): void {
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(200, ['eventoXmlGZipB64' => $value], ''));
+
+    expect(fn () => $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64'))
+        ->toThrow(IndeterminateResultException::class, 'eventoXmlGZipB64');
+})->with([
+    'empty string' => [''],
+    'int' => [123],
+    'null' => [null],
+]);
+
+it('returns response without requiredField check when body has structured error', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(400, ['erros' => [['codigo' => 'E1', 'descricao' => 'Rejeitada']]], '');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $response = $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64');
+
+    expect($response)->toBe($raw);
+    Event::assertDispatched(NfseRejected::class);
+});
+
+it('returns response when requiredField is present on executeRaw', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(200, ['eventoXmlGZipB64' => 'Z3ppcA=='], '');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $response = $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64');
+
+    expect($response)->toBe($raw);
     Event::assertDispatched(NfseQueried::class);
 });
 
@@ -296,6 +313,17 @@ it('dispatches NfseRejected and returns response when executeRaw body has erros'
     expect($response)->toBe($raw);
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'E42' && $e->mensagemErro === 'Rejeitada' && $e->correcao === 'Corrija');
     Event::assertNotDispatched(NfseQueried::class);
+});
+
+it('falls back to mensagem when executeRaw error has no descricao', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(400, ['erros' => [['mensagem' => 'No code']]], '');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $pipeline->executeRaw('https://example.com/dps/DPS1');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'UNKNOWN' && $e->mensagemErro === 'No code');
 });
 
 it('returns response when executeRaw gets 500 with structured error body', function (): void {

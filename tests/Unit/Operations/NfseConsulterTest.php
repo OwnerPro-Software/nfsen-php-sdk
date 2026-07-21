@@ -5,6 +5,7 @@ use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
@@ -25,13 +26,6 @@ class FakeNfsenClientForConsulta implements ExecutesNfseRequests
         return new NfseResponse(true, 'chave123', '<xml/>');
     }
 
-    public function execute(string $url): array
-    {
-        $this->calls[] = $url;
-
-        return ['chaveAcesso' => null];
-    }
-
     public function executeAndDownload(string $url): string
     {
         $this->calls[] = $url;
@@ -46,12 +40,17 @@ class FakeNfsenClientForConsulta implements ExecutesNfseRequests
         return $this->headStatus;
     }
 
-    public function executeRaw(string $url): HttpResponse
+    public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
     {
         $this->calls[] = $url;
 
         return $this->rawResponse ?? new HttpResponse(200, ['chaveAcesso' => null], '');
     }
+}
+
+function makeEventoResponse(int $statusCode = 200): HttpResponse
+{
+    return new HttpResponse($statusCode, ['eventoXmlGZipB64' => base64_encode((string) gzencode('<Evento/>'))], '');
 }
 
 function makeNfseConsulter(FakeNfsenClientForConsulta $fakeClient): NfseConsulter
@@ -148,11 +147,6 @@ it('danfse returns success with pdf bytes', function () {
             return new NfseResponse(true);
         }
 
-        public function execute(string $url): array
-        {
-            return [];
-        }
-
         public function executeAndDownload(string $url): string
         {
             return 'PDF-BINARY-CONTENT';
@@ -163,7 +157,7 @@ it('danfse returns success with pdf bytes', function () {
             return 200;
         }
 
-        public function executeRaw(string $url): HttpResponse
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -186,11 +180,6 @@ it('danfse returns failure on empty response', function () {
             return new NfseResponse(true);
         }
 
-        public function execute(string $url): array
-        {
-            return [];
-        }
-
         public function executeAndDownload(string $url): string
         {
             return '';
@@ -201,7 +190,7 @@ it('danfse returns failure on empty response', function () {
             return 200;
         }
 
-        public function executeRaw(string $url): HttpResponse
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -224,11 +213,6 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
             return new NfseResponse(true);
         }
 
-        public function execute(string $url): array
-        {
-            return [];
-        }
-
         public function executeAndDownload(string $url): string
         {
             $e = HttpException::fromResponse(
@@ -243,7 +227,7 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
             return 200;
         }
 
-        public function executeRaw(string $url): HttpResponse
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -267,11 +251,6 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
             return new NfseResponse(true);
         }
 
-        public function execute(string $url): array
-        {
-            return [];
-        }
-
         public function executeAndDownload(string $url): string
         {
             throw HttpException::fromResponse(500, 'Server Error');
@@ -282,7 +261,7 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
             return 200;
         }
 
-        public function executeRaw(string $url): HttpResponse
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -307,11 +286,6 @@ it('danfse returns failure with parsed singular erro on HttpException', function
             return new NfseResponse(true);
         }
 
-        public function execute(string $url): array
-        {
-            return [];
-        }
-
         public function executeAndDownload(string $url): string
         {
             $e = HttpException::fromResponse(
@@ -326,7 +300,7 @@ it('danfse returns failure with parsed singular erro on HttpException', function
             return 200;
         }
 
-        public function executeRaw(string $url): HttpResponse
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -350,11 +324,6 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
             return new NfseResponse(true);
         }
 
-        public function execute(string $url): array
-        {
-            return [];
-        }
-
         public function executeAndDownload(string $url): string
         {
             throw HttpException::fromResponse(
@@ -368,7 +337,7 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
             return 200;
         }
 
-        public function executeRaw(string $url): HttpResponse
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -384,123 +353,87 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
     expect($response->erros[0]->codigo)->toBe('503');
 });
 
-it('eventos returns failure when erros key present', function () {
-    $fakeClient = new class implements ExecutesNfseRequests
-    {
-        public function executeAndDecompress(string $url): NfseResponse
-        {
-            return new NfseResponse(true);
-        }
-
-        /** @return array{erros: list<array{descricao: string}>} */
-        public function execute(string $url): array
-        {
-            return ['erros' => [['descricao' => 'Evento não encontrado']]];
-        }
-
-        public function executeAndDownload(string $url): string
-        {
-            return '';
-        }
-
-        public function executeHead(string $url): int
-        {
-            return 200;
-        }
-
-        public function executeRaw(string $url): HttpResponse
-        {
-            return new HttpResponse(200, [], '');
-        }
-    };
-
-    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+it('eventos returns failure on non-404 with erros key', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(400, ['erros' => [['descricao' => 'Evento rejeitado']]], '');
+    $builder = makeNfseConsulter($fakeClient);
 
     $response = $builder->eventos(makeChaveAcesso());
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros)->toHaveCount(1);
-    expect($response->erros[0]->descricao)->toBe('Evento não encontrado');
+    expect($response->erros[0]->descricao)->toBe('Evento rejeitado');
 });
 
-it('eventos returns failure when singular erro key present', function () {
-    $fakeClient = new class implements ExecutesNfseRequests
-    {
-        public function executeAndDecompress(string $url): NfseResponse
-        {
-            return new NfseResponse(true);
-        }
-
-        /** @return array{erro: array{descricao: string}} */
-        public function execute(string $url): array
-        {
-            return ['erro' => ['descricao' => 'Evento não encontrado']];
-        }
-
-        public function executeAndDownload(string $url): string
-        {
-            return '';
-        }
-
-        public function executeHead(string $url): int
-        {
-            return 200;
-        }
-
-        public function executeRaw(string $url): HttpResponse
-        {
-            return new HttpResponse(200, [], '');
-        }
-    };
-
-    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+it('eventos returns failure on non-404 with singular erro key', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(400, ['erro' => ['descricao' => 'Evento rejeitado']], '');
+    $builder = makeNfseConsulter($fakeClient);
 
     $response = $builder->eventos(makeChaveAcesso());
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros)->toHaveCount(1);
-    expect($response->erros[0]->descricao)->toBe('Evento não encontrado');
+    expect($response->erros[0]->descricao)->toBe('Evento rejeitado');
+});
+
+it('eventos returns EVENT_NOT_FOUND failure on 404 without error body', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(404, [], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos(makeChaveAcesso());
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros)->toHaveCount(1);
+    expect($response->erros[0]->codigo)->toBe(EventsResponse::EVENT_NOT_FOUND);
+    expect($response->erros[0]->mensagem)->toBe('Evento não encontrado');
+});
+
+it('eventos prepends EVENT_NOT_FOUND and preserves SEFIN errors on 404 with error body', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(
+        404,
+        ['erros' => [['codigo' => 'E404', 'descricao' => 'Evento inexistente']], 'tipoAmbiente' => 2],
+        '',
+    );
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos(makeChaveAcesso());
+
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros)->toHaveCount(2);
+    expect($response->erros[0]->codigo)->toBe(EventsResponse::EVENT_NOT_FOUND);
+    expect($response->erros[1]->codigo)->toBe('E404');
+    expect($response->erros[1]->descricao)->toBe('Evento inexistente');
+    expect($response->tipoAmbiente)->toBe(2);
+});
+
+it('eventos prepends EVENT_NOT_FOUND and preserves singular SEFIN erro on 404', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(404, ['erro' => ['codigo' => 'E404', 'descricao' => 'Evento inexistente']], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos(makeChaveAcesso());
+
+    expect($response->erros)->toHaveCount(2);
+    expect($response->erros[0]->codigo)->toBe(EventsResponse::EVENT_NOT_FOUND);
+    expect($response->erros[1]->codigo)->toBe('E404');
 });
 
 it('eventos returns success with decompressed xml', function () {
-    $originalXml = '<Evento/>';
-    $gzipB64 = base64_encode((string) gzencode($originalXml));
-
-    $fakeClient = new class($gzipB64) implements ExecutesNfseRequests
-    {
-        public function __construct(private readonly string $gzipB64) {}
-
-        public function executeAndDecompress(string $url): NfseResponse
-        {
-            return new NfseResponse(true);
-        }
-
-        /** @return array{eventoXmlGZipB64: string, tipoAmbiente: int, versaoAplicativo: string, dataHoraProcessamento: string} */
-        public function execute(string $url): array
-        {
-            return ['eventoXmlGZipB64' => $this->gzipB64, 'tipoAmbiente' => 2, 'versaoAplicativo' => '1.0.0', 'dataHoraProcessamento' => '2026-01-01T00:00:00'];
-        }
-
-        public function executeAndDownload(string $url): string
-        {
-            return '';
-        }
-
-        public function executeHead(string $url): int
-        {
-            return 200;
-        }
-
-        public function executeRaw(string $url): HttpResponse
-        {
-            return new HttpResponse(200, [], '');
-        }
-    };
-
-    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(
+        200,
+        [
+            'eventoXmlGZipB64' => base64_encode((string) gzencode('<Evento/>')),
+            'tipoAmbiente' => 2,
+            'versaoAplicativo' => '1.0.0',
+            'dataHoraProcessamento' => '2026-01-01T00:00:00',
+        ],
+        '',
+    );
+    $builder = makeNfseConsulter($fakeClient);
 
     $response = $builder->eventos(makeChaveAcesso());
 
@@ -528,12 +461,6 @@ it('buildUrl returns baseUrl when path is empty', function () {
             return new NfseResponse(true);
         }
 
-        /** @return array<string, mixed> */
-        public function execute(string $url): array
-        {
-            return [];
-        }
-
         public function executeAndDownload(string $url): string
         {
             return '';
@@ -544,7 +471,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
             return 200;
         }
 
-        public function executeRaw(string $url): HttpResponse
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -563,6 +490,7 @@ it('buildUrl returns baseUrl when path is empty', function () {
 
 it('eventos uses default nSequencial = 1 in URL', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = makeEventoResponse();
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
@@ -573,6 +501,7 @@ it('eventos uses default nSequencial = 1 in URL', function () {
 
 it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = makeEventoResponse();
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
@@ -583,6 +512,7 @@ it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
 
 it('coerces int tipoEvento to TipoEvento enum', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = makeEventoResponse();
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 

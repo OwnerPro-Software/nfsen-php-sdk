@@ -9,6 +9,7 @@ use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Exceptions\RequestNotDeliveredException;
 use OwnerPro\Nfsen\NfsenClient;
+use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
 covers(NfsenClient::class);
@@ -43,14 +44,23 @@ it('consultar()->eventos returns EventsResponse', function () {
     );
 });
 
-it('consultar()->eventos returns null xml when no eventoXmlGZipB64', function () {
+it('consultar()->eventos throws IndeterminateResultException when no eventoXmlGZipB64', function () {
     Http::fake(['*' => Http::response([], 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->eventos(makeChaveAcesso()))
+        ->toThrow(IndeterminateResultException::class);
+});
+
+it('consultar()->eventos returns EVENT_NOT_FOUND failure on 404', function () {
+    Http::fake(['*' => Http::response([], 404)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
     $response = $client->consultar()->eventos(makeChaveAcesso());
 
-    expect($response->sucesso)->toBeTrue();
-    expect($response->xml)->toBeNull();
+    expect($response->sucesso)->toBeFalse();
+    expect($response->erros[0]->codigo)->toBe(EventsResponse::EVENT_NOT_FOUND);
 });
 
 it('consultar()->nfse returns rejection on erros response', function () {

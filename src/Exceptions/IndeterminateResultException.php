@@ -82,6 +82,23 @@ final class IndeterminateResultException extends CommunicationException
     }
 
     /**
+     * Resposta 2xx com JSON válido, porém sem o campo obrigatório da operação:
+     * o corpo existe mas não é interpretável como resultado — mesma régua do
+     * 2xx ilegível, nunca um sucesso silencioso.
+     */
+    public static function fromMissingResponseField(int $statusCode, string $field): self
+    {
+        return new self(
+            sprintf(
+                'Resultado indeterminado: o servidor respondeu HTTP %d sem o campo obrigatório "%s"; a resposta não pôde ser interpretada.',
+                $statusCode,
+                $field,
+            ),
+            'body',
+        );
+    }
+
+    /**
      * @return 'connect'|'dns'|'read'|'tls'|'transfer'|null
      */
     private static function detectPhase(string $message): ?string

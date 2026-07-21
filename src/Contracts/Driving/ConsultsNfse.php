@@ -27,6 +27,16 @@ interface ConsultsNfse
 
     public function danfse(string $chave): DanfseResponse;
 
+    /**
+     * Quando a SEFIN responde 404 (evento inexistente), retorna falha com
+     * `erros[0]->codigo === EventsResponse::EVENT_NOT_FOUND` — sinal inequívoco
+     * de ausência, distinto de erros transitórios (que permanecem
+     * `sucesso: false` sem esse código, portanto inconclusivos).
+     *
+     * Um 2xx com JSON válido porém sem `eventoXmlGZipB64` não ocorre em
+     * operação normal e lança `IndeterminateResultException` — nunca vira
+     * sucesso com `xml: null`.
+     */
     public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventsResponse;
 
     /**

@@ -6,9 +6,14 @@ namespace OwnerPro\Nfsen\Contracts\Driving;
 
 use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
-use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
-/** @phpstan-import-type MessageData from ProcessingMessage */
+/**
+ * Porta interna de execução HTTP, construída apenas pelo wiring do
+ * `NfsenClient`. Não faz parte da API pública: sua assinatura pode mudar em
+ * releases minor.
+ *
+ * @internal
+ */
 interface ExecutesNfseRequests
 {
     public function executeAndDecompress(string $url): NfseResponse;
@@ -25,24 +30,12 @@ interface ExecutesNfseRequests
      *
      * Lança HttpException quando o servidor responde status inesperado
      * (diferente de 200/201/404) sem corpo de erro estruturado (`erros`/`erro`).
-     */
-    public function executeRaw(string $url): HttpResponse;
-
-    /**
-     * Retorna JSON cru da API.
      *
-     * @return array{
-     *     erros?: list<MessageData>,
-     *     erro?: MessageData,
-     *     chaveAcesso?: string,
-     *     idDps?: string,
-     *     eventoXmlGZipB64?: string,
-     *     tipoAmbiente?: int,
-     *     versaoAplicativo?: string,
-     *     dataHoraProcessamento?: string,
-     * }
+     * Com $requiredField, um 2xx cujo corpo não traga esse campo como string
+     * não-vazia lança IndeterminateResultException: a operação exige o campo, e
+     * ausência comprovada é sinalizada por 404, não por corpo vazio.
      */
-    public function execute(string $url): array;
+    public function executeRaw(string $url, ?string $requiredField = null): HttpResponse;
 
     public function executeAndDownload(string $url): string;
 }

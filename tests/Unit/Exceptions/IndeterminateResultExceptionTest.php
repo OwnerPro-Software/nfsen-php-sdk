@@ -85,3 +85,12 @@ it('fromUnreadableResponse sets body phase and truncates body to 200 chars', fun
         ->and($exception->getMessage())->toContain('"A'.str_repeat('x', 199).'"')
         ->and($exception->getMessage())->not->toContain('Z');
 });
+
+it('fromMissingResponseField sets body phase and names status and field', function () {
+    $exception = IndeterminateResultException::fromMissingResponseField(200, 'eventoXmlGZipB64');
+
+    expect($exception->phase)->toBe('body')
+        ->and($exception->getPrevious())->toBeNull()
+        ->and($exception->getMessage())->toContain('HTTP 200')
+        ->and($exception->getMessage())->toContain('"eventoXmlGZipB64"');
+});
