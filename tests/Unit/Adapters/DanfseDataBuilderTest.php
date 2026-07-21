@@ -510,6 +510,10 @@ it('returns empty tomador when toma block is absent', function () {
     expect($data->tomador->nome)->toBe('-');
     expect($data->tomador->cnpjCpf)->toBe('-');
     expect($data->tomador->municipio)->toBe('-');
+    // email é o único campo em que o participante vazio difere de um <toma> vazio lido
+    // campo a campo ('-' contra ''): é ele que prova que o early return aconteceu.
+    expect($data->tomador->email)->toBe('-');
+    expect($data->tomador->endereco)->toBe('-');
 });
 
 it('builds tomador gracefully when end block is absent', function () {
@@ -536,11 +540,53 @@ it('builds intermediario gracefully when end block is absent', function () {
     expect($data->intermediario?->cep)->toBe('-');
 });
 
-it('handles emitente without CNPJ CPF or NIF', function () {
+it('handles emitente without any identification at all', function () {
     $xml = preg_replace('|<CNPJ>[^<]+</CNPJ>|', '', $this->xml, 1);
     $data = $this->builder->build((string) $xml);
 
     expect($data->emitente->cnpjCpf)->toBe('-');
+});
+
+it('prints a foreign NIF raw instead of stripping its non-digits', function () {
+    // TSNIF é texto livre de até 40 caracteres: prefixo de país e letras fazem parte do
+    // identificador. Mascarar como CNPJ/CPF apagava caracteres sem aviso — 'ES-B12345678'
+    // saía '12345678' num documento fiscal.
+    $xml = preg_replace('|(<toma>\s*)<CNPJ>[^<]+</CNPJ>|', '$1<NIF>ES-B12345678</NIF>', $this->xml, 1);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->tomador->cnpjCpf)->toBe('ES-B12345678');
+});
+
+it('reads the prestador NIF from prest, the only node the XSD lets carry it', function () {
+    // TCEmitente abre com <xs:choice>CNPJ|CPF</xs:choice>: infNFSe/emit não tem onde pôr
+    // um NIF. O prestador estrangeiro vive em DPS/infDPS/prest.
+    $xml = preg_replace('|(<prest>\s*)<CNPJ>[^<]+</CNPJ>|', '$1<NIF>PT501234567</NIF>', $this->xml, 1);
+    $xml = preg_replace('|(<emit>\s*)<CNPJ>[^<]+</CNPJ>|', '$1', (string) $xml, 1);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->emitente->cnpjCpf)->toBe('PT501234567');
+});
+
+it('explains why the identification is missing when cNaoNIF is present', function () {
+    $xml = preg_replace('|(<toma>\s*)<CNPJ>[^<]+</CNPJ>|', '$1<cNaoNIF>1</cNaoNIF>', $this->xml, 1);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->tomador->cnpjCpf)->toBe('Dispensado do NIF');
+});
+
+it('explains a missing prestador identification via prest cNaoNIF', function () {
+    $xml = preg_replace('|(<prest>\s*)<CNPJ>[^<]+</CNPJ>|', '$1<cNaoNIF>2</cNaoNIF>', $this->xml, 1);
+    $xml = preg_replace('|(<emit>\s*)<CNPJ>[^<]+</CNPJ>|', '$1', (string) $xml, 1);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->emitente->cnpjCpf)->toBe('Não exigência do NIF');
+});
+
+it('prints a foreign NIF raw for the intermediario as well', function () {
+    $xml = preg_replace('|(<interm>\s*)<CNPJ>[^<]+</CNPJ>|', '$1<NIF>IE1234567AB</NIF>', $this->xml, 1);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->intermediario?->cnpjCpf)->toBe('IE1234567AB');
 });
 
 it('returns dash for emitente fields when text nodes are empty', function () {

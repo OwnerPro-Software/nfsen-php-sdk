@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **A DANFSe mutilava o NIF estrangeiro e ignorava o do prestador.** O campo do leiaute é `CNPJ / CPF / NIF`, mas o valor passava por `Formatter::cnpjCpf()`, que descarta todo não-dígito: `ES-B12345678` saía `12345678`, `PT501234567` saía `501234567`, `IE1234567AB` saía `1234567`. `TSNIF` é texto livre de até 40 caracteres — prefixo de país e letras fazem parte do identificador. Um documento fiscal saía com identificação estrangeira incompleta, sem erro nem aviso.
+
+  Além disso, `NIF` e `cNaoNIF` do **prestador** nunca eram lidos. `TCEmitente` abre com `<xs:choice>CNPJ|CPF</xs:choice>` e não tem onde pôr um NIF; quem carrega prestador estrangeiro é `DPS/infDPS/prest` (`TCInfoPrestador`), e o builder lia dali apenas o `regTrib`. O SDK **emite** prestador com NIF desde sempre, mas o PDF que ele gera não conseguia mostrá-lo.
+
+  A escolha do formato passa a vir da **procedência**, não da forma do texto: o XSD já declara o que cada nó carrega, então só `CNPJ`/`CPF` passam pelo formatter e o `NIF` sai como veio. `Formatter::cnpjCpf()` não foi alterado — voltou a receber apenas o que o nome promete. A decisão vive em `Danfse\Identificacao`, unidade própria e testada isoladamente.
+
+  `cNaoNIF` também passa a ser lido, para prestador, tomador e intermediário: em vez de `-` sem explicação, a DANFSe imprime o motivo (`Dispensado do NIF`, `Não exigência do NIF`, `Não informado na nota de origem`), transcrito do `<xs:documentation>` de `TSCodNaoNIF`. `CNaoNIF` ganhou `label()`, com teste que extrai os rótulos do XSD em tempo de execução.
+
+  Nota de nomenclatura: `DanfseParticipante::cnpjCpf` continua com esse nome por compatibilidade, embora possa conter NIF ou o motivo da ausência — é o campo `CNPJ / CPF / NIF` do leiaute.
+
 - **`DanfseDataBuilder` lia `emit->NIF`, que não existe naquele nó.** `TCEmitente` abre com um `<xs:choice>` obrigatório de `CNPJ|CPF`, sem `NIF`. O prestador estrangeiro existe no schema — `TCInfoPrestador` aceita `CNPJ|CPF|NIF|cNaoNIF`, e este SDK emite os quatro —, mas quem o carrega é `DPS/infDPS/prest`, não `infNFSe/emit`. O acesso era o terceiro fallback de `firstNonEmpty()` e nunca produziu valor, então não houve mudança de comportamento; era contrato inexistente sugerido pelo código. (Encontrado pela mesma auditoria, que verifica os 118 acessos SimpleXML do builder contra o modelo de conteúdo do XSD.)
 
 - **As fixtures de resposta carregavam XML que a API nunca emitiria, e agora são validadas contra o XSD.** `cancelar_sucesso.json` trazia `<NFSe/>` dentro de `eventoXmlGZipB64` — raiz de NFS-e num campo que carrega documento de evento —, `consultar_eventos.json` trazia `<Evento/>` quando `evento_v1.01.xsd` declara a raiz `<evento>` em minúsculo, e as duas fixtures de NFS-e traziam um elemento vazio sem `versao` nem `infNFSe`. Nenhuma delas validava. Não havia bug de produção — o XML é repassado opaco, sem inspeção da raiz —, mas nada no repositório verificava o caminho de consumo desses campos contra um documento real. As quatro passam a carregar documentos completos e XSD-válidos, e `tests/Unit/Fixtures/ResponseFixturesXsdTest.php` valida **toda** fixture, atual e futura, contra o schema da sua raiz. O teste também confere quantos campos validou, para um campo renomeado não o fazer passar por vacuidade.

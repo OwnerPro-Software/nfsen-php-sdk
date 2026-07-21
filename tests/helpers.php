@@ -166,3 +166,4 @@ function makeNfsenClient(
 }
 
 require_once __DIR__.'/helpers/danfse.php';
+require_once __DIR__.'/helpers/xsd.php';

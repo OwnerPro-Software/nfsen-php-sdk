@@ -61,10 +61,11 @@ Critério de severidade:
 | 1 | `RegApTribSN::label()` contradiz o XSD | Alta | **Corrigido** (rótulos transcritos do XSD; teste passou a derivar do XSD) |
 | 2 | `prefeituras.json` 3501608 com templates vazios | Média | **Corrigido** (base separada do path de emissão); mecanismo já corrigido em `1a9b507` |
 | 3 | `DocumentoFiscal::fromArray()` usava `from()` | — | **Corrigido** em `6c7e887` |
-| 4 | `DanfseDataBuilder` lê `emit->NIF`, inexistente no XSD | Baixa | **Aberto** |
-| 5 | Fixtures JSON com XML-stub irreal | Baixa | **Aberto** |
-| 6 | Teste do `cNBS` monta XML fora da ordem do XSD | Baixa | **Corrigido** |
-| 7 | `prest/NIF` e `prest/cNaoNIF` nunca são lidos pela DANFSe | Baixa | **Aberto** — decisão de layout, não de conformidade |
+| 4 | `DanfseDataBuilder` lê `emit->NIF`, inexistente no XSD | Baixa | **Corrigido** em `f76f385` |
+| 5 | Fixtures JSON com XML-stub irreal | Baixa | **Corrigido** em `f76f385` (+ teste que valida toda fixture) |
+| 6 | Teste do `cNBS` monta XML fora da ordem do XSD | Baixa | **Corrigido** em `f76f385` |
+| 7 | `prest/NIF` e `prest/cNaoNIF` nunca são lidos pela DANFSe | Baixa | **Corrigido** |
+| 8 | NIF estrangeiro mutilado na DANFSe | Alta | **Corrigido** |
 
 ---
 
@@ -328,6 +329,11 @@ As outras 21 mutações também saem inválidas, porém deliberadamente — stri
 
 `src/Adapters/DanfseDataBuilder.php:143-176`
 
+> **Corrigido.** O builder passou a ler `prest->NIF` e `prest->cNaoNIF`. A ressalva abaixo
+> sobre inalcançabilidade caiu: o fallback é exercitado por XML em que `emit` chega sem
+> `CNPJ`/`CPF`, e `cNaoNIF` — que nunca era lido para participante nenhum — agora imprime o
+> motivo da ausência em vez de `-`.
+
 Levantado ao revisar o achado 4: se `NIF` foi removido de `emit`, para onde ele foi?
 
 Resposta do XSD, obtida por parse dos `<xs:complexType>` que contêm um elemento `NIF`:
@@ -347,12 +353,11 @@ A assimetria: o builder da DANFSe lê `NIF` de `toma` (L182) e de `interm` (L202
 `prest` lê apenas `regTrib`. Um prestador identificado por NIF ou `cNaoNIF` emite pelo SDK,
 e essa identificação não tem por onde aparecer no PDF.
 
-**Por que não foi corrigido junto.** Como `emit` sempre traz `CNPJ` ou `CPF` em qualquer
-NFS-e válida, `cnpjCpf` nunca sai `-` — um fallback para `prest->NIF` seria inalcançável.
-O que o fisco grava em `emit` quando o prestador é identificado por NIF **não foi possível
-verificar** (ver "Não verificado", item 8), e a DANFSe deve refletir o que o fisco
-registrou, não o que o emitente declarou. Exibir o NIF do `prest` é decisão de layout do
-documento, não correção de conformidade — precisa de fonte sobre o leiaute oficial.
+**O que destravou a decisão.** O leiaute *está* no repositório, em
+`storage/danfse/template.php:118`: o campo é rotulado **`CNPJ / CPF / NIF`**. Não era
+decisão em aberto — o template sempre esperou NIF ali. A dúvida sobre o que o fisco grava
+em `emit` para prestador estrangeiro continua sem fonte (item 8 de "Não verificado"), mas
+não bloqueia: o NIF vem de `prest`, que é onde o XSD o põe.
 
 ---
 
@@ -493,6 +498,86 @@ com o esperado, é o que separa um teste de conformidade de um enfeite.
 
 ---
 
+### 8. ALTA — o NIF estrangeiro chegava mutilado à DANFSe
+
+`src/Danfse/Formatter.php:25` e `:36`, via `src/Adapters/DanfseDataBuilder.php`
+
+Levantado ao perguntarem se o SDK suporta NIF. O formatter faz
+`preg_replace('/\D/', '', $value)` **incondicionalmente** e, quando o resultado não tem 11
+nem 14 dígitos, devolve os dígitos crus. `TSNIF` é texto livre de 1 a 40 caracteres — NIF
+europeu leva prefixo de país e, em vários países, letras no meio.
+
+```
+  PT501234567      -> 501234567      (prefixo PT sumiu)
+  ES-B12345678     -> 12345678       (ES-B sumiu)
+  IE1234567AB      -> 1234567        (sufixo AB sumiu)
+  11222333000181   -> 11.222.333/0001-81
+  12345678909      -> 123.456.789-09
+```
+
+**Cenário:** tomador ou intermediário estrangeiro identificado por NIF. O builder *lê* o
+NIF corretamente (`toma/NIF` e `interm/NIF` estão entre os caminhos verificados), e é o
+formatter que o mutila antes de imprimir. A DANFSe sai com um identificador fiscal
+estrangeiro incompleto, sem erro nem aviso — saída errada em silêncio, num documento fiscal.
+
+**Script:** `scripts/11_nif.php`, que monta uma NFS-e com `toma/NIF`, confirma que ela
+valida contra `NFSe_v1.01.xsd` e mostra o que a DANFSe imprime.
+`scripts/11b_nif_emissao.php` confirma o outro lado: emissão com `NIF`/`cNaoNIF` em
+`prest`, `toma` e `interm` sempre funcionou, com validação de escolha exclusiva.
+
+> **Corrigido.** `Formatter::cnpjCpf()` **não** foi alterado — a primeira tentativa fez o
+> formatter adivinhar pela forma do texto, e um método chamado `cnpjCpf` devolvendo NIF é
+> mentira de nome. A decisão passou a vir da **procedência**: o XSD já declara o que cada
+> nó carrega, então o builder formata `CNPJ`/`CPF` e devolve `NIF` cru. A lógica vive em
+> `src/Danfse/Identificacao.php`, unidade própria e testada isoladamente.
+>
+> ```
+> tomador NIF ES-B12345678   -> ES-B12345678          (antes: 12345678)
+> emit sem CNPJ + prest/NIF  -> PT501234567           (antes: -)
+> toma com cNaoNIF=1         -> Dispensado do NIF     (antes: -)
+> prest cNaoNIF=2            -> Não exigência do NIF  (antes: -)
+> ```
+
+---
+
+## A lacuna estrutural: a auditoria só olhou numa direção
+
+Levantado ao questionarem o achado 4. Todos os scripts perguntam **código → schema**:
+
+> o caminho que o código lê / o rótulo que o código imprime / a rota que o código monta
+> existe na fonte de verdade?
+
+Nenhum pergunta o **converso**:
+
+> o que a fonte de verdade oferece aqui, o código usa?
+
+O achado 4 (`emit->NIF` inexistente) está na primeira direção e foi pego. O achado 7
+(`prest/NIF` nunca lido) está na segunda e só apareceu por pergunta humana.
+
+`scripts/10_cobertura_inversa.php` fecha essa direção para o `DanfseDataBuilder`: para cada
+nó que o builder alcança, lista os filhos que o XSD oferece e o código nunca lê.
+
+```
+NFSe/infNFSe                            nao lidos: xNBS, verAplic, ambGer, tpEmis, procEmi, cStat, nDFSe, xOutInf, IBSCBS
+…infDPS                                 nao lidos: verAplic, tpEmit, cMotivoEmisTI, chNFSeRej, cLocEmi, subst, IBSCBS
+…infDPS/prest                           nao lidos: CNPJ, CPF, NIF, cNaoNIF, CAEPF, IM, xNome, end, fone, email
+…infDPS/serv/infoCompl                  nao lidos: idDocTec, docRef, xPed, gItemPed
+…infDPS/valores/trib/tribMun            nao lidos: cPaisResult, tpImunidade, exigSusp, BM
+…infDPS/valores/trib/tribFed/piscofins  nao lidos: CST, vBCPisCofins, pAliqPis, pAliqCofins, tpRetPisCofins
+NFSe/infNFSe/valores                    nao lidos: vCalcDR, tpBM, vCalcBM, vTotalRet
+--- 19 grupos com filhos nao lidos ---
+```
+
+O achado 7 cai fora sozinho, na linha do `prest`.
+
+**Isto produz candidatos, não defeitos.** `vTotalRet` está na lista e é decisão deliberada,
+documentada em `DanfseDataBuilder::buildTotais()` — a DANFSe exibe o ISSQN retido em linha
+própria, então a soma é local. Separar decisão de omissão exige o leiaute oficial da DANFSe,
+que o repositório não tem (ver "Não verificado", item 8). O que o script entrega é a lista
+curta que merece esse julgamento, em vez de nada.
+
+---
+
 ## Correções aplicadas a este documento
 
 Review de 2026-07-21 sobre a primeira versão, com revalidação completa contra `babc3d0`.
@@ -505,6 +590,8 @@ Review de 2026-07-21 sobre a primeira versão, com revalidação completa contra
 | Achado 4 | `arquivo:linha` obsoleto (`:121`, hoje `informacoesComplementares`) | Corrigido para `:146` |
 | Achado 4 | O extrator de caminhos devolvia 59 de 119 em `babc3d0` — não atravessava o novo wrapper `required()` — e o resultado virava um falso "0 falhas" | `03b_extract_paths.php` corrigido; 119 caminhos, 1 falha |
 | Tabela "conforme" | Linha da tabela IBGE afirmava verificação que o script nunca fez (`$v[1]` em mapa associativo) | `09_ibge.php` corrigido e rerodado; nota explícita sobre a afirmação falsa |
+| Achado 4 | Justificativa falsa: "o XSD não prevê emitente estrangeiro". `TCInfoPrestador` aceita `CNPJ\|CPF\|NIF\|cNaoNIF`, e o SDK emite os quatro | Reescrita: o que não tem `NIF` é `TCEmitente`, não o schema. Gerou o achado 7 |
+| Metodologia | Todos os scripts checavam só código → schema; a direção inversa (schema → código) não era coberta por nenhum | `10_cobertura_inversa.php` adicionado; ver "A lacuna estrutural" |
 
 Os dois últimos são a lição desta revisão, e são o mesmo defeito dos bugs 2.7.0/3.0.0 que
 motivaram a auditoria: **um verificador quebrado não acusa; ele aprova.** Um relatório de
