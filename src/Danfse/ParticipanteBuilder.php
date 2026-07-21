@@ -73,6 +73,7 @@ final readonly class ParticipanteBuilder
             endereco: $endereco !== '' ? $endereco : '-',
             municipio: $this->municipioDoPrestador($endPrest, $enderEmit, $inf),
             cep: $this->fmt->cep($this->firstOf($endPrest?->endNac?->CEP, $enderEmit->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — end/endNac são opcionais no XSD.
+            codigoIbge: $this->firstOf($endPrest?->endNac?->cMun, $enderEmit->cMun) ?: '-', // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             simplesNacional: OpSimpNac::labelOf($this->str($regTrib->opSimpNac)),
             regimeSN: RegApTribSN::labelOf($this->str($regTrib->regApTribSN)),
         );
@@ -150,6 +151,7 @@ final readonly class ParticipanteBuilder
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
             municipio: Municipios::lookup($this->str($endNac?->cMun)), // @pest-mutate-ignore RemoveNullSafeOperator — endNac null quando <end> ausente.
             cep: $this->fmt->cep($this->str($endNac?->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            codigoIbge: $this->str($endNac?->cMun, '-'), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
         );
     }
 

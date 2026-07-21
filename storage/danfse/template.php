@@ -29,7 +29,7 @@
                 <?php endif; ?>
             </td>
             <td class="title-cell">
-                <div style="font-size: 9pt; font-weight: bold;">DANFSe v1.0</div>
+                <div style="font-size: 9pt; font-weight: bold;">DANFSe v2.0</div>
                 <div style="font-size: 7pt; font-weight: bold;">Documento Auxiliar da NFS-e</div>
                 <div style="font-size: 6pt;"><?= $h($data->ambienteGerador) ?></div>
                 <?php if ($data->ambiente->isHomologacao()): ?>
@@ -161,8 +161,8 @@
                     <span class="value"><?= $h($data->emitente->municipio) ?></span>
                 </td>
                 <td>
-                    <span class="label">CEP</span>
-                    <span class="value"><?= $h($data->emitente->cep) ?></span>
+                    <span class="label">Código IBGE / CEP</span>
+                    <span class="value"><?= $h($data->emitente->codigoIbge) ?> / <?= $h($data->emitente->cep) ?></span>
                 </td>
             </tr>
             <tr>
@@ -218,8 +218,8 @@
                     <span class="value"><?= $h($data->tomador->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">CEP</span>
-                    <span class="value"><?= $h($data->tomador->cep) ?></span>
+                    <span class="label">Código IBGE / CEP</span>
+                    <span class="value"><?= $h($data->tomador->codigoIbge) ?> / <?= $h($data->tomador->cep) ?></span>
                 </td>
             </tr>
         </table>
@@ -266,8 +266,8 @@
                     <span class="value"><?= $h($data->destinatario->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">CEP</span>
-                    <span class="value"><?= $h($data->destinatario->cep) ?></span>
+                    <span class="label">Código IBGE / CEP</span>
+                    <span class="value"><?= $h($data->destinatario->codigoIbge) ?> / <?= $h($data->destinatario->cep) ?></span>
                 </td>
             </tr>
         </table>
@@ -319,8 +319,8 @@
                     <span class="value"><?= $h($data->intermediario->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">CEP</span>
-                    <span class="value"><?= $h($data->intermediario->cep) ?></span>
+                    <span class="label">Código IBGE / CEP</span>
+                    <span class="value"><?= $h($data->intermediario->codigoIbge) ?> / <?= $h($data->intermediario->cep) ?></span>
                 </td>
             </tr>
         </table>

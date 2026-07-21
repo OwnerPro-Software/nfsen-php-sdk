@@ -21,6 +21,11 @@ final readonly class DanfseParticipante
         public string $endereco,
         public string $municipio,
         public string $cep,
+        /**
+         * Código IBGE do município. A NT 008 imprime "CÓDIGO IBGE / CEP" num campo
+         * só; `cep` segue separado para quem consome o SDK fora da impressão.
+         */
+        public string $codigoIbge = '-',
         public string $simplesNacional = '-',
         public string $regimeSN = '-',
     ) {}

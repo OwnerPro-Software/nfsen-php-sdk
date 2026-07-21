@@ -1116,3 +1116,44 @@ it('describes the withheld social contributions and the generating environment',
     expect($data->ambienteGerador)->toBe('Sistema Nacional da NFS-e');
     expect($data->tribFed->descricaoContribuicoesRetidas)->toBe('PIS/COFINS/CSLL Retidos');
 });
+
+// NT 008: "CÓDIGO IBGE / CEP" é um campo concatenado, e o município de incidência
+// do ISSQN é "Município / UF / País". O SDK lia as duas origens mas imprimia só
+// metade de cada — passava no inventário por caminho, e saía incompleto no PDF.
+it('concatenates the IBGE code with the CEP, as the notice prints it', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->emitente->codigoIbge)->toBe('3303302');
+    expect($data->tomador->codigoIbge)->toBe('3550308');
+});
+
+it('appends the country to the ISSQN incidence municipality', function () {
+    $xml = str_replace('</tribMun>', '<cPaisResult>BR</cPaisResult></tribMun>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->municipioIncidencia)->toBe('Niterói - RJ / BR');
+});
+
+it('omits the country when the NFS-e does not carry one', function () {
+    // Serviço prestado no país não traz cPaisResult; o campo não pode sair com
+    // uma barra órfã no fim.
+    $data = $this->builder->build($this->xml);
+
+    expect($data->tribMun->municipioIncidencia)->toBe('Niterói - RJ');
+});
+
+it('falls back to the emit address for the prestador IBGE code', function () {
+    // Mesma regra do resto do bloco: a NT manda ler de prest, e emit cobre a
+    // omissão — a fixture não traz prest/end.
+    $xml = str_replace(
+        '<prest>
+                    <CNPJ>11222333000181</CNPJ>',
+        '<prest>
+                    <CNPJ>11222333000181</CNPJ>
+                    <end><endNac><cMun>3550308</cMun><CEP>01310100</CEP></endNac></end>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->emitente->codigoIbge)->toBe('3550308');
+});

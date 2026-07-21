@@ -239,7 +239,11 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         return new DanfseTributacaoMunicipal(
             tributacaoIssqn: TribISSQN::labelOf($this->str($tribMun->tribISSQN)),
-            municipioIncidencia: $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
+            // NT 008: "Município / UF / País". O país é o código ISO de 2 dígitos.
+            municipioIncidencia: $this->joinWithSlash(
+                $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
+                $this->str($tribMun->cPaisResult),
+            ),
             regimeEspecial: $regimeEspecial,
             tipoImunidade: $tipoImunidade,
             suspensaoExigibilidade: $suspensao,
