@@ -10,6 +10,8 @@ use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
@@ -202,6 +204,35 @@ it('emitir returns rejection with erros array', function (DpsData $data) {
     Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/nfse' &&
         isset($req['dpsXmlGZipB64'])
     );
+})->with('dpsData');
+
+it('emitir treats an empty erro array as no error at all', function (DpsData $data) {
+    // A API devolve `"erro": []` junto de um payload de sucesso. Classificar pela
+    // presença da chave transformava nota autorizada em rejeição sem mensagem e
+    // descartava a chaveAcesso — o caller ficava sem como reconciliar.
+    Http::fake(['*' => Http::response([
+        'erro' => [],
+        'chaveAcesso' => 'CHAVE_AUTORIZADA',
+        'idDps' => 'DPS042',
+    ], 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->chave)->toBe('CHAVE_AUTORIZADA')
+        ->and($response->idDps)->toBe('DPS042')
+        ->and($response->erros)->toBeEmpty();
+})->with('dpsData');
+
+it('emitir dispatches NfseEmitted, not NfseRejected, when erro is an empty array', function (DpsData $data) {
+    Event::fake();
+    Http::fake(['*' => Http::response(['erro' => [], 'chaveAcesso' => 'CHAVE_AUTORIZADA'], 200)]);
+
+    NfsenClient::for(makePfxContent(), 'secret', '9999999')->emitir($data);
+
+    Event::assertDispatched(NfseEmitted::class);
+    Event::assertNotDispatched(NfseRejected::class);
 })->with('dpsData');
 
 it('emitir returns idDps from lowercase key on rejection', function (DpsData $data) {

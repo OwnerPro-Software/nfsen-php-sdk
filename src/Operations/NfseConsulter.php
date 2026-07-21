@@ -80,7 +80,7 @@ final readonly class NfseConsulter implements ConsultsNfse
             );
         }
 
-        if (! empty($result['erros']) || isset($result['erro'])) {
+        if (ProcessingMessage::hasApiError($result)) {
             return new NfseResponse(
                 sucesso: false,
                 erros: ProcessingMessage::fromApiResult($result),
@@ -178,7 +178,7 @@ final readonly class NfseConsulter implements ConsultsNfse
             );
         }
 
-        if (! empty($result['erros']) || isset($result['erro'])) {
+        if (ProcessingMessage::hasApiError($result)) {
             return new EventsResponse(
                 sucesso: false,
                 erros: ProcessingMessage::fromApiResult($result),
@@ -223,11 +223,11 @@ final readonly class NfseConsulter implements ConsultsNfse
     {
         $body = $e->getResponseBody();
 
-        /** @var array<string, mixed>|null $decoded */
+        /** @var array{erros?: list<MessageData>, erro?: MessageData}|null $decoded */
         $decoded = json_decode($body, true);
 
-        if (is_array($decoded) && (! empty($decoded['erros']) || isset($decoded['erro']))) {
-            return ProcessingMessage::fromApiResult($decoded); // @phpstan-ignore argument.type (validated by condition above)
+        if (is_array($decoded) && ProcessingMessage::hasApiError($decoded)) {
+            return ProcessingMessage::fromApiResult($decoded);
         }
 
         return [new ProcessingMessage(

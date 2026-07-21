@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [3.0.0] - Não lançado
 
+### Fixed
+
+- **`"erro": []` deixa de ser classificado como rejeição.** `ProcessingMessage::fromApiResult()` descartava a chave `erro` vazia desde a 2.3.1, mas os nove pontos que decidiam entre rejeição e processamento testavam `isset($result['erro'])` por conta própria. Um corpo `{"erro": [], "chaveAcesso": "35..."}` — forma que a API realmente produz — virava `sucesso: false` com `erros: []` (nenhuma mensagem), **descartando a `chaveAcesso` de uma nota autorizada** e disparando `NfseRejected('UNKNOWN', null)`. O caller perdia a chave e ficava sem base para reconciliar. Afetava `emitir()`, `substituir()`, `cancelar()`, `consultar()->nfse()`, `->dps()`, `->eventos()` e `->danfse()`.
+
+### Added
+
+- `ProcessingMessage::hasApiError()` — critério único de "a resposta traz erro da SEFIN". Classificação e extração de mensagens agora derivam da mesma regra interna, o que impede a divergência acima de voltar. Também resolve o caso `{"erros": [], "erro": {...}}`, em que o plural vazio escondia o singular preenchido.
+
 ### Changed
 
 - **BREAKING — `Enums\TipoEvento`: os 18 casos foram renomeados, sem exceção.** Os nomes anteriores foram atribuídos por posição sobre a lista numérica do swagger, sem conferir a documentação de cada elemento `eNNNNNN` em `storage/schemes/tiposEventos_v1.01.xsd`, e ficaram deslocados em relação ao evento real. Como o valor inteiro de cada caso nunca mudou, o defeito era silencioso: `consultar()->eventos()` montava a URL com um código válido, porém de outro evento, e devolvia o documento errado sem erro. Os códigos permanecem idênticos — apenas os nomes mudam.

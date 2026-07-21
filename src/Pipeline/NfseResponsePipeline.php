@@ -46,7 +46,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
              */
             $result = $this->httpClient->get($url);
 
-            if (! empty($result['erros']) || isset($result['erro'])) {
+            if (ProcessingMessage::hasApiError($result)) {
                 $erros = ProcessingMessage::fromApiResult($result);
                 $firstError = $erros[0] ?? null;
                 $this->dispatchEvent(new NfseRejected(
@@ -89,7 +89,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
             /** @var array{erros?: list<MessageData>, erro?: MessageData} $result */
             $result = $response->json;
 
-            $hasStructuredError = ! empty($result['erros']) || isset($result['erro']);
+            $hasStructuredError = ProcessingMessage::hasApiError($result);
 
             if (! $hasStructuredError) {
                 if (! in_array($response->statusCode, [200, 201, 404], true)) {
@@ -124,7 +124,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
     /** @param array{erros?: list<MessageData>, erro?: MessageData} $result */
     private function dispatchResultEvents(array $result, string $operacao): void
     {
-        if (! empty($result['erros']) || isset($result['erro'])) {
+        if (ProcessingMessage::hasApiError($result)) {
             $erros = ProcessingMessage::fromApiResult($result);
             $firstError = $erros[0] ?? null;
             $this->dispatchEvent(new NfseRejected(

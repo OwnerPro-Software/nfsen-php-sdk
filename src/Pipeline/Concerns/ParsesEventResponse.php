@@ -30,7 +30,7 @@ trait ParsesEventResponse
      */
     private function parseEventResponse(array $result, string $chave, string $operacao, object $successEvent): NfseResponse
     {
-        if (! empty($result['erros']) || isset($result['erro'])) {
+        if (ProcessingMessage::hasApiError($result)) {
             $erros = ProcessingMessage::fromApiResult($result);
             $firstError = $erros[0] ?? null;
             $this->dispatchEvent(new NfseRejected(

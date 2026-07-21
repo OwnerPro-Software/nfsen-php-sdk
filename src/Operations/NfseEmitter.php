@@ -71,7 +71,7 @@ final readonly class NfseEmitter implements EmitsNfse
              */
             $result = $this->pipeline->signCompressSend($xml, 'infDPS', 'DPS', $payloadKey, $operationKey);
 
-            if (! empty($result['erros']) || isset($result['erro'])) {
+            if (ProcessingMessage::hasApiError($result)) {
                 $erros = ProcessingMessage::fromApiResult($result);
                 $firstError = $erros[0] ?? null;
                 $this->dispatchEvent(new NfseRejected(
