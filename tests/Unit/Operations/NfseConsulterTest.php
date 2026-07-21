@@ -505,7 +505,7 @@ it('passes custom tipoEvento enum and nSequencial to eventos URL', function () {
     $builder = makeNfseConsulter($fakeClient);
     $chave = makeChaveAcesso();
 
-    $builder->eventos($chave, TipoEvento::CancelamentoPorDecisaoJudicial, 2);
+    $builder->eventos($chave, TipoEvento::CancelamentoPorSubstituicao, 2);
 
     expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/'.$chave.'/eventos/105102/2');
 });

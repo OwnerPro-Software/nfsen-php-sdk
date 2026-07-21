@@ -69,6 +69,7 @@
     "test:types": "./vendor/bin/pest --type-coverage --min=100",
     "test:mutate": "./vendor/bin/pest --mutate",
     "analyse": "./vendor/bin/phpstan analyse",
+    "analyse:examples": "./vendor/bin/phpstan analyse -c phpstan-examples.neon",
     "psalm": "./vendor/bin/psalm --taint-analysis",
     "rector": "./vendor/bin/rector --dry-run",
     "format": "./vendor/bin/pint",
@@ -76,6 +77,7 @@
       "@test",
       "@test:types",
       "@analyse",
+      "@analyse:examples",
       "@psalm",
       "@rector",
       "@format"

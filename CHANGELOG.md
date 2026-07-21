@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - Não lançado
+
+### Changed
+
+- **BREAKING — `Enums\TipoEvento`: os 18 casos foram renomeados, sem exceção.** Os nomes anteriores foram atribuídos por posição sobre a lista numérica do swagger, sem conferir a documentação de cada elemento `eNNNNNN` em `storage/schemes/tiposEventos_v1.01.xsd`, e ficaram deslocados em relação ao evento real. Como o valor inteiro de cada caso nunca mudou, o defeito era silencioso: `consultar()->eventos()` montava a URL com um código válido, porém de outro evento, e devolvia o documento errado sem erro. Os códigos permanecem idênticos — apenas os nomes mudam.
+
+  | Antes | Código | Agora |
+  |---|---|---|
+  | `CancelamentoPorIniciativaPrestador` | 101101 | `Cancelamento` |
+  | `CancelamentoPorIniciativaFisco` | 101103 | `SolicitacaoCancelamentoAnaliseFiscal` |
+  | `CancelamentoPorDecisaoJudicial` | 105102 | `CancelamentoPorSubstituicao` |
+  | `CancelamentoPorDecisaoAdministrativa` | 105104 | `CancelamentoDeferidoAnaliseFiscal` |
+  | `CancelamentoPorOficio` | 105105 | `CancelamentoIndeferidoAnaliseFiscal` |
+  | `AnaliseParaCancelamento` | 202201 | `ConfirmacaoPrestador` |
+  | `AnaliseParaCancelamentoDecisaoJudicial` | 202205 | `RejeicaoPrestador` |
+  | `SolicitacaoCancelamento` | 203202 | `ConfirmacaoTomador` |
+  | `SolicitacaoCancelamentoDecisaoJudicial` | 203206 | `RejeicaoTomador` |
+  | `RejeicaoCancelamento` | 204203 | `ConfirmacaoIntermediario` |
+  | `RejeicaoCancelamentoDecisaoJudicial` | 204207 | `RejeicaoIntermediario` |
+  | `ConclusaoCancelamento` | 205204 | `ConfirmacaoTacita` |
+  | `ConclusaoCancelamentoDecisaoJudicial` | 205208 | `AnulacaoRejeicao` |
+  | `SubstituicaoPorIniciativaPrestador` | 305101 | `CancelamentoPorOficio` |
+  | `SubstituicaoPorIniciativaFisco` | 305102 | `BloqueioPorOficio` |
+  | `SubstituicaoPorOficio` | 305103 | `DesbloqueioPorOficio` |
+  | `BloqueioNfse` | 467201 | `InclusaoNfseDan` |
+  | `TravamentoNfse` | 907201 | `TributosNfseRecolhidos` |
+
+  **Migração.** Não há camada de compatibilidade: `CancelamentoPorOficio` existe nos dois esquemas apontando para códigos diferentes (105105 antes, 305101 agora), então um alias depreciado mudaria o significado desse nome em silêncio — exatamente a falha que a correção elimina. Migre por **código**, não por nome: localize o valor inteiro que seu código usava hoje na coluna do meio e adote o nome da coluna da direita. Quem passava `int` direto (`eventos($chave, 105102)`) não é afetado.
+
+  `Cancelamento` (101101) segue como default de `consultar()->eventos()` — só o nome mudou.
+
+- `TipoEvento` passou a compartilhar o vocabulário de `TipoEventoDistribuicao`: os mesmos eventos, vistos pelos canais de consulta e de distribuição, agora têm o mesmo nome nos dois enums.
+
+### Notas
+
+- 467201 e 907201 não constam em nenhum XSD — existem apenas no swagger da SEFIN Nacional. Seus nomes derivam da correspondência posicional com as duas últimas entradas de `TipoEventoDistribuicao`, cujas 16 primeiras conferem com o XSD elemento a elemento. Os 16 códigos documentados no XSD são verificados por teste.
+
 ## [2.7.0] - 2026-07-21
 
 Fecha o ciclo da reconciliação: o cancelamento indeterminado passa a ter os mesmos três desfechos ancorados em evidência que a emissão já tinha desde a 2.5.0 — registrou, comprovadamente não registrou, inconclusivo.

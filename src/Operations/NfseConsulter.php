@@ -129,7 +129,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         }
     }
 
-    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador, int $nSequencial = 1): EventsResponse
+    public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::Cancelamento, int $nSequencial = 1): EventsResponse
     {
         $this->validateChaveAcesso($chave);
 

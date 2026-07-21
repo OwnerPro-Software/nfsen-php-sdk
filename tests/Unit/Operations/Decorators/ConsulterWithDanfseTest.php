@@ -63,7 +63,7 @@ it('eventos() delega sem chamar renderer', function () {
     $renderer = new FakeRendersDanfse;
     $decorator = new ConsulterWithDanfse($inner, $renderer);
 
-    $resp = $decorator->eventos('CHAVE', TipoEvento::CancelamentoPorIniciativaPrestador, 1);
+    $resp = $decorator->eventos('CHAVE', TipoEvento::Cancelamento, 1);
 
     expect($inner->eventosCalls)->toBe(1);
     expect($renderer->toPdfCalls)->toBe(0);

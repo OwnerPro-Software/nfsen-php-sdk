@@ -59,7 +59,7 @@ final class FakeConsultsNfse implements ConsultsNfse
 
     public function eventos(
         string $chave,
-        TipoEvento|int $tipoEvento = TipoEvento::CancelamentoPorIniciativaPrestador,
+        TipoEvento|int $tipoEvento = TipoEvento::Cancelamento,
         int $nSequencial = 1,
     ): EventsResponse {
         $this->eventosCalls++;

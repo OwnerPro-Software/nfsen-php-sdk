@@ -228,11 +228,19 @@ file_put_contents('danfse.pdf', $response->pdf);
 // Consultar eventos (tipoEvento é obrigatório)
 $response = $client->consultar()->eventos(
     chave: $chave,
-    tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador, // e101101
+    tipoEvento: TipoEvento::Cancelamento, // e101101
     nSequencial: 1,
 );
-// Tipos disponíveis: CancelamentoPorIniciativaPrestador, CancelamentoPorIniciativaFisco,
-// CancelamentoPorSubstituicao, AnulacaoCancelamento
+// Tipos disponíveis (nome — código, conforme tiposEventos_v1.01.xsd):
+// Cancelamento — 101101                          SolicitacaoCancelamentoAnaliseFiscal — 101103
+// CancelamentoPorSubstituicao — 105102           CancelamentoDeferidoAnaliseFiscal — 105104
+// CancelamentoIndeferidoAnaliseFiscal — 105105   ConfirmacaoPrestador — 202201
+// RejeicaoPrestador — 202205                     ConfirmacaoTomador — 203202
+// RejeicaoTomador — 203206                       ConfirmacaoIntermediario — 204203
+// RejeicaoIntermediario — 204207                 ConfirmacaoTacita — 205204
+// AnulacaoRejeicao — 205208                      CancelamentoPorOficio — 305101
+// BloqueioPorOficio — 305102                     DesbloqueioPorOficio — 305103
+// InclusaoNfseDan — 467201                       TributosNfseRecolhidos — 907201
 //
 // Quando a SEFIN responde 404 (evento inexistente), a resposta traz um erro
 // dedicado: $response->erros[0]->codigo === EventsResponse::EVENT_NOT_FOUND.
@@ -313,7 +321,7 @@ try {
 } catch (IndeterminateResultException $e) {
     $lookup = $client->consultar()->eventos(
         chave: $chave,
-        tipoEvento: TipoEvento::CancelamentoPorIniciativaPrestador,
+        tipoEvento: TipoEvento::Cancelamento,
         nSequencial: 1,
     );
 
