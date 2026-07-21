@@ -814,3 +814,38 @@ it('composes city and UF from the portal text when no IBGE code is available', f
 
     expect($data->emitente->municipio)->toBe('Niterói - RJ');
 });
+
+// NT 008, item 2.4.5: os campos SITUAÇÃO DA NFS-E (cStat), FINALIDADE (finNFSe) e
+// EMITENTE DA NFS-e (tpEmit) exigem a *descrição* da opção do leiaute, não o código.
+// O template trazia "Prestador do Serviço" fixo — uma NFS-e emitida pelo tomador
+// imprimia mesmo assim que o emitente era o prestador.
+it('describes the NFS-e situation, purpose and issuer instead of their codes', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->situacao)->toBe('NFS-e Gerada');
+    expect($data->emitidaPor)->toBe('Prestador');
+    // A fixture não traz o bloco IBSCBS, que é opcional no XSD.
+    expect($data->finalidade)->toBe('-');
+});
+
+it('describes an NFS-e issued by the tomador as such', function () {
+    $xml = str_replace('<tpEmit>1</tpEmit>', '<tpEmit>2</tpEmit>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->emitidaPor)->toBe('Tomador');
+});
+
+it('describes a court-ordered NFS-e by its own status', function () {
+    $xml = str_replace('<cStat>100</cStat>', '<cStat>102</cStat>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->situacao)->toBe('NFS-e de Decisão Judicial');
+});
+
+it('shows a dash for a status code the layout does not define', function () {
+    // Rótulo inventado num documento fiscal é pior que campo vazio.
+    $xml = str_replace('<cStat>100</cStat>', '<cStat>999</cStat>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->situacao)->toBe('-');
+});

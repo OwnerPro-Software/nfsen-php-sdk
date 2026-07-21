@@ -110,9 +110,6 @@ it('carries a field table that still matches the XSD', function () use ($FIXTURE
 $NAO_LIDOS = [
     // Campos que o SDK simplesmente não coleta.
     'QUADRO DA IDENT. MUNICÍPIO/AMBIENTE :: AMBIENTE GERADOR',
-    'DADOS DA NFS-e :: EMITENTE DA NFS-E',
-    'DADOS DA NFS-e :: SITUAÇÃO DA NFS-E',
-    'DADOS DA NFS-e :: FINALIDADE',
     'TRIBUTAÇÃO MUNICIPAL (ISSQN) :: TIPO DE IMUNIDADE DO ISSQN',
     'TRIBUTAÇÃO MUNICIPAL (ISSQN) :: SUSPENSÃO DA EXIGIBILIDADE DO ISSQN',
     'TRIBUTAÇÃO MUNICIPAL (ISSQN) :: NÚMERO PROCESSO SUSPENSÃO',
@@ -147,14 +144,21 @@ $NAO_LIDOS = [
     'CBS :: ALÍQUOTA EFETIVA - CBS',
     'CBS :: VALOR TOTAL APURADO - CBS',
 
-    // Lidos, mas invisíveis para o extrator estático de caminhos:
-    // a chave vem do atributo Id (`$inf->attributes()->Id`), e o total de retenções
-    // é somado em código a partir de vRetIRRF/vRetCP/vRetCSLL.
-    'DADOS DA NFS-e :: CHAVE DE ACESSO DA NFS-E',
-    'VALOR TOTAL DA NFS-E :: TOTAL DAS RETENÇÕES (ISSQN / FEDERAIS)',
 ];
 
-it('knows exactly which notice fields the builder still does not read', function () use ($FIXTURE, $NAO_LIDOS) {
+/**
+ * Campos que o builder lê, mas que o extrator estático de caminhos não enxerga.
+ *
+ * Categoria distinta de `$NAO_LIDOS`: não são lacunas. Misturá-los faria o
+ * inventário subnotificar a cobertura e, pior, esconderia uma lacuna de verdade
+ * atrás de uma explicação que não é dela — que é como um inventário passa a mentir.
+ */
+$LIDOS_MAS_INVISIVEIS = [
+    'DADOS DA NFS-e :: CHAVE DE ACESSO DA NFS-E' => 'vem do atributo Id (`$inf->attributes()->Id`), e a expansão do XSD só cataloga elementos',
+    'VALOR TOTAL DA NFS-E :: TOTAL DAS RETENÇÕES (ISSQN / FEDERAIS)' => 'somado em código a partir de vRetIRRF, vRetCP e vRetCSLL, sem caminho próprio',
+];
+
+it('knows exactly which notice fields the builder still does not read', function () use ($FIXTURE, $NAO_LIDOS, $LIDOS_MAS_INVISIVEIS) {
     /** @var list<array{bloco: string, campo: string, caminho: string, tag: string}> $campos */
     $campos = json_decode((string) file_get_contents($FIXTURE), true);
     $lidos = array_flip(nfsenDanfseBuilderPaths()['caminhos']);
@@ -179,7 +183,7 @@ it('knows exactly which notice fields the builder still does not read', function
     }
 
     sort($ausentes);
-    $esperados = $NAO_LIDOS;
+    $esperados = [...$NAO_LIDOS, ...array_keys($LIDOS_MAS_INVISIVEIS)];
     sort($esperados);
 
     // Igualdade nos dois sentidos, de propósito: um campo implementado tem de sair

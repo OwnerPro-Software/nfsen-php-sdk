@@ -14,10 +14,13 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\Formatter;
 use OwnerPro\Nfsen\Danfse\ParticipanteBuilder;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\SituacaoNfse;
 use OwnerPro\Nfsen\Exceptions\XmlParseException;
 use SimpleXMLElement;
 use Throwable;
@@ -113,6 +116,11 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             serieDps: $this->str($infDps->serie, '-'),
             emissaoDps: $this->fmt->dateTime($this->str($infDps->dhEmi)),
             ambiente: $ambiente,
+            // A NT 008 manda imprimir a descrição da opção, não o código. Sem
+            // correspondência no leiaute, '-' — o documento não pode inventar rótulo.
+            situacao: SituacaoNfse::labelOf($this->str($inf->cStat)),
+            finalidade: FinNFSe::labelOf($this->str($infDps->IBSCBS->finNFSe)),
+            emitidaPor: TpEmit::labelOf($this->str($infDps->tpEmit)),
             emitente: $this->participantes->prestador($emit, $inf, $prest),
             tomador: $this->participantes->tomador($toma),
             intermediario: $intermediario,

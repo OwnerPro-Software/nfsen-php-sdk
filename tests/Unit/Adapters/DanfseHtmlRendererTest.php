@@ -118,7 +118,9 @@ it('renders single dash for codigoTribMunicipal when codigo and desc are both em
         chaveAcesso: $base->chaveAcesso, numeroNfse: $base->numeroNfse,
         competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
         numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
-        ambiente: $base->ambiente, emitente: $base->emitente, tomador: $base->tomador,
+        ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
+        emitidaPor: $base->emitidaPor,
+        emitente: $base->emitente, tomador: $base->tomador,
         intermediario: $base->intermediario,
         servico: new DanfseServico(
             codigoTribNacional: '01.07.00', descTribNacional: 'Desenvolvimento',
@@ -166,6 +168,7 @@ it('escapes HTML in data fields (XSS prevention)', function (): void {
         chaveAcesso: 'X', numeroNfse: '1', competencia: '-', emissaoNfse: '-',
         numeroDps: '1', serieDps: '1', emissaoDps: '-',
         ambiente: NfseAmbiente::PRODUCAO,
+        situacao: '-', finalidade: '-', emitidaPor: '-',
         emitente: $malicious, tomador: sampleParticipante(), intermediario: null,
         servico: new DanfseServico('-', '-', '-', '-', '-', '-', '-', '-'),
         tribMun: new DanfseTributacaoMunicipal('-', '-', '-', '-', '-', '-', '-', '-'),

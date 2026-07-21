@@ -1,5 +1,7 @@
 <?php
 
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
 use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegApTribSN;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
@@ -7,6 +9,7 @@ use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
+use OwnerPro\Nfsen\Enums\SituacaoNfse;
 
 /**
  * Cada `label()` tem de repetir o rótulo que o XSD escreve para aquele código.
@@ -27,6 +30,9 @@ $TIPO_XSD_POR_ENUM = [
     TpRetISSQN::class => 'TSTipoRetISSQN',
     CNaoNIF::class => 'TSCodNaoNIF',
     NfseAmbiente::class => 'TSTipoAmbiente',
+    SituacaoNfse::class => 'TStat',
+    FinNFSe::class => 'TSRTCFinNFSe',
+    TpEmit::class => 'TSEmitenteDPS',
 ];
 
 /**

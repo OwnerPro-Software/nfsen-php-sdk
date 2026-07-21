@@ -40,6 +40,7 @@ $TIPO_EXPLICITO = [
     'OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento' => 'TSCodJustCanc',
     'OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao' => 'TSCodJustSubst',
     'OwnerPro\Nfsen\Enums\NfseAmbiente' => 'TSTipoAmbiente',
+    'OwnerPro\Nfsen\Enums\SituacaoNfse' => 'TStat',
 ];
 
 /**

@@ -25,6 +25,12 @@ final readonly class NfseData
         public string $serieDps,
         public string $emissaoDps,
         public NfseAmbiente $ambiente,
+        /** Descrição de `infNFSe/cStat` — campo "SITUAÇÃO DA NFS-E" da NT 008. */
+        public string $situacao,
+        /** Descrição de `infDPS/IBSCBS/finNFSe` — campo "FINALIDADE" da NT 008. */
+        public string $finalidade,
+        /** Descrição de `infDPS/tpEmit` — campo "EMITENTE DA NFS-e" da NT 008. */
+        public string $emitidaPor,
         public DanfseParticipante $emitente,
         public DanfseParticipante $tomador,
         public ?DanfseParticipante $intermediario,

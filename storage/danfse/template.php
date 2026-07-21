@@ -103,6 +103,20 @@
                     <span class="value"><?= $h($data->emissaoDps) ?></span>
                 </td>
             </tr>
+            <tr>
+                <td>
+                    <span class="label">Emitente da NFS-e</span>
+                    <span class="value"><?= $h($data->emitidaPor) ?></span>
+                </td>
+                <td>
+                    <span class="label">Situação da NFS-e</span>
+                    <span class="value"><?= $h($data->situacao) ?></span>
+                </td>
+                <td>
+                    <span class="label">Finalidade</span>
+                    <span class="value"><?= $h($data->finalidade) ?></span>
+                </td>
+            </tr>
         </table>
     </div>
 
@@ -111,8 +125,7 @@
         <table>
             <tr>
                 <td style="width: 25%; font-weight: bold; font-size: 7pt;">
-                    <span class="label section-title">EMITENTE DA NFS-e</span>
-                    <span class="value">Prestador do Serviço</span>
+                    <span class="label section-title">PRESTADOR / FORNECEDOR</span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">CNPJ / CPF / NIF</span>
