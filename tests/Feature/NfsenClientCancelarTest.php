@@ -177,15 +177,21 @@ it('cancelar succeeds and reports error when event listener throws', function ()
     expect($reported[0]->getMessage())->toBe('Listener exploded');
 });
 
-it('cancelar uses Americana custom URL without operation path', function () {
-    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 201)]);
+it('cancelar refuses to send when the municipality has no cancel template', function () {
+    // Americana traz `cancel_nfse: ""` em storage/prefeituras.json. Antes, a chave
+    // era descartada e o cancelamento ia parar no endpoint de recepção de DPS —
+    // sem erro. Agora falha alto, apontando o arquivo a corrigir.
+    Http::fake();
 
     $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '3501608');
-    $client->cancelar('12345678901234567890123456789012345678901234567890', CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
 
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao' &&
-        isset($req['pedidoRegistroEventoXmlGZipB64'])
-    );
+    expect(fn () => $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal',
+    ))->toThrow(InvalidArgumentException::class, 'storage/prefeituras.json');
+
+    Http::assertNothingSent();
 });
 
 it('cancelar uses Santa Ana de Parnaiba custom URL with operation path', function () {

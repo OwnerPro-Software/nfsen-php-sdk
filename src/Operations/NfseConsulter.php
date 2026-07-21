@@ -237,12 +237,13 @@ final readonly class NfseConsulter implements ConsultsNfse
         )];
     }
 
+    /**
+     * O path nunca é vazio aqui: toda operação destas classes passa parâmetro, e
+     * `resolveOperation()` rejeita template sem placeholder quando há parâmetros.
+     * O caso de path vazio (emissão) é tratado em NfseRequestPipeline.
+     */
     private function buildUrl(string $baseUrl, string $path): string
     {
-        if ($path === '') {
-            return $baseUrl;
-        }
-
         return rtrim($baseUrl, '/').'/'.ltrim($path, '/');
     }
 }

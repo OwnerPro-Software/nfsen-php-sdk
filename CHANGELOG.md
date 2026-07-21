@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **BREAKING — template de operação sem placeholder deixa de descartar parâmetros em silêncio.** `PrefeituraResolver::resolveOperation()` fazia `str_replace('{chave}', …)` sobre um template que não continha placeholder algum: a substituição não fazia nada, o guard de placeholder residual passava (não sobrou nenhum) e `buildUrl()` devolvia a URL base pelada. O fallback `??` para os defaults nacionais não cobre isso, porque dispara em `null`, não em `''`.
+
+  Na prática: Americana/SP (IBGE `3501608`) declara `""` nas **seis** operações em `storage/prefeituras.json`. `consultar()->nfse($chave)` fazia GET na URL de recepção de DPS com a chave descartada, e `cancelar()` fazia **POST** de pedido de cancelamento nesse mesmo endpoint de recepção — ambos sem erro algum. Agora, uma operação que recebe parâmetros e cujo template não tem onde colocá-los lança `InvalidArgumentException` nomeando a operação, o município, o template e o arquivo a corrigir.
+
+  `""` continua válido para operações sem parâmetro (emissão), em que a URL base do município já é o path completo de recepção — o caso legítimo que a estrutura de dados foi feita para expressar. Emissão em Americana segue funcionando; consultas e cancelamento naquele município passam a falhar de forma explícita até que os templates reais sejam preenchidos.
+
 - **BREAKING — um documento ilegível deixa de derrubar o lote inteiro de distribuição.** `DocumentoFiscal::fromArray()` usava `TipoDocumentoFiscal::from()` sobre uma chave acessada sem checagem: um item sem `TipoDocumento` lançava `TypeError`, e um valor que esta versão do SDK não conhecesse lançava `ValueError` — que **não** é `NfseException` e escapava dos catches documentados. Um `ArquivoXml` corrompido lançava `NfseException`. Em qualquer um dos três, `distribuicao()->documentos()` perdia os outros 49 documentos do lote junto com o defeituoso. Nenhum campo de `DistribuicaoNSU` é obrigatório no swagger do ADN, e o governo pode passar a emitir tipos novos a qualquer momento.
 
   Agora o item entra no lote com os campos afetados em `null` e o motivo em `DocumentoFiscal::$parseError`. O `nsu` é preservado em todos os cenários, para que o chamador consiga refazer a busca daquele documento em específico. Alinha o comportamento ao de `DistribuicaoResponse::fromApiResult()`, que já degradava graciosamente diante de um `StatusProcessamento` desconhecido.
@@ -58,6 +64,7 @@ All notable changes to this project will be documented in this file.
 
 ### Notas
 
+- Os templates reais de consulta e cancelamento de Americana/SP (`3501608`) continuam desconhecidos — o SDK não os inventa. Até que sejam preenchidos em `storage/prefeituras.json`, apenas a emissão funciona naquele município, e as demais operações falham com mensagem explícita em vez de montar uma URL silenciosamente errada.
 - 467201 e 907201 não constam em nenhum XSD — existem apenas no swagger da SEFIN Nacional. Seus nomes derivam da correspondência posicional com as duas últimas entradas de `TipoEventoDistribuicao`, cujas 16 primeiras conferem com o XSD elemento a elemento. Os 16 códigos documentados no XSD são verificados por teste.
 
 ## [2.7.0] - 2026-07-21

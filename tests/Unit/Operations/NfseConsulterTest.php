@@ -444,50 +444,6 @@ it('eventos returns success with decompressed xml', function () {
     expect($response->dataHoraProcessamento)->toBe('2026-01-01T00:00:00');
 });
 
-it('buildUrl returns baseUrl when path is empty', function () {
-    $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
-    file_put_contents($tmpJson, json_encode([
-        '9999998' => ['operations' => ['query_nfse' => '']],
-    ]));
-
-    $innerClient = new class implements ExecutesNfseRequests
-    {
-        public string $lastUrl = '';
-
-        public function executeAndDecompress(string $url): NfseResponse
-        {
-            $this->lastUrl = $url;
-
-            return new NfseResponse(true);
-        }
-
-        public function executeAndDownload(string $url): string
-        {
-            return '';
-        }
-
-        public function executeHead(string $url): int
-        {
-            return 200;
-        }
-
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
-        {
-            return new HttpResponse(200, [], '');
-        }
-    };
-
-    try {
-        $resolver = new PrefeituraResolver($tmpJson);
-        $builder = new NfseConsulter($innerClient, 'https://sefin.base', '', $resolver, '9999998');
-        $builder->nfse(makeChaveAcesso());
-
-        expect($innerClient->lastUrl)->toBe('https://sefin.base');
-    } finally {
-        unlink($tmpJson);
-    }
-});
-
 it('eventos uses default nSequencial = 1 in URL', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
     $fakeClient->rawResponse = makeEventoResponse();

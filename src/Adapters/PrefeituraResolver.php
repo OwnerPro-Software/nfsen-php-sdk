@@ -103,6 +103,23 @@ final class PrefeituraResolver implements ResolvesPrefeituras
             ?? self::DEFAULT_OPERATIONS[$operacao]
             ?? throw new InvalidArgumentException(sprintf("Operação desconhecida: '%s'.", $operacao));
 
+        // Um template sem placeholder algum não tem onde receber os parâmetros: a
+        // substituição não faria nada e a URL sairia sem a chave/ID, apontando para
+        // outro recurso — sem erro. Acontece quando o município traz `""` numa
+        // operação que exige parâmetro. Operações sem parâmetro (emissão) seguem
+        // aceitando template vazio, que o pipeline resolve como a própria URL base.
+        if ($params !== [] && ! str_contains($template, '{')) {
+            throw new InvalidArgumentException(sprintf(
+                "Operação '%s' do município %s não declara placeholder algum (template: '%s'), ".
+                'mas recebeu os parâmetros [%s] — eles seriam descartados silenciosamente. '.
+                'Corrija o template em storage/prefeituras.json.',
+                $operacao,
+                $codigoIbge,
+                $template,
+                implode(', ', array_keys($params)),
+            ));
+        }
+
         foreach ($params as $key => $value) {
             $template = str_replace('{'.$key.'}', rawurlencode((string) $value), $template);
         }

@@ -110,6 +110,43 @@ it('throws InvalidArgumentException for missing template parameter', function ()
         ->toThrow(InvalidArgumentException::class, "'{tipoEvento}'");
 });
 
+it('throws when a parameterised operation has a template with no placeholder', function () {
+    // Um município com `""` numa operação que exige parâmetro produzia a URL base
+    // pelada: a chave sumia e a requisição ia para outro recurso, sem erro algum.
+    $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
+    file_put_contents($tmpJson, (string) json_encode([
+        '9999998' => ['operations' => ['query_nfse' => '', 'cancel_nfse' => 'nfse/eventos']],
+    ]));
+
+    try {
+        $resolver = new PrefeituraResolver($tmpJson);
+
+        expect(fn () => $resolver->resolveOperation('9999998', 'query_nfse', ['chave' => 'ABC']))
+            ->toThrow(InvalidArgumentException::class, 'descartados silenciosamente')
+            ->and(fn () => $resolver->resolveOperation('9999998', 'cancel_nfse', ['chave' => 'ABC']))
+            ->toThrow(InvalidArgumentException::class, 'não declara placeholder algum');
+    } finally {
+        unlink($tmpJson);
+    }
+});
+
+it('still accepts an empty template for an operation that takes no parameters', function () {
+    // Emissão é o caso legítimo: a URL base do município já é o path completo de
+    // recepção, e NfseRequestPipeline resolve o path vazio como a própria base.
+    $tmpJson = tempnam(sys_get_temp_dir(), 'pref');
+    file_put_contents($tmpJson, (string) json_encode([
+        '9999998' => ['operations' => ['emit_nfse' => '']],
+    ]));
+
+    try {
+        $resolver = new PrefeituraResolver($tmpJson);
+
+        expect($resolver->resolveOperation('9999998', 'emit_nfse'))->toBe('');
+    } finally {
+        unlink($tmpJson);
+    }
+});
+
 it('throws InvalidArgumentException for unknown operation', function () use ($jsonPath) {
     $resolver = new PrefeituraResolver($jsonPath);
 
