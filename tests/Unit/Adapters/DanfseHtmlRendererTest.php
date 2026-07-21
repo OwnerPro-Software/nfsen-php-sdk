@@ -138,30 +138,26 @@ it('renders single dash for codigoTribMunicipal when codigo and desc are both em
     expect($html)->not->toContain('- -');
 });
 
-it('prefixes NBS code in informações complementares when codigoNbs is present', function (): void {
+it('prints the NBS code in the SERVIÇO PRESTADO block, where the notice puts it', function (): void {
+    // Item 2.4.5: "CÓDIGO DA NBS" é campo do bloco de serviço, ao lado do código de
+    // tributação. Ficava em "Informações Complementares", que a NT reserva à união
+    // de outros dez campos.
     $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
 
     $html = $r->render(sampleData(codigoNbs: '111032200'));
 
-    expect($html)->toContain('NBS:');
-    expect($html)->toContain('111032200');
+    $servico = substr($html, (int) strpos($html, 'SERVIÇO PRESTADO'), (int) strpos($html, 'TRIBUTAÇÃO MUNICIPAL') - (int) strpos($html, 'SERVIÇO PRESTADO'));
+
+    expect($servico)->toContain('Código da NBS')->toContain('111032200');
 });
 
-it('bolds the NBS label in informações complementares to match portal', function (): void {
-    // Portal nacional renderiza "NBS:" em negrito. Espelhar paridade visual.
-    $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
-
-    $html = $r->render(sampleData(codigoNbs: '111032200'));
-
-    expect($html)->toContain('<strong>NBS:</strong>');
-});
-
-it('omits NBS prefix when codigoNbs is dash', function (): void {
+it('prints a dash for the NBS code when the NFS-e has none', function (): void {
+    // Nota 12: campo sem informação no XML sai com traço, não sumindo.
     $r = new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false));
 
     $html = $r->render(sampleData(codigoNbs: '-'));
 
-    expect($html)->not->toContain('NBS: ');
+    expect($html)->toContain('Código da NBS')->not->toContain('111032200');
 });
 
 it('escapes HTML in data fields (XSS prevention)', function (): void {
@@ -254,4 +250,33 @@ it('styles the marca d\'água with the measurements of items 2.5.1 and 2.5.2', f
         ->toContain('font-weight: normal')
         ->toContain('color: #a6a6a6')
         ->toContain('font-family: Arial');
+});
+
+it('gives the approximate taxes no block of their own', function (): void {
+    // A NT 008 não prevê esse bloco: a nota 10 do item 2.4.5 põe os totais dentro de
+    // "Informações Complementares", e o item 2.2.4 manda obedecer ao Anexo I.
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))->render(sampleData());
+
+    expect($html)->not->toContain('TOTAIS APROXIMADOS DOS TRIBUTOS');
+});
+
+it('prints the fixed totals line inside the complementary information block', function (): void {
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))->render(sampleData());
+
+    $bloco = substr($html, (int) strpos($html, 'INFORMAÇÕES COMPLEMENTARES'));
+
+    expect($bloco)->toContain('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: 4.50% ; Estaduais: 0.10% ; Municipais: 2.00%');
+});
+
+it('keeps the fixed totals line outside the area that clips overflow', function (): void {
+    // Nota 10: o corte do texto livre é "sem prejuízo à linha de Totais Aproximados
+    // dos Tributos, que é fixa". Dentro do .expandable-text ela sumiria justamente
+    // nas notas mais longas, que são as que já perdem texto.
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))->render(sampleData());
+
+    $bloco = substr($html, (int) strpos($html, 'INFORMAÇÕES COMPLEMENTARES'));
+    $abreClipado = (int) strpos($bloco, 'expandable-text');
+    $fechaClipado = (int) strpos($bloco, '</div>', $abreClipado);
+
+    expect(strpos($bloco, 'Totais Aproximados'))->toBeGreaterThan($fechaClipado);
 });

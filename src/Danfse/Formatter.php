@@ -128,7 +128,11 @@ final class Formatter
         $cut = mb_substr($value, 0, $limit);
         $lastSpace = mb_strrpos($cut, ' ');
 
-        if ($lastSpace !== false) {
+        // Recuar até o espaço evita partir palavra ao meio, mas só vale quando o recuo
+        // é curto. Num texto quase sem espaços — uma chave de acesso, um código longo,
+        // um rótulo seguido de dado contínuo — o último espaço pode estar no começo, e
+        // recuar até ele devolveria o rótulo sozinho no lugar do campo inteiro.
+        if ($lastSpace !== false && $lastSpace >= (int) ($limit * 0.9)) { // @pest-mutate-ignore GreaterThanOrEqualToGreaterThan,DecrementInteger,IncrementInteger — piso de recuo aceitável; um caractere a mais ou a menos não é regressão.
             return mb_substr($cut, 0, $lastSpace).$end;
         }
 

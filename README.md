@@ -734,6 +734,7 @@ Blocos do documento, na ordem do Anexo I:
 | Tributação Federal | `infDPS/valores/trib/tribFed/` |
 | Tributação IBS / CBS | `infDPS/IBSCBS/` + `infNFSe/IBSCBS/` |
 | Valor Total da NFS-e | `infNFSe/valores/` + `infNFSe/IBSCBS/totCIBS/` |
+| Informações Complementares | dez campos espalhados pelo leiaute (ver abaixo) |
 
 Comportamentos que valem conhecer:
 
@@ -747,6 +748,30 @@ Comportamentos que valem conhecer:
 - **Duas linhas do bloco ISSQN somem quando vazias** (imunidade/suspensão e
   benefício/deduções), como a nota 5 do item 2.4.5 permite. Um único campo preenchido
   traz a linha inteira de volta.
+- **"Informações Complementares" não é o `xInfComp`.** O item 2.4.5 manda unir dez
+  campos, cada um com seu rótulo, na ordem da tabela e separados por ` | `:
+
+  | Rótulo | Tag |
+  |--------|-----|
+  | `Inf. Cont.:` | `serv/infoCompl/xInfComp` |
+  | `NFS-e Subst.:` | `subst/chSubstda` (nota 7) |
+  | `Doc. Ref.:` | `serv/infoCompl/docRef` |
+  | `Cod. Obra:` | `serv/obra/cObra` (nota 8) |
+  | `Insc. Imob.:` | `IBSCBS/imovel/inscImobFisc` (nota 8) |
+  | `Cod. Evt.:` | `serv/atvEvento/idAtvEvt` (nota 9) |
+  | `Doc. Tec.:` | `serv/infoCompl/idDocTec` |
+  | `Núm. Ped.:` | `serv/infoCompl/xPed` |
+  | `Item Ped.:` | `serv/infoCompl/gItemPed/xItemPed` (até 99, em lista) |
+  | `Inf. A. T. Mun.:` | `infNFSe/xOutInf` |
+
+  Campo ausente some junto com o rótulo — `Cod. Obra: -` numa nota que não é de obra
+  gastaria a linha e sugeriria um dado que não existe.
+- **Totais aproximados de tributos não têm bloco próprio.** A nota 10 os põe dentro de
+  "Informações Complementares", numa linha fixa e obrigatória. Ela vive em
+  `DanfseTotaisTributos::linhaNt008()` e é impressa fora da área que trunca, porque a
+  nota manda que o corte do texto livre seja "sem prejuízo" dela. Os valores saem de
+  `pTotTrib` (percentual) ou, na falta dele, de `vTotTrib` (monetário) — a nota admite
+  os dois.
 - **Descrição do código de tributação é um campo só**: municipal quando existe,
   nacional como alternativa — nunca as duas.
 - **Marca d'água de cancelamento/substituição vem de fora.** O XML não a carrega; ver
@@ -788,7 +813,7 @@ echo $data->tribIbsCbs->valorTotalIbs;   // "R$ 108,00"
 | `servico` | `DanfseServico` | Códigos e descrições do serviço |
 | `tribMun`, `tribFed`, `tribIbsCbs` | DTOs de tributação | ISSQN, federal e IBS/CBS |
 | `totais`, `totaisTributos` | `DanfseTotais`, `DanfseTotaisTributos` | Valores e percentuais |
-| `informacoesComplementares` | `string` | Cortado em 1000 caracteres (ver acima) |
+| `informacoesComplementares` | `string` | União dos dez campos, cortada em 1000 caracteres (ver acima) |
 | `marcaDagua` | `?MarcaDagua` | "CANCELADA"/"SUBSTITUÍDA"; `null` na nota vigente |
 
 Enums com `label()`, que devolvem a descrição do leiaute — todos conferidos contra a
@@ -814,7 +839,8 @@ inteiro.
 Para não estourar, o SDK **corta as informações complementares em 1000 caracteres**,
 com reticências. O campo tem 2000 na NT: as duas regras não cabem juntas neste
 template, e a da página vence, porque documento de duas páginas é inválido enquanto
-texto cortado continua legível.
+texto cortado continua legível. A linha de totais aproximados escapa do corte — a
+nota 10 a declara fixa, e ela é impressa fora da área truncada.
 
 O corte é uma heurística calibrada por medição, não uma garantia — a altura renderizada
 depende do glifo, não da contagem de caracteres. A correção definitiva é reconstruir o

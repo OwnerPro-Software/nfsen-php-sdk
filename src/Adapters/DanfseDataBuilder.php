@@ -147,20 +147,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             tribIbsCbs: $this->buildTribIbsCbs($inf, $infDps, $valores, $trib),
             totais: $this->buildTotais($tribMun, $tribFed, $valores, $valNfse, $inf),
             totaisTributos: $this->buildTotaisTributos($totTrib),
-            // Corte NOSSO, não da NT: ela dá 2000 caracteres a este campo, mas também
-            // exige (item 2.2) que o DANFSe caiba numa página — e com todos os blocos
-            // presentes as duas regras não cabem juntas neste template. Escolhemos a
-            // da página, porque um documento de duas páginas é inválido, enquanto um
-            // texto cortado permanece legível e as reticências mostram que há mais.
-            //
-            // 1000 saiu de medição, não de margem arbitrária: com a descrição no
-            // máximo (1300), texto realista em caixa alta — que muitos emissores
-            // usam — vira duas páginas a partir de 1100. Não é garantia: o número de
-            // caracteres não determina a altura renderizada, e texto com glifos
-            // muito largos estoura antes. A correção de verdade é reconstruir o
-            // layout sobre as medidas do item 2.4.5; enquanto isso, este corte
-            // cobre o texto que aparece na prática.
-            informacoesComplementares: $this->fmt->limit($this->str($serv->infoCompl->xInfComp), 1000), // @pest-mutate-ignore IncrementInteger,DecrementInteger — limiar medido; 999/1001 não representa regressão.
+            informacoesComplementares: $this->buildInformacoesComplementares($inf, $infDps, $serv),
             // Não sai do XML: cStat descreve como a nota foi gerada, e o cancelamento
             // ou a substituição chegam depois, em evento separado. Ver MarcaDagua.
             marcaDagua: $marcaDagua,
@@ -429,15 +416,106 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     private function buildTotaisTributos(SimpleXMLElement $totTrib): DanfseTotaisTributos
     {
         $p = $totTrib->pTotTrib;
-        $fed = $this->str($p?->pTotTribFed); // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
-        $est = $this->str($p?->pTotTribEst); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-        $mun = $this->str($p?->pTotTribMun); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+        $v = $totTrib->vTotTrib;
 
         return new DanfseTotaisTributos(
-            federais: $fed !== '' ? $fed.'%' : '-',
-            estaduais: $est !== '' ? $est.'%' : '-',
-            municipais: $mun !== '' ? $mun.'%' : '-',
+            federais: $this->totalTributo($this->str($p?->pTotTribFed), $this->str($v?->vTotTribFed)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+            estaduais: $this->totalTributo($this->str($p?->pTotTribEst), $this->str($v?->vTotTribEst)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            municipais: $this->totalTributo($this->str($p?->pTotTribMun), $this->str($v?->vTotTribMun)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
         );
+    }
+
+    /**
+     * Nota 10 do item 2.4.5: os totais aproximados podem vir "com valores monetários
+     * OU percentuais". O leiaute reflete isso em dois grupos irmãos, `pTotTrib` e
+     * `vTotTrib`; o percentual vem primeiro por ser o que o modelo do Anexo I mostra.
+     *
+     * Sem nenhum dos dois, `currency('')` já devolve o traço da nota 12.
+     */
+    private function totalTributo(string $percentual, string $monetario): string
+    {
+        if ($percentual !== '') {
+            return $percentual.'%';
+        }
+
+        return $this->fmt->currency($monetario);
+    }
+
+    /**
+     * Campo "INFORMAÇÕES COMPLEMENTARES" do item 2.4.5.
+     *
+     * Não é o `xInfComp` sozinho. A NT manda unir dez campos espalhados pelo leiaute,
+     * cada um com seu rótulo, na ordem da tabela e separados por pipes; as notas 7, 8
+     * e 9 fixam os rótulos de substituição, de obra/imóvel e de evento. Campo ausente
+     * some junto com o rótulo — imprimir "Cod. Obra: -" numa nota que não é de obra
+     * gastaria a linha e sugeriria um dado que não existe.
+     *
+     * A linha de "Totais Aproximados dos Tributos" (nota 10) não entra aqui: a NT a
+     * declara fixa e imune ao corte, e por isso o template a imprime à parte, fora da
+     * área que trunca. Ver `DanfseTotaisTributos::linhaNt008()`.
+     */
+    private function buildInformacoesComplementares(
+        SimpleXMLElement $inf,
+        SimpleXMLElement $infDps,
+        SimpleXMLElement $serv,
+    ): string {
+        $infoCompl = $serv->infoCompl;
+
+        $campos = [
+            'Inf. Cont.: ' => $this->str($infoCompl?->xInfComp), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+            'NFS-e Subst.: ' => $this->str($infDps->subst?->chSubstda), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            'Doc. Ref.: ' => $this->str($infoCompl?->docRef), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            'Cod. Obra: ' => $this->str($serv->obra?->cObra), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            'Insc. Imob.: ' => $this->str($infDps->IBSCBS?->imovel?->inscImobFisc), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            'Cod. Evt.: ' => $this->str($serv->atvEvento?->idAtvEvt), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            'Doc. Tec.: ' => $this->str($infoCompl?->idDocTec), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            'Núm. Ped.: ' => $this->str($infoCompl?->xPed), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            'Item Ped.: ' => $this->itensDoPedido($infoCompl),
+            'Inf. A. T. Mun.: ' => $this->str($inf->xOutInf),
+        ];
+
+        $preenchidos = array_filter($campos, fn (string $valor): bool => $valor !== '');
+
+        $texto = implode(' | ', array_map(
+            static fn (string $rotulo, string $valor): string => $rotulo.$valor,
+            array_keys($preenchidos),
+            $preenchidos,
+        ));
+
+        // Corte NOSSO, não da NT: ela dá 2000 caracteres a este campo (1997 mais as
+        // reticências), mas também exige (item 2.2) que o DANFSe caiba numa página — e
+        // com todos os blocos presentes as duas regras não cabem juntas neste template.
+        // Escolhemos a da página, porque um documento de duas páginas é inválido,
+        // enquanto um texto cortado permanece legível e as reticências mostram que há
+        // mais.
+        //
+        // 1000 saiu de medição, não de margem arbitrária: com a descrição no máximo
+        // (1300), texto realista em caixa alta — que muitos emissores usam — vira duas
+        // páginas a partir de 1100. Não é garantia: o número de caracteres não
+        // determina a altura renderizada, e texto com glifos muito largos estoura
+        // antes. A correção de verdade é reconstruir o layout sobre as medidas do item
+        // 2.4.5; enquanto isso, este corte cobre o texto que aparece na prática.
+        return $this->fmt->limit($texto, 1000); // @pest-mutate-ignore IncrementInteger,DecrementInteger — limiar medido; 999/1001 não representa regressão.
+    }
+
+    /**
+     * Itens do pedido, que o XSD deixa repetir até 99 vezes (`gItemPed/xItemPed`).
+     *
+     * A NT reserva um rótulo só — "Item Ped.:" — para todos eles, então os números
+     * saem numa lista; um rótulo por item consumiria a linha inteira.
+     */
+    private function itensDoPedido(?SimpleXMLElement $infoCompl): string
+    {
+        $itens = [];
+
+        foreach ($infoCompl?->gItemPed->xItemPed ?? [] as $item) { // @pest-mutate-ignore RemoveNullSafeOperator — idem; `?? []` cobre o nó ausente.
+            $valor = $this->str($item);
+            if ($valor !== '') {
+                $itens[] = $valor;
+            }
+        }
+
+        return implode(', ', $itens);
     }
 
     /** Alguma das descrições da linha tem conteúdo? '-' é a marca de campo vazio. */

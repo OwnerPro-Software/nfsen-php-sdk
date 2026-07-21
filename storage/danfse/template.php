@@ -345,20 +345,16 @@
             </tr>
             <tr>
                 <td style="width: 25%;">
-                    <span class="label">Código de Tributação Nacional</span>
-                    <span class="value"><?= $h($data->servico->codigoTribNacional) ?></span>
+                    <span class="label">Código de Tributação Nacional / Municipal</span>
+                    <span class="value"><?= $h($data->servico->codigoTribNacional) ?> / <?= $h($data->servico->codigoTribMunicipal) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Código de Tributação Municipal</span>
-                    <span class="value"><?= $h($data->servico->codigoTribMunicipal) ?></span>
+                    <span class="label">Código da NBS</span>
+                    <span class="value"><?= $h($data->servico->codigoNbs) ?></span>
                 </td>
-                <td style="width: 25%;">
-                    <span class="label">Local da Prestação</span>
-                    <span class="value"><?= $h($data->servico->localPrestacao) ?></span>
-                </td>
-                <td style="width: 25%;">
-                    <span class="label">País da Prestação</span>
-                    <span class="value"><?= $h($data->servico->paisPrestacao) ?></span>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Local da Prestação / Sigla UF / País</span>
+                    <span class="value"><?= $h($data->servico->localPrestacao) ?> / <?= $h($data->servico->paisPrestacao) ?></span>
                 </td>
             </tr>
             <tr>
@@ -622,32 +618,14 @@
         </table>
     </div>
 
-    <!-- Totais Aproximados de Tributos -->
-    <div class="bordered-section">
-        <table>
-            <tr>
-                <td colspan="3" class="section-header">
-                  <span class="section-title">TOTAIS APROXIMADOS DOS TRIBUTOS</span>
-                </td>
-            </tr>
-            <tr>
-                <td style="width: 33.33%; text-align: center;">
-                    <span class="label">Federais</span>
-                    <span class="value"><?= $h($data->totaisTributos->federais) ?></span>
-                </td>
-                <td style="width: 33.33%; text-align: center;">
-                    <span class="label">Estaduais</span>
-                    <span class="value"><?= $h($data->totaisTributos->estaduais) ?></span>
-                </td>
-                <td style="width: 33.33%; text-align: center;">
-                    <span class="label">Municipais</span>
-                    <span class="value"><?= $h($data->totaisTributos->municipais) ?></span>
-                </td>
-            </tr>
-        </table>
-    </div>
+    <!--
+        Informações Complementares.
 
-    <!-- Informações Complementares -->
+        A NT 008 não dá bloco próprio aos totais aproximados de tributos: a nota 10 do
+        item 2.4.5 os põe aqui dentro, numa linha fixa e obrigatória. Ela fica fora do
+        `.expandable-text` de propósito — aquele quadro corta o que passa da altura, e
+        a nota manda que o corte do texto livre seja "sem prejuízo" desta linha.
+    -->
     <div class="bordered-section">
         <table>
             <tr>
@@ -658,11 +636,9 @@
             <tr>
                 <td style="min-height: 20pt; padding: 3pt 5pt;">
                     <div class="expandable-text">
-                        <?php if ($data->servico->codigoNbs !== '-'): ?>
-                        <span class="value"><strong>NBS:</strong> <?= $h($data->servico->codigoNbs) ?></span><br>
-                        <?php endif; ?>
                         <span class="value"><?= $h($data->informacoesComplementares) ?></span>
                     </div>
+                    <div class="value"><?= $h($data->totaisTributos->linhaNt008()) ?></div>
                 </td>
             </tr>
         </table>

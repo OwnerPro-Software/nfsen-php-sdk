@@ -1172,3 +1172,123 @@ it('leaves the marca d\'água null for a vigente NFS-e', function () {
 
     expect($data->marcaDagua)->toBeNull();
 });
+
+/**
+ * NFS-e com todos os campos que a NT 008 manda unir em "Informações Complementares".
+ *
+ * A fixture base só traz `xInfComp`; os outros nove estão espalhados por grupos
+ * opcionais do leiaute (substituição, obra, imóvel, evento, pedido), e é justamente
+ * a união deles que o item 2.4.5 exige.
+ */
+function nfsenXmlComTodasAsInfoCompl(): string
+{
+    $xml = (string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-autorizada.xml');
+
+    $xml = str_replace(
+        '<infoCompl>',
+        '<obra><cObra>12345678901234567890</cObra></obra>'
+        .'<atvEvento><idAtvEvt>EVT-2026-001</idAtvEvt></atvEvento>'
+        .'<infoCompl>'
+        .'<idDocTec>DRT-99887766</idDocTec>'
+        .'<docRef>NF 4567</docRef>'
+        .'<xPed>PC-00123</xPed>'
+        .'<gItemPed><xItemPed>7</xItemPed><xItemPed>8</xItemPed></gItemPed>',
+        $xml,
+    );
+
+    $xml = str_replace(
+        '</infDPS>',
+        '<subst><chSubstda>33033021211222333000181000000000001026010000010001</chSubstda>'
+        .'<cMotivo>01</cMotivo></subst>'
+        .'<IBSCBS><imovel><inscImobFisc>IM-000123</inscImobFisc></imovel></IBSCBS>'
+        .'</infDPS>',
+        $xml,
+    );
+
+    return str_replace('</infNFSe>', '<xOutInf>Observação da administração municipal</xOutInf></infNFSe>', $xml);
+}
+
+it('unites the ten complementary-information fields the notice lists', function () {
+    $data = (new DanfseDataBuilder)->build(nfsenXmlComTodasAsInfoCompl());
+
+    // Item 2.4.5: rótulos e ordem vêm da observação da linha "INFORMAÇÕES
+    // COMPLEMENTARES"; as notas 7, 8 e 9 fixam os de substituição, obra/imóvel e evento.
+    expect($data->informacoesComplementares)
+        ->toContain('Inf. Cont.: Referente ao contrato')
+        ->toContain('NFS-e Subst.: 33033021211222333000181000000000001026010000010001')
+        ->toContain('Doc. Ref.: NF 4567')
+        ->toContain('Cod. Obra: 12345678901234567890')
+        ->toContain('Insc. Imob.: IM-000123')
+        ->toContain('Cod. Evt.: EVT-2026-001')
+        ->toContain('Doc. Tec.: DRT-99887766')
+        ->toContain('Núm. Ped.: PC-00123')
+        ->toContain('Item Ped.: 7, 8')
+        ->toContain('Inf. A. T. Mun.: Observação da administração municipal');
+});
+
+it('orders and separates the complementary information as the notice prescribes', function () {
+    $data = (new DanfseDataBuilder)->build(nfsenXmlComTodasAsInfoCompl());
+
+    // "As informações devem ser separadas por pipes ( | )", na ordem da tabela.
+    $rotulos = array_map(
+        static fn (string $parte): string => trim(explode(':', $parte)[0]),
+        explode(' | ', $data->informacoesComplementares),
+    );
+
+    expect($rotulos)->toBe([
+        'Inf. Cont.', 'NFS-e Subst.', 'Doc. Ref.', 'Cod. Obra', 'Insc. Imob.',
+        'Cod. Evt.', 'Doc. Tec.', 'Núm. Ped.', 'Item Ped.', 'Inf. A. T. Mun.',
+    ]);
+});
+
+it('drops the label of a complementary field the NFS-e does not have', function () {
+    // "Cod. Obra: -" numa nota que não é de obra gastaria a linha e sugeriria um dado
+    // que não existe.
+    $data = (new DanfseDataBuilder)->build($this->xml);
+
+    expect($data->informacoesComplementares)->toStartWith('Inf. Cont.: ')
+        ->not->toContain('Cod. Obra')
+        ->not->toContain('Insc. Imob.')
+        ->not->toContain('Item Ped.');
+});
+
+it('keeps the fixed totals line out of the complementary information', function () {
+    // Nota 10: a linha é fixa e o corte do texto livre não pode prejudicá-la, então
+    // ela não disputa espaço com os dez campos — vive em DanfseTotaisTributos.
+    $data = (new DanfseDataBuilder)->build($this->xml);
+
+    expect($data->informacoesComplementares)->not->toContain('Totais Aproximados');
+    expect($data->totaisTributos->linhaNt008())
+        ->toBe('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: 4.50% ; Estaduais: 0.10% ; Municipais: 2.00%');
+});
+
+it('reads the monetary totals when the NFS-e reports values instead of percentages', function () {
+    // Nota 10: o campo aceita "valores monetários OU percentuais". Só o percentual
+    // era lido, e uma NFS-e que declarasse vTotTrib saía com três traços.
+    $xml = str_replace(
+        '<pTotTrib><pTotTribFed>4.50</pTotTribFed><pTotTribEst>0.10</pTotTribEst><pTotTribMun>2.00</pTotTribMun>',
+        '<vTotTrib><vTotTribFed>67.50</vTotTribFed><vTotTribEst>1.50</vTotTribEst><vTotTribMun>30.00</vTotTribMun>',
+        (string) preg_replace('/\s+(?=<)/', '', $this->xml),
+    );
+    $xml = str_replace('</pTotTrib>', '</vTotTrib>', $xml);
+
+    $data = (new DanfseDataBuilder)->build($xml);
+
+    expect($data->totaisTributos->federais)->toBe('R$ 67,50');
+    expect($data->totaisTributos->estaduais)->toBe('R$ 1,50');
+    expect($data->totaisTributos->municipais)->toBe('R$ 30,00');
+});
+
+it('skips an empty item among the order items', function () {
+    // gItemPed repete até 99 vezes; um item vazio no meio viraria uma vírgula solta
+    // entre os números, sugerindo um item que não existe.
+    $xml = str_replace(
+        '<gItemPed><xItemPed>7</xItemPed><xItemPed>8</xItemPed></gItemPed>',
+        '<gItemPed><xItemPed>7</xItemPed><xItemPed></xItemPed><xItemPed>8</xItemPed></gItemPed>',
+        nfsenXmlComTodasAsInfoCompl(),
+    );
+
+    $data = (new DanfseDataBuilder)->build($xml);
+
+    expect($data->informacoesComplementares)->toContain('Item Ped.: 7, 8');
+});
