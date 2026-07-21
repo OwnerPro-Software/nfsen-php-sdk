@@ -15,6 +15,23 @@ $xsdPorRaiz = [
     'pedRegEvento' => 'pedRegEvento_v1.01.xsd',
 ];
 
+/**
+ * Qual resposta da API cada fixture representa.
+ *
+ * Só declarar o nome da definition: quais campos ela carrega é o swagger que diz.
+ * Uma expectativa derivada da própria fixture não é expectativa — é eco.
+ */
+$definicaoPorFixture = [
+    'emitir_sucesso.json' => 'NFSePostResponseSucesso',
+    'emitir_rejeicao.json' => 'NFSePostResponseErro',
+    'consultar_nfse.json' => 'NFSeGetResponseSucesso',
+    'consultar_dps.json' => 'DpsGetResponse',
+    'consultar_eventos.json' => 'EventosPostResponseSucesso',
+    'cancelar_sucesso.json' => 'EventosPostResponseSucesso',
+    'cancelar_rejeicao.json' => 'ResponseErro',
+];
+
+/** @param  array<string, string>  $xsdPorRaiz */
 function validateAgainstXsd(string $xml, array $xsdPorRaiz): void
 {
     $doc = new DOMDocument;
@@ -48,42 +65,68 @@ function validateAgainstXsd(string $xml, array $xsdPorRaiz): void
     }
 }
 
+/**
+ * Campos que carregam documento fiscal, lidos do swagger — não da fixture.
+ *
+ * É o que torna a contagem abaixo uma asserção de verdade: renomear
+ * `nfseXmlGZipB64` na fixture faz o esperado continuar 1 e o encontrado virar 0.
+ *
+ * @return list<string>
+ */
+function camposGZipB64DoSwagger(string $definicao): array
+{
+    /** @var array{definitions: array<string, array{properties?: array<string, mixed>}>} $swagger */
+    $swagger = json_decode(
+        (string) file_get_contents(__DIR__.'/../../../storage/schemes/SefinNacional-swagger.json'),
+        true,
+    );
+
+    expect(array_key_exists($definicao, $swagger['definitions']))
+        ->toBeTrue("Definition '{$definicao}' não existe no swagger da SEFIN.");
+
+    return array_values(array_filter(
+        array_keys($swagger['definitions'][$definicao]['properties'] ?? []),
+        fn (string $campo): bool => str_ends_with($campo, 'GZipB64'),
+    ));
+}
+
 it('validates every DANFSe fixture against its XSD', function (string $arquivo) use ($xsdPorRaiz) {
     validateAgainstXsd((string) file_get_contents($arquivo), $xsdPorRaiz);
 })->with(fn (): array => glob(__DIR__.'/../../fixtures/danfse/*.xml') ?: []);
 
-it('validates every XML embedded in a response fixture against its XSD', function (string $arquivo) use ($xsdPorRaiz) {
+it('validates every XML embedded in a response fixture against its XSD', function (string $arquivo) use ($xsdPorRaiz, $definicaoPorFixture) {
+    $nome = basename($arquivo);
+    expect(array_key_exists($nome, $definicaoPorFixture))
+        ->toBeTrue("Fixture {$nome} não declara qual resposta da API representa.");
+
+    $esperados = camposGZipB64DoSwagger($definicaoPorFixture[$nome]);
+
     $dados = json_decode((string) file_get_contents($arquivo), true);
     expect($dados)->toBeArray();
 
-    $validados = 0;
-    foreach ($dados as $chave => $valor) {
-        // Os campos que carregam documento fiscal terminam em GZipB64 por convenção da API.
-        if (! is_string($valor) || ! str_ends_with((string) $chave, 'GZipB64')) {
-            continue;
-        }
-
-        $bruto = base64_decode($valor, true);
-        expect($bruto)->not->toBeFalse("Campo {$chave} não é base64 válido.");
-
-        $xml = @gzdecode((string) $bruto);
-        expect($xml)->not->toBeFalse("Campo {$chave} não descomprime com gzip.");
-
-        validateAgainstXsd((string) $xml, $xsdPorRaiz);
-        $validados++;
-    }
-
-    // Sem isto, um campo renomeado faria o teste passar por vacuidade — o modo de falha
-    // que esta auditoria encontrou duas vezes nos próprios scripts de verificação.
-    expect($validados)->toBe(countGZipB64Fields($arquivo));
-})->with(fn (): array => glob(__DIR__.'/../../fixtures/responses/*.json') ?: []);
-
-function countGZipB64Fields(string $arquivo): int
-{
-    $dados = json_decode((string) file_get_contents($arquivo), true);
-
-    return count(array_filter(
-        is_array($dados) ? array_keys($dados) : [],
+    // O swagger dita quais campos têm de estar lá; a fixture não opina.
+    $presentes = array_values(array_filter(
+        array_keys($dados),
         fn ($chave): bool => str_ends_with((string) $chave, 'GZipB64'),
     ));
-}
+
+    sort($esperados);
+    sort($presentes);
+    expect($presentes)->toBe($esperados, sprintf(
+        '%s carrega [%s], mas %s declara [%s].',
+        $nome,
+        implode(', ', $presentes),
+        $definicaoPorFixture[$nome],
+        implode(', ', $esperados),
+    ));
+
+    foreach ($esperados as $campo) {
+        $bruto = base64_decode((string) $dados[$campo], true);
+        expect($bruto)->not->toBeFalse("Campo {$campo} não é base64 válido.");
+
+        $xml = @gzdecode((string) $bruto);
+        expect($xml)->not->toBeFalse("Campo {$campo} não descomprime com gzip.");
+
+        validateAgainstXsd((string) $xml, $xsdPorRaiz);
+    }
+})->with(fn (): array => glob(__DIR__.'/../../fixtures/responses/*.json') ?: []);
