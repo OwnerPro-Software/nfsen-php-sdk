@@ -312,7 +312,7 @@ function nfsenXmlReaderFiles(): array
             'globais' => [
                 'root' => 'NFSe', 'children' => 'NFSe', 'inf' => $n,
                 'emit' => $n.'/emit', 'valNfse' => $n.'/valores',
-                'infDps' => $d, 'prest' => $d.'/prest', 'regTrib' => $d.'/prest/regTrib',
+                'infDps' => $d, 'IBSCBS' => $d.'/IBSCBS', 'prest' => $d.'/prest', 'regTrib' => $d.'/prest/regTrib',
                 'serv' => $d.'/serv', 'cServ' => $d.'/serv/cServ', 'locPrest' => $d.'/serv/locPrest',
                 'toma' => $d.'/toma', 'valores' => $d.'/valores',
                 'desc' => $d.'/valores/vDescCondIncond', 'trib' => $d.'/valores/trib',
@@ -327,16 +327,22 @@ function nfsenXmlReaderFiles(): array
             'globais' => [
                 'inf' => $n, 'emit' => $n.'/emit', 'enderEmit' => $n.'/emit/enderNac',
                 'prest' => $d.'/prest', 'regTrib' => $d.'/prest/regTrib', 'endPrest' => $d.'/prest/end',
-                'toma' => $d.'/toma', 'interm' => $d.'/interm',
+                'toma' => $d.'/toma', 'interm' => $d.'/interm', 'dest' => $d.'/IBSCBS/dest',
                 // Tomador e intermediário são o mesmo complexType (TCInfoPessoa) e
                 // compartilham um método. O alias tem de render OS DOIS nós: mapeá-lo
                 // só para `toma` faria o intermediário sumir do inventário de campos
                 // cobertos — verde, e cego, que é o defeito que estes testes caçam.
+                // `deInfoPessoa()` lê IM, que TCRTCInfoDest não declara — por isso o
+                // destinatário só entra no método comum, abaixo.
                 'pessoa' => [$d.'/toma', $d.'/interm'],
-                'end' => [$d.'/toma/end', $d.'/interm/end'],
-                'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac'],
             ],
-            'porMetodo' => [],
+            'porMetodo' => [
+                'participanteDe' => [
+                    'pessoa' => [$d.'/toma', $d.'/interm', $d.'/IBSCBS/dest'],
+                    'end' => [$d.'/toma/end', $d.'/interm/end', $d.'/IBSCBS/dest/end'],
+                    'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac', $d.'/IBSCBS/dest/end/endNac'],
+                ],
+            ],
         ],
     ];
 }

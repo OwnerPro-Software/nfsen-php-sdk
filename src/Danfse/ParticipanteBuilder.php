@@ -94,6 +94,18 @@ final readonly class ParticipanteBuilder
         return $this->deInfoPessoa($interm);
     }
 
+    /**
+     * Bloco "DESTINATÁRIO DA OPERAÇÃO" (`infDPS/IBSCBS/dest`).
+     *
+     * Sem inscrição municipal: `TCRTCInfoDest` não declara `IM`, e a NT 008, item
+     * 2.1.5, também não lista o campo para o destinatário — ao contrário do que faz
+     * para prestador, tomador e intermediário.
+     */
+    public function destinatario(SimpleXMLElement $dest): DanfseParticipante
+    {
+        return $this->participanteDe($dest, '-');
+    }
+
     public function naoIdentificado(): DanfseParticipante
     {
         return new DanfseParticipante('-', '-', '-', '-', '-', '-', '-', '-');
@@ -104,6 +116,18 @@ final readonly class ParticipanteBuilder
      * tag, mesma regra de endereço. A única diferença é o nó de onde saem.
      */
     private function deInfoPessoa(SimpleXMLElement $pessoa): DanfseParticipante
+    {
+        return $this->participanteDe($pessoa, $this->str($pessoa->IM, '-'));
+    }
+
+    /**
+     * Parte comum a todos os blocos de participante que não o prestador.
+     *
+     * A inscrição municipal entra pronta porque é o único campo que o destinatário
+     * não tem — ler `$pessoa->IM` aqui resolveria para um caminho que o XSD não
+     * declara sob `IBSCBS/dest`.
+     */
+    private function participanteDe(SimpleXMLElement $pessoa, string $im): DanfseParticipante
     {
         $end = $pessoa->end;
         $endNac = $end->endNac;
@@ -120,7 +144,7 @@ final readonly class ParticipanteBuilder
         return new DanfseParticipante(
             nome: $this->str($pessoa->xNome, '-'),
             cnpjCpf: $identificacao,
-            im: $this->str($pessoa->IM, '-'),
+            im: $im,
             telefone: $this->fmt->phone($this->str($pessoa->fone)),
             email: $this->str($pessoa->email),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.

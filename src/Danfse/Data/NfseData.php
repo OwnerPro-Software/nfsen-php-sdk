@@ -34,6 +34,15 @@ final readonly class NfseData
         public DanfseParticipante $emitente,
         public DanfseParticipante $tomador,
         public ?DanfseParticipante $intermediario,
+        /** Bloco "DESTINATÁRIO DA OPERAÇÃO" (`infDPS/IBSCBS/dest`); null quando ausente. */
+        public ?DanfseParticipante $destinatario,
+        /**
+         * `indDest = 0`: o destinatário é o próprio tomador/adquirente.
+         *
+         * A NT 008 dá a este caso uma frase própria (item 2.4.5, nota 3), diferente
+         * da usada quando não há dados de destinatário (nota 2).
+         */
+        public bool $destinatarioEhTomador,
         public DanfseServico $servico,
         public DanfseTributacaoMunicipal $tribMun,
         public DanfseTributacaoFederal $tribFed,

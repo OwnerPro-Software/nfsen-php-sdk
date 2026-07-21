@@ -121,7 +121,7 @@ it('renders single dash for codigoTribMunicipal when codigo and desc are both em
         ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
         emitidaPor: $base->emitidaPor,
         emitente: $base->emitente, tomador: $base->tomador,
-        intermediario: $base->intermediario,
+        intermediario: $base->intermediario, destinatario: $base->destinatario, destinatarioEhTomador: $base->destinatarioEhTomador,
         servico: new DanfseServico(
             codigoTribNacional: '01.07.00', descTribNacional: 'Desenvolvimento',
             codigoTribMunicipal: '-', descTribMunicipal: '-',
@@ -169,7 +169,7 @@ it('escapes HTML in data fields (XSS prevention)', function (): void {
         numeroDps: '1', serieDps: '1', emissaoDps: '-',
         ambiente: NfseAmbiente::PRODUCAO,
         situacao: '-', finalidade: '-', emitidaPor: '-',
-        emitente: $malicious, tomador: sampleParticipante(), intermediario: null,
+        emitente: $malicious, tomador: sampleParticipante(), intermediario: null, destinatario: null, destinatarioEhTomador: false,
         servico: new DanfseServico('-', '-', '-', '-', '-', '-', '-', '-'),
         tribMun: new DanfseTributacaoMunicipal('-', '-', '-', '-', '-', '-', '-', '-'),
         tribFed: new DanfseTributacaoFederal('-', '-', '-', '-', '-'),
@@ -185,4 +185,27 @@ it('escapes HTML in data fields (XSS prevention)', function (): void {
     expect($html)->toContain('&lt;script&gt;');
     // Aspas simples também devem ser escapadas (garante ENT_QUOTES, não só ENT_COMPAT).
     expect($html)->toContain('&#039;xss&#039;');
+});
+
+it('states the destinatário is the tomador instead of calling it unidentified', function (): void {
+    // NT 008, item 2.4.5: nota 3 para destinatário igual ao tomador, nota 2 para
+    // destinatário sem dados. São frases diferentes porque dizem coisas diferentes.
+    $base = sampleData();
+    $data = new NfseData(
+        chaveAcesso: $base->chaveAcesso, numeroNfse: $base->numeroNfse,
+        competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
+        numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
+        ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
+        emitidaPor: $base->emitidaPor,
+        emitente: $base->emitente, tomador: $base->tomador, intermediario: null,
+        destinatario: null, destinatarioEhTomador: true,
+        servico: $base->servico, tribMun: $base->tribMun, tribFed: $base->tribFed,
+        totais: $base->totais, totaisTributos: $base->totaisTributos,
+        informacoesComplementares: $base->informacoesComplementares,
+    );
+
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))->render($data);
+
+    expect($html)->toContain('O DESTINATÁRIO É O PRÓPRIO TOMADOR/ADQUIRENTE DA OPERAÇÃO');
+    expect($html)->not->toContain('DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO');
 });

@@ -182,7 +182,7 @@
         <table>
             <tr>
                 <td style="width: 25%; font-weight: bold; font-size: 7pt;">
-                    <span class="section-title">TOMADOR DO SERVIÇO</span>
+                    <span class="section-title">TOMADOR / ADQUIRENTE</span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">CNPJ / CPF / NIF</span>
@@ -224,13 +224,66 @@
         </table>
     </div>
 
+    <!-- Destinatário da Operação -->
+    <?php if ($data->destinatarioEhTomador): ?>
+    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+        O DESTINATÁRIO É O PRÓPRIO TOMADOR/ADQUIRENTE DA OPERAÇÃO
+    </div>
+    <?php elseif ($data->destinatario): ?>
+    <div class="bordered-section">
+        <table>
+            <tr>
+                <td style="width: 25%; font-weight: bold; font-size: 7pt;">
+                  <span class="section-title">DESTINATÁRIO DA OPERAÇÃO</span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">CNPJ / CPF / NIF</span>
+                    <span class="value"><?= $h($data->destinatario->cnpjCpf) ?></span>
+                </td>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Telefone</span>
+                    <span class="value"><?= $h($data->destinatario->telefone) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Nome / Nome Empresarial</span>
+                    <span class="value"><?= $h($data->destinatario->nome) ?></span>
+                </td>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">E-mail</span>
+                    <span class="value"><?= $h($data->destinatario->email) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Endereço</span>
+                    <span class="value"><?= $h($data->destinatario->endereco) ?></span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">Município</span>
+                    <span class="value"><?= $h($data->destinatario->municipio) ?></span>
+                </td>
+                <td style="width: 25%;">
+                    <span class="label">CEP</span>
+                    <span class="value"><?= $h($data->destinatario->cep) ?></span>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <?php else: ?>
+    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+        DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e
+    </div>
+    <?php endif; ?>
+
     <!-- Intermediário -->
     <?php if ($data->intermediario !== null): ?>
     <div class="bordered-section">
         <table>
             <tr>
                 <td style="width: 25%; font-weight: bold; font-size: 7pt;">
-                  <span class="section-title">INTERMEDIÁRIO DO SERVIÇO</span>
+                  <span class="section-title">INTERMEDIÁRIO DA OPERAÇÃO</span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">CNPJ / CPF</span>
@@ -273,7 +326,7 @@
     </div>
     <?php else: ?>
     <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
-        INTERMEDIÁRIO DO SERVIÇO NÃO IDENTIFICADO NA NFS-e
+        INTERMEDIÁRIO DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e
     </div>
     <?php endif; ?>
 

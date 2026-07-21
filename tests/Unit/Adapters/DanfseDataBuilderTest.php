@@ -849,3 +849,95 @@ it('shows a dash for a status code the layout does not define', function () {
 
     expect($data->situacao)->toBe('-');
 });
+
+// NT 008, item 2.1.5: o DANFSe tem um bloco DESTINATÁRIO DA OPERAÇÃO, lido de
+// infDPS/IBSCBS/dest. O SDK não o coletava — e ausência não deixa rastro: não há
+// caminho errado para detectar, o bloco simplesmente não saía no documento.
+it('reads the destinatário block from IBSCBS/dest', function () {
+    // IBSCBS vem depois de valores em TCInfDPS — inserir antes de <serv> geraria
+    // XML fora da ordem do schema.
+    $xml = str_replace(
+        '</infDPS>',
+        '<IBSCBS>
+                    <dest>
+                        <CNPJ>91712343000134</CNPJ>
+                        <xNome>DESTINATARIO DA OPERACAO LTDA</xNome>
+                        <end>
+                            <endNac>
+                                <cMun>3550308</cMun>
+                                <CEP>01310100</CEP>
+                            </endNac>
+                            <xLgr>Avenida Destino</xLgr>
+                            <nro>500</nro>
+                            <xCpl>Andar 3</xCpl>
+                            <xBairro>Centro</xBairro>
+                        </end>
+                        <fone>1155554444</fone>
+                        <email>destinatario@example.com</email>
+                    </dest>
+                </IBSCBS>
+            </infDPS>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->destinatario?->nome)->toBe('DESTINATARIO DA OPERACAO LTDA');
+    expect($data->destinatario?->cnpjCpf)->toBe('91.712.343/0001-34');
+    expect($data->destinatario?->telefone)->toBe('(11) 5555-4444');
+    expect($data->destinatario?->email)->toBe('destinatario@example.com');
+    expect($data->destinatario?->endereco)->toBe('Avenida Destino, 500, Andar 3, Centro');
+    expect($data->destinatario?->municipio)->toBe('São Paulo - SP');
+    expect($data->destinatario?->cep)->toBe('01310-100');
+});
+
+it('leaves the destinatário null when the NFS-e predates the tax reform', function () {
+    // IBSCBS e dest são minOccurs=0: NFS-e anterior à reforma não os traz, e o
+    // template imprime "NÃO IDENTIFICADO" em vez de um bloco vazio.
+    $data = $this->builder->build($this->xml);
+
+    expect($data->destinatario)->toBeNull();
+});
+
+it('shows a dash for the destinatário municipal registration the layout omits', function () {
+    // TCRTCInfoDest não declara IM, e a NT 2.1.5 não lista o campo para este bloco.
+    $xml = str_replace(
+        '</infDPS>',
+        '<IBSCBS><dest><CNPJ>91712343000134</CNPJ></dest></IBSCBS></infDPS>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->destinatario?->im)->toBe('-');
+});
+
+// NT 008, item 2.4.5, notas 2 e 3: são dois casos com frases distintas. `indDest`
+// (minOccurs=1 em IBSCBS) é quem os separa — sem lê-lo, uma NFS-e cujo destinatário
+// é o próprio tomador saía como "não identificado", que diz outra coisa.
+it('marks the destinatário as the tomador when indDest says so', function () {
+    $xml = str_replace(
+        '</infDPS>',
+        '<IBSCBS><indDest>0</indDest></IBSCBS></infDPS>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->destinatarioEhTomador)->toBeTrue();
+    expect($data->destinatario)->toBeNull();
+});
+
+it('does not claim the destinatário is the tomador when indDest says otherwise', function () {
+    $xml = str_replace(
+        '</infDPS>',
+        '<IBSCBS><indDest>1</indDest></IBSCBS></infDPS>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->destinatarioEhTomador)->toBeFalse();
+});
+
+it('does not claim the destinatário is the tomador when there is no IBSCBS block', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->destinatarioEhTomador)->toBeFalse();
+});

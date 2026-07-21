@@ -22,8 +22,11 @@ $FIXTURE = __DIR__.'/../../fixtures/nt008/campos-2.4.5.json';
  */
 $TAGS_SEM_ELEMENTO = [
     'id' => 'atributo Id de infNFSe, não elemento — a expansão do XSD só cataloga elementos',
-    'vPIS' => 'tag do bloco IBS/CBS ausente do XSD v1.01 distribuído neste repositório',
-    'vCOFINS' => 'idem',
+    // Não é ausência: o XSD declara vPis/vCofins sob tribFed/piscofins. A NT escreve
+    // as duas em caixa alta, e a comparação aqui é sensível a caixa de propósito —
+    // casar ignorando caixa esconderia uma tag de fato errada.
+    'vPIS' => 'a NT grafa em caixa alta a tag que o XSD declara como vPis',
+    'vCOFINS' => 'idem, para vCofins',
 ];
 
 /**
@@ -119,15 +122,6 @@ $NAO_LIDOS = [
     'TRIBUTAÇÃO FEDERAL (EXCETO CBS) :: DESCRIÇÃO CONTRIB. SOCIAIS - RETIDAS',
     'VALOR TOTAL DA NFS-E :: TOTAL DO IBS/CBS',
     'VALOR TOTAL DA NFS-E :: VALOR LÍQUIDO DA NFS-e + IBS/CBS',
-
-    // Bloco inteiro ausente: o destinatário da operação (IBSCBS/dest).
-    'DESTINÁRIO DA OPERAÇÃO :: CNPJ / CPF / NIF',
-    'DESTINÁRIO DA OPERAÇÃO :: TELEFONE',
-    'DESTINÁRIO DA OPERAÇÃO :: NOME / NOME EMPRESARIAL',
-    'DESTINÁRIO DA OPERAÇÃO :: MUNICÍPIO / SIGLA UF',
-    'DESTINÁRIO DA OPERAÇÃO :: CÓDIGO IBGE / CEP',
-    'DESTINÁRIO DA OPERAÇÃO :: ENDEREÇO',
-    'DESTINÁRIO DA OPERAÇÃO :: E-MAIL',
 
     // Bloco inteiro ausente: tributação IBS/CBS (reforma tributária).
     'TRIBUTAÇÃO IBS / CBS :: CST / CCLASSTRIB',

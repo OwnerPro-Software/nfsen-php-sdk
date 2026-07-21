@@ -15,6 +15,7 @@ use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\Formatter;
 use OwnerPro\Nfsen\Danfse\ParticipanteBuilder;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
 use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
@@ -106,6 +107,12 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $ambiente = NfseAmbiente::tryFrom($this->str($infDps->tpAmb, '1')) ?? NfseAmbiente::HOMOLOGACAO;
 
         $intermediario = isset($infDps->interm) ? $this->participantes->intermediario($infDps->interm) : null;
+        // IBSCBS e dest são minOccurs=0: NFS-e anterior à reforma não os traz.
+        $destinatario = isset($infDps->IBSCBS->dest) ? $this->participantes->destinatario($infDps->IBSCBS->dest) : null;
+        // indDest é minOccurs=1 dentro de IBSCBS e distingue os dois casos que a NT
+        // trata com frases diferentes: destinatário igual ao tomador (nota 3) e
+        // destinatário sem dados (nota 2). Sem ele, os dois saíam como "não identificado".
+        $destinatarioEhTomador = IndDest::tryFrom($this->str($infDps->IBSCBS->indDest)) === IndDest::Tomador;
 
         return new NfseData(
             chaveAcesso: $chave,
@@ -124,6 +131,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             emitente: $this->participantes->prestador($emit, $inf, $prest),
             tomador: $this->participantes->tomador($toma),
             intermediario: $intermediario,
+            destinatario: $destinatario,
+            destinatarioEhTomador: $destinatarioEhTomador,
             servico: $this->buildServico($inf, $serv, $cServ),
             tribMun: $this->buildTribMun($inf, $tribMun, $valores, $regTrib),
             tribFed: $this->buildTribFed($tribFed),

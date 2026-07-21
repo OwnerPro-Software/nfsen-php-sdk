@@ -49,6 +49,8 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
         emitente: sampleParticipante('EMITENTE LTDA'),
         tomador: sampleParticipante('TOMADOR S.A.'),
         intermediario: $interm,
+        destinatario: null,
+        destinatarioEhTomador: false,
         servico: new DanfseServico(
             codigoTribNacional: '01.07.00', descTribNacional: 'Desenvolvimento de software',
             codigoTribMunicipal: '007', descTribMunicipal: 'Desenvolvimento',
