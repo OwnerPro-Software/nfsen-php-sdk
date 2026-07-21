@@ -146,8 +146,20 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             tribIbsCbs: $this->buildTribIbsCbs($inf, $infDps, $valores, $trib),
             totais: $this->buildTotais($tribMun, $tribFed, $valores, $valNfse, $inf),
             totaisTributos: $this->buildTotaisTributos($totTrib),
-            // Idem: o campo de informações complementares tem 2000 caracteres.
-            informacoesComplementares: $this->fmt->limit($this->str($serv->infoCompl->xInfComp), 1997), // @pest-mutate-ignore IncrementInteger,DecrementInteger — 2000 menos as reticências, como nos demais campos da NT.
+            // Corte NOSSO, não da NT: ela dá 2000 caracteres a este campo, mas também
+            // exige (item 2.2) que o DANFSe caiba numa página — e com todos os blocos
+            // presentes as duas regras não cabem juntas neste template. Escolhemos a
+            // da página, porque um documento de duas páginas é inválido, enquanto um
+            // texto cortado permanece legível e as reticências mostram que há mais.
+            //
+            // 1000 saiu de medição, não de margem arbitrária: com a descrição no
+            // máximo (1300), texto realista em caixa alta — que muitos emissores
+            // usam — vira duas páginas a partir de 1100. Não é garantia: o número de
+            // caracteres não determina a altura renderizada, e texto com glifos
+            // muito largos estoura antes. A correção de verdade é reconstruir o
+            // layout sobre as medidas do item 2.4.5; enquanto isso, este corte
+            // cobre o texto que aparece na prática.
+            informacoesComplementares: $this->fmt->limit($this->str($serv->infoCompl->xInfComp), 1000), // @pest-mutate-ignore IncrementInteger,DecrementInteger — limiar medido; 999/1001 não representa regressão.
         );
     }
 

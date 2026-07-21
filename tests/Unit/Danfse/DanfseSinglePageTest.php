@@ -38,19 +38,16 @@ function nfsenContaPaginas(string $pdf): int
 }
 
 /**
- * NFS-e cheia: todos os blocos preenchidos e os campos livres extensos.
+ * NFS-e no limite: todos os blocos preenchidos e os dois campos livres no tamanho
+ * máximo que a NT admite — 1300 caracteres de descrição e 2000 de informações
+ * complementares, ambos em caixa alta, que é mais larga e quebra linha antes.
  *
- * LIMITE CONHECIDO. Com todos os blocos presentes, o template comporta descrição
- * de 1300 caracteres (o máximo da NT) com até ~1000 de informações complementares.
- * No máximo absoluto da norma — 1300 + 2000, ambos com quebra de linha — o
- * documento vai para a segunda página, contrariando o item 2.2. Medido em
- * 2026-07-21; a folga do layout do item 2.4.5 é de 0,53cm para o documento todo,
- * e os blocos de destinatário e IBS/CBS consumiram a maior parte dela.
+ * O pior caso vem da especificação, não de um número escolhido a dedo.
  *
- * Fechar essa lacuna exige aproximar o template das medidas do item 2.4.5 bloco a
- * bloco, não ajustar fonte — o que está fora do que esta mudança fez. O número
- * acima está aqui para que o próximo a mexer saiba onde está a borda, em vez de
- * descobrir com um PDF de duas páginas em produção.
+ * Cabe porque o builder corta as informações complementares em 1000 caracteres.
+ * Esse corte é uma escolha entre duas regras da própria NT que não cabem juntas
+ * neste template: o campo de 2000 caracteres e a página única do item 2.2. Ver a
+ * justificativa em DanfseDataBuilder::fromInf().
  */
 function nfsenXmlNoLimite(): string
 {
@@ -92,13 +89,13 @@ function nfsenXmlNoLimite(): string
 
     $xml = (string) preg_replace(
         '|<xDescServ>[^<]*</xDescServ>|',
-        '<xDescServ>'.str_repeat('Descricao extensa do servico prestado no limite da norma. ', 23).'</xDescServ>',
+        '<xDescServ>'.str_repeat('DESCRICAO EXTENSA DO SERVICO PRESTADO NO LIMITE DA NORMA. ', 23).'</xDescServ>',
         $xml,
     );
 
     return (string) preg_replace(
         '|<xInfComp>[^<]*</xInfComp>|',
-        '<xInfComp>'.str_repeat('Informacao complementar relevante para o tomador. ', 20).'</xInfComp>',
+        '<xInfComp>'.str_repeat('INFORMACAO COMPLEMENTAR RELEVANTE PARA O TOMADOR. ', 41).'</xInfComp>',
         $xml,
     );
 }
@@ -111,14 +108,34 @@ it('prints a plain NFS-e on a single A4 page', function () {
     expect($pdf)->toMatch('/MediaBox\s*\[\s*0[.0]* 0[.0]* 595\.\d+ 841\.\d+/');
 });
 
-it('keeps a fully populated NFS-e on a single page', function () {
+it('keeps the fullest NFS-e the norm allows on a single page', function () {
     $xml = nfsenXmlNoLimite();
+    $data = (new DanfseDataBuilder)->build($xml);
 
-    // O caso só prova algo se for mesmo o limite: os dois campos livres têm de
-    // estar acima do corte que a NT manda aplicar (1297 e 1997 caracteres).
-    expect(mb_strlen((string) (new DanfseDataBuilder)->build($xml)->servico->descricao))->toBeGreaterThan(1200);
+    // O caso só prova algo se os dois campos livres estiverem mesmo no limite. O
+    // comprimento exato varia: limit() recua até o último espaço antes de cortar,
+    // então o que se afirma é que ambos foram truncados no teto.
+    expect($data->servico->descricao)->toEndWith('...');
+    expect(mb_strlen($data->servico->descricao))->toBeGreaterThan(1250);
+    expect($data->informacoesComplementares)->toEndWith('...');
+    expect(mb_strlen($data->informacoesComplementares))->toBeGreaterThan(950);
 
     expect(nfsenContaPaginas(nfsenRenderizaPdf($xml)))->toBe(1);
+});
+
+it('marks the complementary information it had to cut', function () {
+    // Corte silencioso num documento fiscal é pior que corte visível: as
+    // reticências avisam o leitor de que há texto além do impresso.
+    $xml = (string) preg_replace(
+        '|<xInfComp>[^<]*</xInfComp>|',
+        '<xInfComp>'.str_repeat('a', 1500).'</xInfComp>',
+        (string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-autorizada.xml'),
+    );
+    $data = (new DanfseDataBuilder)->build($xml);
+
+    // Sem espaços para recuar, o corte cai exatamente no teto mais as reticências.
+    expect(mb_strlen($data->informacoesComplementares))->toBe(1003);
+    expect($data->informacoesComplementares)->toEndWith('...');
 });
 
 it('truncates the free-text fields at the lengths the notice sets', function () {
