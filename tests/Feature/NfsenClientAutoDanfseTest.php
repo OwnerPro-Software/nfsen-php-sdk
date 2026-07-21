@@ -27,7 +27,7 @@ function makeDanfseAutorizadoApiResponse(): array
     $gzip = base64_encode((string) gzencode($xml));
 
     return [
-        'chaveAcesso' => '3303302112233450000195000000000000100000000001',
+        'chaveAcesso' => '33033021211222333000181000000000001026010000010000',
         'nfseXmlGZipB64' => $gzip,
         'idDps' => 'DPS1',
         'tipoAmbiente' => 2,
@@ -55,7 +55,7 @@ it('forStandalone com danfse array: emit retorna pdf %PDF- e conteúdo esperado'
 
     $text = (new PdfParser)->parseContent((string) $resp->pdf)->getText();
 
-    expect($text)->toContain('3303302112233450000195000000000000100000000001');
+    expect($text)->toContain('33033021211222333000181000000000001026010000010000');
 })->with('dpsData');
 
 it('forStandalone sem danfse: pdf é null e pdfErrors vazio', function (DpsData $data) {

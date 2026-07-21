@@ -20,7 +20,7 @@ it('produces HTML containing chave de acesso', function (): void {
 
     $html = $r->render(sampleData());
 
-    expect($html)->toContain('3303302112233450000195000000000000100000000001');
+    expect($html)->toContain('33033021211222333000181000000000001026010000010000');
 });
 
 it('embeds QR code pointing to production consulta URL when ambiente is PRODUCAO', function (): void {
@@ -29,7 +29,7 @@ it('embeds QR code pointing to production consulta URL when ambiente is PRODUCAO
     $html = $r->render(sampleData(NfseAmbiente::PRODUCAO));
 
     expect($html)->toContain('FAKEQR_');
-    $expectedPayload = 'https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=3303302112233450000195000000000000100000000001';
+    $expectedPayload = 'https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=33033021211222333000181000000000001026010000010000';
     expect($html)->toContain(base64_encode($expectedPayload));
 });
 
@@ -38,7 +38,7 @@ it('embeds QR code pointing to homologacao consulta URL when ambiente is HOMOLOG
 
     $html = $r->render(sampleData(NfseAmbiente::HOMOLOGACAO));
 
-    $expectedPayload = 'https://hom.nfse.fazenda.gov.br/ConsultaPublica/?tpc=1&chave=3303302112233450000195000000000000100000000001';
+    $expectedPayload = 'https://hom.nfse.fazenda.gov.br/ConsultaPublica/?tpc=1&chave=33033021211222333000181000000000001026010000010000';
     expect($html)->toContain(base64_encode($expectedPayload));
 });
 

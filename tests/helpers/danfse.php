@@ -39,7 +39,7 @@ function sampleParticipante(string $nome = 'ACME LTDA'): DanfseParticipante
 function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null, string $codigoNbs = '-'): NfseData
 {
     return new NfseData(
-        chaveAcesso: '3303302112233450000195000000000000100000000001',
+        chaveAcesso: '33033021211222333000181000000000001026010000010000',
         numeroNfse: '10', competencia: '15/01/2026', emissaoNfse: '15/01/2026 14:30:00',
         numeroDps: '5', serieDps: '20261', emissaoDps: '15/01/2026 14:00:00',
         ambiente: $ambiente,

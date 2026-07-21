@@ -16,7 +16,7 @@ it('builds NfseData from authorized XML', function () {
     $data = $this->builder->build($this->xml);
 
     expect($data)->toBeInstanceOf(NfseData::class);
-    expect($data->chaveAcesso)->toBe('3303302112233450000195000000000000100000000001');
+    expect($data->chaveAcesso)->toBe('33033021211222333000181000000000001026010000010000');
     expect($data->numeroNfse)->toBe('10');
 });
 
@@ -25,6 +25,7 @@ it('extracts emitente fields completely', function () {
 
     expect($data->emitente->nome)->toBe('EMPRESA EXEMPLO DESENVOLVIMENTO LTDA');
     expect($data->emitente->cnpjCpf)->toBe('11.222.333/0001-81');
+    expect($data->emitente->im)->toBe('987654');
     expect($data->emitente->telefone)->toBe('(21) 3000-1234');
     expect($data->emitente->email)->toBe('financeiro@example.org');
     expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Centro');
@@ -85,6 +86,13 @@ it('preserves tomador email case', function () {
     expect($data->tomador->email)->toBe('CONTATO@clienteficticio.com.br');
 });
 
+it('returns dash for emitente IM when empty', function () {
+    $xml = str_replace('<IM>987654</IM>', '<IM></IM>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->emitente->im)->toBe('-');
+});
+
 it('returns dash for tomador IM when empty', function () {
     $xml = str_replace('<IM>654321</IM>', '<IM></IM>', $this->xml);
     $data = $this->builder->build($xml);
@@ -111,7 +119,7 @@ it('preserves intermediario email case', function () {
 });
 
 it('returns dash for intermediario IM when empty', function () {
-    $xml = str_replace('<IMPrestMun>123456</IMPrestMun>', '<IMPrestMun></IMPrestMun>', $this->xml);
+    $xml = str_replace('<IM>123456</IM>', '<IM></IM>', $this->xml);
     $data = $this->builder->build($xml);
 
     expect($data->intermediario?->im)->toBe('-');
@@ -232,7 +240,8 @@ it('extracts tribMun fields including percent formatting', function () {
 });
 
 it('returns dash for tribMun optional fields when absent', function () {
-    $xml = preg_replace('|<pAliq>[^<]+</pAliq>|', '<pAliq></pAliq>', $this->xml);
+    $xml = preg_replace('|<pAliqAplic>[^<]+</pAliqAplic>|', '<pAliqAplic></pAliqAplic>', $this->xml);
+    $xml = preg_replace('|<pAliq>[^<]+</pAliq>|', '<pAliq></pAliq>', (string) $xml);
     $xml = preg_replace('|<vBC>[^<]+</vBC>|', '<vBC></vBC>', (string) $xml);
     $xml = preg_replace('|<vISSQN>[^<]+</vISSQN>|', '<vISSQN></vISSQN>', (string) $xml);
     $data = $this->builder->build((string) $xml);
@@ -240,6 +249,24 @@ it('returns dash for tribMun optional fields when absent', function () {
     expect($data->tribMun->aliquota)->toBe('-');
     expect($data->tribMun->bcIssqn)->toBe('-');
     expect($data->tribMun->issqnApurado)->toBe('-');
+});
+
+it('prefers pAliqAplic over the emitter-declared tribMun/pAliq', function () {
+    // pAliqAplic é a alíquota que o fisco aplicou; tribMun/pAliq é a declarada pelo
+    // emitente. Divergindo, a DANFSE tem de exibir a apurada.
+    $xml = str_replace('<pAliqAplic>2.00</pAliqAplic>', '<pAliqAplic>3.50</pAliqAplic>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->aliquota)->toBe('3.50%');
+});
+
+it('falls back to tribMun/pAliq when pAliqAplic is absent', function () {
+    // Município não parametrizado: o fisco não devolve pAliqAplic e a alíquota
+    // declarada pelo emitente é a única disponível.
+    $xml = preg_replace('|<pAliqAplic>[^<]+</pAliqAplic>|', '', $this->xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->tribMun->aliquota)->toBe('2.00%');
 });
 
 it('extracts tribFed fields', function () {
@@ -328,6 +355,15 @@ it('returns dash for issqnRetido when tpRetISSQN is 1 (não retido)', function (
 it('returns dash for descontos when absent', function () {
     $xml = preg_replace('|<vDescCond>[^<]+</vDescCond>|', '<vDescCond></vDescCond>', $this->xml);
     $xml = preg_replace('|<vDescIncond>[^<]+</vDescIncond>|', '<vDescIncond></vDescIncond>', (string) $xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->totais->descontoCondicionado)->toBe('-');
+    expect($data->totais->descontoIncondicionado)->toBe('-');
+});
+
+it('returns dash for descontos when vDescCondIncond block is omitted', function () {
+    // vDescCondIncond é minOccurs=0 no TCInfoValores.
+    $xml = preg_replace('|<vDescCondIncond>.*?</vDescCondIncond>|s', '', $this->xml);
     $data = $this->builder->build((string) $xml);
 
     expect($data->totais->descontoCondicionado)->toBe('-');
@@ -545,7 +581,7 @@ it('preserves Id when it does not start with NFS prefix', function () {
     $data = $this->builder->build($xml);
 
     // Sem prefixo NFS, a chave mantém os 3 primeiros chars
-    expect($data->chaveAcesso)->toBe('XXX3303302112233450000195000000000000100000000001');
+    expect($data->chaveAcesso)->toBe('XXX33033021211222333000181000000000001026010000010000');
 });
 
 it('trims whitespace from address parts when joining', function () {

@@ -43,7 +43,7 @@ it('generated PDF contains chave de acesso and emitente', function () {
 
     $text = (new PdfParser)->parseContent($resp->pdf)->getText();
 
-    expect($text)->toContain('3303302112233450000195000000000000100000000001');
+    expect($text)->toContain('33033021211222333000181000000000001026010000010000');
     expect($text)->toContain('EMPRESA EXEMPLO DESENVOLVIMENTO');
 });
 
@@ -59,7 +59,7 @@ it('toHtml returns HTML string', function () {
     $html = $this->client->danfse()->toHtml($this->xml);
 
     expect($html)->toContain('DANFSe');
-    expect($html)->toContain('3303302112233450000195000000000000100000000001');
+    expect($html)->toContain('33033021211222333000181000000000001026010000010000');
 });
 
 it('toHtml throws on malformed XML', function () {

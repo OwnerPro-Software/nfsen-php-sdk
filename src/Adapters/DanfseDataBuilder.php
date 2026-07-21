@@ -82,7 +82,6 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $serv = $infDps->serv;
         $cServ = $serv->cServ;
         $valores = $infDps->valores;
-        $vServPrest = $valores->vServPrest;
         $trib = $valores->trib;
         $tribMun = $trib->tribMun;
         $tribFed = $trib->tribFed;
@@ -108,9 +107,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             tomador: $this->buildTomador($toma),
             intermediario: $intermediario,
             servico: $this->buildServico($inf, $serv, $cServ),
-            tribMun: $this->buildTribMun($inf, $tribMun, $vServPrest, $regTrib),
+            tribMun: $this->buildTribMun($inf, $tribMun, $valores, $regTrib),
             tribFed: $this->buildTribFed($tribFed),
-            totais: $this->buildTotais($vServPrest, $tribMun, $tribFed, $valNfse),
+            totais: $this->buildTotais($tribMun, $tribFed, $valores, $valNfse),
             totaisTributos: $this->buildTotaisTributos($totTrib),
             informacoesComplementares: $this->str($serv->infoCompl->xInfComp),
         );
@@ -134,7 +133,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         return new DanfseParticipante(
             nome: $this->str($emit->xNome, '-'),
             cnpjCpf: $this->fmt->cnpjCpf($doc),
-            im: '-',
+            im: $this->str($emit->IM, '-'),
             telefone: $this->fmt->phone($this->str($emit->fone)),
             email: $this->str($emit->email),
             endereco: $endereco !== '' ? $endereco : '-',
@@ -157,12 +156,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
-        $im = $this->str($toma->IM);
-
         return new DanfseParticipante(
             nome: $this->str($toma->xNome, '-'),
             cnpjCpf: $this->fmt->cnpjCpf($doc),
-            im: $im !== '' ? $im : '-',
+            im: $this->str($toma->IM, '-'),
             telefone: $this->fmt->phone($this->str($toma->fone)),
             email: $this->str($toma->email),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
@@ -179,12 +176,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
-        $im = $this->str($interm->IMPrestMun);
-
         return new DanfseParticipante(
             nome: $this->str($interm->xNome, '-'),
             cnpjCpf: $this->fmt->cnpjCpf($doc),
-            im: $im !== '' ? $im : '-',
+            im: $this->str($interm->IM, '-'),
             telefone: $this->fmt->phone($this->str($interm->fone)),
             email: $this->str($interm->email),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
@@ -221,18 +216,23 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     private function buildTribMun(
         SimpleXMLElement $inf,
         SimpleXMLElement $tribMun,
-        SimpleXMLElement $vServPrest,
+        SimpleXMLElement $valores,
         SimpleXMLElement $regTrib,
     ): DanfseTributacaoMunicipal {
-        $vBC = $this->str($tribMun->vBC);
-        $pAliq = $this->str($tribMun->pAliq);
-        $vISSQN = $this->str($tribMun->vISSQN);
+        // vBC e vISSQN são os valores apurados pelo fisco: vivem em infNFSe/valores
+        // (TCValoresNFSe), não em infDPS/valores/trib/tribMun (TCTribMunicipal).
+        $valNfse = $inf->valores;
+        $vBC = $this->str($valNfse->vBC);
+        $vISSQN = $this->str($valNfse->vISSQN);
+        // pAliqAplic é a alíquota que o fisco aplicou sobre a BC; tribMun/pAliq é a
+        // declarada pelo emitente, exigida só quando o município não é parametrizado.
+        $pAliq = $this->str($valNfse->pAliqAplic, $this->str($tribMun->pAliq));
 
         return new DanfseTributacaoMunicipal(
             tributacaoIssqn: TribISSQN::labelOf($this->str($tribMun->tribISSQN)),
             municipioIncidencia: $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
             regimeEspecial: RegEspTrib::labelOf($this->str($regTrib->regEspTrib)),
-            valorServico: $this->fmt->currency($this->str($vServPrest->vServ)),
+            valorServico: $this->fmt->currency($this->str($valores->vServPrest->vServ)),
             bcIssqn: $vBC !== '' ? $this->fmt->currency($vBC) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             aliquota: $pAliq !== '' ? $pAliq.'%' : '-',
             retencaoIssqn: TpRetISSQN::labelOf($this->str($tribMun->tpRetISSQN)),
@@ -259,24 +259,28 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     }
 
     private function buildTotais(
-        SimpleXMLElement $vServPrest,
         SimpleXMLElement $tribMun,
         SimpleXMLElement $tribFed,
+        SimpleXMLElement $valores,
         SimpleXMLElement $valNfse,
     ): DanfseTotais {
-        $vISSQN = $this->str($tribMun->vISSQN);
+        $vISSQN = $this->str($valNfse->vISSQN);
         $tpRet = $this->str($tribMun->tpRetISSQN, '1');
         $issqnRetido = ($vISSQN !== '' && $tpRet !== '1') ? $this->fmt->currency($vISSQN) : '-'; // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
 
         $pc = $tribFed->piscofins;
-        $vDescCond = $this->str($tribMun->vDescCond);
-        $vDescIncond = $this->str($tribMun->vDescIncond);
+        // Descontos vivem em infDPS/valores/vDescCondIncond (TCVDescCondIncond, minOccurs=0).
+        $desc = $valores->vDescCondIncond;
+        $vDescCond = $this->str($desc?->vDescCond); // @pest-mutate-ignore RemoveNullSafeOperator — ?-> previne warning quando <vDescCondIncond> ausente; str(?SimpleXMLElement) já normaliza null.
+        $vDescIncond = $this->str($desc?->vDescIncond); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
 
         return new DanfseTotais(
-            valorServico: $this->fmt->currency($this->str($vServPrest->vServ)),
+            valorServico: $this->fmt->currency($this->str($valores->vServPrest->vServ)),
             descontoCondicionado: $vDescCond !== '' ? $this->fmt->currency($vDescCond) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             descontoIncondicionado: $vDescIncond !== '' ? $this->fmt->currency($vDescIncond) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
             issqnRetido: $issqnRetido,
+            // Soma local em vez de valores/vTotalRet: aquele campo é Σ(vRetCP + vRetIRRF
+            // + vRetCSLL + ISSQN retido), e a DANFSE exibe o ISSQN retido em linha própria.
             retencoesFederais: $this->sumCurrency(
                 $this->str($tribFed->vRetIRRF),
                 $this->str($tribFed->vRetCP),
