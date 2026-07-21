@@ -13,6 +13,7 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoFederal;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\Formatter;
+use OwnerPro\Nfsen\Danfse\Identificacao;
 use OwnerPro\Nfsen\Danfse\Municipios;
 use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegApTribSN;
@@ -34,7 +35,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 {
     private const string NFSE_NS = 'http://www.sped.fazenda.gov.br/nfse';
 
-    public function __construct(private Formatter $fmt = new Formatter) {}
+    public function __construct(
+        private Formatter $fmt = new Formatter,
+        private Identificacao $identificacao = new Identificacao,
+    ) {}
 
     public function build(string $xmlNfse): NfseData
     {
@@ -110,7 +114,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             serieDps: $this->str($infDps->serie, '-'),
             emissaoDps: $this->fmt->dateTime($this->str($infDps->dhEmi)),
             ambiente: $ambiente,
-            emitente: $this->buildEmitente($emit, $inf, $regTrib),
+            emitente: $this->buildEmitente($emit, $inf, $prest),
             tomador: $this->buildTomador($toma),
             intermediario: $intermediario,
             servico: $this->buildServico($inf, $serv, $cServ),
@@ -140,10 +144,19 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         return $node;
     }
 
-    private function buildEmitente(SimpleXMLElement $emit, SimpleXMLElement $inf, SimpleXMLElement $regTrib): DanfseParticipante
+    private function buildEmitente(SimpleXMLElement $emit, SimpleXMLElement $inf, SimpleXMLElement $prest): DanfseParticipante
     {
+        $regTrib = $prest->regTrib;
         $ender = $emit->enderNac;
-        $doc = $this->firstNonEmpty($emit->CNPJ, $emit->CPF, $emit->NIF);
+        // TCEmitente abre com <xs:choice>CNPJ|CPF</xs:choice> obrigatório, sem NIF. O
+        // prestador estrangeiro existe — TCInfoPrestador aceita CNPJ|CPF|NIF|cNaoNIF —,
+        // mas quem o carrega é DPS/infDPS/prest, então o NIF vem de lá.
+        $identificacao = ($this->identificacao)(
+            $this->str($emit->CNPJ),
+            $this->str($emit->CPF),
+            $this->str($prest->NIF),
+            $this->str($prest->cNaoNIF),
+        );
 
         $endereco = $this->joinAddress($ender->xLgr, $ender->nro, $ender->xBairro);
 
@@ -157,7 +170,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         return new DanfseParticipante(
             nome: $this->str($emit->xNome, '-'),
-            cnpjCpf: $this->fmt->cnpjCpf($doc),
+            cnpjCpf: $identificacao,
             im: $this->str($emit->IM, '-'),
             telefone: $this->fmt->phone($this->str($emit->fone)),
             email: $this->str($emit->email),
@@ -177,13 +190,18 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         $end = $toma->end;
         $endNac = $end->endNac;
-        $doc = $this->firstNonEmpty($toma->CNPJ, $toma->CPF, $toma->NIF);
+        $identificacao = ($this->identificacao)(
+            $this->str($toma->CNPJ),
+            $this->str($toma->CPF),
+            $this->str($toma->NIF),
+            $this->str($toma->cNaoNIF),
+        );
 
         $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
         return new DanfseParticipante(
             nome: $this->str($toma->xNome, '-'),
-            cnpjCpf: $this->fmt->cnpjCpf($doc),
+            cnpjCpf: $identificacao,
             im: $this->str($toma->IM, '-'),
             telefone: $this->fmt->phone($this->str($toma->fone)),
             email: $this->str($toma->email),
@@ -197,13 +215,18 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     {
         $end = $interm->end;
         $endNac = $end->endNac;
-        $doc = $this->firstNonEmpty($interm->CNPJ, $interm->CPF, $interm->NIF);
+        $identificacao = ($this->identificacao)(
+            $this->str($interm->CNPJ),
+            $this->str($interm->CPF),
+            $this->str($interm->NIF),
+            $this->str($interm->cNaoNIF),
+        );
 
         $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
         return new DanfseParticipante(
             nome: $this->str($interm->xNome, '-'),
-            cnpjCpf: $this->fmt->cnpjCpf($doc),
+            cnpjCpf: $identificacao,
             im: $this->str($interm->IM, '-'),
             telefone: $this->fmt->phone($this->str($interm->fone)),
             email: $this->str($interm->email),
@@ -381,18 +404,6 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $s = trim((string) $node);
 
         return $s !== '' ? $s : $default;
-    }
-
-    private function firstNonEmpty(SimpleXMLElement ...$nodes): string
-    {
-        foreach ($nodes as $node) {
-            $s = trim((string) $node);
-            if ($s !== '') {
-                return $s;
-            }
-        }
-
-        return '';
     }
 
     private function joinAddress(?SimpleXMLElement $xLgr, ?SimpleXMLElement $nro, ?SimpleXMLElement $xBairro): string
