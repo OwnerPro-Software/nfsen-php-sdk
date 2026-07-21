@@ -69,8 +69,16 @@ def normaliza(celula: str) -> str:
     return re.sub(r"\s+", " ", t).strip()
 
 
+def medida(celula: str) -> float | None:
+    """Converte "0,63" em 0.63. Devolve None quando a célula não traz número."""
+    achado = re.search(r"\d+,\d+", celula)
+
+    return float(achado.group(0).replace(",", ".")) if achado else None
+
+
 def extrair() -> list[dict[str, str]]:
     registros: list[dict[str, str]] = []
+    blocos: list[dict[str, object]] = []
     bloco: str | None = None
 
     with pdfplumber.open(PDF) as pdf:
@@ -110,6 +118,12 @@ def extrair() -> list[dict[str, str]]:
                     tag = normaliza(celulas.get("tag", ""))
                     if not caminho and not tag:
                         bloco = nome
+                        blocos.append({
+                            "bloco": nome,
+                            "alt": medida(celulas.get("alt", "")),
+                            "larg": medida(celulas.get("larg", "")),
+                            "sup": medida(celulas.get("sup", "")),
+                        })
                         continue
 
                     registros.append({
@@ -119,15 +133,22 @@ def extrair() -> list[dict[str, str]]:
                         "tag": tag,
                         "obs": re.sub(r"\s+", " ", celulas.get("obs", "")).strip(),
                         "tamanho": celulas.get("tam", "").strip(),
+                        # Medidas em centímetros: altura e largura mínimas do campo e
+                        # sua posição em relação à margem. São elas que dizem se o
+                        # documento cabe na página única que o item 2.2 exige.
+                        "alt": medida(celulas.get("alt", "")),
+                        "larg": medida(celulas.get("larg", "")),
+                        "esq": medida(celulas.get("esq", "")),
+                        "sup": medida(celulas.get("sup", "")),
                     })
 
-    return registros
+    return registros, blocos
 
 
 def main() -> None:
-    registros = extrair()
+    registros, blocos = extrair()
     SAIDA.parent.mkdir(parents=True, exist_ok=True)
-    SAIDA.write_text(json.dumps(registros, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    SAIDA.write_text(json.dumps({"campos": registros, "blocos": blocos}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     blocos: dict[str, int] = {}
     for r in registros:

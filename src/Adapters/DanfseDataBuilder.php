@@ -146,7 +146,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             tribIbsCbs: $this->buildTribIbsCbs($inf, $infDps, $valores, $trib),
             totais: $this->buildTotais($tribMun, $tribFed, $valores, $valNfse, $inf),
             totaisTributos: $this->buildTotaisTributos($totTrib),
-            informacoesComplementares: $this->str($serv->infoCompl->xInfComp),
+            // Idem: o campo de informações complementares tem 2000 caracteres.
+            informacoesComplementares: $this->fmt->limit($this->str($serv->infoCompl->xInfComp), 1997), // @pest-mutate-ignore IncrementInteger,DecrementInteger — 2000 menos as reticências, como nos demais campos da NT.
         );
     }
 
@@ -183,7 +184,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             descTribMunicipal: $xTribMun !== '' ? $this->fmt->limit($xTribMun, 60) : '-', // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
             localPrestacao: $this->resolveMunicipio($locPrest?->cLocPrestacao, $inf->xLocPrestacao), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
             paisPrestacao: $this->str($locPrest?->cPaisPrestacao, '-'), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-            descricao: $this->str($cServ->xDescServ, '-'),
+            // NT 008: reticências acima de 1297 caracteres, num campo de 1300. Sem
+            // isso uma descrição no limite do XSD empurra o DANFSe para a segunda
+            // página, contrariando o item 2.2 ("obrigatoriamente, em uma única página").
+            descricao: $this->fmt->limit($this->str($cServ->xDescServ, '-'), 1297), // @pest-mutate-ignore IncrementInteger,DecrementInteger — 1297 vem da NT 008.
             codigoNbs: $cNBS !== '' ? $cNBS : '-',
             // NT 008, item 2.4.5: `SE xTribMun <> "" ENTAO Descrição Municipal SENAO
             // Descrição Nacional`. É um campo só — imprimir as duas descrições lado a

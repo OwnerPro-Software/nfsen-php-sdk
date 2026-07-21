@@ -11,10 +11,13 @@
 
 body {
     font-family: Arial, Helvetica, sans-serif;
+    /* Entrelinha justa: o layout do item 2.4.5 dá ~0,63cm por linha de campo, e o
+       DANFSe tem de caber numa página só (item 2.2). */
+    line-height: 1.1;
     font-size: 6.5pt;
     color: #000;
     margin: 7pt;
-    padding: 4pt 7pt;
+    padding: 2pt 7pt;
     border: 1pt #000 solid;
     max-height: 814pt;
     overflow: hidden;
@@ -33,7 +36,10 @@ td {
 }
 
 table > tbody > tr > td {
-    padding-bottom: 2pt;
+    /* O item 2.4.5 dá 0,63cm (~17,9pt) de altura mínima à maioria das linhas; com
+       label de 6pt e conteúdo de 7pt, sobra ~1pt de respiro por linha. Mais que
+       isso e o documento passa da página única que o item 2.2 exige. */
+    padding-bottom: 1pt;
 }
 
 .bordered-section {
@@ -50,11 +56,12 @@ table > tbody > tr > td {
 }
 
 .label {
-    font-size: 6.5pt;
+    /* NT 008, item 2.4.2: títulos (labels) dos campos em 6 pontos, negrito. */
+    font-size: 6pt;
     font-weight: bold;
     color: #000;
     display: block;
-    margin-bottom: 1pt;
+    margin-bottom: 0;
 }
 
 .value {
@@ -122,7 +129,18 @@ table > tbody > tr > td {
 }
 
 /* Overflow protection: garante 1 página mesmo com descrições longas */
+/*
+ * Áreas de texto livre — "Descrição do Serviço" e "Informações Complementares".
+ *
+ * A NT 008 fixa a página (item 2.2) mas deixa estes dois quadros absorverem a
+ * folga: o item 2.3.1 manda "aumentar a altura do quadro 'Descrição do Serviço'
+ * e/ou 'Informações Complementares'" na mesma medida do que for suprimido. O
+ * inverso também vale — com todos os blocos presentes, é aqui que o espaço
+ * acaba. Os tetos abaixo somam a folga que o item 2.4.5 reserva aos dois
+ * quadros; sem eles, uma descrição no limite do XSD leva o DANFSe à segunda
+ * página, contrariando o item 2.2.
+ */
 .expandable-text {
-    max-height: 60pt;
+    max-height: 44pt;
     overflow: hidden;
 }

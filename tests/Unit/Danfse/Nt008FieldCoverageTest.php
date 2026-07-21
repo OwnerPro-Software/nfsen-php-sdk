@@ -65,8 +65,9 @@ function nt008Caminhos(string $celula): array
 }
 
 it('carries a field table that still matches the XSD', function () use ($FIXTURE, $TAGS_SEM_ELEMENTO, $CAMINHOS_INCOMPLETOS) {
-    /** @var list<array{bloco: string, campo: string, caminho: string, tag: string}> $campos */
-    $campos = json_decode((string) file_get_contents($FIXTURE), true);
+    /** @var array{campos: list<array{bloco: string, campo: string, caminho: string, tag: string}>} $fixture */
+    $fixture = json_decode((string) file_get_contents($FIXTURE), true);
+    $campos = $fixture['campos'];
     $xsd = nfsenXsdPaths();
 
     // Sem isto, uma fixture vazia ou truncada passaria verificando nada.
@@ -126,8 +127,9 @@ $LIDOS_MAS_INVISIVEIS = [
 ];
 
 it('knows exactly which notice fields the builder still does not read', function () use ($FIXTURE, $NAO_LIDOS, $LIDOS_MAS_INVISIVEIS) {
-    /** @var list<array{bloco: string, campo: string, caminho: string, tag: string}> $campos */
-    $campos = json_decode((string) file_get_contents($FIXTURE), true);
+    /** @var array{campos: list<array{bloco: string, campo: string, caminho: string, tag: string}>} $fixture */
+    $fixture = json_decode((string) file_get_contents($FIXTURE), true);
+    $campos = $fixture['campos'];
     $lidos = array_flip(nfsenDanfseBuilderPaths()['caminhos']);
 
     $ausentes = [];
