@@ -10,6 +10,7 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoIbsCbs;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\MunicipalityBranding;
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 covers(DanfseHtmlRenderer::class);
@@ -219,4 +220,38 @@ it('omits the suppressible ISSQN rows the NFS-e has no data for', function (): v
     expect($html)->not->toContain('Benefício Municipal');
     // O resto do bloco continua: a supressão é por linha, não pelo bloco.
     expect($html)->toContain('BC ISSQN');
+});
+
+it('prints no marca d\'água for a vigente NFS-e', function (): void {
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))->render(sampleData());
+
+    expect($html)->not->toContain('<div class="watermark-nt">');
+});
+
+it('prints the "CANCELADA" marca d\'água required by item 2.5.1', function (): void {
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))
+        ->render(sampleData(marcaDagua: MarcaDagua::Cancelada));
+
+    expect($html)->toContain('<div class="watermark-nt">CANCELADA</div>');
+});
+
+it('prints the "SUBSTITUÍDA" marca d\'água required by item 2.5.2', function (): void {
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))
+        ->render(sampleData(marcaDagua: MarcaDagua::Substituida));
+
+    expect($html)->toContain('<div class="watermark-nt">SUBSTITUÍDA</div>');
+});
+
+it('styles the marca d\'água with the measurements of items 2.5.1 and 2.5.2', function (): void {
+    // Diagonal, formato normal, mínimo 50 pontos, Arial, cinza K35 (= #a6a6a6).
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))
+        ->render(sampleData(marcaDagua: MarcaDagua::Cancelada));
+
+    $css = substr($html, (int) strpos($html, '.watermark-nt {'));
+
+    expect($css)->toContain('rotate(-45deg)')
+        ->toContain('font-size: 50pt')
+        ->toContain('font-weight: normal')
+        ->toContain('color: #a6a6a6')
+        ->toContain('font-family: Arial');
 });

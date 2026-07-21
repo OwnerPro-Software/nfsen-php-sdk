@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen\Danfse\Data;
 
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 /**
@@ -52,5 +53,11 @@ final readonly class NfseData
         public DanfseTotais $totais,
         public DanfseTotaisTributos $totaisTributos,
         public string $informacoesComplementares,
+        /**
+         * Marca d'água diagonal "CANCELADA"/"SUBSTITUÍDA" (NT 008, itens 2.5.1 e 2.5.2).
+         *
+         * `null` para a NFS-e vigente — nenhuma marca é impressa.
+         */
+        public ?MarcaDagua $marcaDagua = null,
     ) {}
 }

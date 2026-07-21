@@ -683,6 +683,24 @@ $config = new DanfseConfig(
 $pdf = $client->danfse($config)->toPdf($response->xml);
 ```
 
+### NFS-e cancelada ou substituída
+
+Os itens 2.5.1 e 2.5.2 da [NT 008][nt008] exigem marca d'água diagonal — "CANCELADA"
+ou "SUBSTITUÍDA" — no DANFSe da nota que saiu de vigência. Passe-a como segundo
+argumento:
+
+```php
+use OwnerPro\Nfsen\Enums\MarcaDagua;
+
+$pdf = $client->danfse()->toPdf($xmlDaNotaCancelada, MarcaDagua::Cancelada);
+$pdf = $client->danfse()->toPdf($xmlDaNotaSubstituida, MarcaDagua::Substituida);
+```
+
+A marca **não sai do XML**, e por isso não é inferida: `infNFSe/cStat` só descreve como
+a nota foi gerada (Gerada, Decisão Judicial, Avulsa, MEI), enquanto cancelamento e
+substituição chegam depois, como evento separado. Quem consultou os eventos é quem
+sabe — omitir o argumento imprime o DANFSe sem marca, como nota vigente.
+
 ### Debug: obter o HTML intermediário
 
 ```php
@@ -731,6 +749,8 @@ Comportamentos que valem conhecer:
   traz a linha inteira de volta.
 - **Descrição do código de tributação é um campo só**: municipal quando existe,
   nacional como alternativa — nunca as duas.
+- **Marca d'água de cancelamento/substituição vem de fora.** O XML não a carrega; ver
+  [NFS-e cancelada ou substituída](#nfs-e-cancelada-ou-substituída).
 - **Códigos viram descrições.** `cStat`, `finNFSe`, `tpEmit`, `ambGer`, `tpImunidade`,
   `tpSusp`, `tpBM` e `tpRetPisCofins` são impressos pelo texto do leiaute. Código sem
   correspondência sai como `-`: rótulo inventado em documento fiscal é pior que campo
@@ -769,6 +789,7 @@ echo $data->tribIbsCbs->valorTotalIbs;   // "R$ 108,00"
 | `tribMun`, `tribFed`, `tribIbsCbs` | DTOs de tributação | ISSQN, federal e IBS/CBS |
 | `totais`, `totaisTributos` | `DanfseTotais`, `DanfseTotaisTributos` | Valores e percentuais |
 | `informacoesComplementares` | `string` | Cortado em 1000 caracteres (ver acima) |
+| `marcaDagua` | `?MarcaDagua` | "CANCELADA"/"SUBSTITUÍDA"; `null` na nota vigente |
 
 Enums com `label()`, que devolvem a descrição do leiaute — todos conferidos contra a
 `<xs:documentation>` do XSD por teste:

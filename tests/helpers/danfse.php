@@ -14,6 +14,7 @@ use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoFederal;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoIbsCbs;
 use OwnerPro\Nfsen\Danfse\Data\DanfseTributacaoMunicipal;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 
 function fakeQrGen(): GeneratesQrCode
@@ -37,7 +38,7 @@ function sampleParticipante(string $nome = 'ACME LTDA'): DanfseParticipante
     );
 }
 
-function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null, string $codigoNbs = '-'): NfseData
+function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null, string $codigoNbs = '-', ?MarcaDagua $marcaDagua = null): NfseData
 {
     return new NfseData(
         chaveAcesso: '33033021211222333000181000000000001026010000010000',
@@ -77,6 +78,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
         ),
         totaisTributos: new DanfseTotaisTributos(federais: '4.50%', estaduais: '0.10%', municipais: '2.00%'),
         informacoesComplementares: 'Referente ao contrato 2026-001',
+        marcaDagua: $marcaDagua,
     );
 }
 
@@ -84,10 +86,14 @@ function stubBuilder(NfseData|Throwable $result): BuildsDanfseData
 {
     return new class($result) implements BuildsDanfseData
     {
+        public ?MarcaDagua $marcaRecebida = null;
+
         public function __construct(private NfseData|Throwable $result) {}
 
-        public function build(string $xmlNfse): NfseData
+        public function build(string $xmlNfse, ?MarcaDagua $marcaDagua = null): NfseData
         {
+            $this->marcaRecebida = $marcaDagua;
+
             if ($this->result instanceof Throwable) {
                 throw $this->result;
             }

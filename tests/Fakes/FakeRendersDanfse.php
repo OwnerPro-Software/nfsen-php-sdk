@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Tests\Fakes;
 
 use OwnerPro\Nfsen\Contracts\Driving\RendersDanfse;
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
 
@@ -15,6 +16,9 @@ final class FakeRendersDanfse implements RendersDanfse
     /** @var list<string> */
     public array $xmlsReceived = [];
 
+    /** @var list<MarcaDagua|null> */
+    public array $marcasReceived = [];
+
     public function __construct(
         private readonly DanfseResponse $nextResponse = new DanfseResponse(
             sucesso: true,
@@ -22,15 +26,16 @@ final class FakeRendersDanfse implements RendersDanfse
         ),
     ) {}
 
-    public function toPdf(string $xmlNfse): DanfseResponse
+    public function toPdf(string $xmlNfse, ?MarcaDagua $marcaDagua = null): DanfseResponse
     {
         $this->toPdfCalls++;
         $this->xmlsReceived[] = $xmlNfse;
+        $this->marcasReceived[] = $marcaDagua;
 
         return $this->nextResponse;
     }
 
-    public function toHtml(string $xmlNfse): string
+    public function toHtml(string $xmlNfse, ?MarcaDagua $marcaDagua = null): string
     {
         return '<html>fake</html>';
     }

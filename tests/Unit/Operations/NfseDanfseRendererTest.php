@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Dompdf\Exception as DompdfException;
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Exceptions\XmlParseException;
 use OwnerPro\Nfsen\Operations\NfseDanfseRenderer;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
@@ -94,4 +95,31 @@ it('toHtml propagates generic exception', function () {
     );
 
     expect(fn () => $op->toHtml($this->xml))->toThrow(RuntimeException::class, 'render boom');
+});
+
+it('toPdf forwards the marca d\'água to the builder', function () {
+    $builder = stubBuilder(sampleData());
+    $op = new NfseDanfseRenderer($builder, stubHtmlRenderer(), stubPdfConverter());
+
+    $op->toPdf($this->xml, MarcaDagua::Cancelada);
+
+    expect($builder->marcaRecebida)->toBe(MarcaDagua::Cancelada);
+});
+
+it('toHtml forwards the marca d\'água to the builder', function () {
+    $builder = stubBuilder(sampleData());
+    $op = new NfseDanfseRenderer($builder, stubHtmlRenderer(), stubPdfConverter());
+
+    $op->toHtml($this->xml, MarcaDagua::Substituida);
+
+    expect($builder->marcaRecebida)->toBe(MarcaDagua::Substituida);
+});
+
+it('renders without marca d\'água by default', function () {
+    $builder = stubBuilder(sampleData());
+    $op = new NfseDanfseRenderer($builder, stubHtmlRenderer(), stubPdfConverter());
+
+    $op->toPdf($this->xml);
+
+    expect($builder->marcaRecebida)->toBeNull();
 });

@@ -9,6 +9,7 @@ use OwnerPro\Nfsen\Contracts\Driven\BuildsDanfseData;
 use OwnerPro\Nfsen\Contracts\Driven\ConvertsHtmlToPdf;
 use OwnerPro\Nfsen\Contracts\Driven\RendersDanfseHtml;
 use OwnerPro\Nfsen\Contracts\Driving\RendersDanfse;
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Exceptions\XmlParseException;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
@@ -27,10 +28,10 @@ final readonly class NfseDanfseRenderer implements RendersDanfse
         private ConvertsHtmlToPdf $pdfConverter,
     ) {}
 
-    public function toPdf(string $xmlNfse): DanfseResponse
+    public function toPdf(string $xmlNfse, ?MarcaDagua $marcaDagua = null): DanfseResponse
     {
         try {
-            $data = $this->builder->build($xmlNfse);
+            $data = $this->builder->build($xmlNfse, $marcaDagua);
             $html = $this->htmlRenderer->render($data);
             $pdf = $this->pdfConverter->convert($html);
 
@@ -44,9 +45,9 @@ final readonly class NfseDanfseRenderer implements RendersDanfse
         }
     }
 
-    public function toHtml(string $xmlNfse): string
+    public function toHtml(string $xmlNfse, ?MarcaDagua $marcaDagua = null): string
     {
-        $data = $this->builder->build($xmlNfse);
+        $data = $this->builder->build($xmlNfse, $marcaDagua);
 
         return $this->htmlRenderer->render($data);
     }

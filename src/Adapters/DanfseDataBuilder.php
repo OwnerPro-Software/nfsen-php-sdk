@@ -25,6 +25,7 @@ use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Enums\AmbienteGerador;
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Enums\SituacaoNfse;
 use OwnerPro\Nfsen\Enums\TipoBeneficioMunicipal;
@@ -49,7 +50,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         private ParticipanteBuilder $participantes = new ParticipanteBuilder,
     ) {}
 
-    public function build(string $xmlNfse): NfseData
+    public function build(string $xmlNfse, ?MarcaDagua $marcaDagua = null): NfseData
     {
         if (trim($xmlNfse) === '') {
             throw new XmlParseException('XML vazio.');
@@ -80,10 +81,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             throw new XmlParseException('XML não contém DPS/infDPS.');
         }
 
-        return $this->fromInf($children->infNFSe);
+        return $this->fromInf($children->infNFSe, $marcaDagua);
     }
 
-    private function fromInf(SimpleXMLElement $inf): NfseData
+    private function fromInf(SimpleXMLElement $inf, ?MarcaDagua $marcaDagua): NfseData
     {
         $id = (string) ($inf->attributes()->Id ?? '');
         $chave = str_starts_with($id, 'NFS') ? substr($id, 3) : $id;
@@ -160,6 +161,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             // layout sobre as medidas do item 2.4.5; enquanto isso, este corte
             // cobre o texto que aparece na prática.
             informacoesComplementares: $this->fmt->limit($this->str($serv->infoCompl->xInfComp), 1000), // @pest-mutate-ignore IncrementInteger,DecrementInteger — limiar medido; 999/1001 não representa regressão.
+            // Não sai do XML: cStat descreve como a nota foi gerada, e o cancelamento
+            // ou a substituição chegam depois, em evento separado. Ver MarcaDagua.
+            marcaDagua: $marcaDagua,
         );
     }
 

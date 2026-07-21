@@ -20,6 +20,10 @@
     <div class="watermark">HOMOLOGAÇÃO</div>
     <?php endif; ?>
 
+    <?php if ($data->marcaDagua !== null): ?>
+    <div class="watermark-nt"><?= $h($data->marcaDagua->texto()) ?></div>
+    <?php endif; ?>
+
     <!-- Header -->
     <table class="header-table">
         <tr>

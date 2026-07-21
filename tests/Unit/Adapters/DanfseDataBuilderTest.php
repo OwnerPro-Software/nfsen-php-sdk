@@ -3,6 +3,7 @@
 use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
 use OwnerPro\Nfsen\Danfse\ParticipanteBuilder;
+use OwnerPro\Nfsen\Enums\MarcaDagua;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\XmlParseException;
 
@@ -1156,4 +1157,18 @@ it('falls back to the emit address for the prestador IBGE code', function () {
     $data = $this->builder->build($xml);
 
     expect($data->emitente->codigoIbge)->toBe('3550308');
+});
+
+it('carries the marca d\'água through, since the XML cannot tell', function () {
+    // cStat só descreve como a nota foi gerada; cancelamento e substituição chegam
+    // como evento separado. Por isso a marca vem de fora (NT 008, itens 2.5.1/2.5.2).
+    $data = $this->builder->build($this->xml, MarcaDagua::Cancelada);
+
+    expect($data->marcaDagua)->toBe(MarcaDagua::Cancelada);
+});
+
+it('leaves the marca d\'água null for a vigente NFS-e', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->marcaDagua)->toBeNull();
 });
