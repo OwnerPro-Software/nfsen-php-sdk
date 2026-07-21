@@ -347,3 +347,45 @@ it('prints the seven fields of item 2.1.11 in the VALOR TOTAL block', function (
         ->not->toContain('PIS/COFINS - Débito Apur. Própria')
         ->not->toContain('Total das Retenções Federais');
 });
+
+it('shades exactly what item 2.2.3 names, and nothing else', function (): void {
+    // "O cabeçalho, os títulos de cada bloco de campos e os campos 'Emitente da NFS-e'
+    // e 'Valor Líquido da NFS-e + IBS/CBS' devem ter sombreamento (fundo) na cor cinza
+    // claro (5% de densidade) […] mantendo-se o fundo branco para os demais campos."
+    $html = (new DanfseHtmlRenderer(fakeQrGen()))->render(sampleData());
+
+    // 5% de preto = #f2f2f2, e é o único fundo do documento.
+    expect($html)->toContain('background-color: #f2f2f2;')
+        ->and(preg_match_all('/background-color:/', $html))->toBe(1);
+
+    $sombreados = substr_count($html, 'class="sombreado"');
+    expect($sombreados)->toBe(2);
+
+    // Do <body> em diante: o CSS inlinado cita os dois campos no comentário que explica
+    // a regra, e uma busca no documento inteiro casaria com ele.
+    $corpo = substr($html, (int) strpos($html, '<body>'));
+
+    foreach (['Emitente da NFS-e', 'Valor Líquido da NFS-e \+ IBS/CBS'] as $campo) {
+        expect($corpo)->toMatch('#<td class="sombreado">\s*<span class="label">'.$campo.'</span>#');
+    }
+});
+
+it('draws block dividers at half a point and the page border at one', function (): void {
+    // Item 2.2.3: "as linhas divisórias dos blocos […] deverão ter 0,5 (meio) ponto de
+    // espessura. Além disso, página deverá ter borda de 1 (um) ponto".
+    $html = (new DanfseHtmlRenderer(fakeQrGen()))->render(sampleData());
+
+    expect($html)->toContain('border-bottom: 0.5pt solid #000;')
+        ->toContain('border: 1pt #000 solid;')
+        ->not->toContain('border-bottom: 1px');
+});
+
+it('asks for the two fonts of item 2.4, one per role', function (): void {
+    // "Arial para os títulos/labels e Microsoft Sans Serif para os conteúdos."
+    $html = (new DanfseHtmlRenderer(fakeQrGen()))->render(sampleData());
+
+    $css = substr($html, (int) strpos($html, '<style>'), (int) strpos($html, '</style>'));
+
+    expect($css)->toMatch('/body \{[^}]*font-family: Arial/s')
+        ->toMatch('/\.value \{[^}]*font-family: \'Microsoft Sans Serif\'/s');
+});

@@ -64,7 +64,7 @@
                 <td style="width: 25%; position: relative;" rowspan="3">
                     <div class="qr-container">
                         <img src="<?= $h($qrCode) ?>" alt="QR Code" style="width: 60px; height: 60px; display: block; margin: 0 auto;" />
-                        <div style="font-size: 5pt; padding-top: 1pt; text-align: left; line-height: 1.15;">
+                        <div class="qr-complemento">
                             A autenticidade desta NFS-e pode ser verificada pela leitura deste código QR ou pela consulta da chave de acesso no portal nacional da NFS-e
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                 </td>
             </tr>
             <tr>
-                <td>
+                <td class="sombreado">
                     <span class="label">Emitente da NFS-e</span>
                     <span class="value"><?= $h($data->emitidaPor) ?></span>
                 </td>
@@ -119,8 +119,8 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td style="width: 25%; font-weight: bold; font-size: 7pt;">
-                    <span class="label section-title">PRESTADOR / FORNECEDOR</span>
+                <td style="width: 25%;" class="section-header">
+                    <span class="section-title">PRESTADOR / FORNECEDOR</span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">CNPJ / CPF / NIF</span>
@@ -176,7 +176,7 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td style="width: 25%; font-weight: bold; font-size: 7pt;">
+                <td style="width: 25%;" class="section-header">
                     <span class="section-title">TOMADOR / ADQUIRENTE</span>
                 </td>
                 <td style="width: 25%;">
@@ -228,7 +228,7 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td style="width: 25%; font-weight: bold; font-size: 7pt;">
+                <td style="width: 25%;" class="section-header">
                   <span class="section-title">DESTINATÁRIO DA OPERAÇÃO</span>
                 </td>
                 <td style="width: 25%;">
@@ -277,7 +277,7 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td style="width: 25%; font-weight: bold; font-size: 7pt;">
+                <td style="width: 25%;" class="section-header">
                   <span class="section-title">INTERMEDIÁRIO DA OPERAÇÃO</span>
                 </td>
                 <td style="width: 25%;">
@@ -588,7 +588,7 @@
                     <span class="label">Total do IBS/CBS</span>
                     <span class="value"><?= $h($data->totais->totalIbsCbs) ?></span>
                 </td>
-                <td>
+                <td class="sombreado">
                     <span class="label">Valor Líquido da NFS-e + IBS/CBS</span>
                     <span class="value"><?= $h($data->totais->valorLiquidoComIbsCbs) ?></span>
                 </td>

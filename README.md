@@ -757,6 +757,12 @@ Comportamentos que valem conhecer:
   do emitente (`xLocEmi` + UF, 8pt), ambiente gerador e tipo de ambiente (6pt). A
   linha do município some quando o item do código de tributação nacional é 99 — a
   própria NT manda não exibi-la ali.
+- **A fonte do conteúdo é a única divergência conhecida.** O item 2.4 pede Arial nos
+  rótulos e Microsoft Sans Serif nos conteúdos. A segunda é da Microsoft e não pode ser
+  redistribuída, então o SDK a declara e o Dompdf a usa se você a registrar no seu font
+  dir; sem isso, cai no Helvetica. O DejaVu Sans que vem com o Dompdf seria o fallback
+  óbvio, mas é largo o bastante para levar o pior caso da norma à segunda página —
+  trocaria esta divergência pela do item 2.2, que é pior.
 - **Marca d'água de cancelamento/substituição vem de fora.** O XML não a carrega; ver
   [NFS-e cancelada ou substituída](#nfs-e-cancelada-ou-substituída).
 - **Códigos viram descrições.** `cStat`, `finNFSe`, `tpEmit`, `ambGer`, `tpImunidade`,

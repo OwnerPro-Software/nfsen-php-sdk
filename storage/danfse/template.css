@@ -10,6 +10,7 @@
 }
 
 body {
+    /* Item 2.4: Arial para títulos e labels — o conteúdo troca a família em `.value`. */
     font-family: Arial, Helvetica, sans-serif;
     /* Entrelinha justa: o layout do item 2.4.5 dá ~0,63cm por linha de campo, e o
        DANFSe tem de caber numa página só (item 2.2). */
@@ -20,6 +21,7 @@ body {
        embaixo. É essa folga que faz o pior caso caber na página única do item 2.2. */
     margin: 5pt;
     padding: 0 5pt;
+    /* Item 2.2.3: a página tem borda de 1 ponto. */
     border: 1pt #000 solid;
     /* A4 (841,89pt) menos as duas margens e as duas bordas. */
     max-height: 829pt;
@@ -44,9 +46,10 @@ table > tbody > tr > td {
     padding-bottom: 1pt;
 }
 
+/* Item 2.2.3: as linhas divisórias dos blocos têm meio ponto de espessura. */
 .bordered-section {
     margin-bottom: 0;
-    border-bottom: 1px solid #000;
+    border-bottom: 0.5pt solid #000;
 }
 
 .bordered-section:last-of-type {
@@ -66,10 +69,32 @@ table > tbody > tr > td {
     margin-bottom: 0;
 }
 
+/*
+ * Item 2.4: conteúdo em Microsoft Sans Serif, preto sólido (K100).
+ *
+ * A fonte não é embarcada — é da Microsoft, sem licença de redistribuição. O Dompdf a
+ * usa se o consumidor a registrar no seu font dir; do contrário cai no Helvetica.
+ *
+ * O DejaVu Sans, que vem com o Dompdf, seria o fallback óbvio, mas é largo o bastante
+ * para levar o pior caso da norma à segunda página — trocaria a divergência do item 2.4
+ * pela do item 2.2, que é pior.
+ */
 .value {
+    font-family: 'Microsoft Sans Serif', Helvetica, Arial, sans-serif;
     font-size: 7pt;
     font-weight: normal;
     color: #000;
+}
+
+/*
+ * Item 2.2.3: cabeçalho, títulos de bloco e os campos "Emitente da NFS-e" e "Valor
+ * Líquido da NFS-e + IBS/CBS" levam fundo cinza claro de 5% de densidade — 5% de preto
+ * é #f2f2f2. Os demais campos ficam em branco (0%).
+ */
+.section-header,
+.sombreado,
+.header-table {
+    background-color: #f2f2f2;
 }
 
 .section-header {
@@ -85,7 +110,7 @@ table > tbody > tr > td {
 
 .header-table {
     margin-bottom: 1pt;
-    border-bottom: 1px solid #000;
+    border-bottom: 0.5pt solid #000;
 }
 
 .header-table td {
@@ -109,16 +134,20 @@ table > tbody > tr > td {
     vertical-align: top;
 }
 
-/* NT 008, item 2.4.3: município do emitente em 8 pontos, formato normal. */
-.header-municipio {
-    font-size: 8pt;
+/* Item 2.4.3: município do emitente em 8 pontos, ambiente e tipo em 6, todos em
+   formato normal e Microsoft Sans Serif. */
+.header-municipio,
+.header-ambiente {
+    font-family: 'Microsoft Sans Serif', Helvetica, Arial, sans-serif;
     font-weight: normal;
 }
 
-/* Item 2.4.3: ambiente gerador e tipo de ambiente em 6 pontos, formato normal. */
+.header-municipio {
+    font-size: 8pt;
+}
+
 .header-ambiente {
     font-size: 6pt;
-    font-weight: normal;
 }
 
 /*
@@ -138,6 +167,15 @@ table > tbody > tr > td {
     position: absolute;
     right: 0;
     top: 0;
+}
+
+/* Item 2.4.3: a descrição sob o QR Code, em formato normal e Microsoft Sans Serif. */
+.qr-complemento {
+    font-family: 'Microsoft Sans Serif', Helvetica, Arial, sans-serif;
+    font-size: 5pt;
+    line-height: 1.15;
+    padding-top: 1pt;
+    text-align: left;
 }
 
 /*
