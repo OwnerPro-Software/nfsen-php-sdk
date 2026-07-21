@@ -125,7 +125,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         // Chave `danfse?` opcional no shape: cobre instalações antigas cujo config/nfsen.php
         // publicado não tem o bloco novo (buildFor não acessa essa chave, mas o ServiceProvider sim).
         if (function_exists('config') && config('nfsen') !== null) {
-            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool, danfse?: array<string, mixed>} $config */
+            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool, danfse?: array<string, mixed>, detect_not_delivered?: bool} $config */
             $config = config('nfsen');
 
             return self::forStandalone(
@@ -139,6 +139,8 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
                 danfse: $danfse,
+                // Chave opcional: configs publicados antes da 2.6.0 não a possuem.
+                detectNotDelivered: $config['detect_not_delivered'] ?? false,
             );
         }
 
@@ -175,6 +177,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         int $connectTimeout = 10,
         bool $validateIdentity = true,
         array|false|null $danfse = null,
+        bool $detectNotDelivered = false,
     ): self {
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
         $schemasPath ??= __DIR__.'/../storage/schemes';
@@ -183,7 +186,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         $xsdValidator = new XsdValidator($schemasPath);
         $certManager = new CertificateManager($pfxContent, $senha);
         $effectiveSslVerify = $ambiente === NfseAmbiente::PRODUCAO || $sslVerify;
-        $httpClient = new NfseHttpClient($certManager->getCertificate(), $timeout, $connectTimeout, $effectiveSslVerify);
+        $httpClient = new NfseHttpClient($certManager->getCertificate(), $timeout, $connectTimeout, $effectiveSslVerify, detectNotDelivered: $detectNotDelivered);
 
         $signer = new XmlSigner($certManager->getCertificate(), $signingAlgorithm);
 

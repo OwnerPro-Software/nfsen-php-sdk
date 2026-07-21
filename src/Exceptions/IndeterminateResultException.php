@@ -30,9 +30,13 @@ use Throwable;
  * Qualquer outra exceção ou resposta do SDK é uma resposta definitiva do
  * servidor (rejeição, erro de negócio, erro de certificado).
  *
+ * Com `detectNotDelivered: true`, falhas comprovadamente anteriores ao envio
+ * (DNS, TCP, TLS) são lançadas como {@see RequestNotDeliveredException} —
+ * nelas o retry direto é seguro, sem reconciliação.
+ *
  * @api
  */
-final class IndeterminateResultException extends NfseException
+final class IndeterminateResultException extends CommunicationException
 {
     /**
      * @param  'body'|'connect'|'dns'|'read'|'tls'|'transfer'|null  $phase  fase da falha, quando detectável
@@ -47,9 +51,20 @@ final class IndeterminateResultException extends NfseException
 
     public static function fromTransportFailure(Throwable $previous): self
     {
+        return self::fromTransportFailureWithPhase($previous, self::detectPhase($previous->getMessage()));
+    }
+
+    /**
+     * Variante com fase explícita, usada pelo TransportFailureClassifier quando
+     * a evidência vem do errno do cURL em vez do texto da mensagem.
+     *
+     * @param  'body'|'connect'|'dns'|'read'|'tls'|'transfer'|null  $phase
+     */
+    public static function fromTransportFailureWithPhase(Throwable $previous, ?string $phase): self
+    {
         return new self(
             'Resultado indeterminado: a comunicação falhou antes de uma resposta completa ser recebida. '.$previous->getMessage(),
-            self::detectPhase($previous->getMessage()),
+            $phase,
             $previous,
         );
     }

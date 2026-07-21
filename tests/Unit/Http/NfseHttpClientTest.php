@@ -1,5 +1,6 @@
 <?php
 
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response;
@@ -10,6 +11,7 @@ use OwnerPro\Nfsen\Adapters\NfseHttpClient;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Exceptions\RequestNotDeliveredException;
 use OwnerPro\Nfsen\Support\TempFileFactory;
 
 it('posts json payload to given url', function () {
@@ -542,6 +544,42 @@ it('converts mid-transfer failure with partial error response into Indeterminate
         expect($e->phase)->toBeNull()
             ->and($e->getMessage())->toContain('Resultado indeterminado');
     }
+});
+
+it('throws RequestNotDeliveredException for pre-send failure when detectNotDelivered is enabled', function () {
+    Http::fake(['*' => function (): never {
+        throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
+            'cURL error 6: Could not resolve host',
+            new GuzzleRequest('POST', 'https://example.com/nfse'),
+            null,
+            ['errno' => 6],
+        ));
+    }]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, detectNotDelivered: true);
+
+    try {
+        $client->post('https://example.com/nfse', []);
+        test()->fail('Expected RequestNotDeliveredException');
+    } catch (RequestNotDeliveredException $e) {
+        expect($e->phase)->toBe('dns');
+    }
+});
+
+it('keeps pre-send failures as IndeterminateResultException by default', function () {
+    Http::fake(['*' => function (): never {
+        throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
+            'cURL error 6: Could not resolve host',
+            new GuzzleRequest('POST', 'https://example.com/nfse'),
+            null,
+            ['errno' => 6],
+        ));
+    }]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->post('https://example.com/nfse', []))
+        ->toThrow(IndeterminateResultException::class);
 });
 
 it('does not convert non-transport exceptions into IndeterminateResultException', function () {

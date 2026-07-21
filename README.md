@@ -456,7 +456,9 @@ Representa uma mensagem de erro ou alerta da API:
 | Exceção | Pai | Quando |
 |---------|-----|--------|
 | `NfseException` | `RuntimeException` | Erros gerais (XML inválido, falha de compressão, etc.) |
-| `IndeterminateResultException` | `NfseException` | **Resultado indeterminado**: o SDK não obteve resposta completa e legível — a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`) |
+| `CommunicationException` | `NfseException` | Base abstrata das falhas de comunicação (nenhuma resposta completa e legível). Capture-a para tratar tudo como indeterminado; capture as subclasses para distinguir |
+| `IndeterminateResultException` | `CommunicationException` | **Resultado indeterminado**: a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`) |
+| `RequestNotDeliveredException` | `CommunicationException` | **Não entregue**: a falha ocorreu comprovadamente antes de qualquer byte HTTP ser enviado (`phase`: `dns`, `connect` ou `tls`). A operação não foi processada — retry direto é seguro, sem reconciliação. Só é lançada com `detectNotDelivered: true` |
 | `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (5xx, redirect, 4xx vazio; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes |
 | `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
 | `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS; ID de DPS fora do padrão `TSIdDPS` |
@@ -467,6 +469,7 @@ use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Exceptions\RequestNotDeliveredException;
 
 try {
     $response = $client->emitir($dps);
@@ -474,6 +477,8 @@ try {
     // Certificado expirado -- renovar
 } catch (InvalidDpsArgument $e) {
     // Dados da DPS inválidos -- corrigir payload
+} catch (RequestNotDeliveredException $e) {
+    // Só com detectNotDelivered: true. Nada chegou à SEFIN -- retry direto seguro.
 } catch (IndeterminateResultException $e) {
     // Resultado INDETERMINADO -- a nota pode ou não ter sido emitida.
     // NUNCA re-emita sem antes reconciliar com consultar()->dps($idDps).
@@ -501,6 +506,39 @@ pode já existir e um retry causaria dupla emissão). Calcule o ID com
 foi emitida; se retornar `NfseResponse::DPS_NOT_FOUND`, é seguro re-emitir com
 o mesmo nDPS. Qualquer outra exceção ou resposta do SDK é uma resposta
 definitiva do servidor.
+
+**Distinguindo "não entregue" de "indeterminado"** (opt-in): falhas de DNS,
+conexão TCP e handshake TLS acontecem **antes** de qualquer byte HTTP ser
+enviado — a requisição comprovadamente não chegou à SEFIN e o retry direto é
+seguro, sem reconciliação. Ative com `detectNotDelivered: true` em
+`forStandalone()` (ou `NFSE_DETECT_NOT_DELIVERED=true` no Laravel) para que
+esses casos lancem `RequestNotDeliveredException` em vez de
+`IndeterminateResultException`:
+
+```php
+try {
+    $response = $client->emitir($payload);
+} catch (RequestNotDeliveredException $e) {
+    // Nada chegou à SEFIN ($e->phase: dns|connect|tls) — repetir o envio direto.
+} catch (IndeterminateResultException $e) {
+    // Pode ter sido processada — reconciliar antes de qualquer retry.
+}
+```
+
+A classificação usa apenas o errno do cURL (evidência inequívoca: 6, 7, 35,
+58, 60); qualquer ambiguidade — incluindo **todo** timeout (cURL 28, cuja fase
+não é provável em conexões keep-alive reutilizadas) — permanece indeterminada.
+Vale para todas as operações do SDK (emissão, cancelamento, consultas,
+distribuição), não apenas `emitir()`. O default é `false` para não alterar
+catches existentes de `IndeterminateResultException`;
+`catch (CommunicationException)` cobre os dois tipos e equivale a tratar tudo
+como indeterminado (sempre seguro).
+
+> Nota: com a flag ativa, um timeout de connect (cURL 28) reporta
+> `phase: 'read'` na `IndeterminateResultException` — a fase de um timeout não
+> é provável por errno, então ele nunca vira "não entregue". Com a flag
+> desativada, a fase legada vinda do texto da mensagem (`'connect'`) é mantida.
+> Não use `phase` para decidir retry; ela é apenas diagnóstico.
 
 ## Renderização local do DANFSE
 

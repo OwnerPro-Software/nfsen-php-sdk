@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.0] - 2026-07-20
+
+Separa "não entregue" de "indeterminado": falhas de DNS, conexão TCP e handshake TLS acontecem antes de qualquer byte HTTP ser enviado — a requisição comprovadamente não chegou à SEFIN, e o retry direto é seguro sem reconciliação. Opt-in para não quebrar catches da 2.5.0.
+
+### Added
+
+- `Exceptions\CommunicationException` — base abstrata das falhas de comunicação. `IndeterminateResultException` agora a estende (antes estendia `NfseException` diretamente; `instanceof NfseException` continua valendo). `catch (CommunicationException)` cobre os dois subtipos e equivale a tratar tudo como indeterminado — sempre seguro.
+- `Exceptions\RequestNotDeliveredException` — a requisição comprovadamente nunca foi entregue (`phase`: `dns`|`connect`|`tls`); a operação não foi processada e o reenvio direto é seguro. Lançada **apenas** com `detectNotDelivered: true`.
+- Flag `detectNotDelivered` (default `false`): parâmetro em `NfsenClient::forStandalone()`, chave `detect_not_delivered` / env `NFSE_DETECT_NOT_DELIVERED` no config Laravel. Com `false`, o comportamento é idêntico ao da 2.5.0 (toda falha de comunicação lança `IndeterminateResultException`).
+- `Support\TransportFailureClassifier` — a decisão entregue/não-entregue usa apenas o errno do cURL extraído do handler context do Guzzle (nunca texto de mensagem, que varia entre versões do libcurl). Regra: certeza obrigatória, viés para indeterminado — `RequestNotDeliveredException` só com errno 6/7/35/58/60; errno ausente, ambíguo ou desconhecido classifica como indeterminado (mantendo a `phase` informacional do sniffing legado como diagnóstico). cURL 28 (timeout) é **sempre** indeterminado: em conexão keep-alive reutilizada o cURL zera os timers de connect (curl issue #2703), então timeout de connect não é provável.
+- `IndeterminateResultException::fromTransportFailureWithPhase()` — variante com fase explícita derivada do errno.
+
+### Notas
+
+- Com `detectNotDelivered: true`, um timeout de connect (cURL 28) reporta `phase: 'read'` (errno não prova a fase de timeouts); com a flag desativada, mantém a fase legada `'connect'` sniffada da mensagem. `phase` é diagnóstico — não a use para decidir retry.
+- A classificação vale para todas as operações HTTP do SDK (emissão, cancelamento, substituição, consultas, distribuição).
+
 ## [2.5.0] - 2026-07-20
 
 Suporte a reconciliação de resultado indeterminado: permite descobrir o estado real de uma DPS após falha de comunicação antes de qualquer retry, eliminando o risco de dupla emissão.

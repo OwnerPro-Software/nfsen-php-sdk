@@ -19,8 +19,9 @@ interface ConsultsNfse
     /**
      * Quando a SEFIN responde 404 (DPS inexistente), retorna falha com
      * `erros[0]->codigo === NfseResponse::DPS_NOT_FOUND` — sinal inequívoco,
-     * distinto de erros transitórios. Falha de transporte lança
-     * `IndeterminateResultException`.
+     * distinto de erros transitórios. Falha de comunicação lança
+     * `CommunicationException` (`IndeterminateResultException`, ou
+     * `RequestNotDeliveredException` com `detectNotDelivered` ativo).
      */
     public function dps(string $id): NfseResponse;
 
@@ -31,9 +32,9 @@ interface ConsultsNfse
     /**
      * Retorna `true` para HTTP 200 e `false` APENAS para HTTP 404.
      * Qualquer outro status (401, 403, 429, redirect, 5xx…) lança
-     * `HttpException`; falha de transporte lança
-     * `IndeterminateResultException` — nesses casos a existência da DPS é
-     * indeterminada e NÃO é seguro re-emitir.
+     * `HttpException`; falha de comunicação lança `CommunicationException` —
+     * em `IndeterminateResultException` a existência da DPS é indeterminada
+     * e NÃO é seguro re-emitir.
      */
     public function verificarDps(string $id): bool;
 }

@@ -3,13 +3,27 @@
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Request;
 use Illuminate\Http\Client\ConnectionException;
+use OwnerPro\Nfsen\Exceptions\CommunicationException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 
 covers(IndeterminateResultException::class);
 
-it('is an NfseException', function () {
-    expect(new IndeterminateResultException('falha'))->toBeInstanceOf(NfseException::class);
+it('is a CommunicationException and an NfseException', function () {
+    expect(new IndeterminateResultException('falha'))
+        ->toBeInstanceOf(CommunicationException::class)
+        ->toBeInstanceOf(NfseException::class);
+});
+
+it('fromTransportFailureWithPhase uses the explicit phase instead of sniffing the message', function () {
+    $previous = new ConnectionException('cURL error 6: Could not resolve host');
+
+    $exception = IndeterminateResultException::fromTransportFailureWithPhase($previous, 'transfer');
+
+    expect($exception->phase)->toBe('transfer')
+        ->and($exception->getPrevious())->toBe($previous)
+        ->and($exception->getMessage())->toStartWith('Resultado indeterminado:')
+        ->and($exception->getMessage())->toContain('cURL error 6');
 });
 
 it('defaults phase and previous to null', function () {

@@ -5,6 +5,7 @@ arch()->preset()->security();
 arch()->preset()->laravel();
 arch()->preset()->strict()
     ->ignoring('OwnerPro\Nfsen\Exceptions\NfseException')
+    ->ignoring('OwnerPro\Nfsen\Exceptions\CommunicationException')
     ->ignoring('OwnerPro\Nfsen\Facades\Nfsen')
     ->ignoring('OwnerPro\Nfsen\Support\TempFileFactory')
     ->ignoring('OwnerPro\Nfsen\Support\FileReader')
