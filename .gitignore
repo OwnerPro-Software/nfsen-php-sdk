@@ -11,3 +11,6 @@ todo.txt
 .env
 .env.*
 tmp/
+
+# Scripts descartáveis de auditoria de conformidade (o relatório .md fica versionado)
+docs/auditoria/scripts/
