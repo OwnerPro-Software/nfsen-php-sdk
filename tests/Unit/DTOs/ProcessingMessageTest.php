@@ -137,11 +137,11 @@ it('fromApiResult prefers the singular erro when the plural key is empty', funct
         ->and($list[0]->codigo)->toBe('E777');
 });
 
-it('hasApiError agrees with fromApiResult on every shape the API produces', function (array $result, bool $esperado) {
+it('hasApiError agrees with fromApiResult on every shape the API produces', function (array $result, bool $expected) {
     // A classificação (rejeitado vs. processado) e as mensagens extraídas têm de sair
     // da mesma regra — divergir foi o que descartou a chaveAcesso de nota autorizada.
-    expect(ProcessingMessage::hasApiError($result))->toBe($esperado)
-        ->and(ProcessingMessage::fromApiResult($result) !== [])->toBe($esperado);
+    expect(ProcessingMessage::hasApiError($result))->toBe($expected)
+        ->and(ProcessingMessage::fromApiResult($result) !== [])->toBe($expected);
 })->with([
     'sem chave de erro' => [[], false],
     'erros preenchido' => [['erros' => [['codigo' => 'E001']]], true],

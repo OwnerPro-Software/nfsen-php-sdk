@@ -131,10 +131,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
      * as chamadas validarem de fora para dentro (o grupo faltante mais externo sempre
      * lança antes), mas exigido pelo tipo anulável que o PHPStan infere.
      */
-    private function required(?SimpleXMLElement $node, string $caminho): SimpleXMLElement
+    private function required(?SimpleXMLElement $node, string $path): SimpleXMLElement
     {
         if (! $node instanceof SimpleXMLElement || $node->count() === 0) { // @pest-mutate-ignore InstanceOfToTrue — guarda de invariante: validando de fora para dentro, $node nunca chega null; ver docblock.
-            throw new XmlParseException(sprintf('XML da NFS-e não contém o grupo obrigatório %s.', $caminho));
+            throw new XmlParseException(sprintf('XML da NFS-e não contém o grupo obrigatório %s.', $path));
         }
 
         return $node;

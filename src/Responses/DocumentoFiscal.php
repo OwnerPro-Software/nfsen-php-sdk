@@ -46,29 +46,29 @@ final readonly class DocumentoFiscal
      */
     public static function fromArray(array $data): self
     {
-        $problemas = [];
+        $problems = [];
 
         $tipoDocumentoRaw = $data['TipoDocumento'] ?? null;
         $tipoDocumento = $tipoDocumentoRaw !== null ? TipoDocumentoFiscal::tryFrom($tipoDocumentoRaw) : null;
 
         if ($tipoDocumentoRaw === null) {
-            $problemas[] = 'Campo TipoDocumento ausente na resposta do ADN.';
+            $problems[] = 'Campo TipoDocumento ausente na resposta do ADN.';
         } elseif ($tipoDocumento === null) {
-            $problemas[] = sprintf('TipoDocumento desconhecido: "%s".', $tipoDocumentoRaw);
+            $problems[] = sprintf('TipoDocumento desconhecido: "%s".', $tipoDocumentoRaw);
         }
 
         $tipoEventoRaw = $data['TipoEvento'] ?? null;
         $tipoEvento = $tipoEventoRaw !== null ? TipoEventoDistribuicao::tryFrom($tipoEventoRaw) : null;
 
         if ($tipoEventoRaw !== null && $tipoEvento === null) {
-            $problemas[] = sprintf('TipoEvento desconhecido: "%s".', $tipoEventoRaw);
+            $problems[] = sprintf('TipoEvento desconhecido: "%s".', $tipoEventoRaw);
         }
 
         try {
             $arquivoXml = GzipCompressor::decompressB64($data['ArquivoXml'] ?? null);
         } catch (NfseException $nfseException) {
             $arquivoXml = null;
-            $problemas[] = $nfseException->getMessage();
+            $problems[] = $nfseException->getMessage();
         }
 
         return new self(
@@ -78,7 +78,7 @@ final readonly class DocumentoFiscal
             tipoEvento: $tipoEvento,
             arquivoXml: $arquivoXml,
             dataHoraGeracao: $data['DataHoraGeracao'] ?? null,
-            parseError: $problemas === [] ? null : implode(' ', $problemas),
+            parseError: $problems === [] ? null : implode(' ', $problems),
         );
     }
 }

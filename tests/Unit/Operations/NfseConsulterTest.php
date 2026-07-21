@@ -247,9 +247,9 @@ it('danfse parses a SEFIN error envelope larger than 500 bytes', function () {
     // HttpException truncava o corpo em 500 bytes; parseHttpError() faz json_decode()
     // dele, então um envelope maior que o corte virava JSON inválido e as mensagens
     // estruturadas da SEFIN eram trocadas por um genérico "HTTP error: N".
-    $descricaoLonga = str_repeat('detalhe do erro ', 60); // ~960 bytes
+    $longDescription = str_repeat('detalhe do erro ', 60); // ~960 bytes
 
-    $fakeClient = new class($descricaoLonga) implements ExecutesNfseRequests
+    $fakeClient = new class($longDescription) implements ExecutesNfseRequests
     {
         public function __construct(private string $descricao) {}
 
@@ -284,7 +284,7 @@ it('danfse parses a SEFIN error envelope larger than 500 bytes', function () {
 
     expect($response->sucesso)->toBeFalse()
         ->and($response->erros[0]->codigo)->toBe('E999')
-        ->and($response->erros[0]->descricao)->toBe($descricaoLonga);
+        ->and($response->erros[0]->descricao)->toBe($longDescription);
 });
 
 it('danfse returns failure with raw error on non-JSON HttpException', function () {

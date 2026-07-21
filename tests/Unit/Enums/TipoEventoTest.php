@@ -41,12 +41,12 @@ it('covers exactly the tipoEvento codes the SEFIN API accepts', function () {
     );
 
     $parameters = $swagger['paths']['/nfse/{chaveAcesso}/eventos/{tipoEvento}/{numSeqEvento}']['get']['parameters'];
-    $codigos = array_values(array_filter($parameters, fn (array $p): bool => $p['name'] === 'tipoEvento'))[0]['enum'] ?? [];
+    $codes = array_values(array_filter($parameters, fn (array $p): bool => $p['name'] === 'tipoEvento'))[0]['enum'] ?? [];
 
-    expect(array_column(TipoEvento::cases(), 'value'))->toBe($codigos);
+    expect(array_column(TipoEvento::cases(), 'value'))->toBe($codes);
 });
 
-it('names each code after the event the XSD documents for it', function (TipoEvento $case, string $trechoDaDocumentacao) {
+it('names each code after the event the XSD documents for it', function (TipoEvento $case, string $documentationExcerpt) {
     // Este é o teste que travaria o defeito corrigido na 3.0.0: nome apontando para o
     // código de outro evento. A documentação do XSD é prosa livre, então a âncora de
     // cada código é escolhida à mão — o suficiente para provar que o nome do caso
@@ -57,13 +57,13 @@ it('names each code after the event the XSD documents for it', function (TipoEve
     $xpath = new DOMXPath($xsd);
     $xpath->registerNamespace('xs', 'http://www.w3.org/2001/XMLSchema');
 
-    $documentacao = $xpath->query(sprintf(
+    $documentation = $xpath->query(sprintf(
         '//xs:element[@name="e%d"]/xs:annotation/xs:documentation',
         $case->value,
     ));
 
-    expect($documentacao->length)->toBe(1)
-        ->and(trim((string) $documentacao->item(0)?->textContent))->toContain($trechoDaDocumentacao);
+    expect($documentation->length)->toBe(1)
+        ->and(trim((string) $documentation->item(0)?->textContent))->toContain($documentationExcerpt);
 })->with([
     // 467201 e 907201 ficam de fora: não constam em nenhum XSD, só no swagger.
     [TipoEvento::Cancelamento, 'Evento de cancelamento'],
