@@ -215,6 +215,34 @@ it('cancelar throws InvalidArgumentException for invalid chaveAcesso', function 
     ))->toThrow(InvalidArgumentException::class, 'chaveAcesso inválida');
 });
 
+it('cancelar builds a valid dhEvento on a host whose offset has non-zero minutes', function (string $timezone) {
+    // TSDateTimeUTC só aceita offset com minuto zero e na faixa -11..+12, então
+    // date('c') gerava valor reprovado pelo XSD em host com timezone quebrado —
+    // todo cancelamento falhava por lá. gmdate('c') é sempre válido.
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode((string) gzencode('<Evento/>'))], 201)]);
+
+    $originalTimezone = date_default_timezone_get();
+    date_default_timezone_set($timezone);
+
+    try {
+        $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+        $response = $client->cancelar(
+            '12345678901234567890123456789012345678901234567890',
+            CodigoJustificativaCancelamento::ErroEmissao,
+            'Erro na emissao da nota fiscal',
+        );
+
+        expect($response->sucesso)->toBeTrue();
+    } finally {
+        date_default_timezone_set($originalTimezone);
+    }
+})->with([
+    'India +05:30' => ['Asia/Kolkata'],
+    'Nepal +05:45' => ['Asia/Kathmandu'],
+    'Chatham +12:45' => ['Pacific/Chatham'],
+    'Brasil -03:00' => ['America/Sao_Paulo'],
+]);
+
 it('cancelar rejects a chaveAcesso with a trailing newline', function () {
     // `/^\d{50}$/` sem o modificador /D casa também antes de um \n final: a chave
     // passava na validação e ia interpolada na URL, produzindo uma URL malformada

@@ -38,6 +38,28 @@ it('performs GET request', function () {
     expect($response)->toHaveKey('nfseXmlGZipB64');
 });
 
+it('getResponse treats an empty 204 as no content, not an unreadable body', function () {
+    Http::fake(['*' => Http::response(null, 204)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    $response = $client->getResponse('https://example.com/contribuintes/DFe/0');
+
+    expect($response->statusCode)->toBe(204)
+        ->and($response->json)->toBe([])
+        ->and($response->body)->toBe('');
+});
+
+it('getResponse keeps a 200 with an empty body indeterminate', function () {
+    // Só o 204 define corpo vazio; num 200 o corpo ausente segue ininterpretável.
+    Http::fake(['*' => Http::response(null, 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    expect(fn () => $client->getResponse('https://example.com/contribuintes/DFe/0'))
+        ->toThrow(IndeterminateResultException::class);
+});
+
 it('returns parsed JSON on 5xx when the body carries a SEFIN rejection', function () {
     // Envelope de erro estruturado prova que a requisição chegou à SEFIN, foi
     // processada e rejeitada — definitivo, apesar do 5xx.

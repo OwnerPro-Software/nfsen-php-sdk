@@ -109,9 +109,17 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
 
             $decoded = json_decode($response->body(), true);
 
-            // Mesma regra de request(): 2xx sem JSON legível nunca vira
+            // 204 é a exceção: "No Content" define corpo vazio, então aqui a ausência
+            // de JSON é a resposta correta, não um corpo ilegível. Sem esta ressalva,
+            // um 204 virava IndeterminateResultException — obrigando o chamador a
+            // reconciliar por um "não há nada" — e deixava inalcançável o branch
+            // EMPTY_RESPONSE de DistribuicaoResponse, escrito justamente para ele.
+            // Um 204 com corpo não-JSON contradiz o próprio status: segue indeterminado.
+            $noContent = $response->status() === 204 && trim($response->body()) === '';
+
+            // Fora daí vale a regra de request(): 2xx sem JSON legível nunca vira
             // resposta "vazia" — é estado indeterminado.
-            if ($response->successful() && ! is_array($decoded)) {
+            if ($response->successful() && ! $noContent && ! is_array($decoded)) {
                 throw IndeterminateResultException::fromUnreadableResponse($response->status(), $response->body());
             }
 

@@ -47,7 +47,11 @@ final readonly class NfseCanceller implements CancelsNfse
             $xml = $this->cancellationBuilder->buildAndValidate(
                 tpAmb: $this->ambiente->value,
                 verAplic: '1.0',
-                dhEvento: date('c'),
+                // gmdate, não date: TSDateTimeUTC só aceita offset de minuto zero e na
+                // faixa -11..+12, então date('c') gera valor inválido em host com
+                // timezone de offset quebrado (+05:30 na Índia, +05:45 no Nepal) ou
+                // em +13:00. UTC é sempre válido e representa o mesmo instante.
+                dhEvento: gmdate('c'),
                 cnpjAutor: $identity['cnpj'],
                 cpfAutor: $identity['cpf'],
                 chNFSe: $chave,

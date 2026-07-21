@@ -93,7 +93,7 @@ $client = NfsenClient::forStandalone(
 $response = $client->emitir([
     'infDPS' => [
         'tpAmb'    => '2',                          // 1 = Producao, 2 = Homologacao
-        'dhEmi'    => date('Y-m-d\TH:i:sP'),       // Data/hora emissao
+        'dhEmi'    => gmdate('Y-m-d\TH:i:sP'),      // Data/hora emissao (UTC: TSDateTimeUTC exige offset de minuto zero)
         'verAplic' => 'MeuSistema_v1.0',
         'serie'    => '1',
         'nDPS'     => '1',
@@ -547,7 +547,7 @@ try {
 
 **Contrato de indeterminação:** capturar `IndeterminateResultException`
 significa que a SEFIN pode ou não ter recebido e processado a requisição. Ela
-cobre quatro situações:
+cobre cinco situações:
 
 1. **Falha antes de qualquer resposta** (timeout, DNS, conexão recusada, TLS)
    — a requisição pode nem ter chegado ao servidor;
@@ -558,8 +558,7 @@ cobre quatro situações:
 4. **Resposta 2xx com JSON válido porém sem o campo obrigatório da operação**
    (ex.: `consultar()->eventos()` sem `eventoXmlGZipB64`) — shape que não ocorre
    em operação normal; ausência comprovada é sinalizada por HTTP 404, nunca por
-   corpo vazio.
-
+   corpo vazio;
 5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
    `emitirDecisaoJudicial`, `cancelar`, `substituir`) **sem rejeição estruturada
    da SEFIN no corpo** — o erro pode ter vindo de um proxy antes da SEFIN, ou da
@@ -567,6 +566,10 @@ cobre quatro situações:
    5xx que **traz** `erros`/`erro` preenchido é rejeição definitiva: prova que a
    requisição chegou e foi processada. Em consultas, 5xx continua lançando
    `HttpException` — não há estado a reconciliar.
+
+> **204 não entra nesta lista.** "No Content" define corpo vazio, então a ausência
+> de JSON ali é a resposta correta e não estado indeterminado — `distribuicao()`
+> devolve `sucesso: false` com o código `EMPTY_RESPONSE`.
 
 Nos cinco casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
 pode já existir e um retry causaria dupla emissão). Calcule o ID com
