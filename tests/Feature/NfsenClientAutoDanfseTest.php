@@ -36,7 +36,7 @@ function makeDanfseAutorizadoApiResponse(): array
     ];
 }
 
-it('forStandalone com danfse array: emit retorna pdf %PDF- e conteúdo esperado', function (DpsData $data) {
+it('forStandalone(danfse: true): emit retorna pdf %PDF- e conteúdo esperado', function (DpsData $data) {
     Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
 
     $client = NfsenClient::forStandalone(
@@ -44,7 +44,7 @@ it('forStandalone com danfse array: emit retorna pdf %PDF- e conteúdo esperado'
         senha: 'secret',
         prefeitura: '9999999',
         validateIdentity: false,
-        danfse: ['logo_path' => false],
+        danfse: true,
     );
 
     $resp = $client->emitir($data);
@@ -90,8 +90,6 @@ it('for() com config.enabled=true ativa auto-render', function (DpsData $data) {
         'nfsen.prefeitura' => '9999999',
         'nfsen.validate_identity' => false,
         'nfsen.danfse.enabled' => true,
-        'nfsen.danfse.logo_path' => false,
-        'nfsen.danfse.municipality' => null,
     ]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
@@ -119,37 +117,6 @@ it('for() com config.enabled=false não ativa auto-render', function (DpsData $d
     expect($resp->pdf)->toBeNull();
 })->with('dpsData');
 
-it('for(danfse: [...]) sobrescreve config global — município do array aparece', function (DpsData $data) {
-    Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
-
-    config([
-        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
-        'nfsen.certificado.senha' => 'secret',
-        'nfsen.prefeitura' => '9999999',
-        'nfsen.validate_identity' => false,
-        'nfsen.danfse.enabled' => true,
-        'nfsen.danfse.municipality' => ['name' => 'Município Global'],
-    ]);
-
-    $client = NfsenClient::for(
-        makePfxContent(),
-        'secret',
-        '9999999',
-        danfse: [
-            'logo_path' => false,
-            'municipality' => ['name' => 'Município Tenant X'],
-        ],
-    );
-
-    $resp = $client->emitir($data);
-
-    expect($resp->pdf)->not->toBeNull();
-
-    $text = (new PdfParser)->parseContent((string) $resp->pdf)->getText();
-    expect($text)->toContain('Município Tenant X');
-    expect($text)->not->toContain('Município Global');
-})->with('dpsData');
-
 it('for(danfse: false) força desligar mesmo com config.enabled=true', function (DpsData $data) {
     Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
 
@@ -159,7 +126,6 @@ it('for(danfse: false) força desligar mesmo com config.enabled=true', function 
         'nfsen.prefeitura' => '9999999',
         'nfsen.validate_identity' => false,
         'nfsen.danfse.enabled' => true,
-        'nfsen.danfse.logo_path' => false,
     ]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999', danfse: false);
@@ -169,7 +135,7 @@ it('for(danfse: false) força desligar mesmo com config.enabled=true', function 
     expect($resp->pdf)->toBeNull();
 })->with('dpsData');
 
-it('forStandalone(danfse: false) equivale a null (paridade)', function (DpsData $data) {
+it('forStandalone(danfse: false) não anexa PDF', function (DpsData $data) {
     Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
 
     $client = NfsenClient::forStandalone(
@@ -178,78 +144,6 @@ it('forStandalone(danfse: false) equivale a null (paridade)', function (DpsData 
         prefeitura: '9999999',
         validateIdentity: false,
         danfse: false,
-    );
-
-    $resp = $client->emitir($data);
-
-    expect($resp->pdf)->toBeNull();
-    expect($resp->pdfErrors)->toBe([]);
-})->with('dpsData');
-
-it('for() com municipality=null (ternário do config retornou null): boot OK e emit gera PDF', function (DpsData $data) {
-    Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
-
-    config([
-        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
-        'nfsen.certificado.senha' => 'secret',
-        'nfsen.prefeitura' => '9999999',
-        'nfsen.validate_identity' => false,
-        'nfsen.danfse.enabled' => true,
-        'nfsen.danfse.logo_path' => false,
-        'nfsen.danfse.municipality' => null, // estado resultante quando env NFSE_DANFSE_MUN_NAME não setado (ternário do config/nfsen.php)
-    ]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $resp = $client->emitir($data);
-
-    // Boot não explodiu + render rodou sem cabeçalho municipal (name filtrado upstream).
-    expect($resp->pdf)->not->toBeNull();
-    expect($resp->pdfErrors)->toBe([]);
-})->with('dpsData');
-
-it('defesa em profundidade: municipality {name: null} vira ausente — emit também gera PDF', function (DpsData $data) {
-    Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
-
-    // Cenário hipotético: array parcial chega via código (não pelo config/nfsen.php
-    // que já tem o ternário). fromArray deve tolerar sem throw E render deve completar.
-    $client = NfsenClient::forStandalone(
-        pfxContent: makePfxContent(),
-        senha: 'secret',
-        prefeitura: '9999999',
-        validateIdentity: false,
-        danfse: [
-            'logo_path' => false,
-            'municipality' => ['name' => null, 'department' => 'X'],
-        ],
-    );
-    $resp = $client->emitir($data);
-
-    expect($resp->pdf)->not->toBeNull();
-    expect($resp->pdfErrors)->toBe([]);
-})->with('dpsData');
-
-it('for(danfse: []) NÃO ativa auto-render — array vazio = sem config válida', function (DpsData $data) {
-    Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
-
-    config(['nfsen.validate_identity' => false]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999', danfse: []);
-
-    $resp = $client->emitir($data);
-
-    expect($resp->pdf)->toBeNull();
-    expect($resp->pdfErrors)->toBe([]);
-})->with('dpsData');
-
-it('forStandalone(danfse: []) NÃO ativa auto-render — paridade com `for()`', function (DpsData $data) {
-    Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
-
-    $client = NfsenClient::forStandalone(
-        pfxContent: makePfxContent(),
-        senha: 'secret',
-        prefeitura: '9999999',
-        validateIdentity: false,
-        danfse: [],
     );
 
     $resp = $client->emitir($data);

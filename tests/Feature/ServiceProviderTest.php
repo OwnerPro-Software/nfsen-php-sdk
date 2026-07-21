@@ -177,7 +177,6 @@ it('SP ativa auto-danfse quando config.danfse.enabled=true — emit retorna pdf'
         'nfsen.validate_identity' => false,
         'nfsen.danfse.enabled' => true,
         'nfsen.danfse.logo_path' => false,
-        'nfsen.danfse.municipality' => null,
     ]);
 
     $resp = app(NfsenClient::class)->emitir($data);

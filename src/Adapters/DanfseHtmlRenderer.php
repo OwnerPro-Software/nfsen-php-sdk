@@ -7,9 +7,7 @@ namespace OwnerPro\Nfsen\Adapters;
 use Closure;
 use OwnerPro\Nfsen\Contracts\Driven\GeneratesQrCode;
 use OwnerPro\Nfsen\Contracts\Driven\RendersDanfseHtml;
-use OwnerPro\Nfsen\Danfse\DanfseConfig;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
-use OwnerPro\Nfsen\Danfse\MunicipalityBranding;
 use Throwable;
 
 final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
@@ -22,30 +20,36 @@ final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
 
     private const string CSS_PATH = __DIR__.'/../../storage/danfse/template.css'; // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — constante de classe avaliada em tempo de compilação.
 
+    /**
+     * Logomarca da NFS-e do canto esquerdo do cabeçalho, exigida pelo item 2.4.3 da NT
+     * 008, que indica o arquivo oficial em gov.br. Vem embarcada no pacote e não é
+     * configurável: substituí-la por marca do emitente imprimiria informação que não
+     * consta do XML, o que o item 2.1 veda, e a NT não reserva quadro para isso.
+     */
+    private const string LOGO_PATH = __DIR__.'/../../storage/danfse/logo-nfse.png'; // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — constante de classe avaliada em tempo de compilação.
+
+    private string $css;
+
+    private string $logo;
+
     public function __construct(
         private GeneratesQrCode $qrGenerator,
-        private DanfseConfig $config,
-    ) {}
+    ) {
+        $this->css = (string) file_get_contents(self::CSS_PATH); // @pest-mutate-ignore RemoveStringCast — file_get_contents retorna string do arquivo embarcado.
+        $this->logo = 'data:image/png;base64,'.base64_encode((string) file_get_contents(self::LOGO_PATH)); // @pest-mutate-ignore RemoveStringCast,ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — data URI do arquivo embarcado.
+    }
 
     public function render(NfseData $data): string
     {
-        /** @var string|null $css */
-        static $css = null;
-        if ($css === null) { // @pest-mutate-ignore IdenticalToNotIdentical,IfNegated — cache idempotente (static local); arquivo CSS embarcado no pacote.
-            $css = (string) file_get_contents(self::CSS_PATH); // @pest-mutate-ignore RemoveStringCast — file_get_contents retorna string do arquivo embarcado.
-        }
-
         $consultaUrl = $data->ambiente->isHomologacao() ? self::CONSULTA_URL_HOMOLOGACAO : self::CONSULTA_URL_PRODUCAO;
         $qrCode = $this->qrGenerator->dataUri($consultaUrl.$data->chaveAcesso);
-        $logo = $this->config->logoDataUri;
-        $municipality = $this->config->municipality;
         $h = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
-        return $this->renderTemplate($data, $qrCode, $logo, $municipality, $css, $h);
+        return $this->renderTemplate($data, $qrCode, $this->logo, $this->css, $h);
     }
 
     /**
-     * As variáveis recebidas aqui (`$data`, `$qrCode`, `$logo`, `$municipality`, `$css`, `$h`)
+     * As variáveis recebidas aqui (`$data`, `$qrCode`, `$logo`, `$css`, `$h`)
      * são consumidas pelo template incluído via `include` — o rector/phpstan não consegue
      * detectar esse uso, por isso a assinatura permanece "rica" mesmo aparentando dead code.
      *
@@ -54,8 +58,7 @@ final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
     private function renderTemplate(
         NfseData $data,
         string $qrCode,
-        ?string $logo,
-        ?MunicipalityBranding $municipality,
+        string $logo,
         string $css,
         Closure $h,
     ): string {

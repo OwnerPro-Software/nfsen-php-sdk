@@ -1,7 +1,6 @@
 <?php
 /** @var \OwnerPro\Nfsen\Danfse\NfseData $data */
-/** @var \OwnerPro\Nfsen\Danfse\MunicipalityBranding|null $municipality */
-/** @var string|null $logo */
+/** @var string $logo */
 /** @var string $qrCode */
 /** @var string $css */
 /** @var \Closure(string):string $h */
@@ -16,10 +15,15 @@
     </style>
 </head>
 <body>
-    <?php if ($data->ambiente->isHomologacao()): ?>
-    <div class="watermark">HOMOLOGAÇÃO</div>
-    <?php endif; ?>
-
+    <?php
+    /*
+     * Marca d'água só nos dois casos da NT: cancelamento (item 2.5.1) e substituição
+     * (item 2.5.2). Homologação é sinalizada pela expressão do cabeçalho (item 2.4.3).
+     *
+     * Comentário em PHP, não em HTML: o texto de um <!-- --> vai para a saída e casaria
+     * com asserções sobre o conteúdo impresso.
+     */
+    ?>
     <?php if ($data->marcaDagua !== null): ?>
     <div class="watermark-nt"><?= $h($data->marcaDagua->texto()) ?></div>
     <?php endif; ?>
@@ -27,38 +31,24 @@
     <!-- Header -->
     <table class="header-table">
         <tr>
+            <!-- Item 2.4.3: no canto esquerdo, a logomarca da NFS-e. -->
             <td class="logo-cell">
-                <?php if ($logo): ?>
-                <img src="<?= $h($logo) ?>" alt="Logo" style="max-width: 130pt; max-height: 40pt;">
-                <?php endif; ?>
+                <img src="<?= $h($logo) ?>" alt="NFS-e" style="max-width: 130pt; max-height: 40pt;">
             </td>
             <td class="title-cell">
                 <div style="font-size: 9pt; font-weight: bold;">DANFSe v2.0</div>
-                <div style="font-size: 7pt; font-weight: bold;">Documento Auxiliar da NFS-e</div>
-                <div style="font-size: 6pt;"><?= $h($data->ambienteGerador) ?></div>
+                <div style="font-size: 9pt; font-weight: bold;">Documento Auxiliar da NFS-e</div>
                 <?php if ($data->ambiente->isHomologacao()): ?>
-                    <div style="color: red; font-weight: bold;">NFS-e SEM VALIDADE JURÍDICA</div>
+                    <div class="sem-validade">NFS-e SEM VALIDADE JURÍDICA</div>
                 <?php endif; ?>
             </td>
-            <td class="municipality-cell">
-                <?php if ($municipality): ?>
-                <table>
-                    <tr>
-                        <?php if ($municipality->logoDataUri): ?>
-                        <td><img style="height: 30pt; width: auto" src="<?= $h($municipality->logoDataUri) ?>" alt="Prefeitura" /></td>
-                        <?php endif; ?>
-                        <td style="font-size: 7pt;">
-                            <?= $h($municipality->name) ?><br>
-                            <?php if ($municipality->department): ?>
-                            <?= $h($municipality->department) ?><br>
-                            <?php endif; ?>
-                            <?php if ($municipality->email): ?>
-                            <?= $h($municipality->email) ?>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
-                </table>
+            <!-- "QUADRO DA IDENT. MUNICÍPIO/AMBIENTE" do item 2.4.3. -->
+            <td class="quadro-ident">
+                <?php if ($data->municipioEmitente !== ''): ?>
+                <div class="header-municipio">Município: <?= $h($data->municipioEmitente) ?></div>
                 <?php endif; ?>
+                <div class="header-ambiente">Ambiente Gerador: <?= $h($data->ambienteGerador) ?></div>
+                <div class="header-ambiente">Tipo de Ambiente: <?= $h($data->ambiente->label()) ?></div>
             </td>
         </tr>
     </table>
@@ -365,7 +355,7 @@
             <tr>
                 <td colspan="4">
                     <span class="label">Descrição do Serviço</span>
-                    <div class="value expandable-text"><?= $h($data->servico->descricao) ?></div>
+                    <div class="value texto-livre"><?= $h($data->servico->descricao) ?></div>
                 </td>
             </tr>
         </table>
@@ -569,36 +559,30 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td colspan="4" class="section-header">
+                <td style="width: 25%;" class="section-header">
                   <span class="section-title">VALOR TOTAL DA NFS-e</span>
                 </td>
-            </tr>
-            <tr>
                 <td style="width: 25%;">
-                    <span class="label">Valor do Serviço</span>
+                    <span class="label">Valor da Operação / Serviço</span>
                     <span class="value"><?= $h($data->totais->valorServico) ?></span>
-                </td>
-                <td style="width: 25%;">
-                    <span class="label">Desconto Condicionado</span>
-                    <span class="value"><?= $h($data->totais->descontoCondicionado) ?></span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Desconto Incondicionado</span>
                     <span class="value"><?= $h($data->totais->descontoIncondicionado) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">ISSQN Retido</span>
-                    <span class="value"><?= $h($data->totais->issqnRetido) ?></span>
+                    <span class="label">Desconto Condicionado</span>
+                    <span class="value"><?= $h($data->totais->descontoCondicionado) ?></span>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <span class="label">Total das Retenções Federais</span>
-                    <span class="value"><?= $h($data->totais->retencoesFederais) ?></span>
+                    <span class="label">Total das Retenções (ISSQN / Federais)</span>
+                    <span class="value"><?= $h($data->totais->totalRetencoes) ?></span>
                 </td>
-                <td colspan="2">
-                    <span class="label">PIS/COFINS - Débito Apur. Própria</span>
-                    <span class="value"><?= $h($data->totais->pisCofins) ?></span>
+                <td>
+                    <span class="label">Valor Líquido da NFS-e</span>
+                    <span class="value"><?= $h($data->totais->valorLiquido) ?></span>
                 </td>
                 <td>
                     <span class="label">Total do IBS/CBS</span>
@@ -609,22 +593,14 @@
                     <span class="value"><?= $h($data->totais->valorLiquidoComIbsCbs) ?></span>
                 </td>
             </tr>
-            <tr>
-                <td>
-                    <span class="label">Valor Líquido da NFS-e</span>
-                    <span class="value" style="font-weight: bold;"><?= $h($data->totais->valorLiquido) ?></span>
-                </td>
-            </tr>
         </table>
     </div>
 
     <!--
-        Informações Complementares.
-
-        A NT 008 não dá bloco próprio aos totais aproximados de tributos: a nota 10 do
-        item 2.4.5 os põe aqui dentro, numa linha fixa e obrigatória. Ela fica fora do
-        `.expandable-text` de propósito — aquele quadro corta o que passa da altura, e
-        a nota manda que o corte do texto livre seja "sem prejuízo" desta linha.
+        Os totais aproximados de tributos não têm bloco próprio: a nota 10 do item 2.4.5
+        os põe aqui, numa linha fixa. Ela ocupa uma célula própria porque a nota manda
+        que o corte do texto livre seja "sem prejuízo" dela, e só o layout de tabela
+        garante isso.
     -->
     <div class="bordered-section">
         <table>
@@ -634,10 +610,12 @@
                 </td>
             </tr>
             <tr>
-                <td style="min-height: 20pt; padding: 3pt 5pt;">
-                    <div class="expandable-text">
-                        <span class="value"><?= $h($data->informacoesComplementares) ?></span>
-                    </div>
+                <td style="padding: 3pt 5pt 0 5pt;">
+                    <div class="value texto-livre"><?= $h($data->informacoesComplementares) ?></div>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 0 5pt 3pt 5pt;">
                     <div class="value"><?= $h($data->totaisTributos->linhaNt008()) ?></div>
                 </td>
             </tr>

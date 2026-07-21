@@ -38,7 +38,7 @@ function sampleParticipante(string $nome = 'ACME LTDA'): DanfseParticipante
     );
 }
 
-function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null, string $codigoNbs = '-', ?MarcaDagua $marcaDagua = null): NfseData
+function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfseParticipante $interm = null, string $codigoNbs = '-', ?MarcaDagua $marcaDagua = null, string $municipioEmitente = 'Niterói / RJ'): NfseData
 {
     return new NfseData(
         chaveAcesso: '33033021211222333000181000000000001026010000010000',
@@ -48,6 +48,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
         situacao: 'NFS-e Gerada',
         finalidade: 'NFS-e regular',
         emitidaPor: 'Prestador', ambienteGerador: 'Sistema Nacional da NFS-e',
+        municipioEmitente: $municipioEmitente,
         emitente: sampleParticipante('EMITENTE LTDA'),
         tomador: sampleParticipante('TOMADOR S.A.'),
         intermediario: $interm,
@@ -73,7 +74,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
         tribIbsCbs: new DanfseTributacaoIbsCbs('-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-', '-'),
         totais: new DanfseTotais(
             valorServico: 'R$ 1.500,00', descontoCondicionado: '-', descontoIncondicionado: '-',
-            issqnRetido: 'R$ 27,00', retencoesFederais: 'R$ 52,50', pisCofins: 'R$ 54,75',
+            totalRetencoes: 'R$ 79,50',
             valorLiquido: 'R$ 1.292,75', totalIbsCbs: '-', valorLiquidoComIbsCbs: '-',
         ),
         totaisTributos: new DanfseTotaisTributos(federais: '4.50%', estaduais: '0.10%', municipais: '2.00%'),

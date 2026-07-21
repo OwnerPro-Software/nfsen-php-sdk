@@ -64,10 +64,35 @@ All notable changes to this project will be documented in this file.
 
 - **`"erro": []` deixa de ser classificado como rejeição.** `ProcessingMessage::fromApiResult()` descartava a chave `erro` vazia desde a 2.3.1, mas os nove pontos que decidiam entre rejeição e processamento testavam `isset($result['erro'])` por conta própria. Um corpo `{"erro": [], "chaveAcesso": "35..."}` — forma que a API realmente produz — virava `sucesso: false` com `erros: []` (nenhuma mensagem), **descartando a `chaveAcesso` de uma nota autorizada** e disparando `NfseRejected('UNKNOWN', null)`. O caller perdia a chave e ficava sem base para reconciliar. Afetava `emitir()`, `substituir()`, `cancelar()`, `consultar()->nfse()`, `->dps()`, `->eventos()` e `->danfse()`.
 
+- **O DANFSe não imprimia a marca d'água de NFS-e cancelada ou substituída.** Os itens 2.5.1 e 2.5.2 da NT 008 exigem marca diagonal — "CANCELADA" ou "SUBSTITUÍDA" — no documento auxiliar da nota que saiu de vigência, em Arial de no mínimo 50 pontos e cinza K35. Nada a imprimia. A informação não está no XML: `infNFSe/cStat` só descreve como a nota foi gerada, e cancelamento e substituição chegam depois, como evento separado. Por isso passa a ser escolha de quem renderiza, via `Enums\MarcaDagua` no segundo argumento de `toPdf()`/`toHtml()`.
+
+- **"Informações Complementares" trazia só o `xInfComp`.** O item 2.4.5 define o campo como a união de dez campos espalhados pelo leiaute, cada um com rótulo próprio, na ordem da tabela e separados por ` | `. Substituição (`chSubstda`), documento de referência, obra (`cObra`), inscrição imobiliária, evento (`idAtvEvt`), documento técnico, número e item do pedido e informações da administração municipal (`xOutInf`) nunca chegavam ao papel — dados que o contribuinte declarou e o documento fiscal omitia.
+
+- **Os totais aproximados de tributos ocupavam um bloco que a NT não prevê.** A nota 10 do item 2.4.5 os coloca dentro de "Informações Complementares", numa linha fixa e obrigatória; o template lhes dava quadro próprio, contrariando o item 2.2.4 ("a disposição de campos obrigatoriamente obedecer ao disposto no respectivo anexo"). Os valores também passam a ser lidos de `vTotTrib` quando a NFS-e reporta montantes em vez de percentuais — a mesma nota admite os dois, e só o ramo percentual era tratado.
+
+- **O bloco "VALOR TOTAL DA NFS-e" tinha cinco células numa tabela de quatro colunas.** A quinta transbordava para fora da moldura e arrastava o rodapé do documento junto. O bloco passa a ter o desenho de duas linhas do Anexo I. Na mesma correção, "Total das Retenções (ISSQN / Federais)" volta a ser o campo único que o item 2.1.11 define (`vTotalRet`, que o fisco já soma; recalculado apenas quando ausente, que é `minOccurs=0`) — estava dividido em dois. Saíram do bloco "ISSQN Retido" e "PIS/COFINS - Débito Apuração Própria", que a NT não põe ali: o primeiro está no bloco de tributação municipal e o segundo no federal.
+
+- **O canto direito do cabeçalho não trazia nenhum dos três campos do item 2.4.3.** Município do emitente (`xLocEmi` + UF, 8 pontos), ambiente gerador e tipo de ambiente (6 pontos). O ambiente gerador aparecia no centro, onde não é o lugar dele, e o tipo de ambiente não era impresso. A linha do município é suprimida quando o item do código de tributação nacional é 99, como a própria tabela do item 2.4.5 determina.
+
+- **Uma NFS-e cancelada em homologação saía com duas marcas d'água sobrepostas.** A de "HOMOLOGAÇÃO" não vinha da NT — que sinaliza esse ambiente pela expressão "NFS-e SEM VALIDADE JURÍDICA" no cabeçalho (item 2.4.3) — e ainda esbarrava no item 2.1, que proíbe imprimir o que não consta do arquivo da NFS-e. Removida.
+
+- **O quadro de texto livre cortava no meio de uma linha e a linha de totais era desenhada por cima.** O teto de 44pt não era múltiplo da entrelinha, e a linha fixa de totais aproximados, sendo irmã do texto na mesma célula, era sobreposta pelo que transbordava — exatamente o que a nota 10 quer evitar ao mandar que o corte seja "sem prejuízo" dela. Os dois quadros de texto livre passam a crescer sem teto, como o item 2.3.1 prevê, e a linha de totais ganhou célula própria.
+
+- **`Formatter::limit()` podia devolver só o rótulo no lugar do campo inteiro.** O recuo até o último espaço, que existe para não partir palavra ao meio, não tinha piso: num texto quase sem espaços — uma chave de acesso, um código longo, um rótulo seguido de dado contínuo — o único espaço podia estar no começo, e um campo de 1500 caracteres saía como `Inf. Cont.:...`, 14 caracteres. O recuo agora só vale se preservar 90% do limite.
+
+- **As margens do formulário estavam acima do máximo da NT.** O item 2.2.2 fixa entre 0,15 cm e 0,20 cm em cada lateral, inclusive superior e inferior; estavam em 0,247 cm. Corrigidas para 0,176 cm — e eram justamente esses pontos que faltavam para o pior caso da norma caber na página única do item 2.2.
+
+- **O código da NBS era impresso dentro de "Informações Complementares".** O item 2.4.5 o declara campo do bloco "Serviço Prestado", ao lado do código de tributação. Movido, e na mesma correção o local da prestação passa a concatenar município, UF e país no campo único que a NT prescreve.
+
 ### Added
 
 - `IndeterminateResultException::fromServerError()` — 5xx sem rejeição estruturada da SEFIN. Sem `phase`: nenhuma fase de transporte falhou, a resposta chegou inteira; o que falta é evidência sobre o processamento.
 - `ProcessingMessage::hasApiError()` — critério único de "a resposta traz erro da SEFIN". Classificação e extração de mensagens agora derivam da mesma regra interna, o que impede a divergência acima de voltar. Também resolve o caso `{"erros": [], "erro": {...}}`, em que o plural vazio escondia o singular preenchido.
+
+- `Enums\MarcaDagua` — marca d'água dos itens 2.5.1 e 2.5.2 (`Cancelada`, `Substituida`), com `texto()` devolvendo o que vai impresso. Aceita como segundo argumento de `RendersDanfse::toPdf()`/`toHtml()` e de `BuildsDanfseData::build()`; omitir imprime o DANFSe sem marca, como nota vigente.
+- `NfseData::$municipioEmitente` — campo "MUNICÍPIO" do quadro de identificação (`xLocEmi` + UF). String vazia quando a NT manda não exibir (item 99 do código de tributação nacional), distinta do `-` que marca campo sem dado.
+- `NfseData::$marcaDagua` — a marca escolhida para aquele documento, ou `null`.
+- `DanfseTotaisTributos::linhaNt008()` — a linha fixa da nota 10, com o texto e a pontuação transcritos da nota.
 
 ### Changed
 
@@ -99,6 +124,24 @@ All notable changes to this project will be documented in this file.
   `Cancelamento` (101101) segue como default de `consultar()->eventos()` — só o nome mudou.
 
 - `TipoEvento` passou a compartilhar o vocabulário de `TipoEventoDistribuicao`: os mesmos eventos, vistos pelos canais de consulta e de distribuição, agora têm o mesmo nome nos dois enums.
+
+- **BREAKING — o DANFSe deixou de ser customizável.** Saem `Danfse\DanfseConfig`, `Danfse\MunicipalityBranding`, `Danfse\LogoLoader`, o trait `Danfse\Concerns\ValidatesArrayShape`, o argumento de `NfsenClient::danfse()` e as chaves `logo_path`, `logo_data_uri` e `municipality` da configuração, com as variáveis `NFSE_DANFSE_LOGO_PATH`, `NFSE_DANFSE_LOGO_DATA_URI` e `NFSE_DANFSE_MUN_*`. O bloco `danfse` de `config/nfsen.php` fica só com `enabled`, e o parâmetro `$danfse` de `for()`/`forStandalone()` passa de `array|false|null` para `bool` — ele só liga e desliga o auto-render.
+
+  A NT 008 descreve o documento campo a campo e não deixa nada à escolha do emissor. O item 2.2.4 obriga a seguir o Anexo I; o item 2.1 proíbe imprimir o que não consta do arquivo da NFS-e; os itens 2.3.1 a 2.3.3 listam as únicas alterações permitidas, todas supressões de blocos vazios. Havia dois pontos de entrada para conteúdo arbitrário, ambos no cabeçalho:
+
+  **Identificação da prefeitura** (`MunicipalityBranding`) substituía o quadro que o item 2.4.3 reserva ao município do emitente, ao ambiente gerador e ao tipo de ambiente — os três campos deixavam de ser impressos. A NT não esqueceu o caso: dados adicionais do município têm lugar reservado dentro de "Informações Complementares" (`xOutInf`), que passou a ser impresso nesta mesma versão.
+
+  **Logomarca** (`logo_path`/`logo_data_uri`) trocava por qualquer imagem o quadro que o item 2.4.3 dá à logomarca **da NFS-e**, indicando inclusive o arquivo oficial em gov.br; `logo_path: false` a suprimia por completo. Ela agora vem sempre de `storage/danfse/logo-nfse.png`, embarcado no pacote. A NT não reserva quadro para marca do emitente em lugar nenhum do documento.
+
+  Os dois eram herança do port de `andrevabo/danfse-nacional`, anterior à NT 008 — de quando cada município tinha layout próprio e o DANFSe vinha da API do ADN, sobrestada em 01/07/2026.
+
+  **Migração.** Remova as chaves e as variáveis de ambiente; `NFSE_DANFSE_AUTO` continua. `danfse(['logo_path' => …])` vira `danfse()`. `for(danfse: [...])` vira `for(danfse: true)`; `for(danfse: false)` e `forStandalone(danfse: false)` seguem funcionando com o mesmo significado.
+
+- **BREAKING — `DanfseTotais`: `$issqnRetido`, `$retencoesFederais` e `$pisCofins` deram lugar a `$totalRetencoes`.** O item 2.1.11 define um campo só para o bloco de totais, e os outros dois valores já têm lugar próprio: o ISSQN retido no bloco de tributação municipal (`tribMun->retencaoIssqn` e `->issqnApurado`) e o PIS/COFINS de apuração própria no federal (`tribFed->pis` e `->cofins`). Nenhuma informação se perdeu do documento.
+
+- **BREAKING — `NfseData` ganhou `$municipioEmitente` entre `$ambienteGerador` e `$emitente`.** Quem constrói o DTO por argumentos posicionais precisa ajustar; por argumentos nomeados, basta acrescentar o campo.
+
+- **`informacoesComplementares` volta ao limite da NT.** Era cortado em 1000 caracteres, escolha do SDK para forçar a página única do item 2.2; passa a usar os 1997 da própria norma, com reticências acima disso, num campo de 2000. Cortar metade do campo era decidir por conta própria o que o contribuinte declarou. A página única passou a ser sustentada pelo layout — margens do item 2.2.2 e entrelinha —, verificada a cada execução por teste que renderiza o PDF e conta as páginas no pior caso da norma.
 
 ### Notas
 

@@ -24,7 +24,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 
 ## Requisitos
 
-- PHP 8.2+
+- PHP 8.3+
 - Extensões: `curl`, `dom`, `zlib`, `openssl`, `mbstring`, `libxml`
 - Laravel 11 ou 12 (opcional — funciona standalone)
 
@@ -647,41 +647,17 @@ $pdf = $client->danfse()->toPdf($response->xml);
 file_put_contents('danfse.pdf', $pdf->pdf);
 ```
 
-### Customização via array
+### Sem customização
 
-```php
-$resp = $client->danfse([
-    'logo_path' => '/path/to/custom-logo.png',
-    'municipality' => [
-        'name' => 'São Paulo',
-        'department' => 'SF/SUBTES',
-        'email' => 'nfse@sp.gov.br',
-    ],
-])->toPdf($response->xml);
+`danfse()` não recebe argumentos, e é de propósito. O layout inteiro vem da
+[NT 008][nt008] e o conteúdo, do XML da NFS-e — o item 2.1 é explícito: "não poderão
+ser impressas informações que não constem do arquivo da NFS-e".
 
-if ($resp->sucesso) {
-    file_put_contents('danfse.pdf', $resp->pdf);
-}
-```
-
-### Customização via DTO (equivalente)
-
-```php
-use OwnerPro\Nfsen\Danfse\DanfseConfig;
-use OwnerPro\Nfsen\Danfse\MunicipalityBranding;
-
-$config = new DanfseConfig(
-    logoPath: '/caminho/para/logo.png',
-    municipality: new MunicipalityBranding(
-        name: 'Município de Canela',
-        department: '(54) 3282-5155',
-        email: 'issqn@canela.rs.gov.br',
-        logoPath: '/caminho/para/brasao.png',
-    ),
-);
-
-$pdf = $client->danfse($config)->toPdf($response->xml);
-```
+Isso vale também para as duas imagens que um DANFSe pode sugerir. A NT reserva um único
+quadro para logomarca, no canto esquerdo do cabeçalho, e o item 2.4.3 diz de quem ele é:
+da **NFS-e**, com o arquivo oficial indicado em gov.br. Ele vem embarcado no pacote
+(`storage/danfse/logo-nfse.png`) e é sempre impresso. Não há quadro reservado à marca do
+emitente nem à identificação da prefeitura em lugar nenhum do documento.
 
 ### NFS-e cancelada ou substituída
 
@@ -766,6 +742,11 @@ Comportamentos que valem conhecer:
 
   Campo ausente some junto com o rótulo — `Cod. Obra: -` numa nota que não é de obra
   gastaria a linha e sugeriria um dado que não existe.
+- **"Total das Retenções (ISSQN / Federais)" é um campo só**, como o item 2.1.11 o
+  define: `vTotalRet`, que o fisco já soma. Quando a NFS-e o omite (é `minOccurs=0`), o
+  SDK refaz a conta que o XSD documenta — Σ(vRetCP + vRetIRRF + vRetCSLL + ISSQN
+  retido). O ISSQN retido aparece no bloco municipal e o PIS/COFINS de apuração
+  própria, no federal; nenhum dos dois é campo do bloco de totais.
 - **Totais aproximados de tributos não têm bloco próprio.** A nota 10 os põe dentro de
   "Informações Complementares", numa linha fixa e obrigatória. Ela vive em
   `DanfseTotaisTributos::linhaNt008()` e é impressa fora da área que trunca, porque a
@@ -774,6 +755,10 @@ Comportamentos que valem conhecer:
   os dois.
 - **Descrição do código de tributação é um campo só**: municipal quando existe,
   nacional como alternativa — nunca as duas.
+- **O canto direito do cabeçalho traz três campos**, como manda o item 2.4.3: município
+  do emitente (`xLocEmi` + UF, 8pt), ambiente gerador e tipo de ambiente (6pt). A
+  linha do município some quando o item do código de tributação nacional é 99 — a
+  própria NT manda não exibi-la ali.
 - **Marca d'água de cancelamento/substituição vem de fora.** O XML não a carrega; ver
   [NFS-e cancelada ou substituída](#nfs-e-cancelada-ou-substituída).
 - **Códigos viram descrições.** `cStat`, `finNFSe`, `tpEmit`, `ambGer`, `tpImunidade`,
@@ -807,13 +792,14 @@ echo $data->tribIbsCbs->valorTotalIbs;   // "R$ 108,00"
 | `finalidade` | `string` | Descrição de `finNFSe` |
 | `emitidaPor` | `string` | Descrição de `tpEmit` |
 | `ambienteGerador` | `string` | Descrição de `ambGer` |
+| `municipioEmitente` | `string` | `xLocEmi / UF`; vazio quando a NT manda não exibir |
 | `emitente`, `tomador` | `DanfseParticipante` | Prestador e tomador |
 | `intermediario`, `destinatario` | `?DanfseParticipante` | `null` quando ausentes |
 | `destinatarioEhTomador` | `bool` | `indDest = 0` |
 | `servico` | `DanfseServico` | Códigos e descrições do serviço |
 | `tribMun`, `tribFed`, `tribIbsCbs` | DTOs de tributação | ISSQN, federal e IBS/CBS |
 | `totais`, `totaisTributos` | `DanfseTotais`, `DanfseTotaisTributos` | Valores e percentuais |
-| `informacoesComplementares` | `string` | União dos dez campos, cortada em 1000 caracteres (ver acima) |
+| `informacoesComplementares` | `string` | União dos dez campos, com reticências acima de 1997 caracteres |
 | `marcaDagua` | `?MarcaDagua` | "CANCELADA"/"SUBSTITUÍDA"; `null` na nota vigente |
 
 Enums com `label()`, que devolvem a descrição do leiaute — todos conferidos contra a
@@ -830,22 +816,22 @@ SituacaoNfse::from('102')->label();   // "NFS-e de Decisão Judicial"
 SituacaoNfse::labelOf('999');         // "-" — código fora do leiaute
 ```
 
-#### Limite conhecido: página única
+#### Página única
 
-O item 2.2 da NT exige que o DANFSe caiba em **uma página**. O layout dela ocupa
-28,77 cm dos 29,30 cm úteis de uma A4 — meio centímetro de folga para o documento
-inteiro.
+O item 2.2 da NT exige que o DANFSe caiba em **uma página**, e ele cabe com os limites
+da própria NT — 1297 caracteres de descrição do serviço e 1997 de informações
+complementares, ambos com reticências acima disso. Não há corte extra do SDK.
 
-Para não estourar, o SDK **corta as informações complementares em 1000 caracteres**,
-com reticências. O campo tem 2000 na NT: as duas regras não cabem juntas neste
-template, e a da página vence, porque documento de duas páginas é inválido enquanto
-texto cortado continua legível. A linha de totais aproximados escapa do corte — a
-nota 10 a declara fixa, e ela é impressa fora da área truncada.
+O que sustenta isso são as medidas da norma, não folga improvisada: margens de 0,176 cm
+(item 2.2.2 admite de 0,15 a 0,20), rótulos de 6pt e conteúdo de 7pt (item 2.4). Os dois
+quadros de texto livre crescem à vontade, como o item 2.3.1 prevê ao mandar "aumentar a
+altura do quadro 'Descrição do Serviço' e/ou 'Informações Complementares'".
 
-O corte é uma heurística calibrada por medição, não uma garantia — a altura renderizada
-depende do glifo, não da contagem de caracteres. A correção definitiva é reconstruir o
-template sobre as medidas por bloco do item 2.4.5. `tests/Unit/Danfse/DanfseSinglePageTest.php`
-renderiza o PDF e conta as páginas, travando o comportamento atual.
+No pior caso da norma — todos os blocos preenchidos e os dois campos livres no teto, em
+caixa alta — sobram cerca de 6pt na página. É pouco, e por isso
+`tests/Unit/Danfse/DanfseSinglePageTest.php` renderiza o PDF e conta as páginas a cada
+execução, incluindo a verificação de que a linha fixa de totais aproximados continua
+impressa.
 
 ### Geração automática do DANFSE
 
@@ -856,10 +842,6 @@ e `consultar()->nfse()` quando a DANFSE é configurada.
 
 ```env
 NFSE_DANFSE_AUTO=true
-NFSE_DANFSE_LOGO_PATH=/path/to/logo.png
-NFSE_DANFSE_MUN_NAME="São Paulo"
-NFSE_DANFSE_MUN_DEPT="SF/SUBTES"
-NFSE_DANFSE_MUN_EMAIL=nfse@sp.gov.br
 ```
 
 ```php
@@ -868,18 +850,10 @@ echo $resp->pdf;                 // string com o PDF (ou null se render falhou)
 print_r($resp->pdfErrors);       // list<ProcessingMessage> quando render falha
 ```
 
-**Modo multi-tenant** — passe o array por requisição:
+**Ligar pontualmente** (mesmo com `NFSE_DANFSE_AUTO=false`):
 
 ```php
-$client = NfsenClient::for($pfx, $senha, $tenant->ibge, danfse: [
-    'logo_path' => $tenant->logoPath,
-    'municipality' => [
-        'name' => $tenant->municipio,
-        'email' => $tenant->emailPrefeitura,
-    ],
-]);
-
-$resp = $client->emitir($dps);
+$client = NfsenClient::for($pfx, $senha, $ibge, danfse: true);
 ```
 
 **Desligar pontualmente** (mesmo com `NFSE_DANFSE_AUTO=true`):

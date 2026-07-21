@@ -136,6 +136,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             finalidade: FinNFSe::labelOf($this->str($infDps->IBSCBS->finNFSe)),
             emitidaPor: TpEmit::labelOf($this->str($infDps->tpEmit)),
             ambienteGerador: AmbienteGerador::labelOf($this->str($inf->ambGer)),
+            municipioEmitente: $this->buildMunicipioEmitente($inf, $emit, $cServ),
             emitente: $this->participantes->prestador($emit, $inf, $prest),
             tomador: $this->participantes->tomador($toma),
             intermediario: $intermediario,
@@ -170,6 +171,33 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         }
 
         return $node;
+    }
+
+    /**
+     * Campo "MUNICÍPIO" do quadro de identificação (item 2.4.5): `xLocEmi` e a UF do
+     * emitente, concatenados.
+     *
+     * A mesma linha traz a única exceção do quadro — "Não exibir, quando o item do
+     * cód. de tributação nacional informado for 99". O item 99 cobre o que não é
+     * tributado pelo município, e nomear um município ali sugeriria uma competência
+     * que não existe. Nesse caso devolve string vazia, e o cabeçalho omite a linha:
+     * '-' diria "sem dado", que é outra coisa.
+     */
+    private function buildMunicipioEmitente(
+        SimpleXMLElement $inf,
+        SimpleXMLElement $emit,
+        SimpleXMLElement $cServ,
+    ): string {
+        if (str_starts_with($this->str($cServ->cTribNac), '99')) {
+            return '';
+        }
+
+        $partes = array_filter(
+            [$this->str($inf->xLocEmi), $this->str($emit->enderNac->UF)],
+            static fn (string $parte): bool => $parte !== '',
+        );
+
+        return $partes === [] ? '-' : implode(' / ', $partes);
     }
 
     private function buildServico(SimpleXMLElement $inf, SimpleXMLElement $serv, SimpleXMLElement $cServ): DanfseServico
@@ -376,11 +404,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         SimpleXMLElement $inf,
     ): DanfseTotais {
         $totCibs = $inf->IBSCBS?->totCIBS; // @pest-mutate-ignore RemoveNullSafeOperator — IBSCBS é minOccurs=0.
-        $vISSQN = $this->str($valNfse->vISSQN);
-        $tpRet = $this->str($tribMun->tpRetISSQN, '1');
-        $issqnRetido = ($vISSQN !== '' && $tpRet !== '1') ? $this->fmt->currency($vISSQN) : '-'; // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
+        $vTotalRet = $this->str($valNfse->vTotalRet);
+        // tpRetISSQN = 1 é "Não Retido": há ISSQN apurado, mas ele não é retenção.
+        $issqnRetido = $this->str($tribMun->tpRetISSQN, '1') !== '1' ? $this->str($valNfse->vISSQN) : '';
 
-        $pc = $tribFed->piscofins;
         // Descontos vivem em infDPS/valores/vDescCondIncond (TCVDescCondIncond, minOccurs=0).
         $desc = $valores->vDescCondIncond;
         $vDescCond = $this->str($desc?->vDescCond); // @pest-mutate-ignore RemoveNullSafeOperator — ?-> previne warning quando <vDescCondIncond> ausente; str(?SimpleXMLElement) já normaliza null.
@@ -390,18 +417,16 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             valorServico: $this->fmt->currency($this->str($valores->vServPrest->vServ)),
             descontoCondicionado: $vDescCond !== '' ? $this->fmt->currency($vDescCond) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             descontoIncondicionado: $vDescIncond !== '' ? $this->fmt->currency($vDescIncond) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
-            issqnRetido: $issqnRetido,
-            // Soma local em vez de valores/vTotalRet: aquele campo é Σ(vRetCP + vRetIRRF
-            // + vRetCSLL + ISSQN retido), e a DANFSE exibe o ISSQN retido em linha própria.
-            retencoesFederais: $this->sumCurrency(
-                $this->str($tribFed->vRetIRRF),
-                $this->str($tribFed->vRetCP),
-                $this->str($tribFed->vRetCSLL),
-            ),
-            pisCofins: $this->sumCurrency(
-                $this->str($pc?->vPis), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
-                $this->str($pc?->vCofins), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-            ),
+            // vTotalRet é minOccurs=0: quando falta, refazemos a soma que o XSD
+            // documenta, senão uma nota com retenções sairia com retenção zero.
+            totalRetencoes: $vTotalRet !== ''
+                ? $this->fmt->currency($vTotalRet)
+                : $this->sumCurrency(
+                    $this->str($tribFed->vRetIRRF),
+                    $this->str($tribFed->vRetCP),
+                    $this->str($tribFed->vRetCSLL),
+                    $issqnRetido,
+                ),
             valorLiquido: $this->fmt->currency($this->str($valNfse->vLiq)),
             // NT 008: "TOTAL DO IBS/CBS" é vIBSTot + vCBS; o líquido com os dois é
             // vTotNF, já somado pelo fisco — não recalculado aqui.
@@ -482,20 +507,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             $preenchidos,
         ));
 
-        // Corte NOSSO, não da NT: ela dá 2000 caracteres a este campo (1997 mais as
-        // reticências), mas também exige (item 2.2) que o DANFSe caiba numa página — e
-        // com todos os blocos presentes as duas regras não cabem juntas neste template.
-        // Escolhemos a da página, porque um documento de duas páginas é inválido,
-        // enquanto um texto cortado permanece legível e as reticências mostram que há
-        // mais.
-        //
-        // 1000 saiu de medição, não de margem arbitrária: com a descrição no máximo
-        // (1300), texto realista em caixa alta — que muitos emissores usam — vira duas
-        // páginas a partir de 1100. Não é garantia: o número de caracteres não
-        // determina a altura renderizada, e texto com glifos muito largos estoura
-        // antes. A correção de verdade é reconstruir o layout sobre as medidas do item
-        // 2.4.5; enquanto isso, este corte cobre o texto que aparece na prática.
-        return $this->fmt->limit($texto, 1000); // @pest-mutate-ignore IncrementInteger,DecrementInteger — limiar medido; 999/1001 não representa regressão.
+        // Item 2.4.5: reticências acima de 1997 caracteres, num campo de 2000.
+        return $this->fmt->limit($texto, 1997); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 1997 vem da NT 008.
     }
 
     /**

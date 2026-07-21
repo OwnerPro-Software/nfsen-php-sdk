@@ -34,6 +34,14 @@ final readonly class NfseData
         public string $emitidaPor,
         /** Descrição de `infNFSe/ambGer` — campo "AMBIENTE GERADOR" da NT 008. */
         public string $ambienteGerador,
+        /**
+         * `infNFSe/xLocEmi` + a UF do emitente — campo "MUNICÍPIO" do quadro de
+         * identificação (NT 008, item 2.4.5).
+         *
+         * String vazia quando a própria NT manda não exibir: item 99 do código de
+         * tributação nacional. Distinto de `'-'`, que é campo sem dado (nota 12).
+         */
+        public string $municipioEmitente,
         public DanfseParticipante $emitente,
         public DanfseParticipante $tomador,
         public ?DanfseParticipante $intermediario,

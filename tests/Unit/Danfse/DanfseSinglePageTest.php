@@ -4,7 +4,6 @@ use OwnerPro\Nfsen\Adapters\BaconQrCodeGenerator;
 use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
 use OwnerPro\Nfsen\Adapters\DanfseHtmlRenderer;
 use OwnerPro\Nfsen\Adapters\DompdfHtmlToPdfConverter;
-use OwnerPro\Nfsen\Danfse\DanfseConfig;
 
 /**
  * O DANFSe tem de caber numa página A4.
@@ -21,7 +20,7 @@ use OwnerPro\Nfsen\Danfse\DanfseConfig;
 function nfsenRenderizaPdf(string $xml): string
 {
     $data = (new DanfseDataBuilder)->build($xml);
-    $html = (new DanfseHtmlRenderer(new BaconQrCodeGenerator, new DanfseConfig(logoPath: false)))->render($data);
+    $html = (new DanfseHtmlRenderer(new BaconQrCodeGenerator))->render($data);
 
     return (new DompdfHtmlToPdfConverter)->convert($html);
 }
@@ -42,12 +41,8 @@ function nfsenContaPaginas(string $pdf): int
  * máximo que a NT admite — 1300 caracteres de descrição e 2000 de informações
  * complementares, ambos em caixa alta, que é mais larga e quebra linha antes.
  *
- * O pior caso vem da especificação, não de um número escolhido a dedo.
- *
- * Cabe porque o builder corta as informações complementares em 1000 caracteres.
- * Esse corte é uma escolha entre duas regras da própria NT que não cabem juntas
- * neste template: o campo de 2000 caracteres e a página única do item 2.2. Ver a
- * justificativa em DanfseDataBuilder::fromInf().
+ * O pior caso vem da especificação, não de um número escolhido a dedo. E cabe com os
+ * limites da própria NT: nada de corte extra do SDK para forçar a página única.
  */
 function nfsenXmlNoLimite(): string
 {
@@ -118,8 +113,20 @@ it('keeps the fullest NFS-e the norm allows on a single page', function () {
     expect($data->servico->descricao)->toEndWith('...');
     expect(mb_strlen($data->servico->descricao))->toBeGreaterThan(1250);
     expect($data->informacoesComplementares)->toEndWith('...');
-    expect(mb_strlen($data->informacoesComplementares))->toBeGreaterThan(950);
+    expect(mb_strlen($data->informacoesComplementares))->toBeGreaterThan(1900);
 
+    expect(nfsenContaPaginas(nfsenRenderizaPdf($xml)))->toBe(1);
+});
+
+it('keeps the fixed totals line on the page even at the worst case', function () {
+    // Nota 10: o corte do texto livre é "sem prejuízo" desta linha. Ela é a última
+    // coisa impressa, então é a primeira a ser empurrada para uma segunda página —
+    // e com uma página só, tudo que está no HTML está nela.
+    $xml = nfsenXmlNoLimite();
+    $data = (new DanfseDataBuilder)->build($xml);
+    $html = (new DanfseHtmlRenderer(new BaconQrCodeGenerator))->render($data);
+
+    expect($html)->toContain('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012');
     expect(nfsenContaPaginas(nfsenRenderizaPdf($xml)))->toBe(1);
 });
 
@@ -128,13 +135,13 @@ it('marks the complementary information it had to cut', function () {
     // reticências avisam o leitor de que há texto além do impresso.
     $xml = (string) preg_replace(
         '|<xInfComp>[^<]*</xInfComp>|',
-        '<xInfComp>'.str_repeat('a', 1500).'</xInfComp>',
+        '<xInfComp>'.str_repeat('a', 2500).'</xInfComp>',
         (string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-autorizada.xml'),
     );
     $data = (new DanfseDataBuilder)->build($xml);
 
     // Sem espaços para recuar, o corte cai exatamente no teto mais as reticências.
-    expect(mb_strlen($data->informacoesComplementares))->toBe(1003);
+    expect(mb_strlen($data->informacoesComplementares))->toBe(2000);
     expect($data->informacoesComplementares)->toEndWith('...');
 });
 

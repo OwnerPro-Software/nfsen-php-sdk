@@ -52,9 +52,6 @@ final class NfsenServiceProvider extends ServiceProvider
                 throw new RuntimeException('Falha ao ler arquivo de certificado digital.');
             }
 
-            $danfseBlock = $config['danfse'] ?? null;
-            $danfsePayload = NfsenClient::isDanfseEnabled($danfseBlock) ? $danfseBlock : null;
-
             return NfsenClient::forStandalone(
                 pfxContent: $certContent,
                 senha: $certSenha,
@@ -65,7 +62,7 @@ final class NfsenServiceProvider extends ServiceProvider
                 sslVerify: $config['ssl_verify'],
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
-                danfse: $danfsePayload,
+                danfse: NfsenClient::isDanfseEnabled($config['danfse'] ?? null),
                 // Chave opcional: configs publicados antes da 2.6.0 não a possuem.
                 // Sem esta linha o binding do container caía no default `false`, e
                 // um app com NFSE_DETECT_NOT_DELIVERED=true recebia contratos de

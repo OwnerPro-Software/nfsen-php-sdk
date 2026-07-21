@@ -16,11 +16,13 @@ body {
     line-height: 1.1;
     font-size: 6.5pt;
     color: #000;
-    margin: 7pt;
-    padding: 2pt 7pt;
+    /* Item 2.2.2: margem de 0,15cm (4,25pt) a 0,20cm (5,67pt), inclusive em cima e
+       embaixo. É essa folga que faz o pior caso caber na página única do item 2.2. */
+    margin: 5pt;
+    padding: 0 5pt;
     border: 1pt #000 solid;
-    max-height: 814pt;
-    overflow: hidden;
+    /* A4 (841,89pt) menos as duas margens e as duas bordas. */
+    max-height: 829pt;
 }
 
 table {
@@ -101,11 +103,34 @@ table > tbody > tr > td {
     vertical-align: middle;
 }
 
-.municipality-cell {
+.quadro-ident {
     width: 150pt;
     text-align: left;
-    font-size: 5.5pt;
     vertical-align: top;
+}
+
+/* NT 008, item 2.4.3: município do emitente em 8 pontos, formato normal. */
+.header-municipio {
+    font-size: 8pt;
+    font-weight: normal;
+}
+
+/* Item 2.4.3: ambiente gerador e tipo de ambiente em 6 pontos, formato normal. */
+.header-ambiente {
+    font-size: 6pt;
+    font-weight: normal;
+}
+
+/*
+ * Item 2.4.3: "impressa em negrito, com tamanho de nove (9) pontos, fonte Arial e em
+ * vermelho sólido (M100/Y100)" — magenta e amarelo cheios, sem ciano nem preto, que
+ * em RGB é o vermelho puro.
+ */
+.sem-validade {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9pt;
+    font-weight: bold;
+    color: #ff0000;
 }
 
 .qr-container {
@@ -115,26 +140,12 @@ table > tbody > tr > td {
     top: 0;
 }
 
-/* Watermark para homologação */
-.watermark {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-45deg);
-    font-size: 48pt;
-    font-weight: bold;
-    color: rgba(200, 200, 200, 0.3);
-    z-index: -1;
-    white-space: nowrap;
-}
-
 /*
  * Marca d'água de NFS-e cancelada/substituída — NT 008, itens 2.5.1 e 2.5.2:
  * "na diagonal, impressa em formato normal, com tamanho mínimo de cinquenta (50)
  * pontos, fonte Arial e em cinza (K35)". K35 = 35% de preto = #a6a6a6.
  *
- * Distinta de `.watermark` (HOMOLOGAÇÃO), que é decoração nossa: esta é exigida
- * pela NT e por isso segue as medidas dela à risca, sem negrito nem transparência.
+ * É a única marca d'água do documento: a NT não prevê outra.
  */
 .watermark-nt {
     position: fixed;
@@ -149,19 +160,15 @@ table > tbody > tr > td {
     white-space: nowrap;
 }
 
-/* Overflow protection: garante 1 página mesmo com descrições longas */
 /*
  * Áreas de texto livre — "Descrição do Serviço" e "Informações Complementares".
  *
- * A NT 008 fixa a página (item 2.2) mas deixa estes dois quadros absorverem a
- * folga: o item 2.3.1 manda "aumentar a altura do quadro 'Descrição do Serviço'
- * e/ou 'Informações Complementares'" na mesma medida do que for suprimido. O
- * inverso também vale — com todos os blocos presentes, é aqui que o espaço
- * acaba. Os tetos abaixo somam a folga que o item 2.4.5 reserva aos dois
- * quadros; sem eles, uma descrição no limite do XSD leva o DANFSe à segunda
- * página, contrariando o item 2.2.
+ * Crescem sem teto: o item 2.3.1 os trata como elásticos, mandando "aumentar a altura
+ * do quadro 'Descrição do Serviço' e/ou 'Informações Complementares'" na medida do que
+ * for suprimido. A entrelinha justa é o que faz o pior caso da norma — 1297 caracteres
+ * de descrição e 1997 de informações complementares — caber na página única do item 2.2.
  */
-.expandable-text {
-    max-height: 44pt;
-    overflow: hidden;
+.texto-livre {
+    line-height: 1.05;
+    text-align: justify;
 }

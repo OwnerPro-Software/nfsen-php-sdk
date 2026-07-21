@@ -123,7 +123,6 @@ $NAO_LIDOS = [
  */
 $LIDOS_MAS_INVISIVEIS = [
     'DADOS DA NFS-e :: CHAVE DE ACESSO DA NFS-E' => 'vem do atributo Id (`$inf->attributes()->Id`), e a expansão do XSD só cataloga elementos',
-    'VALOR TOTAL DA NFS-E :: TOTAL DAS RETENÇÕES (ISSQN / FEDERAIS)' => 'somado em código a partir de vRetIRRF, vRetCP e vRetCSLL, sem caminho próprio',
 ];
 
 it('knows exactly which notice fields the builder still does not read', function () use ($FIXTURE, $NAO_LIDOS, $LIDOS_MAS_INVISIVEIS) {

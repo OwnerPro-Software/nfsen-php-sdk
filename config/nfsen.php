@@ -23,23 +23,11 @@ return [
 
     // DANFSE auto-render. Quando `enabled=true`, `NfsenClient::for()` anexa o PDF
     // ao NfseResponse em emitir/emitirDecisaoJudicial/substituir/consultar()->nfse().
-    // Em multi-tenant, passe o array explicitamente em NfsenClient::for(danfse: [...]).
+    // Sobrescreva por chamada com NfsenClient::for(danfse: true|false).
+    //
+    // Não há mais o que configurar além disso: o layout inteiro do DANFSe vem da
+    // NT 008 e do XML da NFS-e.
     'danfse' => [
         'enabled' => (bool) env('NFSE_DANFSE_AUTO', false),
-        // logo_path/logo_data_uri: env vazia (`NFSE_DANFSE_LOGO_PATH=`) vira null para não
-        // tentar carregar arquivo com path ''. Não setar (null) → DanfseConfig usa logo padrão.
-        // Para emitir sem logo algum, construir via código: NfsenClient::for(danfse: ['logo_path' => false]).
-        'logo_path' => env('NFSE_DANFSE_LOGO_PATH', '') !== '' ? env('NFSE_DANFSE_LOGO_PATH') : null,
-        'logo_data_uri' => env('NFSE_DANFSE_LOGO_DATA_URI', '') !== '' ? env('NFSE_DANFSE_LOGO_DATA_URI') : null,
-        // Bloco municipality é incluído apenas quando MUN_NAME tem valor real (!= ''/null).
-        // env() retorna '' quando a var existe no .env mas está sem valor (NFSE_DANFSE_MUN_NAME=),
-        // retorna null quando a var não está setada. Comparação !== '' cobre ambos os casos (default '').
-        'municipality' => env('NFSE_DANFSE_MUN_NAME', '') !== '' ? [
-            'name' => env('NFSE_DANFSE_MUN_NAME'),
-            'department' => env('NFSE_DANFSE_MUN_DEPT', ''),
-            'email' => env('NFSE_DANFSE_MUN_EMAIL', ''),
-            'logo_path' => env('NFSE_DANFSE_MUN_LOGO_PATH', '') !== '' ? env('NFSE_DANFSE_MUN_LOGO_PATH') : null,
-            'logo_data_uri' => env('NFSE_DANFSE_MUN_LOGO_DATA_URI', '') !== '' ? env('NFSE_DANFSE_MUN_LOGO_DATA_URI') : null,
-        ] : null,
     ],
 ];

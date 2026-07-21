@@ -359,17 +359,29 @@ it('extracts totais fields', function () {
     expect($data->totais->valorServico)->toBe('R$ 1.500,00');
     expect($data->totais->descontoCondicionado)->toBe('R$ 50,00');
     expect($data->totais->descontoIncondicionado)->toBe('R$ 100,00');
-    expect($data->totais->issqnRetido)->toBe('R$ 27,00'); // tpRetISSQN=2 (retido)
-    expect($data->totais->retencoesFederais)->toBe('R$ 52,50');
-    expect($data->totais->pisCofins)->toBe('R$ 54,75');
+    // Sem vTotalRet no XML, a soma de reserva: IRRF 22,50 + CP 15,00 + CSLL 15,00,
+    // mais o ISSQN retido de 27,00 (tpRetISSQN = 2).
+    expect($data->totais->totalRetencoes)->toBe('R$ 79,50');
     expect($data->totais->valorLiquido)->toBe('R$ 1.292,75');
 });
 
-it('returns dash for issqnRetido when tpRetISSQN is 1 (não retido)', function () {
-    $xml = str_replace('<tpRetISSQN>2</tpRetISSQN>', '<tpRetISSQN>1</tpRetISSQN>', $this->xml);
+it('prefers the total of retentions the tax authority already computed', function () {
+    // vTotalRet é minOccurs=0, mas quando vem é ele que a NT manda imprimir — refazer
+    // a conta por cima do fisco só produziria divergência.
+    $xml = str_replace('<vLiq>', '<vTotalRet>81.00</vTotalRet><vLiq>', $this->xml);
+
     $data = $this->builder->build($xml);
 
-    expect($data->totais->issqnRetido)->toBe('-');
+    expect($data->totais->totalRetencoes)->toBe('R$ 81,00');
+});
+
+it('leaves the ISSQN out of the retentions total when it was not withheld', function () {
+    // tpRetISSQN = 1 é "Não Retido": há ISSQN apurado, mas ele não é retenção.
+    $xml = str_replace('<tpRetISSQN>2</tpRetISSQN>', '<tpRetISSQN>1</tpRetISSQN>', $this->xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->totais->totalRetencoes)->toBe('R$ 52,50');
 });
 
 it('returns dash for descontos when absent', function () {
@@ -390,16 +402,14 @@ it('returns dash for descontos when vDescCondIncond block is omitted', function 
     expect($data->totais->descontoIncondicionado)->toBe('-');
 });
 
-it('returns dash for retencoes sums when all empty', function () {
+it('returns a dash when the NFS-e has no retentions at all', function () {
     $xml = preg_replace('|<vRetIRRF>[^<]+</vRetIRRF>|', '<vRetIRRF></vRetIRRF>', $this->xml);
     $xml = preg_replace('|<vRetCP>[^<]+</vRetCP>|', '<vRetCP></vRetCP>', (string) $xml);
     $xml = preg_replace('|<vRetCSLL>[^<]+</vRetCSLL>|', '<vRetCSLL></vRetCSLL>', (string) $xml);
-    $xml = preg_replace('|<vPis>[^<]+</vPis>|', '<vPis></vPis>', (string) $xml);
-    $xml = preg_replace('|<vCofins>[^<]+</vCofins>|', '<vCofins></vCofins>', (string) $xml);
-    $data = $this->builder->build((string) $xml);
+    $xml = str_replace('<tpRetISSQN>2</tpRetISSQN>', '<tpRetISSQN>1</tpRetISSQN>', (string) $xml);
+    $data = $this->builder->build($xml);
 
-    expect($data->totais->retencoesFederais)->toBe('-');
-    expect($data->totais->pisCofins)->toBe('-');
+    expect($data->totais->totalRetencoes)->toBe('-');
 });
 
 it('extracts totaisTributos percentages', function () {
@@ -1291,4 +1301,31 @@ it('skips an empty item among the order items', function () {
     $data = (new DanfseDataBuilder)->build($xml);
 
     expect($data->informacoesComplementares)->toContain('Item Ped.: 7, 8');
+});
+
+it('concatenates the issuing municipality with its state for the header', function () {
+    // Item 2.4.5, linha MUNICÍPIO: xLocEmi + UF, "concatenar os dois campos".
+    $data = (new DanfseDataBuilder)->build($this->xml);
+
+    expect($data->municipioEmitente)->toBe('Niterói / RJ');
+});
+
+it('hides the issuing municipality for national tax code item 99', function () {
+    // A própria linha manda não exibir: o item 99 cobre o que não é tributado pelo
+    // município, e nomear um ali sugeriria uma competência que não existe.
+    $xml = (string) preg_replace('|<cTribNac>[^<]*</cTribNac>|', '<cTribNac>990101</cTribNac>', $this->xml);
+
+    $data = (new DanfseDataBuilder)->build($xml);
+
+    // Vazio, não '-': '-' diria "sem dado", que é outra coisa.
+    expect($data->municipioEmitente)->toBe('');
+});
+
+it('falls back to a dash when the NFS-e names no issuing municipality', function () {
+    $xml = (string) preg_replace('|<xLocEmi>[^<]*</xLocEmi>|', '', $this->xml);
+    $xml = (string) preg_replace('|<UF>[^<]*</UF>|', '', $xml);
+
+    $data = (new DanfseDataBuilder)->build($xml);
+
+    expect($data->municipioEmitente)->toBe('-');
 });

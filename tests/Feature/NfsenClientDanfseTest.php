@@ -5,8 +5,6 @@ declare(strict_types=1);
 use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
 use OwnerPro\Nfsen\Adapters\DanfseHtmlRenderer;
 use OwnerPro\Nfsen\Adapters\DompdfHtmlToPdfConverter;
-use OwnerPro\Nfsen\Danfse\DanfseConfig;
-use OwnerPro\Nfsen\Danfse\MunicipalityBranding;
 use OwnerPro\Nfsen\Exceptions\XmlParseException;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseDanfseRenderer;
@@ -93,38 +91,15 @@ it('escapes HTML entities in XML fields end-to-end (XSS prevention)', function (
     expect($html)->toContain('&quot;onerror=alert(1)');
 });
 
-it('applies MunicipalityBranding in rendered PDF', function () {
-    $config = new DanfseConfig(
-        municipality: new MunicipalityBranding(
-            name: 'Município de Teste',
-            department: 'Secretaria X',
-            email: 'teste@example.com',
-        ),
-    );
-
-    $html = $this->client->danfse($config)->toHtml($this->xml);
-
-    expect($html)->toContain('Município de Teste');
-    expect($html)->toContain('Secretaria X');
-});
-
-it('aceita array payload equivalente a DanfseConfig', function () {
-    $respObj = $this->client->danfse(new DanfseConfig(
-        municipality: new MunicipalityBranding(name: 'X'),
-    ))->toHtml($this->xml);
-
-    $respArr = $this->client->danfse([
-        'municipality' => ['name' => 'X'],
-    ])->toHtml($this->xml);
-
-    // HTMLs iguais (mesmo template, mesmos dados).
-    expect($respArr)->toBe($respObj);
-});
-
-it('danfse() sem argumento usa defaults (inclui logo padrão do pacote)', function () {
+it('imprime sempre a logomarca oficial da NFS-e, embarcada no pacote', function () {
+    // Item 2.4.3: a logomarca do canto esquerdo é da NFS-e e a NT indica o arquivo
+    // oficial. Não é configurável — a NT não reserva quadro para marca do emitente,
+    // e o item 2.1 proíbe imprimir o que não consta do XML.
     $html = $this->client->danfse()->toHtml($this->xml);
 
-    expect($html)->toContain('DANFSe');
-    // Default DanfseConfig carrega storage/danfse/logo-nfse.png via data URI.
-    expect($html)->toContain('data:image/png;base64,');
+    $oficial = 'data:image/png;base64,'.base64_encode(
+        (string) file_get_contents(__DIR__.'/../../storage/danfse/logo-nfse.png')
+    );
+
+    expect($html)->toContain('DANFSe')->toContain($oficial);
 });
