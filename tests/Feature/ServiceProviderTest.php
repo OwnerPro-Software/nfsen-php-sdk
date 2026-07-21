@@ -1,10 +1,15 @@
 <?php
 
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
+use OwnerPro\Nfsen\Exceptions\RequestNotDeliveredException;
 use OwnerPro\Nfsen\Facades\Nfsen;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\NfsenServiceProvider;
@@ -209,4 +214,65 @@ it('publishes config file in console', function () {
     expect($sourcePath)->toEndWith('config/nfsen.php');
     expect(file_exists($sourcePath))->toBeTrue();
     expect($paths[$sourcePath])->toContain('nfsen.php');
+});
+
+/**
+ * Falha de DNS: pré-envio comprovado. A classificação lê o errno do handler context
+ * do Guzzle, nunca o texto da mensagem — forjar só a mensagem não distingue nada.
+ */
+function fakePreSendDnsFailure(): void
+{
+    Http::fake(['*' => function (): never {
+        throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
+            'cURL error 6: Could not resolve host',
+            new GuzzleRequest('GET', 'https://sefin.test/nfse'),
+            null,
+            ['errno' => 6],
+        ));
+    }]);
+}
+
+function configureContainerClient(bool $detectNotDelivered): void
+{
+    config([
+        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfsen.certificado.senha' => 'secret',
+        'nfsen.prefeitura' => '9999999',
+        'nfsen.detect_not_delivered' => $detectNotDelivered,
+    ]);
+}
+
+it('container binding honours detect_not_delivered, same as NfsenClient::for()', function () {
+    // Os dois caminhos de construção precisam entregar o mesmo contrato de exceção:
+    // o binding omitia a chave e caía no default false, então a mesma config dava
+    // RequestNotDeliveredException via ::for() e IndeterminateResultException via
+    // container — sem aviso, justamente a fragilidade que a flag existe para evitar.
+    configureContainerClient(true);
+    fakePreSendDnsFailure();
+
+    expect(fn () => app(NfsenClient::class)->consultar()->nfse(makeChaveAcesso()))
+        ->toThrow(RequestNotDeliveredException::class);
+});
+
+it('container binding keeps the 2.5.0 contract when detect_not_delivered is off', function () {
+    configureContainerClient(false);
+    fakePreSendDnsFailure();
+
+    expect(fn () => app(NfsenClient::class)->consultar()->nfse(makeChaveAcesso()))
+        ->toThrow(IndeterminateResultException::class);
+});
+
+it('container binding defaults to off when the config predates 2.6.0', function () {
+    // Config publicado antes da 2.6.0 não tem a chave: `?? false` mantém o
+    // comportamento antigo em vez de estourar com índice indefinido.
+    config([
+        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfsen.certificado.senha' => 'secret',
+        'nfsen.prefeitura' => '9999999',
+    ]);
+    config()->offsetUnset('nfsen.detect_not_delivered');
+    fakePreSendDnsFailure();
+
+    expect(fn () => app(NfsenClient::class)->consultar()->nfse(makeChaveAcesso()))
+        ->toThrow(IndeterminateResultException::class);
 });
