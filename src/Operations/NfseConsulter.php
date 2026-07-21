@@ -112,11 +112,14 @@ final readonly class NfseConsulter implements ConsultsNfse
             if ($pdf === '') {
                 return new DanfseResponse(
                     sucesso: false,
-                    erros: [new ProcessingMessage(
-                        mensagem: 'Resposta vazia',
-                        codigo: 'EMPTY_RESPONSE',
-                        descricao: 'O servidor retornou uma resposta vazia para o DANFSe.',
-                    )],
+                    erros: [
+                        new ProcessingMessage(
+                            mensagem: 'Resposta vazia',
+                            codigo: 'EMPTY_RESPONSE',
+                            descricao: 'O servidor retornou uma resposta vazia para o DANFSe.',
+                        ),
+                        $this->apiSobrestadaWarning(),
+                    ],
                 );
             }
 
@@ -124,9 +127,27 @@ final readonly class NfseConsulter implements ConsultsNfse
         } catch (HttpException $httpException) {
             return new DanfseResponse(
                 sucesso: false,
-                erros: $this->parseHttpError($httpException),
+                erros: [...$this->parseHttpError($httpException), $this->apiSobrestadaWarning()],
             );
         }
+    }
+
+    /**
+     * Aviso anexado a toda falha de `danfse()`.
+     *
+     * Sem ele o consumidor recebe um 404 ou um corpo vazio e vai depurar rede,
+     * certificado ou chave de acesso — quando a causa é a API ter sido desligada e o
+     * documento agora ser gerado localmente por `danfse()->toPdf()`.
+     */
+    private function apiSobrestadaWarning(): ProcessingMessage
+    {
+        return new ProcessingMessage(
+            mensagem: 'A API remota de DANFSe foi sobrestada',
+            codigo: DanfseResponse::API_SOBRESTADA,
+            descricao: 'A Nota Técnica nº 008, de 05/05/2026, suspendeu a API de geração do DANFSe ' // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — texto informativo em três partes; os testes asseguram os trechos que importam ('01/07/2026' e 'toPdf').
+                .'em 01/07/2026. Gere o documento localmente a partir do XML da NFS-e: '
+                .'`$client->danfse()->toPdf($xml)`.',
+        );
     }
 
     public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::Cancelamento, int $nSequencial = 1): EventsResponse

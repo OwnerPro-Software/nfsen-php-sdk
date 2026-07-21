@@ -9,6 +9,7 @@ use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Exceptions\RequestNotDeliveredException;
 use OwnerPro\Nfsen\NfsenClient;
+use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
@@ -94,8 +95,11 @@ it('consultar()->danfse returns failure on HTTP error', function () {
     $response = $client->consultar()->danfse(makeChaveAcesso());
 
     expect($response->sucesso)->toBeFalse();
-    expect($response->erros)->toHaveCount(1);
+    // O erro da API vem primeiro; o aviso da NT 008 sobre a suspensão da API remota
+    // de DANFSe é anexado depois, sem deslocar nem substituir o original.
+    expect($response->erros)->toHaveCount(2);
     expect($response->erros[0]->codigo)->toBe('404');
+    expect($response->erros[1]->codigo)->toBe(DanfseResponse::API_SOBRESTADA);
 });
 
 it('consultar()->eventos throws HttpException on server error', function () {

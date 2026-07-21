@@ -5,6 +5,7 @@ use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Operations\NfseConsulter;
+use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
@@ -619,4 +620,82 @@ it('buildUrl trims leading slash from path', function () {
     } finally {
         unlink($tmpJson);
     }
+});
+
+// A NT 008, seção 1, sobrestou a API remota de DANFSe em 01/07/2026 e passou a
+// geração para o emissor. Sem este aviso o consumidor recebe um 404 ou um corpo
+// vazio e vai depurar rede, certificado ou chave — nunca a causa real.
+it('danfse appends the suspended-API notice when the response is empty', function () {
+    $fakeClient = new class implements ExecutesNfseRequests
+    {
+        public function executeAndDecompress(string $url): NfseResponse
+        {
+            return new NfseResponse(true);
+        }
+
+        public function executeAndDownload(string $url): string
+        {
+            return '';
+        }
+
+        public function executeHead(string $url): int
+        {
+            return 200;
+        }
+
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
+    };
+
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+
+    $response = $builder->danfse(makeChaveAcesso());
+
+    $codigos = array_map(fn ($erro): ?string => $erro->codigo, $response->erros);
+
+    expect($codigos)->toContain(DanfseResponse::API_SOBRESTADA);
+    // O erro original continua em primeiro — o aviso complementa, não substitui.
+    expect($response->erros[0]->codigo)->toBe('EMPTY_RESPONSE');
+});
+
+it('danfse appends the suspended-API notice on HttpException', function () {
+    $fakeClient = new class implements ExecutesNfseRequests
+    {
+        public function executeAndDecompress(string $url): NfseResponse
+        {
+            return new NfseResponse(true);
+        }
+
+        public function executeAndDownload(string $url): string
+        {
+            throw HttpException::fromResponse(404, '');
+        }
+
+        public function executeHead(string $url): int
+        {
+            return 200;
+        }
+
+        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        {
+            return new HttpResponse(200, [], '');
+        }
+    };
+
+    $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+
+    $response = $builder->danfse(makeChaveAcesso());
+
+    $aviso = array_values(array_filter(
+        $response->erros,
+        fn ($erro): bool => $erro->codigo === DanfseResponse::API_SOBRESTADA,
+    ));
+
+    expect($aviso)->toHaveCount(1);
+    expect($aviso[0]->descricao)->toContain('01/07/2026');
+    expect($aviso[0]->descricao)->toContain('toPdf');
 });

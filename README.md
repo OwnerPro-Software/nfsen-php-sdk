@@ -449,6 +449,18 @@ Retornado por `consultar()->danfse()`.
 | `pdf` | `?string` | Conteúdo binário do PDF |
 | `erros` | `list<ProcessingMessage>` | Erros de processamento |
 
+> **A API remota de DANFSe foi sobrestada em 01/07/2026.** A Nota Técnica nº 008, de
+> 05/05/2026 (`storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf`, seção 1),
+> suspendeu `https://adn.nfse.gov.br/danfse` e transferiu a geração do documento para
+> o emissor. Toda falha de `consultar()->danfse()` passa a trazer, além do erro
+> original, uma mensagem com o código `DanfseResponse::API_SOBRESTADA`.
+>
+> Gere o documento localmente a partir do XML da NFS-e:
+>
+> ```php
+> $pdf = $client->danfse()->toPdf($response->xml);
+> ```
+
 ### `EventsResponse`
 
 Retornado por `consultar()->eventos()`.
