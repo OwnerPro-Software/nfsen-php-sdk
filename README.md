@@ -6,7 +6,7 @@
 [![PHP Version](https://img.shields.io/packagist/php-v/ownerpro/nfsen-php-sdk.svg)](https://packagist.org/packages/ownerpro/nfsen-php-sdk)
 [![License](https://img.shields.io/packagist/l/ownerpro/nfsen-php-sdk.svg)](LICENSE)
 
-Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padrão Nacional** ([nfse.gov.br](https://www.nfse.gov.br/)) via API REST. Funciona com Laravel 11/12 ou standalone (sem framework).
+Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padrão Nacional** ([nfse.gov.br](https://www.nfse.gov.br/)) via API REST. Funciona com Laravel 11/12/13 ou standalone (sem framework).
 
 ## Funcionalidades
 
@@ -26,7 +26,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 
 - PHP 8.3+
 - Extensões: `curl`, `dom`, `zlib`, `openssl`, `mbstring`, `libxml`
-- Laravel 11 ou 12 (opcional — funciona standalone)
+- Laravel 11, 12 ou 13 (opcional — funciona standalone)
 
 ## Instalação
 
