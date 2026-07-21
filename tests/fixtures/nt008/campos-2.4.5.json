@@ -1,0 +1,754 @@
+[
+  {
+    "bloco": "QUADRO DA IDENT. MUNICÍPIO/AMBIENTE",
+    "campo": "MUNICÍPIO",
+    "caminho": "NFSe/infNFSe/ + NFSe/infNFSe/emit/enderNac/",
+    "tag": "xLocEmi + UF",
+    "obs": "Concatenar os dois campos. Ex.",
+    "tamanho": "37"
+  },
+  {
+    "bloco": "QUADRO DA IDENT. MUNICÍPIO/AMBIENTE",
+    "campo": "AMBIENTE GERADOR",
+    "caminho": "NFSe/infNFSe/",
+    "tag": "ambGer",
+    "obs": "",
+    "tamanho": "1"
+  },
+  {
+    "bloco": "QUADRO DA IDENT. MUNICÍPIO/AMBIENTE",
+    "campo": "TIPO DE AMBIENTE",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/",
+    "tag": "tpAmb",
+    "obs": "",
+    "tamanho": "1"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "CHAVE DE ACESSO DA NFS-E",
+    "caminho": "NFSe/infNFSe/",
+    "tag": "id",
+    "obs": "Informar o id da NFS-e sem o prefixo \"NFS\".",
+    "tamanho": "50"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "NÚMERO DA NFS-e",
+    "caminho": "NFSe/infNFSe/",
+    "tag": "nNFSe",
+    "obs": "",
+    "tamanho": "13"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "COMPETÊNCIA DA NFS-e",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/",
+    "tag": "dCompet",
+    "obs": "DD/MM/AAAA",
+    "tamanho": "10"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "DATA E HORA DA EMISSÃO DA NFS-E",
+    "caminho": "NFSe/infNFSe/",
+    "tag": "dhProc",
+    "obs": "DD/MM/AAAA hh:mm:ss",
+    "tamanho": "19"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "NÚMERO DA DPS",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/",
+    "tag": "nDPS",
+    "obs": "",
+    "tamanho": "15"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "SÉRIE DA DPS",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/",
+    "tag": "serie",
+    "obs": "",
+    "tamanho": "5"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "DATA E HORA DA EMISSÃO DA DPS",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/",
+    "tag": "dhEmi",
+    "obs": "DD/MM/AAAA hh:mm:ss",
+    "tamanho": "19"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "EMITENTE DA NFS-E",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/",
+    "tag": "tpEmit",
+    "obs": "Leiaute prevê 3 opções, que são",
+    "tamanho": "13"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "SITUAÇÃO DA NFS-E",
+    "caminho": "NFSe/infNFSe/",
+    "tag": "cStat",
+    "obs": "Utilizar a descrição das opções",
+    "tamanho": "40"
+  },
+  {
+    "bloco": "DADOS DA NFS-e",
+    "campo": "FINALIDADE",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/",
+    "tag": "finNFSe",
+    "obs": "Utilizar a descrição das opções",
+    "tamanho": "40"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "CNPJ / CPF / NIF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/",
+    "tag": "CNPJ /CPF /NIF",
+    "obs": "nn.nnn.nnn/nnnn-nn / nnn.nnn.nnn-nn / nnn",
+    "tamanho": "18 / 14 /\n40"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "INDICADOR MUNICIPAL (INSCRIÇÃO)",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/",
+    "tag": "IM",
+    "obs": "",
+    "tamanho": "15"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "TELEFONE",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/",
+    "tag": "fone",
+    "obs": "",
+    "tamanho": "20"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "NOME / NOME EMPRESARIAL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/",
+    "tag": "xNome",
+    "obs": "Preencher com reticências (...), caso a descrição supere 77 caracteres.",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "MUNICÍPIO / SIGLA UF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/end/endNac/ | NFSe/infNFSe/DPS/infDPS/prest/end/endExt/",
+    "tag": "cMun | xCidade",
+    "obs": "Leiaute prevê a informação do código do município com 7 dígitos da Tabela do IBGE. Utilizar a descrição destes códigos. Concatenar o nome do município com a respectiva UF. Ex.: Município / UF.",
+    "tamanho": "37"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "CÓDIGO IBGE / CEP",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/end/endNac/ | NFSe/infNFSe/DPS/infDPS/prest/end/endExt/",
+    "tag": "cMun + CEP | cEndPost",
+    "obs": "Concatenar os campos. Ex.: nnnnnnn / nn.nnn-nnn ou nnnnnnn / nnnnnnnnnnn (ext)",
+    "tamanho": "21"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "ENDEREÇO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/end/",
+    "tag": "xLgr,nro,xCpl,xBairro",
+    "obs": "Concatenar todos os campos do endereço. Ex.: ccc, ccc, ccc, ccc. Preencher com reticências (...), caso a descrição supere 77 caracteres. Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "EMAIL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/",
+    "tag": "email",
+    "obs": "Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "SIMPLES NACIONAL NA DATA DE COMPETÊNCIA",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/regTrib/",
+    "tag": "opSimpNac",
+    "obs": "Leiaute prevê 3 opções, que são indicadas pelos números 1 a 3. Utilizar a descrição destas opções. Preencher com reticências (...), caso a descrição supere 37 caracteres. Ex.: Não Optante.",
+    "tamanho": "40"
+  },
+  {
+    "bloco": "PRESTADOR / FORNECEDOR",
+    "campo": "REGIME DE APURAÇÃO TRIBUTÁRIA PELO SN",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/regTrib/",
+    "tag": "regApTribSN",
+    "obs": "Leiaute prevê 3 opções, que são indicadas pelos números 1 a 3. Utilizar a descrição destas opções. Preencher com reticências (...), caso a descrição supere 77 caracteres. Ex.: Regime de apuração dos tributos federais e municipal pelo Simples Nacional.",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "CNPJ / CPF / NIF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/",
+    "tag": "CNPJ /CPF /NIF",
+    "obs": "nn.nnn.nnn/nnnn-nn / nnn.nnn.nnn-nn / nnn",
+    "tamanho": "18 / 14 /\n40"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "INDICADOR MUNICIPAL (INSCRIÇÃO)",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/",
+    "tag": "IM",
+    "obs": "",
+    "tamanho": "15"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "TELEFONE",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/",
+    "tag": "fone",
+    "obs": "",
+    "tamanho": "20"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "NOME / NOME EMPRESARIAL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/",
+    "tag": "xNome",
+    "obs": "Preencher com reticências (...), caso a descrição supere 77 caracteres.",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "MUNICÍPIO / SIGLA UF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/end/endNac/ | NFSe/infNFSe/DPS/infDPS/toma/end/endExt/",
+    "tag": "cMun | xCidade",
+    "obs": "Leiaute prevê a informação do código do município com 7 dígitos da Tabela do IBGE. Utilizar a descrição destes códigos. Concatenar o nome do município com a respectiva UF. Ex.: Município / UF.",
+    "tamanho": "37"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "CÓDIGO IBGE / CEP",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/end/endNac/ | NFSe/infNFSe/DPS/infDPS/toma/end/endExt/",
+    "tag": "cMun + CEP | cEndPost",
+    "obs": "Concatenar os campos. Ex.: nnnnnnn / nn.nnn-nnn ou nnnnnnn / nnnnnnnnnnn (ext)",
+    "tamanho": "21"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "ENDEREÇO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/end/",
+    "tag": "xLgr,nro,xCpl,xBairro",
+    "obs": "Concatenar todos os campos do endereço. Ex.: ccc, ccc, ccc, ccc. Preencher com reticências (...), caso a descrição supere 77 caracteres. Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "TOMADOR / ADQUIRENTE",
+    "campo": "E-MAIL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/toma/",
+    "tag": "email",
+    "obs": "Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "DESTINÁRIO DA OPERAÇÃO",
+    "campo": "CNPJ / CPF / NIF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
+    "tag": "CNPJ /CPF /NIF",
+    "obs": "nn.nnn.nnn/nnnn-nn / nnn.nnn.nnn-nn / nnn",
+    "tamanho": "18 / 14 /\n40"
+  },
+  {
+    "bloco": "DESTINÁRIO DA OPERAÇÃO",
+    "campo": "TELEFONE",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
+    "tag": "fone",
+    "obs": "",
+    "tamanho": "20"
+  },
+  {
+    "bloco": "DESTINÁRIO DA OPERAÇÃO",
+    "campo": "NOME / NOME EMPRESARIAL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
+    "tag": "xNome",
+    "obs": "Preencher com reticências (...), caso a descrição supere 77 caracteres.",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "DESTINÁRIO DA OPERAÇÃO",
+    "campo": "MUNICÍPIO / SIGLA UF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endNac/ | NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endExt/",
+    "tag": "cMun | xCidade",
+    "obs": "Leiaute prevê a informação do código do município com 7 dígitos da Tabela do IBGE. Utilizar a descrição destes códigos. Concatenar o nome do município com a respectiva UF. Ex.: Município / UF.",
+    "tamanho": "37"
+  },
+  {
+    "bloco": "DESTINÁRIO DA OPERAÇÃO",
+    "campo": "CÓDIGO IBGE / CEP",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endNac/ | NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endExt/",
+    "tag": "cMun + CEP | cEndPost",
+    "obs": "Concatenar os campos. Ex.: nnnnnnn / nn.nnn-nnn ou nnnnnnn / nnnnnnnnnnn (ext)",
+    "tamanho": "21"
+  },
+  {
+    "bloco": "DESTINÁRIO DA OPERAÇÃO",
+    "campo": "ENDEREÇO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/",
+    "tag": "xLgr,nro,xCpl,xBairro",
+    "obs": "Concatenar todos os campos do endereço. Ex.: ccc, ccc, ccc, ccc. Preencher com reticências (...), caso a descrição supere 77 caracteres. Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "DESTINÁRIO DA OPERAÇÃO",
+    "campo": "E-MAIL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
+    "tag": "email",
+    "obs": "Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "CNPJ / CPF / NIF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/",
+    "tag": "CNPJ /CPF /NIF",
+    "obs": "nn.nnn.nnn/nnnn-nn / nnn.nnn.nnn-nn / nnn",
+    "tamanho": "18 / 14 /\n40"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "INDICADOR MUNICIPAL (INSCRIÇÃO)",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/",
+    "tag": "IM",
+    "obs": "",
+    "tamanho": "15"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "TELEFONE",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/",
+    "tag": "fone",
+    "obs": "",
+    "tamanho": "20"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "NOME / NOME EMPRESARIAL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/",
+    "tag": "xNome",
+    "obs": "Preencher com reticências (...), caso a descrição supere 77 caracteres.",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "MUNICÍPIO / SIGLA UF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/end/endNac/ |",
+    "tag": "cMun | xCidade",
+    "obs": "Leiaute prevê a informação do código do município com 7 dígitos da Tabela do IBGE. Utilizar a",
+    "tamanho": "37"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "CÓDIGO IBGE / CEP",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/end/endNac/ | NFSe/infNFSe/DPS/infDPS/interm/end/endExt/",
+    "tag": "cMun + CEP | cEndPost",
+    "obs": "Concatenar os campos. Ex.: nnnnnnn / nn.nnn-nnn ou nnnnnnn / nnnnnnnnnnn (ext)",
+    "tamanho": "21"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "ENDEREÇO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/end/",
+    "tag": "xLgr,nro,xCpl,xBairro",
+    "obs": "Concatenar todos os campos do endereço. Ex.: ccc, ccc, ccc, ccc. Preencher com reticências (...), caso a descrição supere 77 caracteres. Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
+    "campo": "E-MAIL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/interm/",
+    "tag": "email",
+    "obs": "Nota 1",
+    "tamanho": "80"
+  },
+  {
+    "bloco": "SERVIÇO PRESTADO",
+    "campo": "CÓDIGO DE TRIBUTAÇÃO NACIONAL / MUNICIPAL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/serv/cServ/ + NFSe/infNFSe/",
+    "tag": "cTribNac + cTribMun",
+    "obs": "nn.nn.nn / nnn",
+    "tamanho": "14"
+  },
+  {
+    "bloco": "SERVIÇO PRESTADO",
+    "campo": "CÓDIGO DA NBS",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/serv/cServ/",
+    "tag": "cNBS",
+    "obs": "n.nnnn.nn.nn",
+    "tamanho": "9"
+  },
+  {
+    "bloco": "SERVIÇO PRESTADO",
+    "campo": "LOCAL DA PRESTAÇÃO / SIGLA UF / PAÍS",
+    "caminho": "NFSe/infNFSe/ + NFSe/infNFSe/DPS/infDPS/serv/locPrest/",
+    "tag": "xLocPrestacao + cPaisPrestacao",
+    "obs": "Concatenar o nome do município, a respectiva UF da Tabela do IBGE e o nome do País. Ex.: Município / UF / País. Com relação ao país, utilizar o código de 2 dígitos, conforme a Tabela de Países ISO. Ex.: BR",
+    "tamanho": "42"
+  },
+  {
+    "bloco": "SERVIÇO PRESTADO",
+    "campo": "DESCRIÇÃO DO CÓDIGO DE TRIBUTAÇÃO NACIONAL / MUNICIPAL",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/serv/cServ/ + NFSe/infNFSe/",
+    "tag": "xTribNac + xTribMun",
+    "obs": "SE xTribMun <> “” ENTAO Descrição Municipal SENAO Descrição Nacional. Utilizar reticências (...), caso a descrição supere 167 caracteres. Obs.: Não há título (label) deste campo no DANFSe",
+    "tamanho": "170"
+  },
+  {
+    "bloco": "SERVIÇO PRESTADO",
+    "campo": "DESCRIÇÃO DO SERVIÇO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/serv/cServ/",
+    "tag": "xDescServ",
+    "obs": "Utilizar reticências (...), caso a descrição supere 1297 caracteres.",
+    "tamanho": "1300"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "TIPO DE TRIBUTAÇÃO DO ISSQN",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/",
+    "tag": "tribISSQN",
+    "obs": "Leiaute prevê 4 opções, que são indicadas pelos números 1 a 4. Utilizar a descrição destas opções. Ex.: Operação Tributável.",
+    "tamanho": "21"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "MUNICÍPIO / SIGLA UF / PAÍS DA INCIDÊNCIA DO ISSQN",
+    "caminho": "NFSe/infNFSe/ + NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/",
+    "tag": "xLocIncid + cPaisResult",
+    "obs": "Concatenar o nome do município, a respectiva UF da Tabela do IBGE e o nome do País. Ex.: Município / UF / País. Com relação ao país, utilizar o código de 2 dígitos, conforme a Tabela de Países ISO. Ex.: BR",
+    "tamanho": "42"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "REGIME ESPECIAL DE TRIBUTAÇÃO DO ISSQN",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/prest/regTrib/",
+    "tag": "regEspTrib",
+    "obs": "Leiaute prevê 8 opções, que são indicadas pelos números 0 a 6 e 9. Utilizar a descrição destas opções. Ex.: Estimativa. Nota 5",
+    "tamanho": "27"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "TIPO DE IMUNIDADE DO ISSQN",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/",
+    "tag": "tpImunidade",
+    "obs": "Leiaute prevê 5 opções, que são indicadas pelos números 1 a 5. Utilizar a descrição destas opções. Utilizar reticências (...), caso a descrição supere 37 caracteres. Ex.: Livros, jornais, periódicos e o papel... Nota 5",
+    "tamanho": "40"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "SUSPENSÃO DA EXIGIBILIDADE DO ISSQN",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/exigSusp/",
+    "tag": "tpSusp",
+    "obs": "Se for o caso, utilizar as seguintes descrições: Exigibilidade Suspensa por Decisão Judicial; Exigibilidade Suspensa por Processo Administrativo. Preencher com reticências (...), caso a descrição supere 37 caracteres. Nota 5",
+    "tamanho": "40"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "NÚMERO PROCESSO SUSPENSÃO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/exigSusp/",
+    "tag": "nProcesso",
+    "obs": "Nota 5",
+    "tamanho": "30"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "BENEFÍCIO MUNICIPAL",
+    "caminho": "NFSe/infNFSe/valores/",
+    "tag": "tpBM",
+    "obs": "Leiaute prevê 4 opções, que são indicadas pelos números 1 e 4. Utilizar a descrição destas opções. Ex.: Isenção. Nota 5",
+    "tamanho": "40"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "CÁLCULO DO BM",
+    "caminho": "NFSe/infNFSe/valores/ | NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/BM/",
+    "tag": "vCalcBM | vRedBCBM",
+    "obs": "Nota 5",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "TOTAL DEDUÇÕES/REDUÇÕES",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/ |NFSe/infNFSe/valores/ +NFSe/infNFSe/IBSCBS/valores/",
+    "tag": "vDR | vCalcDR + vCalcReeRepRes",
+    "obs": "Nota 5",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "DESCONTO INCONDICIONADO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDescCondIncond/",
+    "tag": "vDescIncond",
+    "obs": "Nota 5",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "BC ISSQN",
+    "caminho": "NFSe/infNFSe/valores/",
+    "tag": "vBC",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "ALÍQUOTA APLICADA",
+    "caminho": "NFSe/infNFSe/valores/",
+    "tag": "pAliqAplic",
+    "obs": "",
+    "tamanho": "1-2V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "RETENÇÃO DO ISSQN",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribMun/",
+    "tag": "tpRetISSQN",
+    "obs": "Leiaute prevê 3 opções, que são indicadas pelos números 1 a 3. Utilizar descrição destas opções. Ex.: Não Retido.",
+    "tamanho": "25"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
+    "campo": "ISSQN APURADO",
+    "caminho": "NFSe/infNFSe/valores/",
+    "tag": "vISSQN",
+    "obs": "",
+    "tamanho": "1-2V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO FEDERAL (EXCETO CBS)",
+    "campo": "IRRF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/",
+    "tag": "vRetIRRF",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO FEDERAL (EXCETO CBS)",
+    "campo": "CONTRIBUIÇÃO PREVIDENCIÁRIA - RETIDA",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/",
+    "tag": "vRetCP",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO FEDERAL (EXCETO CBS)",
+    "campo": "CONTRIBUIÇÕES SOCIAIS - RETIDAS",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/",
+    "tag": "vRetCSLL",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO FEDERAL (EXCETO CBS)",
+    "campo": "PIS - DÉBITO APURAÇÃO PRÓPRIA",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
+    "tag": "vPis",
+    "obs": "Nota 6",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO FEDERAL (EXCETO CBS)",
+    "campo": "COFINS - DÉBITO APURAÇÃO PRÓPRIA",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
+    "tag": "vCofins",
+    "obs": "Nota 6",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO FEDERAL (EXCETO CBS)",
+    "campo": "DESCRIÇÃO CONTRIB. SOCIAIS - RETIDAS",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
+    "tag": "tpRetPisCofins",
+    "obs": "Leiaute prevê 10 opções, que são indicadas pelos números 1 a 9. Utilizar a descrição destas opções. Ex.: PIS/COFINS/CSLL Não Retido. Nota 6",
+    "tamanho": "35"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "CST / CCLASSTRIB",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/gIBSCBS/",
+    "tag": "CST + cClassTrib",
+    "obs": "nnn / nnnnnn",
+    "tamanho": "12"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "INDICADOR DE OPERAÇÃO / CÓDIGO IBGE INCIDÊNCIA / MUNICÍPIO INCIDÊNCIA / SIGLA UF",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/ + NFSe/infNFSe/IBSCBS/ + NFSe/infNFSe/IBSCBS/",
+    "tag": "cIndOp",
+    "obs": "Concatenar todos os campos: nnnnnn / nnnnnnn / ccc / CC. Concatenar o nome do município com a respectiva UF da Tabela do IBGE. Ex.: Município / UF.",
+    "tamanho": "56"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "EXCLUSÕES E REDUÇÕES DA BÁSE DE CLÁCULO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDescCondIncond/ + NFSe/infNFSe/IBSCBS/valores/ + NFSe/infNFSe/valores/ + NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/ + NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
+    "tag": "vDescIncond + vCalcReeRepRes + vISSQN + vPIS + vCOFINS",
+    "obs": "Somatório de todos estes campos.",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "BASE DE CÁLCULO APÓS EXCLUSÕES E REDUÇÕES",
+    "caminho": "NFSe/infNFSe/IBSCBS/valores/",
+    "tag": "vBC",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "RED. ALÍQUOTA IBS / RED. ALÍQUOTA CBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/valores/uf/ +NFSe/infNFSe/IBSCBS/valores/mun/",
+    "tag": "pRedAliqUF + pRedAliqMun + pRedAliqCBS",
+    "obs": "% / % / %",
+    "tamanho": "1-2V2 /\n1-2V2 /\n1-2V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "ALÍQUOTA - IBS UF / IBS MUN",
+    "caminho": "NFSe/infNFSe/IBSCBS/valores/uf/ +NFSe/infNFSe/IBSCBS/valores/mun/",
+    "tag": "pIBSUF + pIBSMun",
+    "obs": "% / %",
+    "tamanho": "1-2V2 /\n1-2V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "ALÍQ. EFETIVA MUNICIPAL - IBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/valores/mun/",
+    "tag": "pAliqEfetMun",
+    "obs": "",
+    "tamanho": "1-2V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "VALOR APURADO MUNICIPAL - IBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/totCIBS/gIBS/gIBSMunTot/",
+    "tag": "vIBSMun",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "ALÍQ. EFETIVA ESTADUAL - IBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/valores/uf/",
+    "tag": "pAliqEfetUF",
+    "obs": "",
+    "tamanho": "1-2V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "VALOR APURADO ESTADUAL - IBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/totCIBS/gIBS/gIBSUFTot/",
+    "tag": "vIBSUF",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "TRIBUTAÇÃO IBS / CBS",
+    "campo": "VALOR TOTAL APURADO - IBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/totCIBS/gIBS/",
+    "tag": "vIBSTot",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "CBS",
+    "campo": "ALÍQUOTA - CBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/valores/fed/",
+    "tag": "pCBS",
+    "obs": "",
+    "tamanho": "1-2V2"
+  },
+  {
+    "bloco": "CBS",
+    "campo": "ALÍQUOTA EFETIVA - CBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/valores/fed/",
+    "tag": "pAliqEfetCBS",
+    "obs": "",
+    "tamanho": "1-2V2"
+  },
+  {
+    "bloco": "CBS",
+    "campo": "VALOR TOTAL APURADO - CBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/totCIBS/gCBS/",
+    "tag": "vCBS",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "VALOR TOTAL DA NFS-E",
+    "campo": "VALOR DA OPERAÇÃO / SERVIÇO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vServPrest/",
+    "tag": "vServ",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "VALOR TOTAL DA NFS-E",
+    "campo": "DESCONTO INCONDICIONADO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDescCondIncond/",
+    "tag": "vDescIncond",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "VALOR TOTAL DA NFS-E",
+    "campo": "DESCONTO CONDICIONADO",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDescCondIncond/",
+    "tag": "vDescCond",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "VALOR TOTAL DA NFS-E",
+    "campo": "TOTAL DAS RETENÇÕES (ISSQN / FEDERAIS)",
+    "caminho": "NFSe/infNFSe/valores/",
+    "tag": "vTotalRet",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "VALOR TOTAL DA NFS-E",
+    "campo": "VALOR LÍQUIDO DA NFS-e",
+    "caminho": "NFSe/infNFSe/valores/",
+    "tag": "vLiq",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "VALOR TOTAL DA NFS-E",
+    "campo": "TOTAL DO IBS/CBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/totCIBS/gIBS/ + NFSe/infNFSe/IBSCBS/totCIBS/gCBS/",
+    "tag": "vIBSTot + vCBS",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "VALOR TOTAL DA NFS-E",
+    "campo": "VALOR LÍQUIDO DA NFS-e + IBS/CBS",
+    "caminho": "NFSe/infNFSe/IBSCBS/totCIBS/",
+    "tag": "vTotNF",
+    "obs": "",
+    "tamanho": "1-15V2"
+  },
+  {
+    "bloco": "INFORMAÇÕES COMPLEMENTARES",
+    "campo": "INFORMAÇÕES COMPLEMENTARES",
+    "caminho": "NFSe/infNFSe/DPS/infDPS/serv/infoCompl/ + NFSe/infNFSe/DPS/infDPS/subst + NFSe/infNFSe/DPS/infDPS/serv/infoCompl/ + NFSe/infNFSe/DPS/infDPS/serv/obra/ + NFSe/infNFSe/DPS/infDPS/IBSCBS/imovel/ + NFSe/infNFSe/DPS/infDPS/serv/atvEvento/ + NFSe/infNFSe/DPS/infDPS/serv/infoCompl/ + NFSe/infNFSe/DPS/infDPS/serv/infoCompl/ + NFSe/infNFSe/DPS/infDPS/serv/infoCompl/gItemPed/ + NFSe/infNFSe/ + NFSe/infNFSe/DPS/infDPS/valores/trib/totTrib/vTotTrib/ | NFSe/infNFSe/DPS/infDPS/valores/trib/totTrib/pTotTrib/",
+    "tag": "xInfComp + chSubstda + docRef + cObra + inscImobFisc + idAtvEvt + idDocTec + xPed + xItemPed + xOutInf + vTotTribFed,vTotTribEst evTotTribMu | pTotTribFed,pTotTribEst epTotTribMu",
+    "obs": "União de todos os campos de informações complementares. As informações devem ser descritas e dispostas na seguinte ordem: Inf. Cont.:; NFS-e Subst.: (Nota 7); Doc. Ref.:; Cod. Obra: (Nota 8); Insc. Imob.: (Nota 8); Cod. Evt.: (Nota 9); Doc. Tec.:; Núm. Ped.:; Item Ped.:; Inf. A. T. Mun.:; Obrigatoriamente, deve-se constar a informação de Totais Aproximados dos Tributos (Nota 10). As informações devem ser separadas por pipes ( | ). Utilizar reticências (...), caso a descrição supere 1997 caracteres, sem prejuízo à linha de “Totais Aproximados dos Tributos”, que é fixa.",
+    "tamanho": "2000"
+  },
+  {
+    "bloco": "INDENTIFICAÇÃO E ASSINATURA",
+    "campo": "Nº NFS-E / CHAVE NFS-E",
+    "caminho": "NFSe/infNFSe/",
+    "tag": "nNFSe +",
+    "obs": "Informar o id da NFS-e sem o prefixo \"NFS\". Ex.: nnn / nnn",
+    "tamanho": "66"
+  }
+]
