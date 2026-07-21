@@ -345,6 +345,15 @@ $response = $client->distribuicao()->documentos(0);
 
 if ($response->sucesso) {
     foreach ($response->lote as $doc) {
+        // Um item que o SDK não conseguiu interpretar por completo não interrompe o
+        // lote: os campos afetados vêm null e parseError diz o que faltou. O nsu é
+        // sempre preservado, então dá para refazer a busca daquele documento.
+        if ($doc->parseError !== null) {
+            echo "NSU {$doc->nsu} incompleto: {$doc->parseError}\n";
+
+            continue;
+        }
+
         echo "NSU: {$doc->nsu} | Tipo: {$doc->tipoDocumento->value} | Chave: {$doc->chaveAcesso}\n";
         // $doc->arquivoXml contém o XML já descomprimido
     }
@@ -480,10 +489,11 @@ Cada item do lote na `DistribuicaoResponse`.
 |-------------|------|-----------|
 | `nsu` | `?int` | Número Sequencial Único |
 | `chaveAcesso` | `?string` | Chave de acesso da NFS-e |
-| `tipoDocumento` | `TipoDocumentoFiscal` | Tipo: `Nfse`, `Dps`, `Evento`, `Cnc`, `PedidoRegistroEvento`, `Nenhum` |
-| `tipoEvento` | `?TipoEventoDistribuicao` | Tipo do evento (quando `tipoDocumento` é `Evento`) |
-| `arquivoXml` | `?string` | XML do documento (já descomprimido) |
+| `tipoDocumento` | `?TipoDocumentoFiscal` | Tipo: `Nfse`, `Dps`, `Evento`, `Cnc`, `PedidoRegistroEvento`, `Nenhum`. `null` quando ausente ou desconhecido — veja `parseError` |
+| `tipoEvento` | `?TipoEventoDistribuicao` | Tipo do evento (quando `tipoDocumento` é `Evento`). `null` quando ausente ou desconhecido |
+| `arquivoXml` | `?string` | XML do documento (já descomprimido). `null` quando ausente ou indecodificável |
 | `dataHoraGeracao` | `?string` | Data/hora de geração |
+| `parseError` | `?string` | Por que o documento não pôde ser interpretado por completo; `null` quando íntegro. Nenhum campo de `DistribuicaoNSU` é obrigatório no contrato do ADN, e o governo pode emitir tipos que esta versão do SDK ainda não conhece — nesses casos o item entra no lote com os campos afetados em `null`, em vez de derrubar o lote inteiro |
 
 ### `ProcessingMessage`
 

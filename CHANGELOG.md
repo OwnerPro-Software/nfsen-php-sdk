@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **BREAKING — um documento ilegível deixa de derrubar o lote inteiro de distribuição.** `DocumentoFiscal::fromArray()` usava `TipoDocumentoFiscal::from()` sobre uma chave acessada sem checagem: um item sem `TipoDocumento` lançava `TypeError`, e um valor que esta versão do SDK não conhecesse lançava `ValueError` — que **não** é `NfseException` e escapava dos catches documentados. Um `ArquivoXml` corrompido lançava `NfseException`. Em qualquer um dos três, `distribuicao()->documentos()` perdia os outros 49 documentos do lote junto com o defeituoso. Nenhum campo de `DistribuicaoNSU` é obrigatório no swagger do ADN, e o governo pode passar a emitir tipos novos a qualquer momento.
+
+  Agora o item entra no lote com os campos afetados em `null` e o motivo em `DocumentoFiscal::$parseError`. O `nsu` é preservado em todos os cenários, para que o chamador consiga refazer a busca daquele documento em específico. Alinha o comportamento ao de `DistribuicaoResponse::fromApiResult()`, que já degradava graciosamente diante de um `StatusProcessamento` desconhecido.
+
+  **Migração.** `DocumentoFiscal::$tipoDocumento` passou de `TipoDocumentoFiscal` para `?TipoDocumentoFiscal`: quem faz `$doc->tipoDocumento->value` direto precisa checar `$doc->parseError === null` antes (ou usar `?->`). O construtor ganhou o sétimo parâmetro opcional `$parseError` no fim — chamadas posicionais e nomeadas existentes seguem válidas.
+
 - **BREAKING — 5xx sem rejeição estruturada da SEFIN em operação que altera estado passa a lançar `IndeterminateResultException`** (antes: `HttpException`, ou nenhuma exceção). Afeta `emitir()`, `emitirDecisaoJudicial()`, `cancelar()` e `substituir()`. Duas rotas levavam ao mesmo risco: um 5xx com JSON não-envelope (`{"message": "Internal server error"}` de proxy) era devolvido como resultado normal e virava `sucesso: false` definitivo; um 5xx com corpo ilegível (página HTML de gateway) lançava `HttpException`. Nos dois casos o contrato do SDK classifica como resposta definitiva do servidor, e o README autoriza reenviar com o mesmo `nDPS` — mas um 5xx de proxy não prova que a SEFIN deixou de processar a emissão. Risco de nota duplicada.
 
   Um 5xx que **traz** `erros`/`erro` preenchido continua sendo rejeição definitiva: o envelope prova que a requisição chegou à SEFIN e foi processada. Consultas seguem lançando `HttpException` em 5xx — `GET` não altera estado, então não há o que reconciliar e o erro definitivo é a informação mais útil.
