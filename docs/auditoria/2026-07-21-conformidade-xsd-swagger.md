@@ -2,6 +2,7 @@
 
 **Auditoria original:** 2026-07-21, sobre `main` @ `9ff9dd6`
 **Revisão e revalidação:** 2026-07-21, sobre `main` @ `babc3d0`
+**Reauditoria completa:** 2026-07-21, sobre `fix/auditoria-conformidade-xsd` @ `e6f41a9` — todos os oito achados fechados; ver [Reauditoria completa](#reauditoria-completa-contra-e6f41a9)
 **Escopo:** somente auditoria — nada foi editado em `src/`, `tests/` ou `storage/`.
 
 > **Nota de revisão.** Este documento passou por um review que encontrou quatro problemas
@@ -575,6 +576,74 @@ documentada em `DanfseDataBuilder::buildTotais()` — a DANFSe exibe o ISSQN ret
 própria, então a soma é local. Separar decisão de omissão exige o leiaute oficial da DANFSe,
 que o repositório não tem (ver "Não verificado", item 8). O que o script entrega é a lista
 curta que merece esse julgamento, em vez de nada.
+
+---
+
+## Reauditoria completa contra `e6f41a9`
+
+Todos os treze scripts foram reexecutados depois das correções. Resultado:
+
+| Script | Antes | Agora |
+|---|---|---|
+| `01_validate_fixtures.php` | 3 fixtures inválidas, 1 raiz sem XSD | **9/9 válidas** |
+| `01c_mutated_fixtures.php` | 22 problemas | 21 — só as degenerações deliberadas; a do `cNBS` saiu |
+| `03b` + `03c` (caminhos vs XSD) | 119 caminhos, 1 falha | **123 caminhos, 0 falhas** |
+| `03d_fixture_coverage.php` | 9 caminhos fora das fixtures | 12 — os 6 nós de NIF/cNaoNIF entraram no código e não estão nas fixtures; cobertos por teste dedicado |
+| `audit_enum_labels.php` | 3 divergências | **7/7 enums, nenhuma divergência** |
+| `08` + `08b` (TipoEvento) | conforme | conforme |
+| `bloco_b_*` (enums, rótulos, ADN) | conforme | conforme |
+| `bloco_a_crosscheck.py` | 5 "divergências" (falso-positivo) | idem — ver nota sobre literais de chave |
+| `check_routes.py` | 0 divergências | 0 divergências |
+| `check_prefeituras.py` | **5 problemas** | **0 problemas** |
+| `07_dps_elements.php` | 0 nomes fora do XSD | 0 nomes fora do XSD |
+| `09_ibge.php` | afirmação falsa | 0 UFs fora de `TSUF`, 27 UFs, formato íntegro |
+| `10_cobertura_inversa.php` | — | `NIF`/`cNaoNIF` saíram da lista de não-lidos em `prest`, `toma` e `interm` |
+| `11_nif.php` / `11b_nif_emissao.php` | NIF mutilado | NIF cru, `cNaoNIF` explicado, emissão intacta |
+| `repro_lote.php` | 2 exceções | sem exceção |
+
+### Um oitavo verificador quebrado, achado na reauditoria
+
+`audit_enum_labels.php` mantinha o mapa de enums **escrito à mão**, com 6 entradas. O SDK
+passou a ter 7 enums com `label()` — o `CNaoNIF`, criado no conserto do achado 7, entrou em
+produção sem ser auditado, e o script seguiu imprimindo "nenhuma divergência" sem mencionar
+que havia um enum fora do seu alcance.
+
+Corrigido com o mesmo princípio já aplicado em `09_ibge.php` e no teste de fixtures: o
+script agora **descobre** os enums com `label()` varrendo `src/` e **aborta** se algum
+estiver fora do mapa.
+
+```
+$ php audit_enum_labels.php
+enums com label() no SDK: 7 | auditados aqui: 7
+```
+
+Verificado que o guard morde — adicionando um `label()` a um enum qualquer:
+
+```
+ABORTADO: enums com label() fora do mapa deste script:
+  OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp
+```
+
+É a quarta vez nesta auditoria que um verificador falha em silêncio (tabela IBGE, extrator
+de caminhos, regex de atributos, mapa de enums). Nenhuma delas ficou vermelha; todas ficaram
+verdes. O padrão é sempre o mesmo — **o verificador perde o alvo e reporta sucesso** — e a
+defesa é sempre a mesma: contar o que foi efetivamente comparado e falhar quando a contagem
+não bate.
+
+### O que continua na lista, por decisão
+
+- `bloco_a_crosscheck.py` segue apontando 5 divergências de chave. São falso-positivo,
+  verificado nos schemas: `erros` vive em `NFSePostResponseErro`, `erro` em `ResponseErro`,
+  e o código lê os dois com `?? []`. O script não resolve qual schema de erro cada endpoint
+  usa; corrigi-lo daria mais trabalho que o retorno.
+- `bloco_b_enums.py` marca `NfseAmbiente` e `TipoEvento` como **NÃO VERIFICADO** por não
+  achar `TSTpAmb`/`TSTipoEvento`. Os nomes reais são outros, e ambos são cobertos por
+  `bloco_b_labels.py` e `08_tipoevento.php`. O script está certo em dizer "não verifiquei"
+  em vez de inventar conformidade.
+- `03d_fixture_coverage.php` acusa 12 caminhos ausentes das fixtures DANFSe, incluindo
+  `regApTribSN` e os seis de NIF/`cNaoNIF`. Não são pontos cegos: os rótulos vêm de testes
+  que extraem o XSD, e o NIF tem testes que mutam a fixture em memória. Fica como lembrete
+  de que as fixtures cobrem o caso brasileiro comum, não o estrangeiro.
 
 ---
 
