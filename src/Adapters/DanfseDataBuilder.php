@@ -158,7 +158,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             $this->str($prest->cNaoNIF),
         );
 
-        $endereco = $this->joinAddress($ender->xLgr, $ender->nro, $ender->xBairro);
+        $endereco = $this->joinAddress($ender->xLgr, $ender->nro, $ender->xCpl, $ender->xBairro);
 
         $xLocEmi = $this->str($inf->xLocEmi);
         $uf = $this->str($ender->UF);
@@ -197,7 +197,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             $this->str($toma->cNaoNIF),
         );
 
-        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
+        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xCpl, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
         return new DanfseParticipante(
             nome: $this->str($toma->xNome, '-'),
@@ -222,7 +222,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             $this->str($interm->cNaoNIF),
         );
 
-        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
+        $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xCpl, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
         return new DanfseParticipante(
             nome: $this->str($interm->xNome, '-'),
@@ -258,7 +258,22 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             paisPrestacao: $this->str($locPrest?->cPaisPrestacao, '-'), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             descricao: $this->str($cServ->xDescServ, '-'),
             codigoNbs: $cNBS !== '' ? $cNBS : '-',
+            // NT 008, item 2.4.5: `SE xTribMun <> "" ENTAO Descrição Municipal SENAO
+            // Descrição Nacional`. É um campo só — imprimir as duas descrições lado a
+            // lado contraria o item 2.2.4, que obriga a disposição do Anexo I.
+            descricaoTributacao: $this->resolveDescricaoTributacao($xTribMun, $xTribNac),
         );
+    }
+
+    /** Aplica a regra do campo único de descrição de tributação (NT 008, item 2.4.5). */
+    private function resolveDescricaoTributacao(string $xTribMun, string $xTribNac): string
+    {
+        $escolhido = $xTribMun !== '' ? $xTribMun : $xTribNac;
+
+        // 167, não 170: a NT manda usar reticências "caso a descrição supere 167
+        // caracteres" num campo de 170 — os 3 restantes são as próprias reticências,
+        // que limit() acrescenta ao cortar.
+        return $escolhido !== '' ? $this->fmt->limit($escolhido, 167) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — 167 vem da NT 008; 166/168 não representa regressão de comportamento.
     }
 
     private function buildTribMun(
@@ -406,11 +421,24 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         return $s !== '' ? $s : $default;
     }
 
-    private function joinAddress(?SimpleXMLElement $xLgr, ?SimpleXMLElement $nro, ?SimpleXMLElement $xBairro): string
-    {
+    /**
+     * Monta o endereço na ordem que a NT 008 exige: logradouro, número, complemento
+     * e bairro (seções 2.1.3, 2.1.4 e 2.1.6).
+     *
+     * O complemento é opcional no XSD (`TSComplementoEndereco`) e some do resultado
+     * quando ausente — mas quando existe tem de sair impresso, senão o endereço do
+     * documento fiscal fica incompleto.
+     */
+    private function joinAddress(
+        ?SimpleXMLElement $xLgr,
+        ?SimpleXMLElement $nro,
+        ?SimpleXMLElement $xCpl,
+        ?SimpleXMLElement $xBairro,
+    ): string {
         return implode(', ', array_filter([
             trim((string) $xLgr),
             trim((string) $nro),
+            trim((string) $xCpl),
             trim((string) $xBairro),
         ], fn (string $v): bool => $v !== ''));
     }

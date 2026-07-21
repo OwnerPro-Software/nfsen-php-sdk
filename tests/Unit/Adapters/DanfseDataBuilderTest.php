@@ -660,13 +660,13 @@ it('preserves Id when it does not start with NFS prefix', function () {
 });
 
 it('trims whitespace from address parts when joining', function () {
-    // Insere whitespace nos três componentes de endereço (xLgr, nro, xBairro).
+    // Insere whitespace nos quatro componentes de endereço (xLgr, nro, xCpl, xBairro).
     $xml = str_replace('<xLgr>Rua Visconde do Rio Branco</xLgr>', '<xLgr>  Rua Visconde do Rio Branco  </xLgr>', $this->xml);
     $xml = str_replace('<nro>100</nro>', '<nro>  100  </nro>', $xml);
-    $xml = str_replace('<xBairro>Centro</xBairro>', '<xBairro>  Centro  </xBairro>', $xml);
+    $xml = str_replace('<xBairro>Centro</xBairro>', '<xCpl>  Sala 1201  </xCpl><xBairro>  Centro  </xBairro>', $xml);
     $data = $this->builder->build($xml);
 
-    expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Centro');
+    expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Sala 1201, Centro');
 });
 
 it('treats whitespace-only document as empty and falls through to next in firstNonEmpty', function () {
@@ -676,4 +676,69 @@ it('treats whitespace-only document as empty and falls through to next in firstN
     $data = $this->builder->build($xml);
 
     expect($data->emitente->cnpjCpf)->toBe('123.456.789-01');
+});
+
+// A NT 008 (seções 2.1.3, 2.1.4 e 2.1.6) define o endereço do DANFSe como
+// "logradouro, número, complemento e bairro". O xCpl é minOccurs=0 no XSD, então a
+// fixture não o traz — mas quando a NFS-e o carrega, ele tem de sair impresso, entre
+// o número e o bairro. Omiti-lo entrega endereço incompleto no documento fiscal.
+it('prints the address complement between number and neighbourhood', function () {
+    $xml = str_replace(
+        '<xBairro>Centro</xBairro>',
+        '<xCpl>Sala 1201</xCpl><xBairro>Centro</xBairro>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Sala 1201, Centro');
+});
+
+it('prints the address complement for tomador and intermediario too', function () {
+    $xml = str_replace(
+        '<xBairro>Bela Vista</xBairro>',
+        '<xCpl>Conjunto 42</xCpl><xBairro>Bela Vista</xBairro>',
+        $this->xml,
+    );
+    $xml = str_replace(
+        '<xBairro>Guarulhos</xBairro>',
+        '<xCpl>Bloco B</xCpl><xBairro>Guarulhos</xBairro>',
+        $xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tomador->endereco)->toBe('Avenida Paulista, 1000, Conjunto 42, Bela Vista');
+    expect($data->intermediario?->endereco)->toBe('Rua Santa Conceição, 333, Bloco B, Guarulhos');
+});
+
+it('omits the complement from the address when the NFS-e does not carry one', function () {
+    // xCpl é opcional: ausente, não pode deixar separador órfão no endereço.
+    $data = $this->builder->build($this->xml);
+
+    expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Centro');
+});
+
+// NT 008, item 2.4.5, campo "DESCRIÇÃO DO CÓDIGO DE TRIBUTAÇÃO NACIONAL / MUNICIPAL":
+// conteúdo é `xTribNac + xTribMun` com a regra `SE xTribMun <> "" ENTAO Descrição
+// Municipal SENAO Descrição Nacional`. É um campo só; o template imprimia os dois.
+it('prints the municipal tax description when the NFS-e carries xTribMun', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->servico->descricaoTributacao)
+        ->toBe('Desenvolvimento e licenciamento de programas de computador customizáveis.');
+});
+
+it('falls back to the national tax description when xTribMun is empty', function () {
+    $xml = preg_replace('|<xTribMun>[^<]*</xTribMun>|', '<xTribMun></xTribMun>', $this->xml);
+    $xml = preg_replace('|<xTribNac>[^<]*</xTribNac>|', '<xTribNac>Descrição nacional</xTribNac>', (string) $xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->servico->descricaoTributacao)->toBe('Descrição nacional');
+});
+
+it('shows a dash for the tax description when neither xTribMun nor xTribNac is present', function () {
+    $xml = preg_replace('|<xTribMun>[^<]*</xTribMun>|', '<xTribMun></xTribMun>', $this->xml);
+    $xml = preg_replace('|<xTribNac>[^<]*</xTribNac>|', '<xTribNac></xTribNac>', (string) $xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->servico->descricaoTributacao)->toBe('-');
 });

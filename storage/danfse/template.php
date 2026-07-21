@@ -275,11 +275,11 @@
             <tr>
                 <td style="width: 25%;">
                     <span class="label">Código de Tributação Nacional</span>
-                    <span class="value"><?= $h($data->servico->codigoTribNacional) ?><?= $data->servico->descTribNacional !== '-' ? ' - '.$h($data->servico->descTribNacional) : '' ?></span>
+                    <span class="value"><?= $h($data->servico->codigoTribNacional) ?></span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Código de Tributação Municipal</span>
-                    <span class="value"><?= $h($data->servico->codigoTribMunicipal) ?><?= $data->servico->descTribMunicipal !== '-' ? ' - '.$h($data->servico->descTribMunicipal) : '' ?></span>
+                    <span class="value"><?= $h($data->servico->codigoTribMunicipal) ?></span>
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Local da Prestação</span>
@@ -288,6 +288,11 @@
                 <td style="width: 25%;">
                     <span class="label">País da Prestação</span>
                     <span class="value"><?= $h($data->servico->paisPrestacao) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <span class="value"><?= $h($data->servico->descricaoTributacao) ?></span>
                 </td>
             </tr>
             <tr>
