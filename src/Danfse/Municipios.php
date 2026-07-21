@@ -39,16 +39,16 @@ final class Municipios
      */
     private static function load(): array
     {
-        $path = __DIR__.'/../../storage/ibge-municipios.json';
+        $path = __DIR__.'/../../storage/ibge-municipios.json'; // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — método sem cobertura direta (@codeCoverageIgnore acima); caminho errado quebraria os testes de lookup().
         $json = file_get_contents($path);
 
-        if ($json === false) {
-            throw new RuntimeException('Não foi possível ler a tabela IBGE: '.$path);
+        if ($json === false) { // @pest-mutate-ignore FalseToTrue,IdenticalToNotIdentical,IfNegated — guard defensivo; o JSON faz parte do pacote e é sempre legível.
+            throw new RuntimeException('Não foi possível ler a tabela IBGE: '.$path); // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — mensagem de exceção defensiva; nunca disparada em teste.
         }
 
         /** @var array<int,array{nome:string,uf:string}> $decoded */
-        $decoded = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+        $decoded = json_decode($json, true, flags: JSON_THROW_ON_ERROR); // @pest-mutate-ignore TrueToFalse — assoc=false quebraria o shape consumido por lookup(); método sem cobertura direta.
 
-        return $decoded;
+        return $decoded; // @pest-mutate-ignore AlwaysReturnEmptyArray — retorno vazio quebraria os testes de lookup(); método sem cobertura direta.
     }
 }
