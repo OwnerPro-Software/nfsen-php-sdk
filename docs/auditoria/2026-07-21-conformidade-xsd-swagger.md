@@ -59,7 +59,7 @@ Critério de severidade:
 | # | Achado | Severidade | Estado em `babc3d0` |
 |---|---|---|---|
 | 1 | `RegApTribSN::label()` contradiz o XSD | Alta | **Corrigido** (rótulos transcritos do XSD; teste passou a derivar do XSD) |
-| 2 | `prefeituras.json` 3501608 com templates vazios | Média | **Aberto** (dado); mecanismo corrigido em `1a9b507` |
+| 2 | `prefeituras.json` 3501608 com templates vazios | Média | **Corrigido** (base separada do path de emissão); mecanismo já corrigido em `1a9b507` |
 | 3 | `DocumentoFiscal::fromArray()` usava `from()` | — | **Corrigido** em `6c7e887` |
 | 4 | `DanfseDataBuilder` lê `emit->NIF`, inexistente no XSD | Baixa | **Aberto** |
 | 5 | Fixtures JSON com XML-stub irreal | Baixa | **Aberto** |
@@ -171,11 +171,28 @@ regra de `buildUrl()`, capturando a exceção para mostrar o comportamento por o
 `scripts/check_prefeituras.py` sinaliza os 5 templates vazios em operação parametrizada;
 `scripts/06_repro_americana.php` mostra o efeito operação a operação.
 
-**Correção de fundo:** `urls.sefin_*` de 3501608 deveria conter a base
-(`https://nfse.americana.sp.gov.br/api/adn`) e `operations.emit_nfse` o caminho
-(`dps/recepcao`), com os demais templates removidos para herdarem o DEFAULT — se e somente
-se Americana seguir os caminhos nacionais, o que **não foi possível verificar** (ver
-"Não verificado", item 3).
+**Corrigido.** `urls.sefin_*` passou a conter a base (`https://nfse.americana.sp.gov.br/api/adn`)
+e `operations.emit_nfse` o caminho (`dps/recepcao`); os demais templates foram removidos e
+herdam o `DEFAULT_OPERATIONS`. `scripts/06_repro_americana.php` depois da correção:
+
+```
+=== IBGE 3501608 (PRODUCAO) ===
+  query_nfse             path='nfse/{chave}'           URL=https://nfse.americana.sp.gov.br/api/adn/nfse/{chave}
+  query_dps              path='dps/{id}'               URL=https://nfse.americana.sp.gov.br/api/adn/dps/{id}
+  verify_dps             path='dps/{id}'               URL=https://nfse.americana.sp.gov.br/api/adn/dps/{id}
+  query_events           path='nfse/{chave}/eventos/…' URL=https://nfse.americana.sp.gov.br/api/adn/nfse/{chave}/eventos/…
+  cancel_nfse            path='nfse/{chave}/eventos'   URL=https://nfse.americana.sp.gov.br/api/adn/nfse/{chave}/eventos
+  emit_nfse              path='dps/recepcao'           URL=https://nfse.americana.sp.gov.br/api/adn/dps/recepcao
+```
+
+A URL de emissão é **idêntica byte a byte** à anterior nos dois ambientes — verificado por
+asserção direta contra o `PrefeituraResolver`, produção e homologação. É a única operação
+que comprovadamente funcionava, e ela não mudou.
+
+**A ressalva permanece:** que Americana sirva os caminhos nacionais sob `/api/adn` é
+inferência a partir do prefixo, não verificação — ver "Não verificado", item 3. O modo de
+falha, porém, melhorou: caminho divergente agora dá 404, não requisição silenciosamente
+dirigida ao recurso errado.
 
 ---
 
@@ -368,12 +385,19 @@ Esta seção importa tanto quanto os achados: é o mapa do que a auditoria não 
    autoridade é a tabela IBGE, externa. Um nome de município trocado imprimiria localidade
    errada na DANFSe sem sintoma.
 
-3. **Correção de `storage/prefeituras.json` além do achado 2.** O arquivo não tem schema
-   nem contraparte autoritativa: não há como verificar programaticamente que
-   `https://nfsesantanadeparnaiba.simplissweb.com.br` é de fato o host de Santana de
-   Parnaíba, nem que mapear `query_danfse → 'nfse/{chave}'` (em vez de `danfse/{chave}`) é
-   o comportamento real daquele provedor. Idem para 3547304 declarar `adn_*` apontando para
-   host municipal quando distribuição é serviço nacional — pode ser intencional.
+3. **Correção de `storage/prefeituras.json` — inclusive a que foi aplicada.** O arquivo não
+   tem schema nem contraparte autoritativa. Não há como verificar programaticamente:
+   - que Americana (`3501608`) sirva os caminhos nacionais sob `/api/adn`. **Esta é a
+     inferência em que o fix do achado 2 se apoia** — o prefixo `/api/adn` sugere que o
+     município espelha a API do ADN nacional, mas ninguém confirmou. Só a URL de emissão é
+     conhecida, e ela foi preservada byte a byte;
+   - que `https://nfsesantanadeparnaiba.simplissweb.com.br` seja de fato o host de Santana
+     de Parnaíba, nem que mapear `query_danfse → 'nfse/{chave}'` (em vez de
+     `danfse/{chave}`) seja o comportamento real daquele provedor;
+   - se 3547304 declarar `adn_*` apontando para host municipal, quando distribuição é
+     serviço nacional, é intencional ou engano.
+
+   Qualquer um desses só se resolve com confirmação junto ao município ou ao provedor.
 
 4. **Se o `ADN-Contribuinte-swagger.json` realmente prefixa `/contribuintes`.** O arquivo
    não tem `servers` nem `host`/`basePath` (`check_hosts.py`: `servers=None host=None

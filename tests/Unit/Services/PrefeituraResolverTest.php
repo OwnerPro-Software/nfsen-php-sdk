@@ -63,13 +63,16 @@ it('resolves custom operation for known prefeitura', function () use ($jsonPath)
     expect($path)->toContain('ABC');
 });
 
-it('returns empty string for empty operation override', function () use ($jsonPath) {
+it('keeps the Americana emission endpoint intact after splitting base from path', function () use ($jsonPath) {
+    // 3501608 guardava a URL de recepção de DPS no lugar da base, o que obrigava
+    // todo template a ser "". Base e path foram separados; a URL de emissão — a
+    // única que comprovadamente funciona — tem de continuar idêntica.
     $resolver = new PrefeituraResolver($jsonPath);
 
-    // Americana (3501608) tem emitir_nfse: "" — URL já é completa
+    $base = $resolver->resolveSeFinUrl('3501608', NfseAmbiente::HOMOLOGACAO);
     $path = $resolver->resolveOperation('3501608', 'emit_nfse');
 
-    expect($path)->toBe('');
+    expect($base.'/'.$path)->toBe('https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao');
 });
 
 it('resolves default sefin url for unknown prefeitura in producao', function () use ($jsonPath) {

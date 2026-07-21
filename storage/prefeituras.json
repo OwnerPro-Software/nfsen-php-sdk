@@ -1,16 +1,11 @@
 {
     "3501608": {
         "urls": {
-            "sefin_production": "https://nfse.americana.sp.gov.br/api/adn/dps/recepcao",
-            "sefin_staging": "https://americanahomologacao.nfe.com.br/api/adn/dps/recepcao"
+            "sefin_production": "https://nfse.americana.sp.gov.br/api/adn",
+            "sefin_staging": "https://americanahomologacao.nfe.com.br/api/adn"
         },
         "operations":{
-            "emit_nfse" : "",
-            "cancel_nfse" : "",
-            "query_nfse" : "",
-            "query_dps" : "",
-            "query_events" : "",
-            "query_danfse" : ""
+            "emit_nfse" : "dps/recepcao"
         }
     },
     "3547304": {
