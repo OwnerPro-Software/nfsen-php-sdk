@@ -13,10 +13,11 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 - Emissão de NFSe (`emitir`) e emissão por decisão judicial (`emitirDecisaoJudicial`)
 - Cancelamento de NFSe (`cancelar`)
 - Substituição de NFSe (`substituir`)
-- Consulta por chave de acesso, DPS, DANFSE (URL do PDF), eventos e verificação de DPS
+- Consulta por chave de acesso, DPS, eventos e verificação de DPS
 - Distribuição de documentos fiscais via ADN — consulta em lote por NSU (`distribuicao`)
 - Assinatura digital XML com certificado A1 (PFX/P12)
 - Validação XSD dos documentos
+- Geração local do DANFSe (PDF/HTML) em conformidade com a NT 008 — DANFSe v2.0, com os blocos de Destinatário e IBS/CBS da reforma tributária
 - Eventos Laravel opcionais (`NfseEmitted`, `NfseCancelled`, `NfseRejected`, etc.)
 - mTLS sem escrita nomeada em disco
 - 100% de cobertura de testes e tipos
@@ -625,7 +626,14 @@ como indeterminado (sempre seguro).
 
 ## Renderização local do DANFSE
 
-O SDK gera o DANFSE (PDF ou HTML) localmente a partir do XML da NFS-e autorizada, útil como alternativa quando o endpoint ADN oficial está indisponível ou quando você precisa renderizar offline.
+O SDK gera o DANFSE (PDF ou HTML) localmente a partir do XML da NFS-e autorizada.
+
+> **Este é o único caminho desde 01/07/2026.** A [Nota Técnica nº 008][nt008], de
+> 05/05/2026, sobrestou a API de geração do DANFSe (`https://adn.nfse.gov.br/danfse`)
+> e transferiu a geração para o emissor. `consultar()->danfse()`, que chama aquele
+> endpoint, passa a devolver falha com o código `DanfseResponse::API_SOBRESTADA`.
+
+[nt008]: storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf
 
 ### Uso básico
 
@@ -685,6 +693,112 @@ file_put_contents('danfse.html', $html);
 Diferente de `toPdf()`, que devolve `DanfseResponse` com `sucesso: false` em caso de
 falha, `toHtml()` retorna `string` e portanto **propaga** a exceção: `XmlParseException`
 quando o XML está malformado ou não traz algum grupo obrigatório da NFS-e.
+
+### Conformidade com a NT 008 (DANFSe v2.0)
+
+O layout segue a [Nota Técnica nº 008][nt008], que define o **DANFSe v2.0**. A seção
+2.4.5 dela tabula 94 campos, cada um com o caminho no XML de onde sai — e os 94 são
+lidos. A tabela está versionada em `tests/fixtures/nt008/campos-2.4.5.json`, extraída
+por `tools/extract-nt008.py`, e um teste confere a cada execução que cada caminho dela
+ainda existe no XSD e que o builder continua lendo todos.
+
+Blocos do documento, na ordem do Anexo I:
+
+| Bloco | Origem no XML |
+|-------|---------------|
+| Dados da NFS-e | `infNFSe/` + `infDPS/` |
+| Prestador / Fornecedor | `infDPS/prest/`, com `infNFSe/emit/` de reserva |
+| Tomador / Adquirente | `infDPS/toma/` |
+| Destinatário da Operação | `infDPS/IBSCBS/dest/` |
+| Intermediário da Operação | `infDPS/interm/` |
+| Serviço Prestado | `infDPS/serv/` |
+| Tributação Municipal (ISSQN) | `infDPS/valores/trib/tribMun/` + `infNFSe/valores/` |
+| Tributação Federal | `infDPS/valores/trib/tribFed/` |
+| Tributação IBS / CBS | `infDPS/IBSCBS/` + `infNFSe/IBSCBS/` |
+| Valor Total da NFS-e | `infNFSe/valores/` + `infNFSe/IBSCBS/totCIBS/` |
+
+Comportamentos que valem conhecer:
+
+- **Prestador sai de `prest`, não de `emit`.** É o que a NT determina. Como `xNome`,
+  `end`, `fone`, `email` e `IM` são opcionais em `TCInfoPrestador` e obrigatórios em
+  `TCEmitente`, cada campo cai em `emit` quando a DPS o omite — comum, já que o
+  cadastro completo costuma vir do fisco.
+- **Destinatário tem três estados.** Bloco completo; "O DESTINATÁRIO É O PRÓPRIO
+  TOMADOR/ADQUIRENTE DA OPERAÇÃO" quando `indDest = 0`; ou "NÃO IDENTIFICADO" quando
+  não há dados. NFS-e anterior à reforma não traz `IBSCBS` e cai no terceiro.
+- **Duas linhas do bloco ISSQN somem quando vazias** (imunidade/suspensão e
+  benefício/deduções), como a nota 5 do item 2.4.5 permite. Um único campo preenchido
+  traz a linha inteira de volta.
+- **Descrição do código de tributação é um campo só**: municipal quando existe,
+  nacional como alternativa — nunca as duas.
+- **Códigos viram descrições.** `cStat`, `finNFSe`, `tpEmit`, `ambGer`, `tpImunidade`,
+  `tpSusp`, `tpBM` e `tpRetPisCofins` são impressos pelo texto do leiaute. Código sem
+  correspondência sai como `-`: rótulo inventado em documento fiscal é pior que campo
+  vazio.
+
+#### Objetos do DANFSE
+
+`toPdf()` e `toHtml()` montam um `NfseData` a partir do XML. Ele é público — útil para
+quem quer os dados já normalizados (códigos traduzidos, valores formatados) sem gerar
+o PDF:
+
+```php
+use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
+
+$data = (new DanfseDataBuilder)->build($response->xml);
+
+echo $data->situacao;                    // "NFS-e Gerada"
+echo $data->emitidaPor;                  // "Prestador"
+echo $data->emitente->nome;              // prestador, de infDPS/prest
+echo $data->tribIbsCbs->valorTotalIbs;   // "R$ 108,00"
+```
+
+| Propriedade de `NfseData` | Tipo | Descrição |
+|---------------------------|------|-----------|
+| `chaveAcesso`, `numeroNfse`, `competencia` | `string` | Identificação da NFS-e |
+| `emissaoNfse`, `numeroDps`, `serieDps`, `emissaoDps` | `string` | Datas e identificação da DPS |
+| `ambiente` | `NfseAmbiente` | Produção ou homologação |
+| `situacao` | `string` | Descrição de `cStat` |
+| `finalidade` | `string` | Descrição de `finNFSe` |
+| `emitidaPor` | `string` | Descrição de `tpEmit` |
+| `ambienteGerador` | `string` | Descrição de `ambGer` |
+| `emitente`, `tomador` | `DanfseParticipante` | Prestador e tomador |
+| `intermediario`, `destinatario` | `?DanfseParticipante` | `null` quando ausentes |
+| `destinatarioEhTomador` | `bool` | `indDest = 0` |
+| `servico` | `DanfseServico` | Códigos e descrições do serviço |
+| `tribMun`, `tribFed`, `tribIbsCbs` | DTOs de tributação | ISSQN, federal e IBS/CBS |
+| `totais`, `totaisTributos` | `DanfseTotais`, `DanfseTotaisTributos` | Valores e percentuais |
+| `informacoesComplementares` | `string` | Cortado em 1000 caracteres (ver acima) |
+
+Enums com `label()`, que devolvem a descrição do leiaute — todos conferidos contra a
+`<xs:documentation>` do XSD por teste:
+
+`SituacaoNfse`, `AmbienteGerador`, `TipoBeneficioMunicipal`, `NfseAmbiente`,
+`FinNFSe`, `TpEmit`, `TpImunidade`, `TpSusp`, `TpRetPisCofins`, `TpRetISSQN`,
+`TribISSQN`, `RegEspTrib`, `OpSimpNac`, `RegApTribSN`, `CNaoNIF`.
+
+```php
+use OwnerPro\Nfsen\Enums\SituacaoNfse;
+
+SituacaoNfse::from('102')->label();   // "NFS-e de Decisão Judicial"
+SituacaoNfse::labelOf('999');         // "-" — código fora do leiaute
+```
+
+#### Limite conhecido: página única
+
+O item 2.2 da NT exige que o DANFSe caiba em **uma página**. O layout dela ocupa
+28,77 cm dos 29,30 cm úteis de uma A4 — meio centímetro de folga para o documento
+inteiro.
+
+Para não estourar, o SDK **corta as informações complementares em 1000 caracteres**,
+com reticências. O campo tem 2000 na NT: as duas regras não cabem juntas neste
+template, e a da página vence, porque documento de duas páginas é inválido enquanto
+texto cortado continua legível.
+
+O corte é uma heurística calibrada por medição, não uma garantia — a altura renderizada
+depende do glifo, não da contagem de caracteres. A correção definitiva é reconstruir o
+template sobre as medidas por bloco do item 2.4.5. `tests/Unit/Danfse/DanfseSinglePageTest.php`
+renderiza o PDF e conta as páginas, travando o comportamento atual.
 
 ### Geração automática do DANFSE
 
