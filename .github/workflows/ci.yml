@@ -28,6 +28,17 @@ jobs:
           extensions: dom, curl, zlib, openssl, mbstring, libxml
           coverage: xdebug
 
+      # Laravel 11 saiu do security support (mar/2026): todo 11.x carrega
+      # advisories sem fix, e tanto o audit nativo do Composer (block-insecure)
+      # quanto o roave/security-advisories tornam a resolucao impossivel.
+      # Nesta leg de compatibilidade, ambos sao desativados de proposito;
+      # as legs 12/13 e o job quality mantem os gates de seguranca.
+      - name: Allow EOL Laravel 11
+        if: matrix.laravel == '11.*'
+        run: |
+          composer remove roave/security-advisories --dev --no-update --no-interaction
+          composer config audit.block-insecure false
+
       - name: Install dependencies
         run: |
           composer require "illuminate/http:${{ matrix.laravel }}" "illuminate/support:${{ matrix.laravel }}" "illuminate/contracts:${{ matrix.laravel }}" --no-interaction --no-update

@@ -63,7 +63,7 @@ final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
         try {
             include self::TEMPLATE_PATH;
 
-            return (string) ob_get_clean(); // @pest-mutate-ignore RemoveStringCast — ob_get_clean retorna string|false; cast é defensivo (ob_start acabou de ser chamado).
+            return ob_get_clean();
             // @codeCoverageIgnoreStart
         } catch (Throwable $throwable) {
             // Defensivo: se o template lançar, ob_get_clean() do try não roda — limpa o buffer órfão.
