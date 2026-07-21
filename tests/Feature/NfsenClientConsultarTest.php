@@ -198,27 +198,7 @@ it('consultar()->verificarDps throws HttpException on 401 instead of returning f
         ->toThrow(HttpException::class, 'HTTP error: 401');
 });
 
-it('consultar()->dps throws RequestNotDeliveredException on dns failure with detectNotDelivered', function () {
-    Http::fake(['*' => function (): never {
-        throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
-            'cURL error 6: Could not resolve host',
-            new GuzzleHttp\Psr7\Request('GET', 'https://sefin.nfse.gov.br/dps/DPS123'),
-            null,
-            ['errno' => 6],
-        ));
-    }]);
-
-    $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999', detectNotDelivered: true);
-
-    try {
-        $client->consultar()->dps('DPS123');
-        test()->fail('Expected RequestNotDeliveredException');
-    } catch (RequestNotDeliveredException $e) {
-        expect($e->phase)->toBe('dns');
-    }
-});
-
-it('forStandalone keeps pre-send failures indeterminate by default', function () {
+it('consultar()->dps throws RequestNotDeliveredException on dns failure', function () {
     Http::fake(['*' => function (): never {
         throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
             'cURL error 6: Could not resolve host',
@@ -230,32 +210,15 @@ it('forStandalone keeps pre-send failures indeterminate by default', function ()
 
     $client = NfsenClient::forStandalone(makePfxContent(), 'secret', '9999999');
 
-    expect(fn () => $client->consultar()->dps('DPS123'))
-        ->toThrow(IndeterminateResultException::class);
+    try {
+        $client->consultar()->dps('DPS123');
+        test()->fail('Expected RequestNotDeliveredException');
+    } catch (RequestNotDeliveredException $e) {
+        expect($e->phase)->toBe('dns');
+    }
 });
 
-it('NfsenClient::for defaults detect_not_delivered to false when config key is absent', function () {
-    $config = config('nfsen');
-    unset($config['detect_not_delivered']);
-    config(['nfsen' => $config]);
-
-    Http::fake(['*' => function (): never {
-        throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
-            'cURL error 6: Could not resolve host',
-            new GuzzleHttp\Psr7\Request('GET', 'https://sefin.nfse.gov.br/dps/DPS123'),
-            null,
-            ['errno' => 6],
-        ));
-    }]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-
-    expect(fn () => $client->consultar()->dps('DPS123'))
-        ->toThrow(IndeterminateResultException::class);
-});
-
-it('NfsenClient::for honors detect_not_delivered from Laravel config', function () {
-    config(['nfsen.detect_not_delivered' => true]);
+it('NfsenClient::for também classifica falha pré-envio como não entregue', function () {
     Http::fake(['*' => function (): never {
         throw new ConnectionException('cURL error 7: Failed to connect', 0, new ConnectException(
             'cURL error 7: Failed to connect',

@@ -33,9 +33,9 @@ use Throwable;
  * Qualquer outra exceção ou resposta do SDK é uma resposta definitiva do
  * servidor (rejeição, erro de negócio, erro de certificado).
  *
- * Com `detectNotDelivered: true`, falhas comprovadamente anteriores ao envio
- * (DNS, TCP, TLS) são lançadas como {@see RequestNotDeliveredException} —
- * nelas o retry direto é seguro, sem reconciliação.
+ * Falhas comprovadamente anteriores ao envio (DNS, TCP, TLS) são lançadas como
+ * {@see RequestNotDeliveredException} — nelas o retry direto é seguro, sem
+ * reconciliação.
  *
  * @api
  */

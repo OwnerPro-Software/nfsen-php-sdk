@@ -33,7 +33,6 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
         private int $connectTimeout = 10,
         private bool $sslVerify = true,
         private TempFileFactory $tempFileFactory = new TempFileFactory,
-        private bool $detectNotDelivered = false,
     ) {}
 
     /**
@@ -194,10 +193,10 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     }
 
     /**
-     * Envia a requisição convertendo falha de transporte no contrato tipado —
-     * IndeterminateResultException por padrão; com detectNotDelivered ativo,
-     * falhas comprovadamente pré-envio (DNS, TCP, TLS) viram
-     * RequestNotDeliveredException (classificação por errno do cURL).
+     * Envia a requisição convertendo falha de transporte no contrato tipado:
+     * falha comprovadamente pré-envio (DNS, TCP, TLS) vira
+     * RequestNotDeliveredException, o resto vira IndeterminateResultException.
+     * A classificação usa o errno do cURL.
      *
      * Os três catches cobrem as variações de marshalling entre versões do
      * Laravel: ConnectionException (falha de conexão em todas; no Laravel 13+
@@ -214,7 +213,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
         try {
             return $send();
         } catch (ConnectionException|RequestException|TransferException $transportFailure) {
-            throw TransportFailureClassifier::classify($transportFailure, $this->detectNotDelivered);
+            throw TransportFailureClassifier::classify($transportFailure);
         }
     }
 

@@ -81,7 +81,7 @@ it('forStandalone sem danfse: pdf é null e pdfErrors vazio', function (DpsData 
 // 'prefeitura' abaixo são inofensivos (dead config) mas ajudam caso o teste seja refatorado
 // para exercitar app(NfsenClient::class) (ServiceProvider path). Mantidos por defense-in-depth.
 
-it('for() com config.enabled=true ativa auto-render', function (DpsData $data) {
+it('for() com auto_danfse=true ativa auto-render', function (DpsData $data) {
     Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
 
     config([
@@ -89,7 +89,7 @@ it('for() com config.enabled=true ativa auto-render', function (DpsData $data) {
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '9999999',
         'nfsen.validate_identity' => false,
-        'nfsen.danfse.enabled' => true,
+        'nfsen.auto_danfse' => true,
     ]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
@@ -99,7 +99,7 @@ it('for() com config.enabled=true ativa auto-render', function (DpsData $data) {
     expect($resp->pdf)->not->toBeNull();
 })->with('dpsData');
 
-it('for() com config.enabled=false não ativa auto-render', function (DpsData $data) {
+it('for() com auto_danfse=false não ativa auto-render', function (DpsData $data) {
     Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
 
     config([
@@ -107,7 +107,7 @@ it('for() com config.enabled=false não ativa auto-render', function (DpsData $d
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '9999999',
         'nfsen.validate_identity' => false,
-        'nfsen.danfse.enabled' => false,
+        'nfsen.auto_danfse' => false,
     ]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
@@ -117,7 +117,7 @@ it('for() com config.enabled=false não ativa auto-render', function (DpsData $d
     expect($resp->pdf)->toBeNull();
 })->with('dpsData');
 
-it('for(danfse: false) força desligar mesmo com config.enabled=true', function (DpsData $data) {
+it('for(danfse: false) força desligar mesmo com auto_danfse=true', function (DpsData $data) {
     Http::fake(['*' => Http::response(makeDanfseAutorizadoApiResponse(), 201)]);
 
     config([
@@ -125,7 +125,7 @@ it('for(danfse: false) força desligar mesmo com config.enabled=true', function 
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '9999999',
         'nfsen.validate_identity' => false,
-        'nfsen.danfse.enabled' => true,
+        'nfsen.auto_danfse' => true,
     ]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999', danfse: false);

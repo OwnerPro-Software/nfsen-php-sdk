@@ -527,7 +527,7 @@ Representa uma mensagem de erro ou alerta da API:
 | `NfseException` | `RuntimeException` | Erros gerais (XML inválido, falha de compressão, etc.) |
 | `CommunicationException` | `NfseException` | Base abstrata das falhas de comunicação (nenhuma resposta completa e legível). Capture-a para tratar tudo como indeterminado; capture as subclasses para distinguir |
 | `IndeterminateResultException` | `CommunicationException` | **Resultado indeterminado**: a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`); é `null` quando a resposta chegou inteira e o que falta é evidência de processamento, como num 5xx sem rejeição da SEFIN |
-| `RequestNotDeliveredException` | `CommunicationException` | **Não entregue**: a falha ocorreu comprovadamente antes de qualquer byte HTTP ser enviado (`phase`: `dns`, `connect` ou `tls`). A operação não foi processada — retry direto é seguro, sem reconciliação. Só é lançada com `detectNotDelivered: true` |
+| `RequestNotDeliveredException` | `CommunicationException` | **Não entregue**: a falha ocorreu comprovadamente antes de qualquer byte HTTP ser enviado (`phase`: `dns`, `connect` ou `tls`). A operação não foi processada — retry direto é seguro, sem reconciliação |
 | `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (redirect, 4xx vazio, 5xx em consulta; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes. **Num 5xx a operações que alteram estado** (`emitir`, `cancelar`, `substituir`) o SDK lança `IndeterminateResultException`, não esta |
 | `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
 | `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS; ID de DPS fora do padrão `TSIdDPS` |
@@ -547,7 +547,7 @@ try {
 } catch (InvalidDpsArgument $e) {
     // Dados da DPS inválidos -- corrigir payload
 } catch (RequestNotDeliveredException $e) {
-    // Só com detectNotDelivered: true. Nada chegou à SEFIN -- retry direto seguro.
+    // Nada chegou à SEFIN -- retry direto seguro.
 } catch (IndeterminateResultException $e) {
     // Resultado INDETERMINADO -- a nota pode ou não ter sido emitida.
     // NUNCA re-emita sem antes reconciliar com consultar()->dps($idDps).
@@ -591,12 +591,10 @@ foi emitida; se retornar `NfseResponse::DPS_NOT_FOUND`, é seguro re-emitir com
 o mesmo nDPS. Qualquer outra exceção ou resposta do SDK é uma resposta
 definitiva do servidor.
 
-**Distinguindo "não entregue" de "indeterminado"** (opt-in): falhas de DNS,
-conexão TCP e handshake TLS acontecem **antes** de qualquer byte HTTP ser
-enviado — a requisição comprovadamente não chegou à SEFIN e o retry direto é
-seguro, sem reconciliação. Ative com `detectNotDelivered: true` em
-`forStandalone()` (ou `NFSE_DETECT_NOT_DELIVERED=true` no Laravel) para que
-esses casos lancem `RequestNotDeliveredException` em vez de
+**Distinguindo "não entregue" de "indeterminado"**: falhas de DNS, conexão TCP e
+handshake TLS acontecem **antes** de qualquer byte HTTP ser enviado — a
+requisição comprovadamente não chegou à SEFIN e o retry direto é seguro, sem
+reconciliação. Esses casos lançam `RequestNotDeliveredException` em vez de
 `IndeterminateResultException`:
 
 ```php
@@ -835,14 +833,18 @@ impressa.
 
 ### Geração automática do DANFSE
 
-O PDF é anexado ao `NfseResponse` em `emitir()`, `emitirDecisaoJudicial()`, `substituir()`
-e `consultar()->nfse()` quando a DANFSE é configurada.
-
-**Modo Laravel simples** — via `config/nfsen.php`:
+**Desligada por padrão.** Ligada, anexa o PDF ao `NfseResponse` em `emitir()`,
+`emitirDecisaoJudicial()`, `substituir()` e `consultar()->nfse()` — cerca de 300 ms e
+15 KB por nota, gastos mesmo que ninguém abra o documento. Sem ela, gere sob demanda
+com `$client->danfse()->toPdf($resp->xml)`.
 
 ```env
-NFSE_DANFSE_AUTO=true
+NFSE_AUTO_DANFSE=true
 ```
+
+A flag é lida com cast para bool. Se a config vier de outra fonte que não `env()` — banco,
+YAML, painel —, converta antes: `'false'`, `'off'` e `'no'` são strings verdadeiras em PHP
+e ligariam o auto-render.
 
 ```php
 $resp = NfsenClient::for($pfx, $senha, $ibge)->emitir($dps);
@@ -850,25 +852,21 @@ echo $resp->pdf;                 // string com o PDF (ou null se render falhou)
 print_r($resp->pdfErrors);       // list<ProcessingMessage> quando render falha
 ```
 
-**Ligar pontualmente** (mesmo com `NFSE_DANFSE_AUTO=false`):
+**Ligar pontualmente** (mesmo com `NFSE_AUTO_DANFSE=false`):
 
 ```php
 $client = NfsenClient::for($pfx, $senha, $ibge, danfse: true);
 ```
 
-**Desligar pontualmente** (mesmo com `NFSE_DANFSE_AUTO=true`):
+**Desligar pontualmente** (mesmo com `NFSE_AUTO_DANFSE=true`):
 
 ```php
 $client = NfsenClient::for($pfx, $senha, $ibge, danfse: false);
 ```
 
 **Quando o PDF falha** (`$resp->sucesso === true` mas `$resp->pdf === null`): a NFS-e
-foi emitida com sucesso. Tente regenerar sob demanda com
-`$client->danfse($config)->toPdf($resp->xml)`.
-
-**Gotcha do `enabled`**: a flag `nfsen.danfse.enabled` é checada com `=== true` estrito.
-O config publicado aplica `(bool)` cast; se consumir config de outra fonte (ex.: banco de
-dados) garanta o tipo bool. `1`, `'true'`, ou `'on'` **não** ativam auto-render.
+foi emitida com sucesso. Regenere sob demanda com `$client->danfse()->toPdf($resp->xml)`
+e inspecione `$resp->pdfErrors`.
 
 ### Atribuição
 

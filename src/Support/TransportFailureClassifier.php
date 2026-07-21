@@ -32,12 +32,8 @@ use Throwable;
  */
 final readonly class TransportFailureClassifier
 {
-    public static function classify(Throwable $failure, bool $detectNotDelivered): CommunicationException
+    public static function classify(Throwable $failure): CommunicationException
     {
-        if (! $detectNotDelivered) {
-            return IndeterminateResultException::fromTransportFailure($failure);
-        }
-
         $errno = self::curlErrno($failure);
 
         return match (true) {

@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
-use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Exceptions\RequestNotDeliveredException;
 use OwnerPro\Nfsen\Facades\Nfsen;
@@ -157,7 +156,7 @@ it('casts integer prefeitura config to string', function () {
     expect($client)->toBeInstanceOf(NfsenClient::class);
 });
 
-it('SP ativa auto-danfse quando config.danfse.enabled=true — emit retorna pdf', function (DpsData $data) {
+it('SP ativa auto-danfse quando auto_danfse=true — emit retorna pdf', function (DpsData $data) {
     $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
     $gzip = base64_encode((string) gzencode($xml));
 
@@ -175,8 +174,7 @@ it('SP ativa auto-danfse quando config.danfse.enabled=true — emit retorna pdf'
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '3501608',
         'nfsen.validate_identity' => false,
-        'nfsen.danfse.enabled' => true,
-        'nfsen.danfse.logo_path' => false,
+        'nfsen.auto_danfse' => true,
     ]);
 
     $resp = app(NfsenClient::class)->emitir($data);
@@ -185,15 +183,64 @@ it('SP ativa auto-danfse quando config.danfse.enabled=true — emit retorna pdf'
     expect($resp->pdf)->toStartWith('%PDF-');
 })->with('dpsData');
 
-it('SP não ativa auto-danfse quando config.danfse ausente — emit retorna pdf null', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE'], 201)]);
+it('SP mantém o auto-render desligado quando a config não traz a chave', function (DpsData $data) {
+    // Config publicado antes da 3.0.0 não tem `auto_danfse`. Sem este caso, nada exercita
+    // o default do `??` pelo caminho do container.
+    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
+
+    Http::fake(['*' => Http::response([
+        'chaveAcesso' => 'CHAVE',
+        'nfseXmlGZipB64' => base64_encode((string) gzencode($xml)),
+    ], 201)]);
 
     config([
         'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '3501608',
         'nfsen.validate_identity' => false,
-        'nfsen.danfse' => null, // bloco ausente ⇒ isDanfseEnabled(null) = false ⇒ sem auto-render.
+    ]);
+    config()->offsetUnset('nfsen.auto_danfse');
+
+    expect(app(NfsenClient::class)->emitir($data)->pdf)->toBeNull();
+})->with('dpsData');
+
+it('SP aceita a flag vinda de fonte que não tipa bool', function (DpsData $data) {
+    // Config de banco ou YAML entrega `1`, não `true`. Sem o cast, o valor chega a um
+    // parâmetro `bool` sob strict_types e vira TypeError na construção do client.
+    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
+
+    Http::fake(['*' => Http::response([
+        'chaveAcesso' => 'CHAVE',
+        'nfseXmlGZipB64' => base64_encode((string) gzencode($xml)),
+    ], 201)]);
+
+    config([
+        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfsen.certificado.senha' => 'secret',
+        'nfsen.prefeitura' => '3501608',
+        'nfsen.validate_identity' => false,
+        'nfsen.auto_danfse' => 1,
+    ]);
+
+    expect(app(NfsenClient::class)->emitir($data)->pdf)->toStartWith('%PDF-');
+})->with('dpsData');
+
+it('SP respeita auto_danfse=false — emit retorna pdf null', function (DpsData $data) {
+    // A resposta traz XML de propósito: sem ele o PDF sairia null por falta de matéria
+    // -prima, e o teste passaria mesmo com o auto-render ligado.
+    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
+
+    Http::fake(['*' => Http::response([
+        'chaveAcesso' => 'CHAVE',
+        'nfseXmlGZipB64' => base64_encode((string) gzencode($xml)),
+    ], 201)]);
+
+    config([
+        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfsen.certificado.senha' => 'secret',
+        'nfsen.prefeitura' => '3501608',
+        'nfsen.validate_identity' => false,
+        'nfsen.auto_danfse' => false,
     ]);
 
     $resp = app(NfsenClient::class)->emitir($data);
@@ -231,47 +278,14 @@ function fakePreSendDnsFailure(): void
     }]);
 }
 
-function configureContainerClient(bool $detectNotDelivered): void
-{
+it('container binding classifies a pre-send failure as undelivered', function () {
     config([
         'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
         'nfsen.certificado.senha' => 'secret',
         'nfsen.prefeitura' => '9999999',
-        'nfsen.detect_not_delivered' => $detectNotDelivered,
     ]);
-}
-
-it('container binding honours detect_not_delivered, same as NfsenClient::for()', function () {
-    // Os dois caminhos de construção precisam entregar o mesmo contrato de exceção:
-    // o binding omitia a chave e caía no default false, então a mesma config dava
-    // RequestNotDeliveredException via ::for() e IndeterminateResultException via
-    // container — sem aviso, justamente a fragilidade que a flag existe para evitar.
-    configureContainerClient(true);
     fakePreSendDnsFailure();
 
     expect(fn () => app(NfsenClient::class)->consultar()->nfse(makeChaveAcesso()))
         ->toThrow(RequestNotDeliveredException::class);
-});
-
-it('container binding keeps the 2.5.0 contract when detect_not_delivered is off', function () {
-    configureContainerClient(false);
-    fakePreSendDnsFailure();
-
-    expect(fn () => app(NfsenClient::class)->consultar()->nfse(makeChaveAcesso()))
-        ->toThrow(IndeterminateResultException::class);
-});
-
-it('container binding defaults to off when the config predates 2.6.0', function () {
-    // Config publicado antes da 2.6.0 não tem a chave: `?? false` mantém o
-    // comportamento antigo em vez de estourar com índice indefinido.
-    config([
-        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
-        'nfsen.certificado.senha' => 'secret',
-        'nfsen.prefeitura' => '9999999',
-    ]);
-    config()->offsetUnset('nfsen.detect_not_delivered');
-    fakePreSendDnsFailure();
-
-    expect(fn () => app(NfsenClient::class)->consultar()->nfse(makeChaveAcesso()))
-        ->toThrow(IndeterminateResultException::class);
 });

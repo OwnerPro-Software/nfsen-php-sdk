@@ -15,19 +15,12 @@ return [
     'ssl_verify' => (bool) env('NFSE_SSL_VERIFY', true),
     'validate_identity' => (bool) env('NFSE_VALIDATE_IDENTITY', true),
 
-    // Quando true, falhas comprovadamente anteriores ao envio (DNS, TCP, TLS)
-    // lançam RequestNotDeliveredException (retry direto seguro) em vez de
-    // IndeterminateResultException (reconciliar antes de retry). Opt-in para
-    // não alterar catches existentes de IndeterminateResultException.
-    'detect_not_delivered' => (bool) env('NFSE_DETECT_NOT_DELIVERED', false),
-
-    // DANFSE auto-render. Quando `enabled=true`, `NfsenClient::for()` anexa o PDF
-    // ao NfseResponse em emitir/emitirDecisaoJudicial/substituir/consultar()->nfse().
-    // Sobrescreva por chamada com NfsenClient::for(danfse: true|false).
+    // Anexa o DANFSe em PDF ao NfseResponse de emitir(), emitirDecisaoJudicial(),
+    // substituir() e consultar()->nfse(). Desligado por padrão: são ~300ms e ~15KB por
+    // nota, gastos mesmo que ninguém abra o PDF. Sem a flag, gere sob demanda com
+    // $client->danfse()->toPdf($xml).
     //
-    // Não há mais o que configurar além disso: o layout inteiro do DANFSe vem da
-    // NT 008 e do XML da NFS-e.
-    'danfse' => [
-        'enabled' => (bool) env('NFSE_DANFSE_AUTO', false),
-    ],
+    // Sobrescreva por chamada com NfsenClient::for(danfse: true|false). O documento em
+    // si não tem configuração: o layout vem da NT 008 e o conteúdo, do XML.
+    'auto_danfse' => (bool) env('NFSE_AUTO_DANFSE', false),
 ];

@@ -20,8 +20,8 @@ interface ConsultsNfse
      * Quando a SEFIN responde 404 (DPS inexistente), retorna falha com
      * `erros[0]->codigo === NfseResponse::DPS_NOT_FOUND` — sinal inequívoco,
      * distinto de erros transitórios. Falha de comunicação lança
-     * `CommunicationException` (`IndeterminateResultException`, ou
-     * `RequestNotDeliveredException` com `detectNotDelivered` ativo).
+     * `CommunicationException` (`IndeterminateResultException` ou
+     * `RequestNotDeliveredException`).
      */
     public function dps(string $id): NfseResponse;
 

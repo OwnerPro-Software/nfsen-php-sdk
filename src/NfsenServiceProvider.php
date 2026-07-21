@@ -31,8 +31,7 @@ final class NfsenServiceProvider extends ServiceProvider
              *     signing_algorithm: string,
              *     ssl_verify: bool,
              *     validate_identity: bool,
-             *     danfse?: array<string, mixed>,
-             *     detect_not_delivered?: bool,
+             *     auto_danfse?: bool,
              * } $config
              */
             $config = config('nfsen');
@@ -62,12 +61,7 @@ final class NfsenServiceProvider extends ServiceProvider
                 sslVerify: $config['ssl_verify'],
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
-                danfse: NfsenClient::isDanfseEnabled($config['danfse'] ?? null),
-                // Chave opcional: configs publicados antes da 2.6.0 não a possuem.
-                // Sem esta linha o binding do container caía no default `false`, e
-                // um app com NFSE_DETECT_NOT_DELIVERED=true recebia contratos de
-                // exceção diferentes conforme construísse via ::for() ou via container.
-                detectNotDelivered: $config['detect_not_delivered'] ?? false,
+                danfse: (bool) ($config['auto_danfse'] ?? false),
             );
         });
     }

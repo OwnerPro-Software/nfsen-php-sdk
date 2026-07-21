@@ -632,27 +632,7 @@ it('converts mid-transfer failure with partial error response into Indeterminate
     }
 });
 
-it('throws RequestNotDeliveredException for pre-send failure when detectNotDelivered is enabled', function () {
-    Http::fake(['*' => function (): never {
-        throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
-            'cURL error 6: Could not resolve host',
-            new GuzzleRequest('POST', 'https://example.com/nfse'),
-            null,
-            ['errno' => 6],
-        ));
-    }]);
-
-    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, detectNotDelivered: true);
-
-    try {
-        $client->post('https://example.com/nfse', []);
-        test()->fail('Expected RequestNotDeliveredException');
-    } catch (RequestNotDeliveredException $e) {
-        expect($e->phase)->toBe('dns');
-    }
-});
-
-it('keeps pre-send failures as IndeterminateResultException by default', function () {
+it('throws RequestNotDeliveredException for a provably pre-send failure', function () {
     Http::fake(['*' => function (): never {
         throw new ConnectionException('cURL error 6: Could not resolve host', 0, new ConnectException(
             'cURL error 6: Could not resolve host',
@@ -664,8 +644,12 @@ it('keeps pre-send failures as IndeterminateResultException by default', functio
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
-    expect(fn () => $client->post('https://example.com/nfse', []))
-        ->toThrow(IndeterminateResultException::class);
+    try {
+        $client->post('https://example.com/nfse', []);
+        test()->fail('Expected RequestNotDeliveredException');
+    } catch (RequestNotDeliveredException $e) {
+        expect($e->phase)->toBe('dns');
+    }
 });
 
 it('does not convert non-transport exceptions into IndeterminateResultException', function () {

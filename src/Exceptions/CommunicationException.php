@@ -13,7 +13,7 @@ namespace OwnerPro\Nfsen\Exceptions;
  * subclasses para distinguir:
  *
  * - {@see RequestNotDeliveredException} — a requisição comprovadamente NÃO
- *   chegou ao servidor; retry direto é seguro (requer `detectNotDelivered`).
+ *   chegou ao servidor; retry direto é seguro.
  * - {@see IndeterminateResultException} — a requisição PODE ter sido
  *   processada; reconcilie antes de qualquer retry.
  *

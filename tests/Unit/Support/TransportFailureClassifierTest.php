@@ -22,15 +22,8 @@ function makeConnectFailure(int|string|null $errno, string $message = 'cURL erro
     ));
 }
 
-it('classifies everything as indeterminate when detection is disabled', function () {
-    $exception = TransportFailureClassifier::classify(makeConnectFailure(6, 'cURL error 6: Could not resolve host'), false);
-
-    expect($exception)->toBeInstanceOf(IndeterminateResultException::class)
-        ->and($exception->phase)->toBe('dns');
-});
-
 it('classifies provably undelivered errnos as RequestNotDeliveredException', function (int $errno, string $expectedPhase) {
-    $exception = TransportFailureClassifier::classify(makeConnectFailure($errno), true);
+    $exception = TransportFailureClassifier::classify(makeConnectFailure($errno));
 
     expect($exception)->toBeInstanceOf(RequestNotDeliveredException::class)
         ->and($exception->phase)->toBe($expectedPhase)
@@ -44,7 +37,7 @@ it('classifies provably undelivered errnos as RequestNotDeliveredException', fun
 ]);
 
 it('classifies ambiguous or post-send errnos as IndeterminateResultException', function (int $errno, ?string $expectedPhase) {
-    $exception = TransportFailureClassifier::classify(makeConnectFailure($errno), true);
+    $exception = TransportFailureClassifier::classify(makeConnectFailure($errno));
 
     expect($exception)->toBeInstanceOf(IndeterminateResultException::class)
         ->and($exception->phase)->toBe($expectedPhase);
@@ -60,21 +53,21 @@ it('classifies ambiguous or post-send errnos as IndeterminateResultException', f
 it('classifies as indeterminate but keeps the message-sniffed phase when errno is missing', function () {
     // Sem errno não há evidência para "não entregue" (decisão), mas a fase
     // informacional ainda vem do texto da mensagem para não perder diagnóstico.
-    $exception = TransportFailureClassifier::classify(makeConnectFailure(null, 'cURL error 6: Could not resolve host'), true);
+    $exception = TransportFailureClassifier::classify(makeConnectFailure(null, 'cURL error 6: Could not resolve host'));
 
     expect($exception)->toBeInstanceOf(IndeterminateResultException::class)
         ->and($exception->phase)->toBe('dns');
 });
 
 it('classifies as indeterminate when errno is not an integer', function () {
-    $exception = TransportFailureClassifier::classify(makeConnectFailure('6'), true);
+    $exception = TransportFailureClassifier::classify(makeConnectFailure('6'));
 
     expect($exception)->toBeInstanceOf(IndeterminateResultException::class)
         ->and($exception->phase)->toBeNull();
 });
 
 it('classifies as indeterminate when no guzzle exception exists in the chain', function () {
-    $exception = TransportFailureClassifier::classify(new ConnectionException('falha sem previous'), true);
+    $exception = TransportFailureClassifier::classify(new ConnectionException('falha sem previous'));
 
     expect($exception)->toBeInstanceOf(IndeterminateResultException::class)
         ->and($exception->phase)->toBeNull();
@@ -90,7 +83,7 @@ it('reads the errno when the failure itself is the guzzle exception', function (
         ['errno' => 56],
     );
 
-    $exception = TransportFailureClassifier::classify($failure, true);
+    $exception = TransportFailureClassifier::classify($failure);
 
     expect($exception)->toBeInstanceOf(IndeterminateResultException::class)
         ->and($exception->phase)->toBe('transfer');
@@ -105,7 +98,7 @@ it('walks through foreign exceptions in the chain to find the guzzle one', funct
     );
     $failure = new ConnectionException('wrapper externo', 0, new RuntimeException('camada intermediária', 0, $inner));
 
-    $exception = TransportFailureClassifier::classify($failure, true);
+    $exception = TransportFailureClassifier::classify($failure);
 
     expect($exception)->toBeInstanceOf(RequestNotDeliveredException::class)
         ->and($exception->phase)->toBe('connect');
@@ -125,7 +118,7 @@ it('stops at the first guzzle exception even when a deeper one has a different e
         ['errno' => 7],
     );
 
-    $exception = TransportFailureClassifier::classify(new ConnectionException('wrapper', 0, $first), true);
+    $exception = TransportFailureClassifier::classify(new ConnectionException('wrapper', 0, $first));
 
     expect($exception)->toBeInstanceOf(RequestNotDeliveredException::class)
         ->and($exception->phase)->toBe('connect');

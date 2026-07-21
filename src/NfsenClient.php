@@ -59,7 +59,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
 
     /**
      * @param  bool|null  $danfse  `true`/`false` forçam ligar ou desligar o auto-render;
-     *                             `null` (default) segue `config('nfsen.danfse.enabled')`
+     *                             `null` (default) segue `config('nfsen.auto_danfse')`
      */
     public static function for(
         #[SensitiveParameter] string $pfxContent,
@@ -68,37 +68,9 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         ?NfseAmbiente $ambiente = null,
         ?bool $danfse = null,
     ): self {
-        if ($danfse === null && function_exists('config')) {
-            $danfse = self::isDanfseEnabled(config('nfsen.danfse'));
-        }
+        $danfse ??= function_exists('config') && config('nfsen.auto_danfse');
 
-        return self::buildFor($pfxContent, $senha, $prefeitura, $ambiente, $danfse === true);
-    }
-
-    /**
-     * Gate DRY usado por `for()` e por `NfsenServiceProvider`.
-     *
-     * Contrato: config/nfsen.php aplica `(bool)` cast em `enabled`, logo o valor chegando
-     * aqui é bool. Strict `=== true` enforces o contrato — se alguém publicar um config
-     * com `'enabled' => 1`, o auto-render silenciosamente não ativa. Intencional:
-     * falha fechada é mais segura que ativar por coerção frouxa.
-     *
-     * Visibilidade public obrigatória: consumido por `NfsenServiceProvider`. Marcada como
-     * `@api` preemptivamente: `NfsenServiceProvider` é um consumidor externo efetivo do
-     * helper (mesma lib, mas acoplamento cross-class). `@api` garante que `tomasvotruba/unused-public`
-     * não reclame em Task 15 Step 5 sem precisar de retry-com-edit.
-     *
-     * @phpstan-assert-if-true array<string, mixed> $block
-     *
-     * @api
-     */
-    public static function isDanfseEnabled(mixed $block): bool
-    {
-        if (! is_array($block)) {
-            return false; // @pest-mutate-ignore RemoveEarlyReturn — fallthrough em não-array acessa offset e retorna false via `?? false`, comportamento equivalente.
-        }
-
-        return ($block['enabled'] ?? false) === true;
+        return self::buildFor($pfxContent, $senha, $prefeitura, $ambiente, $danfse);
     }
 
     private static function buildFor(
@@ -108,10 +80,8 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         ?NfseAmbiente $ambiente,
         bool $danfse,
     ): self {
-        // Chave `danfse?` opcional no shape: cobre instalações antigas cujo config/nfsen.php
-        // publicado não tem o bloco novo (buildFor não acessa essa chave, mas o ServiceProvider sim).
         if (function_exists('config') && config('nfsen') !== null) {
-            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool, danfse?: array<string, mixed>, detect_not_delivered?: bool} $config */
+            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool, auto_danfse?: bool} $config */
             $config = config('nfsen');
 
             return self::forStandalone(
@@ -125,8 +95,6 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
                 danfse: $danfse,
-                // Chave opcional: configs publicados antes da 2.6.0 não a possuem.
-                detectNotDelivered: $config['detect_not_delivered'] ?? false,
             );
         }
 
@@ -156,7 +124,6 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         int $connectTimeout = 10,
         bool $validateIdentity = true,
         bool $danfse = false,
-        bool $detectNotDelivered = false,
     ): self {
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
         $schemasPath ??= __DIR__.'/../storage/schemes';
@@ -165,7 +132,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         $xsdValidator = new XsdValidator($schemasPath);
         $certManager = new CertificateManager($pfxContent, $senha);
         $effectiveSslVerify = $ambiente === NfseAmbiente::PRODUCAO || $sslVerify;
-        $httpClient = new NfseHttpClient($certManager->getCertificate(), $timeout, $connectTimeout, $effectiveSslVerify, detectNotDelivered: $detectNotDelivered);
+        $httpClient = new NfseHttpClient($certManager->getCertificate(), $timeout, $connectTimeout, $effectiveSslVerify);
 
         $signer = new XmlSigner($certManager->getCertificate(), $signingAlgorithm);
 

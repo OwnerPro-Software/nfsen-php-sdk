@@ -125,6 +125,24 @@ All notable changes to this project will be documented in this file.
 
 - `TipoEvento` passou a compartilhar o vocabulário de `TipoEventoDistribuicao`: os mesmos eventos, vistos pelos canais de consulta e de distribuição, agora têm o mesmo nome nos dois enums.
 
+- **BREAKING — `detect_not_delivered` deixou de existir; a detecção é sempre feita.** Somem a chave de `config/nfsen.php`, a variável `NFSE_DETECT_NOT_DELIVERED` e o parâmetro `$detectNotDelivered` de `NfsenClient::forStandalone()` e de `NfseHttpClient`. `TransportFailureClassifier::classify()` perdeu o segundo argumento.
+
+  A flag existia para não alterar catches escritos antes da 2.6.0, mas o que ela desligava é a classificação **correta**: com ela em `false`, uma falha de DNS, TCP ou TLS — em que nenhum byte chegou à SEFIN — era relatada como `IndeterminateResultException`, cujo contrato obriga o chamador a reconciliar antes de reenviar. Trabalho e latência a mais para um caso em que o reenvio direto é comprovadamente seguro.
+
+  A classificação segue exigindo evidência inequívoca (errno do cURL 6, 7, 35, 58, 60); qualquer ambiguidade, incluindo todo timeout, permanece indeterminada.
+
+  **Migração.** Remova a chave e a variável. Quem já capturava `CommunicationException` não precisa de nada. Quem só capturava `IndeterminateResultException` passa a ver `RequestNotDeliveredException` escapar em falhas pré-envio — capture-a, ou capture a base `CommunicationException`.
+
+- **BREAKING — a flag do auto-render virou `auto_danfse`, de primeiro nível.** O bloco `danfse` de `config/nfsen.php` some: no lugar de `danfse.enabled`, com `NFSE_DANFSE_AUTO`, fica `auto_danfse`, com `NFSE_AUTO_DANFSE`. O default segue `false`, e a chave ausente — caso de todo config publicado antes desta versão — também.
+
+  `NfsenClient::isDanfseEnabled()` foi removido junto — era um método público cujo corpo virou um cast, e cada caminho o faz por conta própria agora.
+
+  A checagem estrita `=== true` deu lugar a esse cast, o que corta dos dois lados. Ganha-se `1` e `'1'` sendo tratados como ligado, em vez de descartados em silêncio — o caso de quem alimenta a config de banco ou de painel. Perde-se a proteção contra o inverso: vindas de fonte que não tipa bool, as strings `'false'`, `'off'` e `'no'` são **verdadeiras** em PHP e ligam o auto-render. Quem não usa `env()` deve converter antes de escrever na config.
+
+  Vale lembrar o custo de ligar: cerca de 300 ms e 15 KB por nota, em `emitir()`, `emitirDecisaoJudicial()`, `substituir()` e `consultar()->nfse()`. `$client->danfse()->toPdf($xml)` está sempre disponível, com a flag ou sem ela.
+
+  **Migração.** Troque `NFSE_DANFSE_AUTO` por `NFSE_AUTO_DANFSE` e, se publicou o config, o bloco `danfse` pela chave `auto_danfse`.
+
 - **BREAKING — o DANFSe deixou de ser customizável.** Saem `Danfse\DanfseConfig`, `Danfse\MunicipalityBranding`, `Danfse\LogoLoader`, o trait `Danfse\Concerns\ValidatesArrayShape`, o argumento de `NfsenClient::danfse()` e as chaves `logo_path`, `logo_data_uri` e `municipality` da configuração, com as variáveis `NFSE_DANFSE_LOGO_PATH`, `NFSE_DANFSE_LOGO_DATA_URI` e `NFSE_DANFSE_MUN_*`. O bloco `danfse` de `config/nfsen.php` fica só com `enabled`, e o parâmetro `$danfse` de `for()`/`forStandalone()` passa de `array|false|null` para `bool` — ele só liga e desliga o auto-render.
 
   A NT 008 descreve o documento campo a campo e não deixa nada à escolha do emissor. O item 2.2.4 obriga a seguir o Anexo I; o item 2.1 proíbe imprimir o que não consta do arquivo da NFS-e; os itens 2.3.1 a 2.3.3 listam as únicas alterações permitidas, todas supressões de blocos vazios. Havia dois pontos de entrada para conteúdo arbitrário, ambos no cabeçalho:
@@ -135,7 +153,7 @@ All notable changes to this project will be documented in this file.
 
   Os dois eram herança do port de `andrevabo/danfse-nacional`, anterior à NT 008 — de quando cada município tinha layout próprio e o DANFSe vinha da API do ADN, sobrestada em 01/07/2026.
 
-  **Migração.** Remova as chaves e as variáveis de ambiente; `NFSE_DANFSE_AUTO` continua. `danfse(['logo_path' => …])` vira `danfse()`. `for(danfse: [...])` vira `for(danfse: true)`; `for(danfse: false)` e `forStandalone(danfse: false)` seguem funcionando com o mesmo significado.
+  **Migração.** Remova as chaves e as variáveis de ambiente; `danfse(['logo_path' => …])` vira `danfse()`. `for(danfse: [...])` vira `for(danfse: true)`; `for(danfse: false)` e `forStandalone(danfse: false)` seguem funcionando com o mesmo significado.
 
 - **BREAKING — `DanfseTotais`: `$issqnRetido`, `$retencoesFederais` e `$pisCofins` deram lugar a `$totalRetencoes`.** O item 2.1.11 define um campo só para o bloco de totais, e os outros dois valores já têm lugar próprio: o ISSQN retido no bloco de tributação municipal (`tribMun->retencaoIssqn` e `->issqnApurado`) e o PIS/COFINS de apuração própria no federal (`tribFed->pis` e `->cofins`). Nenhuma informação se perdeu do documento.
 

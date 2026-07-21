@@ -12,8 +12,7 @@ use Throwable;
  * qualquer byte HTTP ser enviado. A SEFIN não recebeu nem processou nada;
  * o reenvio direto é seguro e nenhuma reconciliação é necessária.
  *
- * Só é lançada quando o cliente foi construído com `detectNotDelivered: true`
- * e há evidência inequívoca (errno do cURL: 6, 7, 35, 58 ou 60). Qualquer
+ * Só é lançada com evidência inequívoca (errno do cURL: 6, 7, 35, 58 ou 60). Qualquer
  * ambiguidade — incluindo timeouts (cURL 28) — classifica como
  * {@see IndeterminateResultException}: os custos são assimétricos, e um falso
  * "não entregue" convidaria a um retry cego com risco de dupla emissão.
