@@ -13,7 +13,6 @@ use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Events\NfseEmitted;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
-use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfsenClient;
@@ -258,13 +257,13 @@ it('emitir returns rejection on 4xx response with erro body', function (DpsData 
     expect($response->erros[0]->descricao)->toBe('Certificado inválido');
 })->with('dpsData');
 
-it('emitir throws HttpException on server error', function (DpsData $data) {
+it('emitir throws IndeterminateResultException on server error', function (DpsData $data) {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitir($data))
-        ->toThrow(HttpException::class);
+        ->toThrow(IndeterminateResultException::class);
 })->with('dpsData');
 
 it('emitir succeeds and reports error when event listener throws', function (DpsData $data) {

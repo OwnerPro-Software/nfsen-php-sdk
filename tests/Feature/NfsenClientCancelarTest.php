@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Events\NfseRequested;
-use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
@@ -122,7 +122,7 @@ it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {
     ))->toThrow(NfseException::class, 'Certificado não contém CNPJ nem CPF');
 });
 
-it('cancelar throws HttpException on server error', function () {
+it('cancelar throws IndeterminateResultException on server error', function () {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
     $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
@@ -131,7 +131,7 @@ it('cancelar throws HttpException on server error', function () {
         '12345678901234567890123456789012345678901234567890',
         CodigoJustificativaCancelamento::ErroEmissao,
         'Erro na emissao da nota fiscal'
-    ))->toThrow(HttpException::class);
+    ))->toThrow(IndeterminateResultException::class);
 });
 
 it('cancelar succeeds and reports error when event listener throws', function () {

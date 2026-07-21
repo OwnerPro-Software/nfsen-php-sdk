@@ -8,7 +8,7 @@ use OwnerPro\Nfsen\Events\NfseEmitted;
 use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
-use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 
@@ -58,13 +58,13 @@ it('emitirDecisaoJudicial returns rejection when response has no chaveAcesso', f
     expect($response->erros[0]->descricao)->toBe('Resposta da API não contém chaveAcesso.');
 })->with('dpsData');
 
-it('emitirDecisaoJudicial throws HttpException on server error', function (DpsData $data) {
+it('emitirDecisaoJudicial throws IndeterminateResultException on server error', function (DpsData $data) {
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
     expect(fn () => $client->emitirDecisaoJudicial($data))
-        ->toThrow(HttpException::class);
+        ->toThrow(IndeterminateResultException::class);
 })->with('dpsData');
 
 it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
@@ -157,7 +157,7 @@ it('dispatches NfseRejected on emitirDecisaoJudicial rejection', function (DpsDa
     Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E001');
 })->with('dpsData');
 
-it('dispatches NfseFailed on emitirDecisaoJudicial HttpException', function (DpsData $data) {
+it('dispatches NfseFailed on emitirDecisaoJudicial IndeterminateResultException', function (DpsData $data) {
     Event::fake();
     Http::fake(['*' => Http::response('Server Error', 500)]);
 
@@ -165,7 +165,7 @@ it('dispatches NfseFailed on emitirDecisaoJudicial HttpException', function (Dps
 
     try {
         $client->emitirDecisaoJudicial($data);
-    } catch (HttpException) {
+    } catch (IndeterminateResultException) {
         // expected
     }
 

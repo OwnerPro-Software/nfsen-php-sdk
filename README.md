@@ -217,8 +217,8 @@ $response = $client->consultar()->dps($idDps);
 // Quando a SEFIN responde 404 (DPS inexistente), a resposta traz um erro
 // dedicado: $response->erros[0]->codigo === NfseResponse::DPS_NOT_FOUND.
 // Sinal inequívoco de "não existe" — distinto de erros transitórios
-// (401/403/429/5xx lançam HttpException; falha de transporte lança
-// IndeterminateResultException).
+// (401/403/429/5xx lançam HttpException, pois consulta não altera estado;
+// falha de transporte lança IndeterminateResultException).
 
 // Obter PDF do DANFSE
 $response = $client->consultar()->danfse($chave);
@@ -503,9 +503,9 @@ Representa uma mensagem de erro ou alerta da API:
 |---------|-----|--------|
 | `NfseException` | `RuntimeException` | Erros gerais (XML inválido, falha de compressão, etc.) |
 | `CommunicationException` | `NfseException` | Base abstrata das falhas de comunicação (nenhuma resposta completa e legível). Capture-a para tratar tudo como indeterminado; capture as subclasses para distinguir |
-| `IndeterminateResultException` | `CommunicationException` | **Resultado indeterminado**: a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`) |
+| `IndeterminateResultException` | `CommunicationException` | **Resultado indeterminado**: a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`); é `null` quando a resposta chegou inteira e o que falta é evidência de processamento, como num 5xx sem rejeição da SEFIN |
 | `RequestNotDeliveredException` | `CommunicationException` | **Não entregue**: a falha ocorreu comprovadamente antes de qualquer byte HTTP ser enviado (`phase`: `dns`, `connect` ou `tls`). A operação não foi processada — retry direto é seguro, sem reconciliação. Só é lançada com `detectNotDelivered: true` |
-| `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (5xx, redirect, 4xx vazio; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes |
+| `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (redirect, 4xx vazio, 5xx em consulta; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes. **Num 5xx a operações que alteram estado** (`emitir`, `cancelar`, `substituir`) o SDK lança `IndeterminateResultException`, não esta |
 | `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
 | `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS; ID de DPS fora do padrão `TSIdDPS` |
 
@@ -550,7 +550,15 @@ cobre quatro situações:
    em operação normal; ausência comprovada é sinalizada por HTTP 404, nunca por
    corpo vazio.
 
-Nos quatro casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
+5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
+   `emitirDecisaoJudicial`, `cancelar`, `substituir`) **sem rejeição estruturada
+   da SEFIN no corpo** — o erro pode ter vindo de um proxy antes da SEFIN, ou da
+   própria SEFIN depois de gravar a nota, e nada no corpo distingue os dois. Um
+   5xx que **traz** `erros`/`erro` preenchido é rejeição definitiva: prova que a
+   requisição chegou e foi processada. Em consultas, 5xx continua lançando
+   `HttpException` — não há estado a reconciliar.
+
+Nos cinco casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
 pode já existir e um retry causaria dupla emissão). Calcule o ID com
 `DpsId::generate()` e consulte `consultar()->dps($id)`: se encontrou, a nota
 foi emitida; se retornar `NfseResponse::DPS_NOT_FOUND`, é seguro re-emitir com

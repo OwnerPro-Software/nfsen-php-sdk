@@ -17,10 +17,14 @@ use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Responses\HttpResponse;
+use OwnerPro\Nfsen\Responses\ProcessingMessage;
 use OwnerPro\Nfsen\Support\TempFileFactory;
 use OwnerPro\Nfsen\Support\TransportFailureClassifier;
 use SensitiveParameter;
 
+/**
+ * @phpstan-import-type MessageData from ProcessingMessage
+ */
 final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRequests
 {
     public function __construct(
@@ -151,6 +155,25 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
 
                 /** @var array<string, mixed> $decoded */
                 return $decoded;
+            }
+
+            // Envelope de erro da SEFIN (`erros`/`erro` preenchido) prova que a
+            // requisição chegou, foi processada e rejeitada: resposta definitiva,
+            // qualquer que seja o status.
+            /** @var array{erros?: list<MessageData>, erro?: MessageData} $envelope */
+            $envelope = is_array($decoded) ? $decoded : [];
+
+            if (ProcessingMessage::hasApiError($envelope)) {
+                /** @var array<string, mixed> $decoded */
+                return $decoded;
+            }
+
+            // 5xx sem essa rejeição estruturada não prova nada sobre o processamento:
+            // pode ter vindo de proxy/gateway antes da SEFIN, ou da SEFIN depois de
+            // gravar a nota. Vale só para POST — GET não altera estado, então não há
+            // o que reconciliar e o erro definitivo é a informação mais útil.
+            if ($method === 'post' && $response->serverError()) {
+                throw IndeterminateResultException::fromServerError($response->status(), $response->body());
             }
 
             if (is_array($decoded) && $decoded !== []) {

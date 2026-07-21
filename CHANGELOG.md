@@ -6,10 +6,17 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **BREAKING — 5xx sem rejeição estruturada da SEFIN em operação que altera estado passa a lançar `IndeterminateResultException`** (antes: `HttpException`, ou nenhuma exceção). Afeta `emitir()`, `emitirDecisaoJudicial()`, `cancelar()` e `substituir()`. Duas rotas levavam ao mesmo risco: um 5xx com JSON não-envelope (`{"message": "Internal server error"}` de proxy) era devolvido como resultado normal e virava `sucesso: false` definitivo; um 5xx com corpo ilegível (página HTML de gateway) lançava `HttpException`. Nos dois casos o contrato do SDK classifica como resposta definitiva do servidor, e o README autoriza reenviar com o mesmo `nDPS` — mas um 5xx de proxy não prova que a SEFIN deixou de processar a emissão. Risco de nota duplicada.
+
+  Um 5xx que **traz** `erros`/`erro` preenchido continua sendo rejeição definitiva: o envelope prova que a requisição chegou à SEFIN e foi processada. Consultas seguem lançando `HttpException` em 5xx — `GET` não altera estado, então não há o que reconciliar e o erro definitivo é a informação mais útil.
+
+  **Migração.** Quem captura `HttpException` em torno de `emitir`/`cancelar`/`substituir` para tratar falha de servidor precisa passar a capturar também `IndeterminateResultException` — e, nela, reconciliar antes de qualquer reenvio, conforme a seção de reconciliação do README. `catch (CommunicationException)` cobre o caso novo sem distinguir subtipos.
+
 - **`"erro": []` deixa de ser classificado como rejeição.** `ProcessingMessage::fromApiResult()` descartava a chave `erro` vazia desde a 2.3.1, mas os nove pontos que decidiam entre rejeição e processamento testavam `isset($result['erro'])` por conta própria. Um corpo `{"erro": [], "chaveAcesso": "35..."}` — forma que a API realmente produz — virava `sucesso: false` com `erros: []` (nenhuma mensagem), **descartando a `chaveAcesso` de uma nota autorizada** e disparando `NfseRejected('UNKNOWN', null)`. O caller perdia a chave e ficava sem base para reconciliar. Afetava `emitir()`, `substituir()`, `cancelar()`, `consultar()->nfse()`, `->dps()`, `->eventos()` e `->danfse()`.
 
 ### Added
 
+- `IndeterminateResultException::fromServerError()` — 5xx sem rejeição estruturada da SEFIN. Sem `phase`: nenhuma fase de transporte falhou, a resposta chegou inteira; o que falta é evidência sobre o processamento.
 - `ProcessingMessage::hasApiError()` — critério único de "a resposta traz erro da SEFIN". Classificação e extração de mensagens agora derivam da mesma regra interna, o que impede a divergência acima de voltar. Também resolve o caso `{"erros": [], "erro": {...}}`, em que o plural vazio escondia o singular preenchido.
 
 ### Changed

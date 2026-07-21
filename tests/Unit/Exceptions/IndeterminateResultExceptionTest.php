@@ -86,6 +86,23 @@ it('fromUnreadableResponse sets body phase and truncates body to 200 chars', fun
         ->and($exception->getMessage())->not->toContain('Z');
 });
 
+it('fromServerError carries no phase and truncates body to 200 chars', function () {
+    // Sem phase: nenhuma fase de transporte falhou — a resposta chegou inteira.
+    // O que falta é evidência sobre o processamento, não sobre a comunicação.
+    $body = 'A'.str_repeat('x', 199).'Z'.str_repeat('y', 100);
+
+    $exception = IndeterminateResultException::fromServerError(502, $body);
+
+    expect($exception->phase)->toBeNull()
+        ->and($exception->getPrevious())->toBeNull()
+        ->and($exception->getMessage())->toContain('Resultado indeterminado')
+        ->and($exception->getMessage())->toContain('HTTP 502')
+        ->and($exception->getMessage())->toContain('sem rejeição estruturada da SEFIN')
+        ->and($exception->getMessage())->toContain('não há evidência de que a operação tenha ou não sido processada')
+        ->and($exception->getMessage())->toContain('"A'.str_repeat('x', 199).'"')
+        ->and($exception->getMessage())->not->toContain('Z');
+});
+
 it('fromMissingResponseField sets body phase and names status and field', function () {
     $exception = IndeterminateResultException::fromMissingResponseField(200, 'eventoXmlGZipB64');
 
