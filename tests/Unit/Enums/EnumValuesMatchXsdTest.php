@@ -41,6 +41,7 @@ $TIPO_EXPLICITO = [
     'OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao' => 'TSCodJustSubst',
     'OwnerPro\Nfsen\Enums\NfseAmbiente' => 'TSTipoAmbiente',
     'OwnerPro\Nfsen\Enums\SituacaoNfse' => 'TStat',
+    'OwnerPro\Nfsen\Enums\TipoBeneficioMunicipal' => 'TBMISSQN',
 ];
 
 /**

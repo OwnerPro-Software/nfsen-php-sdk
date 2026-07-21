@@ -18,10 +18,13 @@ use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
 use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Enums\SituacaoNfse;
+use OwnerPro\Nfsen\Enums\TipoBeneficioMunicipal;
 use OwnerPro\Nfsen\Exceptions\XmlParseException;
 use SimpleXMLElement;
 use Throwable;
@@ -204,16 +207,42 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         // vBC e vISSQN são os valores apurados pelo fisco: vivem em infNFSe/valores
         // (TCValoresNFSe), não em infDPS/valores/trib/tribMun (TCTribMunicipal).
         $valNfse = $inf->valores;
+        $exigSusp = $tribMun->exigSusp;
         $vBC = $this->str($valNfse->vBC);
         $vISSQN = $this->str($valNfse->vISSQN);
         // pAliqAplic é a alíquota que o fisco aplicou sobre a BC; tribMun/pAliq é a
         // declarada pelo emitente, exigida só quando o município não é parametrizado.
         $pAliq = $this->str($valNfse->pAliqAplic, $this->str($tribMun->pAliq));
 
+        // A NT 008 corta estas descrições em 37 caracteres (campo de 40); as de
+        // imunidade citam o dispositivo constitucional e passam de 300.
+        $regimeEspecial = RegEspTrib::labelOf($this->str($regTrib->regEspTrib));
+        $tipoImunidade = $this->fmt->limit(TpImunidade::labelOf($this->str($tribMun->tpImunidade)), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 vem da NT 008; 36/38 não representa regressão.
+        $suspensao = $this->fmt->limit(TpSusp::labelOf($this->str($exigSusp->tpSusp)), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
+        $nProcesso = $this->str($exigSusp->nProcesso, '-');
+
+        $beneficio = TipoBeneficioMunicipal::labelOf($this->str($valNfse->tpBM));
+        // Apurado pelo fisco em infNFSe/valores; o declarado na DPS é a redução de
+        // base em tribMun/BM. A NT lista os dois como origem do mesmo campo.
+        $calculoBM = $this->currencyOrDash($this->firstOf($valNfse->vCalcBM, $tribMun->BM->vRedBCBM));
+        $deducoes = $this->currencyOrDash($this->firstOf($valores->vDedRed->vDR, $valNfse->vCalcDR));
+        $descontoIncond = $this->currencyOrDash($this->str($valores->vDescCondIncond->vDescIncond));
+
         return new DanfseTributacaoMunicipal(
             tributacaoIssqn: TribISSQN::labelOf($this->str($tribMun->tribISSQN)),
             municipioIncidencia: $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
-            regimeEspecial: RegEspTrib::labelOf($this->str($regTrib->regEspTrib)),
+            regimeEspecial: $regimeEspecial,
+            tipoImunidade: $tipoImunidade,
+            suspensaoExigibilidade: $suspensao,
+            numeroProcessoSuspensao: $nProcesso,
+            beneficioMunicipal: $beneficio,
+            calculoBM: $calculoBM,
+            totalDeducoesReducoes: $deducoes,
+            // NT 008, item 2.4.5, nota 5: estas duas linhas podem ser suprimidas
+            // quando NENHUM dos campos da linha tem dado. Sem isso, toda NFS-e sem
+            // imunidade nem benefício — a esmagadora maioria — imprime oito traços.
+            exibeRegimeEImunidade: $this->algumPreenchido($regimeEspecial, $tipoImunidade, $suspensao, $nProcesso),
+            exibeBeneficioEDeducoes: $this->algumPreenchido($beneficio, $calculoBM, $deducoes, $descontoIncond),
             valorServico: $this->fmt->currency($this->str($valores->vServPrest->vServ)),
             bcIssqn: $vBC !== '' ? $this->fmt->currency($vBC) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             aliquota: $pAliq !== '' ? $pAliq.'%' : '-',
@@ -288,6 +317,24 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             estaduais: $est !== '' ? $est.'%' : '-',
             municipais: $mun !== '' ? $mun.'%' : '-',
         );
+    }
+
+    /** Alguma das descrições da linha tem conteúdo? '-' é a marca de campo vazio. */
+    private function algumPreenchido(string ...$valores): bool
+    {
+        foreach ($valores as $valor) {
+            if ($valor !== '-') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Formata como moeda, ou '-' quando não há valor. */
+    private function currencyOrDash(string $valor): string
+    {
+        return $valor !== '' ? $this->fmt->currency($valor) : '-'; // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
     }
 
     private function sumCurrency(string ...$values): string

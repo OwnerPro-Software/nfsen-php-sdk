@@ -941,3 +941,114 @@ it('does not claim the destinatário is the tomador when there is no IBSCBS bloc
 
     expect($data->destinatarioEhTomador)->toBeFalse();
 });
+
+// NT 008, item 2.4.5, bloco TRIBUTAÇÃO MUNICIPAL (ISSQN): seis campos que o SDK
+// não coletava — imunidade, suspensão da exigibilidade e seu processo, benefício
+// municipal, cálculo do BM e total de deduções/reduções.
+it('reads the ISSQN immunity, suspension and municipal benefit fields', function () {
+    $xml = str_replace(
+        '<tribISSQN>1</tribISSQN>',
+        '<tribISSQN>1</tribISSQN><tpImunidade>2</tpImunidade>',
+        $this->xml,
+    );
+    $xml = str_replace(
+        '</tribMun>',
+        '<exigSusp><tpSusp>1</tpSusp><nProcesso>0012345-67.2026.8.19.0002</nProcesso></exigSusp></tribMun>',
+        $xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->tipoImunidade)->toBe('Templos de qualquer culto (CF88, Art...');
+    expect($data->tribMun->suspensaoExigibilidade)->toBe('Exigibilidade Suspensa por Decisão...');
+    expect($data->tribMun->numeroProcessoSuspensao)->toBe('0012345-67.2026.8.19.0002');
+});
+
+it('takes the BM calculation and total deductions the tax authority computed', function () {
+    $xml = str_replace(
+        '<vLiq>',
+        '<tpBM>1</tpBM><vCalcBM>150.00</vCalcBM><vCalcDR>75.50</vCalcDR><vLiq>',
+        $this->xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->beneficioMunicipal)->toBe('Isenção');
+    expect($data->tribMun->calculoBM)->toBe('R$ 150,00');
+    expect($data->tribMun->totalDeducoesReducoes)->toBe('R$ 75,50');
+});
+
+it('falls back to the values declared in the DPS for BM and deductions', function () {
+    // A NT dá dois caminhos ao mesmo campo: o apurado em infNFSe/valores e o
+    // declarado na DPS. Sem o apurado, o declarado tem de aparecer.
+    $xml = str_replace(
+        '</tribMun>',
+        '<BM><nBM>123</nBM><vRedBCBM>90.00</vRedBCBM></BM></tribMun>',
+        $this->xml,
+    );
+    $xml = str_replace('</valores>', '<vDedRed><vDR>40.00</vDR></vDedRed></valores>', $xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->calculoBM)->toBe('R$ 90,00');
+    expect($data->tribMun->totalDeducoesReducoes)->toBe('R$ 40,00');
+});
+
+it('dashes the ISSQN fields the NFS-e does not carry', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->tribMun->tipoImunidade)->toBe('-');
+    expect($data->tribMun->suspensaoExigibilidade)->toBe('-');
+    expect($data->tribMun->numeroProcessoSuspensao)->toBe('-');
+    expect($data->tribMun->beneficioMunicipal)->toBe('-');
+    expect($data->tribMun->calculoBM)->toBe('-');
+    expect($data->tribMun->totalDeducoesReducoes)->toBe('-');
+});
+
+// NT 008, item 2.4.5, nota 5: as duas linhas de imunidade/benefício podem ser
+// suprimidas quando NENHUM campo da linha tem dado. Sem isso, a esmagadora maioria
+// das NFS-e — sem imunidade nem benefício — imprime oito traços.
+function semDadosSuprimiveis(string $xml): string
+{
+    $xml = (string) preg_replace('|<regEspTrib>[^<]*</regEspTrib>|', '', $xml);
+
+    return (string) preg_replace('|<vDescCondIncond>.*?</vDescCondIncond>|s', '', $xml);
+}
+
+it('hides the suppressible ISSQN rows when no field in them has data', function () {
+    $data = $this->builder->build(semDadosSuprimiveis($this->xml));
+
+    expect($data->tribMun->exibeRegimeEImunidade)->toBeFalse();
+    expect($data->tribMun->exibeBeneficioEDeducoes)->toBeFalse();
+});
+
+it('keeps the rows when the NFS-e carries data for them', function () {
+    // A fixture traz regEspTrib e vDescIncond — uma linha cada.
+    $data = $this->builder->build($this->xml);
+
+    expect($data->tribMun->exibeRegimeEImunidade)->toBeTrue();
+    expect($data->tribMun->exibeBeneficioEDeducoes)->toBeTrue();
+});
+
+it('keeps the row when a single field in it has data', function () {
+    // A nota condiciona a supressão a "não existam dados em todos os campos da
+    // mesma linha" — um só campo preenchido já obriga a linha inteira.
+    $xml = str_replace(
+        '</tribMun>',
+        '<exigSusp><nProcesso>123</nProcesso></exigSusp></tribMun>',
+        semDadosSuprimiveis($this->xml),
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->exibeRegimeEImunidade)->toBeTrue();
+    expect($data->tribMun->exibeBeneficioEDeducoes)->toBeFalse();
+});
+
+it('keeps the benefit row when only the unconditional discount is present', function () {
+    $xml = str_replace(
+        '</valores>',
+        '<vDescCondIncond><vDescIncond>10.00</vDescIncond></vDescCondIncond></valores>',
+        semDadosSuprimiveis($this->xml),
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->exibeRegimeEImunidade)->toBeFalse();
+    expect($data->tribMun->exibeBeneficioEDeducoes)->toBeTrue();
+});

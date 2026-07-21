@@ -375,7 +375,7 @@
         <table>
             <tr>
                 <td colspan="4" class="section-header">
-                  <span class="section-title">TRIBUTAÇÃO MUNICIPAL</span>
+                  <span class="section-title">TRIBUTAÇÃO MUNICIPAL (ISSQN)</span>
                 </td>
             </tr>
             <tr>
@@ -387,15 +387,51 @@
                     <span class="label">Município de Incidência do ISSQN</span>
                     <span class="value"><?= $h($data->tribMun->municipioIncidencia) ?></span>
                 </td>
-                <td style="width: 25%;">
-                    <span class="label">Regime Especial de Tributação</span>
-                    <span class="value"><?= $h($data->tribMun->regimeEspecial) ?></span>
-                </td>
-                <td style="width: 25%;">
+                <td colspan="2" style="width: 50%;">
                     <span class="label">Valor do Serviço</span>
                     <span class="value"><?= $h($data->tribMun->valorServico) ?></span>
                 </td>
             </tr>
+            <?php if ($data->tribMun->exibeRegimeEImunidade): ?>
+            <tr>
+                <td>
+                    <span class="label">Regime Especial de Tributação do ISSQN</span>
+                    <span class="value"><?= $h($data->tribMun->regimeEspecial) ?></span>
+                </td>
+                <td>
+                    <span class="label">Tipo de Imunidade do ISSQN</span>
+                    <span class="value"><?= $h($data->tribMun->tipoImunidade) ?></span>
+                </td>
+                <td>
+                    <span class="label">Suspensão da Exigibilidade do ISSQN</span>
+                    <span class="value"><?= $h($data->tribMun->suspensaoExigibilidade) ?></span>
+                </td>
+                <td>
+                    <span class="label">Número Processo Suspensão</span>
+                    <span class="value"><?= $h($data->tribMun->numeroProcessoSuspensao) ?></span>
+                </td>
+            </tr>
+            <?php endif; ?>
+            <?php if ($data->tribMun->exibeBeneficioEDeducoes): ?>
+            <tr>
+                <td>
+                    <span class="label">Benefício Municipal</span>
+                    <span class="value"><?= $h($data->tribMun->beneficioMunicipal) ?></span>
+                </td>
+                <td>
+                    <span class="label">Cálculo do BM</span>
+                    <span class="value"><?= $h($data->tribMun->calculoBM) ?></span>
+                </td>
+                <td>
+                    <span class="label">Total Deduções/Reduções</span>
+                    <span class="value"><?= $h($data->tribMun->totalDeducoesReducoes) ?></span>
+                </td>
+                <td>
+                    <span class="label">Desconto Incondicionado</span>
+                    <span class="value"><?= $h($data->totais->descontoIncondicionado) ?></span>
+                </td>
+            </tr>
+            <?php endif; ?>
             <tr>
                 <td>
                     <span class="label">BC ISSQN</span>

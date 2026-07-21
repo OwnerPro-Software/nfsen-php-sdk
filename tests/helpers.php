@@ -316,7 +316,7 @@ function nfsenXmlReaderFiles(): array
                 'serv' => $d.'/serv', 'cServ' => $d.'/serv/cServ', 'locPrest' => $d.'/serv/locPrest',
                 'toma' => $d.'/toma', 'valores' => $d.'/valores',
                 'desc' => $d.'/valores/vDescCondIncond', 'trib' => $d.'/valores/trib',
-                'tribMun' => $d.'/valores/trib/tribMun', 'tribFed' => $d.'/valores/trib/tribFed',
+                'tribMun' => $d.'/valores/trib/tribMun', 'exigSusp' => $d.'/valores/trib/tribMun/exigSusp', 'tribFed' => $d.'/valores/trib/tribFed',
                 'pc' => $d.'/valores/trib/tribFed/piscofins', 'totTrib' => $d.'/valores/trib/totTrib',
                 'p' => $d.'/valores/trib/totTrib/pTotTrib',
             ],

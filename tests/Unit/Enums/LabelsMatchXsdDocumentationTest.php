@@ -6,10 +6,13 @@ use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegApTribSN;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
+use OwnerPro\Nfsen\Dps\Enums\Valores\TpSusp;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Enums\SituacaoNfse;
+use OwnerPro\Nfsen\Enums\TipoBeneficioMunicipal;
 
 /**
  * Cada `label()` tem de repetir o rótulo que o XSD escreve para aquele código.
@@ -33,14 +36,18 @@ $TIPO_XSD_POR_ENUM = [
     SituacaoNfse::class => 'TStat',
     FinNFSe::class => 'TSRTCFinNFSe',
     TpEmit::class => 'TSEmitenteDPS',
+    TpImunidade::class => 'TSTipoImunidadeISSQN',
+    TpSusp::class => 'TSOpExigSuspensa',
+    TipoBeneficioMunicipal::class => 'TBMISSQN',
 ];
 
 /**
  * Pares `N - Rótulo;` da `<xs:documentation>` de um simpleType.
  *
- * O XSD mistura hífen ASCII e travessão Unicode na mesma lista — `TSRegimeApuracaoSimpNac`
- * usa `–`. Aceitar só `-` faria a extração devolver zero pares e o teste passar por
- * vacuidade, verificando nada.
+ * O XSD não é consistente no separador: a maioria usa hífen ASCII, `TSRegimeApuracaoSimpNac`
+ * usa travessão Unicode e `TBMISSQN` usa parêntese (`1) Isenção;`). Aceitar só um deles
+ * faria a extração devolver zero pares e o teste passar por vacuidade, verificando nada
+ * — e é justamente o tipo que tem os rótulos mais longos.
  *
  * @return array<string, string> código => rótulo
  */
@@ -61,7 +68,7 @@ function nfsenXsdLabelPairs(string $tipo): array
     }
 
     preg_match_all(
-        '/(?:^|[;\n])\s*([0-9]+)\s*[-\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2015}]\s*([^;]+?)\s*(?=;|$)/mu',
+        '/(?:^|[;\n])\s*([0-9]+)\s*[-)\x{2010}\x{2011}\x{2012}\x{2013}\x{2014}\x{2015}]\s*([^;]+?)\s*(?=;|$)/mu',
         $texto,
         $ocorrencias,
         PREG_SET_ORDER,

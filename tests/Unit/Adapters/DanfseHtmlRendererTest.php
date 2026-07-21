@@ -171,7 +171,7 @@ it('escapes HTML in data fields (XSS prevention)', function (): void {
         situacao: '-', finalidade: '-', emitidaPor: '-',
         emitente: $malicious, tomador: sampleParticipante(), intermediario: null, destinatario: null, destinatarioEhTomador: false,
         servico: new DanfseServico('-', '-', '-', '-', '-', '-', '-', '-'),
-        tribMun: new DanfseTributacaoMunicipal('-', '-', '-', '-', '-', '-', '-', '-'),
+        tribMun: new DanfseTributacaoMunicipal('-', '-', '-', '-', '-', '-', '-', '-', '-', false, false, '-', '-', '-', '-', '-'),
         tribFed: new DanfseTributacaoFederal('-', '-', '-', '-', '-'),
         totais: new DanfseTotais('-', '-', '-', '-', '-', '-', '-'),
         totaisTributos: new DanfseTotaisTributos('-', '-', '-'),
@@ -208,4 +208,13 @@ it('states the destinatário is the tomador instead of calling it unidentified',
 
     expect($html)->toContain('O DESTINATÁRIO É O PRÓPRIO TOMADOR/ADQUIRENTE DA OPERAÇÃO');
     expect($html)->not->toContain('DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO');
+});
+
+it('omits the suppressible ISSQN rows the NFS-e has no data for', function (): void {
+    $html = (new DanfseHtmlRenderer(fakeQrGen(), new DanfseConfig(logoPath: false)))->render(sampleData());
+
+    expect($html)->not->toContain('Tipo de Imunidade do ISSQN');
+    expect($html)->not->toContain('Benefício Municipal');
+    // O resto do bloco continua: a supressão é por linha, não pelo bloco.
+    expect($html)->toContain('BC ISSQN');
 });
