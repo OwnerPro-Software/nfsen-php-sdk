@@ -538,10 +538,11 @@ it('converts mid-transfer failure with partial error response into Indeterminate
         $client->get('https://example.com/nfse/CHAVE123');
         test()->fail('Expected IndeterminateResultException');
     } catch (IndeterminateResultException $e) {
-        // O marshalling do Laravel (toException) descarta a mensagem cURL
-        // original neste caminho, então a fase não é detectável — o que o
-        // contrato garante é a conversão, não o diagnóstico.
-        expect($e->phase)->toBeNull()
+        // A fase varia com o marshalling: no Laravel 13 toException() descarta
+        // a mensagem cURL (fase indetectável → null); no 11/12 a exceção Guzzle
+        // propaga crua com a mensagem preservada (sniffing → 'transfer'). O que
+        // o contrato garante é a conversão, não o diagnóstico.
+        expect($e->phase)->toBeIn([null, 'transfer'])
             ->and($e->getMessage())->toContain('Resultado indeterminado');
     }
 });
