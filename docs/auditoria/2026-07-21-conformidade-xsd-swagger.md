@@ -63,7 +63,8 @@ Critério de severidade:
 | 3 | `DocumentoFiscal::fromArray()` usava `from()` | — | **Corrigido** em `6c7e887` |
 | 4 | `DanfseDataBuilder` lê `emit->NIF`, inexistente no XSD | Baixa | **Aberto** |
 | 5 | Fixtures JSON com XML-stub irreal | Baixa | **Aberto** |
-| 6 | Teste do `cNBS` monta XML fora da ordem do XSD | Baixa | **Aberto** |
+| 6 | Teste do `cNBS` monta XML fora da ordem do XSD | Baixa | **Corrigido** |
+| 7 | `prest/NIF` e `prest/cNaoNIF` nunca são lidos pela DANFSe | Baixa | **Aberto** — decisão de layout, não de conformidade |
 
 ---
 
@@ -318,6 +319,41 @@ nunca emite.
 As outras 21 mutações também saem inválidas, porém deliberadamente — strings vazias,
 `tpAmb=99`, whitespace — para exercitar as defesas do `str()`. Não são achados.
 
+**Corrigido.** O `str_replace` passou a inserir `<cNBS>` depois de `</xDescServ>`, e
+`01c_mutated_fixtures.php` não reporta mais nada para aquela linha.
+
+---
+
+### 7. BAIXA — a DANFSe nunca lê `prest/NIF` nem `prest/cNaoNIF`
+
+`src/Adapters/DanfseDataBuilder.php:143-176`
+
+Levantado ao revisar o achado 4: se `NIF` foi removido de `emit`, para onde ele foi?
+
+Resposta do XSD, obtida por parse dos `<xs:complexType>` que contêm um elemento `NIF`:
+
+```
+tiposComplexos_v1.01.xsd     TCInfoPrestador     -> ['CNPJ', 'CPF', 'NIF', 'cNaoNIF', 'CAEPF', 'IM', 'xNome', 'end', 'fone', 'email', 'regTrib']
+tiposComplexos_v1.01.xsd     TCInfoPessoa        -> ['CNPJ', 'CPF', 'NIF', 'cNaoNIF', 'CAEPF', 'IM', 'xNome', 'end', 'fone', 'email']
+tiposComplexos_v1.01.xsd     TCRTCInfoDest       -> ['CNPJ', 'CPF', 'NIF', 'cNaoNIF', 'xNome', 'end', 'fone', 'email']
+tiposComplexos_v1.01.xsd     TCRTCListaDocFornec -> ['CNPJ', 'CPF', 'NIF', 'cNaoNIF', 'xNome']
+```
+
+`TCEmitente` não aparece: ele abre com `<xs:choice>` obrigatório de `CNPJ|CPF`. Já
+`TCInfoPrestador` — o `prest` do DPS — aceita `CNPJ|CPF|NIF|cNaoNIF`, e
+`src/Xml/Builders/PrestadorBuilder.php:26-29` **emite** os quatro.
+
+A assimetria: o builder da DANFSe lê `NIF` de `toma` (L182) e de `interm` (L202), mas de
+`prest` lê apenas `regTrib`. Um prestador identificado por NIF ou `cNaoNIF` emite pelo SDK,
+e essa identificação não tem por onde aparecer no PDF.
+
+**Por que não foi corrigido junto.** Como `emit` sempre traz `CNPJ` ou `CPF` em qualquer
+NFS-e válida, `cnpjCpf` nunca sai `-` — um fallback para `prest->NIF` seria inalcançável.
+O que o fisco grava em `emit` quando o prestador é identificado por NIF **não foi possível
+verificar** (ver "Não verificado", item 8), e a DANFSe deve refletir o que o fisco
+registrou, não o que o emitente declarou. Exibir o NIF do `prest` é decisão de layout do
+documento, não correção de conformidade — precisa de fonte sobre o leiaute oficial.
+
 ---
 
 ## Conforme, verificado por script
@@ -420,7 +456,13 @@ Esta seção importa tanto quanto os achados: é o mapa do que a auditoria não 
    contra `evento_v1.01.xsd` (achado 5). Todo o caminho de parse/consumo de eventos está
    verificado apenas contra stubs.
 
-7. **A suite não foi executada**, por decisão de escopo: ela está verde e continuaria
+8. **O que a SEFIN grava em `infNFSe/emit` quando o prestador é identificado por NIF ou
+   `cNaoNIF`.** `TCEmitente` exige `CNPJ` ou `CPF` — não há como omitir os dois —, mas
+   `TCInfoPrestador` admite prestador estrangeiro. Ou a SEFIN rejeita a emissão nesse caso,
+   ou preenche `emit` com algo que o schema não explica. Nenhum documento do repositório
+   responde, e disso depende se o achado 7 é defeito ou decisão de leiaute.
+
+9. **A suite não foi executada** durante a auditoria, por decisão de escopo: ela está verde e continuaria
    verde — foi ela que deixou os dois bugs originais passarem. Todos os achados vêm de
    comparação direta código ↔ XSD/swagger.
 

@@ -143,7 +143,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     private function buildEmitente(SimpleXMLElement $emit, SimpleXMLElement $inf, SimpleXMLElement $regTrib): DanfseParticipante
     {
         $ender = $emit->enderNac;
-        $doc = $this->firstNonEmpty($emit->CNPJ, $emit->CPF, $emit->NIF);
+        // Sem NIF: TCEmitente abre com <xs:choice>CNPJ|CPF</xs:choice> obrigatório, sem NIF.
+        // O prestador estrangeiro existe — TCInfoPrestador aceita CNPJ|CPF|NIF|cNaoNIF —,
+        // mas é o bloco DPS/infDPS/prest que o carrega, não infNFSe/emit.
+        $doc = $this->firstNonEmpty($emit->CNPJ, $emit->CPF);
 
         $endereco = $this->joinAddress($ender->xLgr, $ender->nro, $ender->xBairro);
 

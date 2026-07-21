@@ -158,9 +158,12 @@ it('trims whitespace from xTribNac before truncation', function () {
 
 it('extracts codigoNbs when cNBS is present', function () {
     // Portal nacional prefixa "NBS: <cNBS>" nas informações complementares quando o código está presente.
+    // O XSD ordena cServ como cTribNac, cTribMun, xDescServ, cNBS: inserir antes de
+    // <xDescServ> produzia um XML que a API nunca emite, e o teste afirmava comportamento
+    // sobre um documento inválido.
     $xml = str_replace(
-        '<xDescServ>Desenvolvimento de sistema',
-        '<cNBS>111032200</cNBS><xDescServ>Desenvolvimento de sistema',
+        ' - Contrato #2026-001</xDescServ>',
+        ' - Contrato #2026-001</xDescServ><cNBS>111032200</cNBS>',
         $this->xml,
     );
     $data = $this->builder->build($xml);

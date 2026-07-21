@@ -1,11 +1,16 @@
 {
-  "tipoAmbiente": 2,
-  "versaoAplicativo": "1.0.0",
-  "dataHoraProcessamento": "2026-03-02T12:00:00-03:00",
-  "chaveAcesso": "35016082026022700000000000000000000000000000000001",
-  "nfseXmlGZipB64": "H4sIAAAAAAAAA7PxcwtOVajIzckrtlXKKCkpsNLXLy8v1ysuSE3RS0usSs1LSdRLzy/TSyrSz0srTlXStwMATUMHNDMAAAA=",
-  "idDps": "DPS001",
-  "alertas": [
-    {"codigo": "A001", "descricao": "Alerta de teste", "mensagem": "Alerta", "complemento": "Complemento do alerta"}
-  ]
+    "tipoAmbiente": 2,
+    "versaoAplicativo": "1.0.0",
+    "dataHoraProcessamento": "2026-03-02T12:00:00-03:00",
+    "chaveAcesso": "35016082026022700000000000000000000000000000000001",
+    "nfseXmlGZipB64": "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",
+    "idDps": "DPS001",
+    "alertas": [
+        {
+            "codigo": "A001",
+            "descricao": "Alerta de teste",
+            "mensagem": "Alerta",
+            "complemento": "Complemento do alerta"
+        }
+    ]
 }
