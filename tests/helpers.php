@@ -363,6 +363,11 @@ function nfsenXmlReaderFiles(): array
                     'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac', $d.'/IBSCBS/dest/end/endNac', $d.'/prest/end/endNac'],
                     'endExt' => [$d.'/toma/end/endExt', $d.'/interm/end/endExt', $d.'/IBSCBS/dest/end/endExt', $d.'/prest/end/endExt'],
                 ],
+                // `telefone()` consulta `endExt` só para saber se o participante está
+                // fora do país — mesmo sinal que decide município e CEP.
+                'telefone' => [
+                    'endExt' => [$d.'/toma/end/endExt', $d.'/interm/end/endExt', $d.'/IBSCBS/dest/end/endExt', $d.'/prest/end/endExt'],
+                ],
             ],
         ],
     ];

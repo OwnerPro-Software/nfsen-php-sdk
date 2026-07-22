@@ -1584,3 +1584,39 @@ it('caps the IBS/CBS incidence line, whose xLocalidadeIncid allows 600', functio
     expect(mb_strlen($data->tribIbsCbs->indicadorOperacao))->toBeLessThanOrEqual(59)
         ->and($data->tribIbsCbs->indicadorOperacao)->toEndWith('...');
 });
+
+it('leaves a foreign phone unmasked, since abroad there is no DDD', function () {
+    // TSTelefone: "Nas operações com exterior é permitido informar o código do país +
+    // código da localidade + número do telefone". Um número de 11 dígitos casava com a
+    // contagem da máscara brasileira e saía como (12) 12555-1234.
+    $xml = preg_replace_callback(
+        '#(<toma>.*?)<endNac>.*?</endNac>(.*?</toma>)#s',
+        fn ($m) => $m[1].'<endExt><cPais>US</cPais><cEndPost>10001</cEndPost>'
+            .'<xCidade>New York</xCidade><xEstProvReg>NY</xEstProvReg></endExt>'.$m[2],
+        $this->xml,
+    );
+    $xml = preg_replace('#(<toma>.*?)<fone>[^<]*</fone>#s', '$1<fone>12125551234</fone>', (string) $xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->tomador->telefone)->toBe('12125551234')
+        ->and($data->tomador->municipio)->toBe('New York / NY');
+});
+
+it('still masks the phone of a participant inside the country', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->tomador->telefone)->toBe('(11) 98765-4321');
+});
+
+it('dashes an absent phone for a participant abroad', function () {
+    $xml = preg_replace_callback(
+        '#(<toma>.*?)<endNac>.*?</endNac>(.*?</toma>)#s',
+        fn ($m) => $m[1].'<endExt><cPais>US</cPais><cEndPost>10001</cEndPost>'
+            .'<xCidade>New York</xCidade></endExt>'.$m[2],
+        $this->xml,
+    );
+    $xml = preg_replace('#(<toma>.*?)<fone>[^<]*</fone>#s', '$1', (string) $xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->tomador->telefone)->toBe('-');
+});

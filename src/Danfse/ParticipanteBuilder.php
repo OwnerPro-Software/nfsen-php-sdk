@@ -60,7 +60,7 @@ final readonly class ParticipanteBuilder
             nome: $this->limitaNome($this->firstOf($prest->xNome, $emit->xNome)),
             cnpjCpf: $identificacao,
             im: $this->firstOf($prest->IM, $emit->IM) ?: '-',
-            telefone: $this->fmt->phone($this->firstOf($prest->fone, $emit->fone)),
+            telefone: $this->telefone($this->firstOf($prest->fone, $emit->fone), $endPrest?->endExt), // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 em TCInfoPrestador.
             email: $this->firstOf($prest->email, $emit->email) ?: '-',
             endereco: $this->limitaEndereco($endereco),
             municipio: $this->municipioDoPrestador($endPrest, $enderEmit, $inf),
@@ -171,13 +171,37 @@ final readonly class ParticipanteBuilder
             nome: $this->limitaNome($this->str($pessoa->xNome)),
             cnpjCpf: $identificacao,
             im: $im,
-            telefone: $this->fmt->phone($this->str($pessoa->fone)),
+            telefone: $this->telefone($this->str($pessoa->fone), $endExt),
             email: $this->str($pessoa->email, '-'),
             endereco: $this->limitaEndereco($endereco),
             municipio: $this->municipioDaPessoa($endNac, $endExt),
             cep: $this->codigoPostal($endNac, $endExt),
             codigoIbge: $this->codigoIbgeDe($endNac, $endExt),
         );
+    }
+
+    /**
+     * Campo "TELEFONE" (item 2.4.5), que a tabela manda imprimir sem máscara alguma
+     * — ao contrário do CEP, que ela exemplifica como `nn.nnn-nnn`. A máscara de DDD
+     * é decisão do SDK, e por isso só se aplica a quem está no país.
+     *
+     * `TSTelefone` é `[0-9]{6,20}` e a documentação do tipo separa os dois casos:
+     * "Preencher com o Código DDD + número do telefone. Nas operações com exterior é
+     * permitido informar o código do país + código da localidade + número do
+     * telefone". Um número estrangeiro de 10 ou 11 dígitos casava com a contagem da
+     * máscara brasileira e saía como `(12) 12555-1234`, afirmando um DDD que não
+     * existe — e contradizendo o endereço que a mesma linha imprime como estrangeiro.
+     *
+     * O sinal de "fora do país" é o mesmo que decide o município e o CEP, para os
+     * três campos do bloco não discordarem entre si.
+     */
+    private function telefone(string $fone, ?SimpleXMLElement $endExt): string
+    {
+        if ($this->str($endExt?->xCidade) !== '') { // @pest-mutate-ignore RemoveNullSafeOperator — endExt null quando <end> ausente.
+            return $fone !== '' ? $fone : '-';
+        }
+
+        return $this->fmt->phone($fone);
     }
 
     /**
