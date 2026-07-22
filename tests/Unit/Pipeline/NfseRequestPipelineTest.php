@@ -7,6 +7,8 @@ use OwnerPro\Nfsen\Contracts\Driven\SignsXml;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
 use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
 use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
@@ -248,7 +250,7 @@ it('throws when certificate cnpj does not match prestador cnpj', function (): vo
     );
 
     $ctx->pipeline->validateIdentityAgainst($data);
-})->throws(NfseException::class, 'CNPJ do certificado (11111111000188) não corresponde ao CNPJ do prestador (99999999000199). Use validateIdentity: false');
+})->throws(NfseException::class, 'CNPJ do certificado (11111111000188) não corresponde ao CNPJ do Prestador, que emite a DPS (99999999000199). Use validateIdentity: false');
 
 it('skips validation when validateIdentity is false', function (): void {
     $ctx = buildRequestPipeline(
@@ -268,8 +270,49 @@ it('skips validation when validateIdentity is false', function (): void {
     expect(true)->toBeTrue();
 });
 
-it('passes when certificate has cnpj but prestador uses cpf only', function (): void {
+it('throws when certificate and emitente identify themselves by different documents', function (): void {
+    // Ponto cego antigo: cada comparação exigia os dois lados do MESMO campo, então
+    // um e-CNPJ contra emitente que só declara CPF não caía em nenhuma delas e a DPS
+    // seguia assinada sem checagem alguma.
     $ctx = buildRequestPipeline(identity: ['cnpj' => '12345678000195', 'cpf' => null]);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: new Prest(
+            CPF: '12345678901',
+            regTrib: new RegTrib(
+                opSimpNac: OpSimpNac::NaoOptante,
+                regEspTrib: RegEspTrib::Nenhum,
+            ),
+        ),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    expect(fn () => $ctx->pipeline->validateIdentityAgainst($data))
+        ->toThrow(
+            NfseException::class,
+            'O certificado identifica-se por CNPJ e o Prestador, que emite a DPS, por CPF — não há como conferir se são a mesma pessoa. '
+            .'Use validateIdentity: false se o certificado pertence a um representante legal.',
+        );
+});
+
+it('throws on the reverse crossing, an e-CPF against an emitente declaring CNPJ', function (): void {
+    $ctx = buildRequestPipeline(identity: ['cnpj' => null, 'cpf' => '12345678901']);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    expect(fn () => $ctx->pipeline->validateIdentityAgainst($data))
+        ->toThrow(NfseException::class, 'O certificado identifica-se por CPF e o Prestador, que emite a DPS, por CNPJ');
+});
+
+it('passes when certificate cpf matches the emitente cpf', function (): void {
+    $ctx = buildRequestPipeline(identity: ['cnpj' => null, 'cpf' => '12345678901']);
 
     $data = new DpsData(
         infDPS: makeInfDps(),
@@ -289,6 +332,62 @@ it('passes when certificate has cnpj but prestador uses cpf only', function (): 
     expect(true)->toBeTrue();
 });
 
+it('skips the check when the emitente has no federal registration to compare', function (): void {
+    // Prestador estrangeiro identifica-se por NIF: não há CNPJ nem CPF do lado dele,
+    // e reprovar aqui negaria o único formato que lhe resta.
+    $ctx = buildRequestPipeline(identity: ['cnpj' => '12345678000195', 'cpf' => null]);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(),
+        prest: new Prest(
+            NIF: 'US123456789',
+            regTrib: new RegTrib(
+                opSimpNac: OpSimpNac::NaoOptante,
+                regEspTrib: RegEspTrib::Nenhum,
+            ),
+        ),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    $ctx->pipeline->validateIdentityAgainst($data);
+
+    expect(true)->toBeTrue();
+});
+
+it('validates the tomador that emits, not the prestador it emits for', function (): void {
+    // tpEmit=2: quem assina é o tomador. Cobrar dele o CNPJ do prestador reprovava
+    // a emissão legítima e obrigava a desligar validateIdentity.
+    $ctx = buildRequestPipeline(identity: ['cnpj' => '98765432000188', 'cpf' => null]);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(tpEmit: TpEmit::Tomador),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+        toma: new Toma(xNome: 'Tomador Emitente', CNPJ: '98765432000188'),
+    );
+
+    $ctx->pipeline->validateIdentityAgainst($data);
+
+    expect(true)->toBeTrue();
+});
+
+it('throws when the certificate does not match the tomador that emits', function (): void {
+    $ctx = buildRequestPipeline(identity: ['cnpj' => '12345678000195', 'cpf' => null]);
+
+    $data = new DpsData(
+        infDPS: makeInfDps(tpEmit: TpEmit::Tomador),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+        toma: new Toma(xNome: 'Tomador Emitente', CNPJ: '98765432000188'),
+    );
+
+    expect(fn () => $ctx->pipeline->validateIdentityAgainst($data))
+        ->toThrow(NfseException::class, 'não corresponde ao CNPJ do Tomador, que emite a DPS');
+});
+
 it('throws when certificate cpf does not match prestador cpf', function (): void {
     $ctx = buildRequestPipeline(identity: ['cnpj' => null, 'cpf' => '11111111111']);
 
@@ -306,7 +405,7 @@ it('throws when certificate cpf does not match prestador cpf', function (): void
     );
 
     $ctx->pipeline->validateIdentityAgainst($data);
-})->throws(NfseException::class, 'CPF do certificado (11111111111) não corresponde ao CPF do prestador (99999999999). Use validateIdentity: false');
+})->throws(NfseException::class, 'CPF do certificado (11111111111) não corresponde ao CPF do Prestador, que emite a DPS (99999999999). Use validateIdentity: false');
 
 it('validates identity by default when validateIdentity is not specified', function (): void {
     $authorIdentity = new class implements ExtractsAuthorIdentity

@@ -71,27 +71,57 @@ final readonly class NfseRequestPipeline
         $identity = $this->authorIdentity->extract();
         $certCnpj = $identity['cnpj'];
         $certCpf = $identity['cpf'];
-        $prestCnpj = $data->prest->CNPJ;
-        $prestCpf = $data->prest->CPF;
 
-        if ($certCnpj !== null && $prestCnpj !== null && $certCnpj !== $prestCnpj) {
+        // Compara contra o EMITENTE, não contra o prestador: com tpEmit 2 ou 3 quem
+        // assina é o tomador ou o intermediário, e cobrar deles o CNPJ do prestador
+        // reprovava justamente a emissão legítima.
+        $emitter = $data->emitterIdentity();
+        $emitterCnpj = $emitter['cnpj'];
+        $emitterCpf = $emitter['cpf'];
+        $emitterRole = $data->infDPS->tpEmit->label();
+
+        if ($certCnpj !== null && $emitterCnpj !== null && $certCnpj !== $emitterCnpj) {
             throw new NfseException(
                 sprintf(
-                    'CNPJ do certificado (%s) não corresponde ao CNPJ do prestador (%s). '
+                    'CNPJ do certificado (%s) não corresponde ao CNPJ do %s, que emite a DPS (%s). '
                     .'Use validateIdentity: false se o certificado pertence a um representante legal.',
                     $certCnpj,
-                    $prestCnpj,
+                    $emitterRole,
+                    $emitterCnpj,
                 )
             );
         }
 
-        if ($certCpf !== null && $prestCpf !== null && $certCpf !== $prestCpf) {
+        if ($certCpf !== null && $emitterCpf !== null && $certCpf !== $emitterCpf) {
             throw new NfseException(
                 sprintf(
-                    'CPF do certificado (%s) não corresponde ao CPF do prestador (%s). '
+                    'CPF do certificado (%s) não corresponde ao CPF do %s, que emite a DPS (%s). '
                     .'Use validateIdentity: false se o certificado pertence a um representante legal.',
                     $certCpf,
-                    $prestCpf,
+                    $emitterRole,
+                    $emitterCpf,
+                )
+            );
+        }
+
+        // Tipos cruzados — e-CPF contra emitente que só declara CNPJ, ou o inverso.
+        // Nenhuma das comparações acima toca neste caso, porque cada uma exige os
+        // dois lados do MESMO campo; sem esta guarda a DPS era assinada e enviada
+        // sem checagem alguma, que é o oposto do que validateIdentity promete.
+        // Emitente sem inscrição federal (NIF/cNaoNIF) fica de fora: não há o que
+        // comparar, e reprovar ali seria negar o único formato que lhe resta.
+        $certHasRegistration = $certCnpj !== null || $certCpf !== null;
+        $emitterHasRegistration = $emitterCnpj !== null || $emitterCpf !== null;
+        $sharedDocumentType = ($certCnpj !== null && $emitterCnpj !== null) || ($certCpf !== null && $emitterCpf !== null);
+
+        if ($certHasRegistration && $emitterHasRegistration && ! $sharedDocumentType) {
+            throw new NfseException(
+                sprintf(
+                    'O certificado identifica-se por %s e o %s, que emite a DPS, por %s — não há como conferir se são a mesma pessoa. '
+                    .'Use validateIdentity: false se o certificado pertence a um representante legal.',
+                    $certCnpj !== null ? 'CNPJ' : 'CPF',
+                    $emitterRole,
+                    $emitterCnpj !== null ? 'CNPJ' : 'CPF',
                 )
             );
         }

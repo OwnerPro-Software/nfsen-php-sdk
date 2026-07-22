@@ -6,8 +6,13 @@ use OwnerPro\Nfsen\Dps\DTO\InfDPS\InfDPS;
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
 use OwnerPro\Nfsen\Dps\DTO\Prest\Prest;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Dps\DTO\Shared\RegTrib;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
+use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
+use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
 
 covers(DpsData::class);
@@ -136,3 +141,66 @@ it('DpsData::fromArray creates instance with toma and subst', function () {
         ->and($dto->interm)->toBeInstanceOf(Toma::class)
         ->and($dto->IBSCBS)->toBeInstanceOf(IBSCBS::class);
 });
+
+// --- emitterIdentity ---
+
+it('reads the emitente inscription from the group tpEmit designates', function (TpEmit $tpEmit, ?Toma $toma, ?Toma $interm, array $expected) {
+    $dps = new DpsData(
+        infDPS: makeInfDps(tpEmit: $tpEmit),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+        toma: $toma,
+        interm: $interm,
+    );
+
+    expect($dps->emitterIdentity())->toBe($expected);
+})->with([
+    'prestador' => [TpEmit::Prestador, null, null, ['cnpj' => '12345678000195', 'cpf' => null]],
+    'tomador' => [
+        TpEmit::Tomador,
+        new Toma(xNome: 'Tomador', CNPJ: '98765432000188'),
+        null,
+        ['cnpj' => '98765432000188', 'cpf' => null],
+    ],
+    'intermediário' => [
+        TpEmit::Intermediario,
+        null,
+        new Toma(xNome: 'Intermediário', CPF: '12345678901'),
+        ['cnpj' => null, 'cpf' => '12345678901'],
+    ],
+]);
+
+it('reports both null when the emitente identifies itself by NIF', function () {
+    $dps = new DpsData(
+        infDPS: makeInfDps(),
+        prest: new Prest(
+            NIF: 'US123456789',
+            regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
+            xNome: 'Foreign Corp',
+        ),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    expect($dps->emitterIdentity())->toBe(['cnpj' => null, 'cpf' => null]);
+});
+
+it('refuses to name an emitente whose group tpEmit points at is absent', function (TpEmit $tpEmit, string $grupo) {
+    $dps = new DpsData(
+        infDPS: makeInfDps(tpEmit: $tpEmit),
+        prest: makePrestadorCnpj(),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    expect(fn () => $dps->emitterIdentity())
+        ->toThrow(
+            InvalidDpsArgument::class,
+            'mas o grupo infDPS/'.$grupo.' não foi informado. '
+            .'O identificador da DPS (TSIdDPS) é formado com a inscrição federal do emitente.',
+        );
+})->with([
+    'tomador' => [TpEmit::Tomador, 'toma'],
+    'intermediário' => [TpEmit::Intermediario, 'interm'],
+]);

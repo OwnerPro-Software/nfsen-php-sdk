@@ -14,8 +14,10 @@ use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
 use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
+use OwnerPro\Nfsen\Dps\Enums\InfDPS\TpEmit;
 use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XsdValidator;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
@@ -256,4 +258,70 @@ it('generates Id with padded zeros when prestador has NIF', function () {
     $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
     // tipo=1 (not CNPJ), inscricao='' padded to 14 zeros
     expect($infDps->getAttribute('Id'))->toBe('DPS350160810000000000000000001000000000000001');
+});
+
+it('composes the Id from the tomador when the tomador is the one emitting', function () {
+    // TSIdDPS reúne município + inscrição + série + número, e série e número são do
+    // EMITENTE. Com a inscrição do prestador ali, dois tomadores que emitam para o
+    // mesmo prestador usando a própria série 1 nº 1 chegam ao mesmo Id.
+    $data = new DpsData(
+        infDPS: makeInfDps(tpEmit: TpEmit::Tomador),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+        toma: new Toma(xNome: 'Tomador Emitente', CNPJ: '98765432000188'),
+    );
+
+    $infDps = parseDpsXml(buildDps($data))->query('/n:DPS/n:infDPS')->item(0);
+
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160829876543200018800001000000000000001');
+});
+
+it('composes the Id from the intermediario when the intermediario is the one emitting', function () {
+    $data = new DpsData(
+        infDPS: makeInfDps(tpEmit: TpEmit::Intermediario),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+        interm: new Toma(xNome: 'Intermediário Emitente', CPF: '12345678901'),
+    );
+
+    $infDps = parseDpsXml(buildDps($data))->query('/n:DPS/n:infDPS')->item(0);
+
+    // tipo=1 (CPF), com o CPF do intermediário zero-padded a 14.
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160810001234567890100001000000000000001');
+});
+
+it('carries the emitting tomador CNPJ even when the prestador is abroad', function () {
+    // Importação de serviço: o prestador só tem NIF, então antes o Id saía com 14
+    // zeros — idêntico para todo tomador do município na mesma série e número.
+    $data = new DpsData(
+        infDPS: makeInfDps(tpEmit: TpEmit::Tomador, cMotivoEmisTI: CMotivoEmisTI::ImportacaoServico),
+        prest: new Prest(
+            NIF: 'US123456789',
+            regTrib: new RegTrib(opSimpNac: OpSimpNac::NaoOptante, regEspTrib: RegEspTrib::Nenhum),
+            xNome: 'Foreign Corp',
+        ),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+        toma: new Toma(xNome: 'Tomador BR', CNPJ: '98765432000188'),
+    );
+
+    $infDps = parseDpsXml(buildDps($data))->query('/n:DPS/n:infDPS')->item(0);
+
+    expect($infDps->getAttribute('Id'))->toBe('DPS350160829876543200018800001000000000000001');
+});
+
+it('refuses to build when the group that tpEmit points at is missing', function () {
+    // toma e interm são minOccurs=0, então o XSD não consegue exigir o grupo do
+    // emitente; sem esta guarda o Id sairia zerado.
+    $data = new DpsData(
+        infDPS: makeInfDps(tpEmit: TpEmit::Tomador),
+        prest: makePrestadorCnpj(CNPJ: '12345678000195'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    );
+
+    expect(fn () => buildDps($data))
+        ->toThrow(InvalidDpsArgument::class, 'o Tomador emite a DPS, mas o grupo infDPS/toma não foi informado');
 });

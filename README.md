@@ -74,6 +74,13 @@ $client = NfsenClient::forStandalone(
 );
 ```
 
+A validação de identidade confere o certificado contra o **emitente** da DPS, que
+`infDPS/tpEmit` designa — o prestador (1), o tomador (2) ou o intermediário (3).
+Com `tpEmit` 2 ou 3, quem assina é o tomador ou o intermediário, e é o CNPJ/CPF
+dele que precisa bater. Certificado e emitente que se identificam por documentos
+de tipos diferentes (e-CPF contra emitente que só declara CNPJ, ou o inverso)
+também são recusados: não há como conferir se são a mesma pessoa.
+
 Para desabilitar a validacao de identidade (representante legal / contador):
 
 ```php

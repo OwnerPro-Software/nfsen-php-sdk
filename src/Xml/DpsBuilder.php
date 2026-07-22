@@ -49,16 +49,20 @@ final readonly class DpsBuilder
         $dps->setAttribute('versao', self::VERSION);
         $dps->setAttribute('xmlns', self::XMLNS);
 
+        // A inscrição do identificador é a do EMITENTE, que tpEmit designa — nem
+        // sempre o prestador. Ver DpsData::emitterIdentity().
+        $emitter = $data->emitterIdentity();
+
         $infDps = $doc->createElement('infDPS');
         $infDps->setAttribute('Id', DpsId::generate(
             cLocEmi: $data->infDPS->cLocEmi,
-            cnpj: $data->prest->CNPJ,
-            cpf: $data->prest->CPF,
+            cnpj: $emitter['cnpj'],
+            cpf: $emitter['cpf'],
             serie: $data->infDPS->serie,
             nDps: $data->infDPS->nDPS,
-            // Prest exige exatamente 1 de CNPJ/CPF/NIF/cNaoNIF: se CNPJ e CPF
-            // são null aqui, o prestador é estrangeiro e a inscrição zerada é a
-            // forma correta do identificador.
+            // O xs:choice do grupo exige exatamente 1 de CNPJ/CPF/NIF/cNaoNIF: se
+            // CNPJ e CPF são null aqui, o emitente é estrangeiro e a inscrição
+            // zerada é a única forma possível do identificador.
             allowEmptyInscricao: true,
         ));
 
