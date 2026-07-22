@@ -212,6 +212,10 @@ use OwnerPro\Nfsen\Enums\TipoEvento;
 
 // Consultar NFSe por chave de acesso
 $response = $client->consultar()->nfse($chave);
+// sucesso: true apenas em HTTP 2xx com corpo legível. Qualquer outro status
+// (401, 404, 429, 5xx…) lança HttpException — inclusive quando o corpo é um
+// JSON de gateway sem o envelope `erros`/`erro` da SEFIN. Um 5xx que traz o
+// envelope é rejeição definitiva e volta como sucesso: false com os erros.
 
 // Consultar DPS por ID
 $response = $client->consultar()->dps($idDps);

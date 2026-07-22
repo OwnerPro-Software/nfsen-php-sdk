@@ -131,13 +131,23 @@ it('returns a non-envelope JSON body on 4xx, a definitive client error', functio
     expect($client->post('https://example.com/nfse', []))->toBe(['message' => 'Unauthorized']);
 });
 
-it('returns a non-envelope JSON body on GET 5xx, which changes no state', function () {
-    Http::fake(['*' => Http::response(['message' => 'Internal server error'], 500)]);
+it('throws HttpException on a GET error whose JSON body carries no SEFIN envelope', function (int $status) {
+    // Devolver o corpo aqui perderia o status: `get()` retorna `array`, e o único
+    // consumidor (executeAndDecompress) só pergunta por `erros`/`erro` — um gateway
+    // que responde JSON sem envelope da SEFIN virava `sucesso: true`. HttpException
+    // preserva status e corpo, que é o que a consulta precisa saber.
+    Http::fake(['*' => Http::response(['message' => 'gateway error'], $status)]);
 
     $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
 
-    expect($client->get('https://example.com/nfse/CHAVE123'))->toBe(['message' => 'Internal server error']);
-});
+    try {
+        $client->get('https://example.com/nfse/CHAVE123');
+        test()->fail('Expected HttpException');
+    } catch (HttpException $e) {
+        expect($e->getMessage())->toBe('HTTP error: '.$status);
+        expect($e->getResponseBody())->toContain('gateway error');
+    }
+})->with([401, 404, 500]);
 
 it('keeps throwing HttpException on POST 4xx, a definitive client error', function () {
     Http::fake(['*' => Http::response('Not Found', 404)]);

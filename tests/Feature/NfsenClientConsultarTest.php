@@ -88,6 +88,18 @@ it('consultar()->nfse throws HttpException on server error', function () {
         ->toThrow(HttpException::class);
 });
 
+it('consultar()->nfse throws HttpException when the error body is JSON without a SEFIN envelope', function (int $status) {
+    // Um gateway/WAF entre o SDK e a SEFIN responde JSON próprio. Sem o envelope
+    // `erros`/`erro`, o corpo não é rejeição da SEFIN — e antes desta guarda ele
+    // era devolvido como consulta bem-sucedida, com `chave` e `xml` nulos.
+    Http::fake(['*' => Http::response(['message' => 'gateway error'], $status)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->nfse(makeChaveAcesso()))
+        ->toThrow(HttpException::class, 'HTTP error: '.$status);
+})->with([401, 404, 500]);
+
 it('consultar()->danfse returns failure on HTTP error', function () {
     Http::fake(['*' => Http::response('Not Found', 404)]);
 

@@ -183,7 +183,14 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
                 throw IndeterminateResultException::fromServerError($response->status(), $response->body());
             }
 
-            if (is_array($decoded) && $decoded !== []) {
+            // Corpo JSON sem envelope da SEFIN: só o POST o aproveita, porque
+            // NfseEmitter reconhece a resposta sem `chaveAcesso` e a devolve como
+            // SEM_CHAVE. O GET não tem esse resgate — `get()` devolve `array` sem
+            // status, e seu único consumidor (executeAndDecompress) só pergunta por
+            // `erros`/`erro`, então um corpo devolvido aqui virava `sucesso: true`
+            // para 401, 404 e 500. O status é a informação definitiva da consulta;
+            // HttpException o carrega junto do corpo íntegro.
+            if ($method === 'post' && is_array($decoded) && $decoded !== []) {
                 /** @var array<string, mixed> $decoded */
                 return $decoded;
             }
