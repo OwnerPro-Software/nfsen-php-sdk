@@ -44,7 +44,13 @@ final readonly class NfseConsulter implements ConsultsNfse
     public function dps(string $id): NfseResponse
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'query_dps', ['id' => $id]);
-        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path));
+
+        // DpsGetResponse (SefinNacional-swagger.json) declara chaveAcesso
+        // required no 200: sem ela, um "sucesso" com chave null encerraria a
+        // reconciliação pós-timeout — que é o fluxo que dps() existe para
+        // servir — sem identificador algum da nota. O 404 não é afetado:
+        // executeRaw retorna antes da checagem.
+        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path), 'chaveAcesso');
 
         /**
          * @var array{
@@ -92,6 +98,7 @@ final readonly class NfseConsulter implements ConsultsNfse
 
         return new NfseResponse(
             sucesso: true,
+            // executeRaw('chaveAcesso') garante string não-vazia neste ponto.
             chave: $result['chaveAcesso'] ?? null,
             idDps: $result['idDps'] ?? null,
             tipoAmbiente: $tipoAmbiente,

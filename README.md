@@ -230,7 +230,9 @@ $response = $client->consultar()->dps($idDps);
 // dedicado: $response->erros[0]->codigo === NfseResponse::DPS_NOT_FOUND.
 // Sinal inequívoco de "não existe" — distinto de erros transitórios
 // (401/403/429/5xx lançam HttpException, pois consulta não altera estado;
-// falha de transporte lança IndeterminateResultException).
+// falha de transporte lança IndeterminateResultException). Um 2xx sem
+// `chaveAcesso` não ocorre em operação normal e lança
+// IndeterminateResultException (nunca vira sucesso com chave: null).
 
 // Obter PDF do DANFSE
 $response = $client->consultar()->danfse($chave);
@@ -588,11 +590,11 @@ cobre cinco situações:
 3. **Resposta 2xx com corpo ilegível** (JSON inválido ou vazio) — o servidor
    confirmou o processamento, mas o resultado não pôde ser interpretado;
 4. **Resposta com JSON válido porém sem o campo obrigatório da operação** —
-   um 2xx de `consultar()->eventos()` sem `eventoXmlGZipB64`, ou a resposta ao
-   POST do evento em `cancelar()` sem rejeição estruturada nem o recibo
-   `eventoXmlGZipB64`, qualquer que seja o status — shape que não ocorre em
-   operação normal; ausência comprovada é sinalizada por HTTP 404, nunca por
-   corpo vazio;
+   um 2xx de `consultar()->eventos()` sem `eventoXmlGZipB64`, um 2xx de
+   `consultar()->dps()` sem `chaveAcesso`, ou a resposta ao POST do evento em
+   `cancelar()` sem rejeição estruturada nem o recibo `eventoXmlGZipB64`,
+   qualquer que seja o status — shape que não ocorre em operação normal;
+   ausência comprovada é sinalizada por HTTP 404, nunca por corpo vazio;
 5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
    `emitirDecisaoJudicial`, `cancelar`, `substituir`) **sem rejeição estruturada
    da SEFIN no corpo** — o erro pode ter vindo de um proxy antes da SEFIN, ou da

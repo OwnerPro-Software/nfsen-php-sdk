@@ -102,14 +102,15 @@ it('consultar()->dps returns success NfseResponse with chaveAcesso', function ()
     );
 });
 
-it('consultar()->dps returns null chave when response has no chaveAcesso', function () {
+it('consultar()->dps keeps a 200 without chaveAcesso indeterminate', function () {
+    // DpsGetResponse declara chaveAcesso required no 200: aceitar a falta
+    // como sucesso encerraria a reconciliação pós-timeout sem identificador.
     Http::fake(['*' => Http::response(['idDps' => 'DPS001'], 200)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->consultar()->dps('DPS123');
 
-    expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBeNull();
+    expect(fn () => $client->consultar()->dps('DPS123'))
+        ->toThrow(IndeterminateResultException::class, 'chaveAcesso');
 });
 
 it('throws InvalidArgumentException for invalid IBGE code', function () {
