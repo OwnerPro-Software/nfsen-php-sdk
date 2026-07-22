@@ -1515,3 +1515,72 @@ it('keeps the empty slot of a positional field instead of shifting the others', 
 
     expect($data->tribIbsCbs->reducaoAliquotas)->toBe('- / - / 1,00%');
 });
+
+// --- Capacidade dos campos de município/localidade (item 2.4.5) ---
+//
+// A NT não pede reticências nestes campos, e o maior município do IBGE satura a
+// capacidade na régua: "Vila Bela da Santíssima Trindade / MT" tem exatamente 37.
+// Por isso o corte usa a capacidade cheia, não capacidade menos as reticências.
+
+it('keeps the longest IBGE municipality whole, since it fits the NT capacity', function () {
+    // 3550308 → São Paulo. Trocado pelo código de Vila Bela da Santíssima Trindade.
+    $xml = str_replace('<cMun>3550308</cMun>', '<cMun>5105507</cMun>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tomador->municipio)->toBe('Vila Bela da Santíssima Trindade / MT')
+        ->and(mb_strlen($data->tomador->municipio))->toBe(37);
+});
+
+it('caps a foreign municipality at the capacity the NT gives the field', function () {
+    // TSCidade e TSEstadoProvRegiao admitem 60 cada: 123 caracteres num campo de 37.
+    $xml = preg_replace_callback(
+        '#(<toma>.*?)<endNac>.*?</endNac>(.*?</toma>)#s',
+        fn ($m) => $m[1].'<endExt><cPais>US</cPais><cEndPost>10001</cEndPost>'
+            .'<xCidade>'.str_repeat('A', 60).'</xCidade>'
+            .'<xEstProvReg>'.str_repeat('B', 60).'</xEstProvReg></endExt>'.$m[2],
+        $this->xml,
+    );
+    $data = $this->builder->build((string) $xml);
+
+    expect(mb_strlen($data->tomador->municipio))->toBeLessThanOrEqual(40)
+        ->and($data->tomador->municipio)->toEndWith('...');
+});
+
+it('caps the header município, which xLocEmi can overflow on its own', function () {
+    // xLocEmi é TSDesc150 num campo de 37.
+    $xml = preg_replace('#<xLocEmi>[^<]*</xLocEmi>#', '<xLocEmi>'.str_repeat('C', 150).'</xLocEmi>', $this->xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect(mb_strlen($data->municipioEmitente))->toBeLessThanOrEqual(40)
+        ->and($data->municipioEmitente)->toEndWith('...');
+});
+
+it('caps local da prestação and município da incidência at 42', function (string $tag, string $prop) {
+    // xLocPrestacao e xLocIncid são TSDesc150 em campos de 42.
+    $xml = preg_replace('#<'.$tag.'>[^<]*</'.$tag.'>#', '<'.$tag.'>'.str_repeat('D', 150).'</'.$tag.'>', $this->xml);
+    // Sem código IBGE resolvível, o builder recorre ao texto livre.
+    $xml = preg_replace('#<cLocPrestacao>[^<]*</cLocPrestacao>#', '<cLocPrestacao>9999999</cLocPrestacao>', (string) $xml);
+    $xml = preg_replace('#<cLocIncid>[^<]*</cLocIncid>#', '<cLocIncid>9999999</cLocIncid>', (string) $xml);
+    $data = $this->builder->build((string) $xml);
+
+    $valor = $prop === 'localPrestacao' ? $data->servico->localPrestacao : $data->tribMun->municipioIncidencia;
+
+    expect(mb_strlen($valor))->toBeLessThanOrEqual(45)
+        ->and($valor)->toEndWith('...');
+})->with([
+    'local da prestação' => ['xLocPrestacao', 'localPrestacao'],
+    'município da incidência' => ['xLocIncid', 'municipioIncidencia'],
+]);
+
+it('caps the IBS/CBS incidence line, whose xLocalidadeIncid allows 600', function () {
+    $xml = preg_replace(
+        '#<xLocalidadeIncid>[^<]*</xLocalidadeIncid>#',
+        '<xLocalidadeIncid>'.str_repeat('E', 600).'</xLocalidadeIncid>',
+        $this->ibscbs,
+    );
+    $xml = preg_replace('#<cLocalidadeIncid>[^<]*</cLocalidadeIncid>#', '<cLocalidadeIncid>9999999</cLocalidadeIncid>', (string) $xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect(mb_strlen($data->tribIbsCbs->indicadorOperacao))->toBeLessThanOrEqual(59)
+        ->and($data->tribIbsCbs->indicadorOperacao)->toEndWith('...');
+});

@@ -200,6 +200,16 @@ final readonly class ParticipanteBuilder
      * caminhos: `end/endNac/cMun`, resolvido pela tabela do IBGE, ou `end/endExt`
      * para quem está fora do país. No exterior não há UF — `xEstProvReg` é o que a
      * identifica, e sem ele a cidade sai sozinha.
+     *
+     * O corte usa a capacidade cheia da NT, 37, e não os 37 de um campo de 40 como
+     * nome e endereço: a tabela não pede reticências aqui, e o maior município do
+     * IBGE satura a capacidade na régua — "Vila Bela da Santíssima Trindade / MT"
+     * tem exatamente 37. Cortar em 34 truncaria um município legítimo em toda
+     * DANFSe dele; cortar em 37 não toca em valor nenhum que caiba no campo.
+     *
+     * Quem estoura é o ramo do exterior: `TSCidade` e `TSEstadoProvRegiao` admitem
+     * 60 cada, então a concatenação chega a 123 num campo de 37, e antes disso ia
+     * inteira para o papel — contra o invariante de página única.
      */
     private function municipioDaPessoa(?SimpleXMLElement $endNac, ?SimpleXMLElement $endExt): string
     {
@@ -213,7 +223,7 @@ final readonly class ParticipanteBuilder
             $this->str($endExt?->xEstProvReg), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
         ], static fn (string $parte): bool => $parte !== '');
 
-        return $partes === [] ? '-' : implode(' / ', $partes);
+        return $partes === [] ? '-' : $this->fmt->limit(implode(' / ', $partes), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 é a capacidade da NT 008; 36/38 não representa regressão.
     }
 
     /**
@@ -278,11 +288,13 @@ final readonly class ParticipanteBuilder
         $xLocEmi = $this->str($inf->xLocEmi);
         $uf = $this->str($enderEmit->UF);
 
+        // `xLocEmi` é TSDesc150 — 150 caracteres num campo de 37 —, então este
+        // fallback também passa pela capacidade da NT. Ver municipioDaPessoa().
         if ($xLocEmi !== '' && $uf !== '') {
-            return $xLocEmi.' / '.$uf;
+            return $this->fmt->limit($xLocEmi.' / '.$uf, 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 é a capacidade da NT 008; 36/38 não representa regressão.
         }
 
         // Sem xLocEmi não dá para compor "Município / UF": devolver '-' em vez de " / RJ".
-        return $xLocEmi !== '' ? $xLocEmi : '-';
+        return $xLocEmi !== '' ? $this->fmt->limit($xLocEmi, 37) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
     }
 }

@@ -199,7 +199,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             static fn (string $parte): bool => $parte !== '',
         );
 
-        return $partes === [] ? '-' : implode(' / ', $partes);
+        // `xLocEmi` é TSDesc150 num campo de 37. Ver ParticipanteBuilder::municipioDaPessoa()
+        // para por que o corte usa a capacidade cheia da NT em vez de reservar as reticências.
+        return $partes === [] ? '-' : $this->fmt->limit(implode(' / ', $partes), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 é a capacidade da NT 008; 36/38 não representa regressão.
     }
 
     private function buildServico(SimpleXMLElement $inf, SimpleXMLElement $serv, SimpleXMLElement $cServ): DanfseServico
@@ -215,7 +217,12 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             descTribNacional: $xTribNac !== '' ? $this->fmt->limit($xTribNac, 60) : '-', // @pest-mutate-ignore IncrementInteger,DecrementInteger — limite 60 chars é decisão de UX; 59/61 não representa regressão de comportamento.
             codigoTribMunicipal: $cTribMun !== '' ? $cTribMun : '-',
             descTribMunicipal: $xTribMun !== '' ? $this->fmt->limit($xTribMun, 60) : '-', // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
-            localPrestacao: $this->resolveMunicipio($locPrest?->cLocPrestacao, $inf->xLocPrestacao), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+            // Campo de 42 na NT; sem o IBGE resolver o código, o recurso é
+            // `xLocPrestacao`, que é TSDesc150. Ver ParticipanteBuilder::municipioDaPessoa().
+            localPrestacao: $this->fmt->limit(
+                $this->resolveMunicipio($locPrest?->cLocPrestacao, $inf->xLocPrestacao), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
+                42, // @pest-mutate-ignore IncrementInteger,DecrementInteger — 42 é a capacidade da NT 008; 41/43 não representa regressão.
+            ),
             paisPrestacao: $this->str($locPrest?->cPaisPrestacao, '-'), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             // NT 008: reticências acima de 1297 caracteres, num campo de 1300. Sem
             // isso uma descrição no limite do XSD empurra o DANFSe para a segunda
@@ -283,9 +290,14 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         return new DanfseTributacaoMunicipal(
             tributacaoIssqn: TribISSQN::labelOf($this->str($tribMun->tribISSQN)),
             // NT 008: "Município / UF / País". O país é o código ISO de 2 dígitos.
-            municipioIncidencia: $this->fmt->joinPresent(
-                $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
-                $this->str($tribMun->cPaisResult),
+            // Campo de 42, e `xLocIncid` é TSDesc150 — daí o teto. Ver
+            // ParticipanteBuilder::municipioDaPessoa().
+            municipioIncidencia: $this->fmt->limit(
+                $this->fmt->joinPresent(
+                    $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
+                    $this->str($tribMun->cPaisResult),
+                ),
+                42, // @pest-mutate-ignore IncrementInteger,DecrementInteger — 42 é a capacidade da NT 008; 41/43 não representa regressão.
             ),
             regimeEspecial: $regimeEspecial,
             tipoImunidade: $tipoImunidade,
@@ -372,10 +384,15 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
                 $this->str($gIbsCbs?->cClassTrib),
             ),
             // Concatena código da operação, código IBGE, município e UF da incidência.
-            indicadorOperacao: $this->fmt->joinSlots(
-                $this->str($infDps->IBSCBS?->cIndOp), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
-                $this->str($ibsNfse?->cLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
-                $this->resolveMunicipio($ibsNfse?->cLocalidadeIncid, $ibsNfse?->xLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+            // Campo de 56, e `xLocalidadeIncid` é TSDesc600 — o maior recurso de texto
+            // livre destes campos. Ver ParticipanteBuilder::municipioDaPessoa().
+            indicadorOperacao: $this->fmt->limit(
+                $this->fmt->joinSlots(
+                    $this->str($infDps->IBSCBS?->cIndOp), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                    $this->str($ibsNfse?->cLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                    $this->resolveMunicipio($ibsNfse?->cLocalidadeIncid, $ibsNfse?->xLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                ),
+                56, // @pest-mutate-ignore IncrementInteger,DecrementInteger — 56 é a capacidade da NT 008; 55/57 não representa regressão.
             ),
             // A NT define este campo como o somatório de cinco origens distintas.
             exclusoesReducoes: $this->sumCurrency(
