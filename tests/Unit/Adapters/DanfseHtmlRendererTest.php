@@ -81,6 +81,17 @@ it('shows intermediario block when present', function (): void {
     expect($html)->toContain('INTERMEDIÁRIO LTDA');
 });
 
+it('names the intermediário identification field the way the notice does', function (): void {
+    // Item 2.4.5: o campo é "CNPJ / CPF / NIF" nos quatro blocos de participante. Só o
+    // do intermediário omitia o NIF, embora o valor já resolva CNPJ, CPF, NIF e cNaoNIF.
+    $r = new DanfseHtmlRenderer(fakeQrGen());
+
+    $html = $r->render(sampleData(interm: sampleParticipante('INTERMEDIÁRIO LTDA')));
+
+    expect(substr_count($html, 'CNPJ / CPF / NIF'))->toBe(3);
+    expect($html)->not->toContain('>CNPJ / CPF<');
+});
+
 it('fills the header corner with the three fields of item 2.4.3', function (): void {
     // Item 2.4.3: no canto direito, o município do emitente, o ambiente gerador e o
     // tipo de ambiente. O quadro já foi ocupado pela identificação da prefeitura, que
@@ -381,7 +392,7 @@ it('prints the fixed totals line inside the complementary information block', fu
 
     $bloco = substr($html, (int) strpos($html, 'INFORMAÇÕES COMPLEMENTARES'));
 
-    expect($bloco)->toContain('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: 4.50% ; Estaduais: 0.10% ; Municipais: 2.00%');
+    expect($bloco)->toContain('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: 4,50% ; Estaduais: 0,10% ; Municipais: 2,00%');
 });
 
 it('gives the fixed totals line a table row of its own', function (): void {

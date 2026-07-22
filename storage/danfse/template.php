@@ -311,7 +311,7 @@
                   <span class="section-title">INTERMEDIÁRIO DA OPERAÇÃO</span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">CNPJ / CPF</span>
+                    <span class="label">CNPJ / CPF / NIF</span>
                     <span class="value"><?= $h($data->intermediario->cnpjCpf) ?></span>
                 </td>
                 <td style="width: 25%;">

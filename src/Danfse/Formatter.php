@@ -104,6 +104,19 @@ final class Formatter
         return 'R$ '.number_format((float) $value, 2, ',', '.');
     }
 
+    /**
+     * Percentual com o separador decimal brasileiro, no qual o resto do documento já
+     * escreve os valores monetários.
+     *
+     * Preserva as casas que o XML trouxe em vez de fixar duas: `pAliq` vem com duas,
+     * mas as alíquotas de IBS/CBS admitem mais, e reformatar inventaria ou perderia
+     * precisão de um campo fiscal.
+     */
+    public function percent(string $value): string
+    {
+        return str_replace('.', ',', $value).'%';
+    }
+
     public function codTribNacional(string $value): string
     {
         if ($value === '' || $value === '-') {

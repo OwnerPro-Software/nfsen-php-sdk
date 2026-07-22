@@ -65,7 +65,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
             regimeEspecial: 'Nenhum', tipoImunidade: '-', suspensaoExigibilidade: '-',
             numeroProcessoSuspensao: '-', beneficioMunicipal: '-', calculoBM: '-',
             totalDeducoesReducoes: '-', exibeRegimeEImunidade: false, exibeBeneficioEDeducoes: false, bcIssqn: 'R$ 1.350,00',
-            aliquota: '2.00%', retencaoIssqn: 'Retido pelo Tomador', issqnApurado: 'R$ 27,00',
+            aliquota: '2,00%', retencaoIssqn: 'Retido pelo Tomador', issqnApurado: 'R$ 27,00',
         ),
         tribFed: new DanfseTributacaoFederal(
             irrf: 'R$ 22,50', cp: 'R$ 15,00', csll: '-', pis: 'R$ 9,75', cofins: 'R$ 45,00',
@@ -77,7 +77,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
             totalRetencoes: 'R$ 79,50',
             valorLiquido: 'R$ 1.292,75', totalIbsCbs: '-', valorLiquidoComIbsCbs: '-',
         ),
-        totaisTributos: new DanfseTotaisTributos(federais: '4.50%', estaduais: '0.10%', municipais: '2.00%'),
+        totaisTributos: new DanfseTotaisTributos(federais: '4,50%', estaduais: '0,10%', municipais: '2,00%'),
         informacoesComplementares: 'Referente ao contrato 2026-001',
         marcaDagua: $marcaDagua,
     );

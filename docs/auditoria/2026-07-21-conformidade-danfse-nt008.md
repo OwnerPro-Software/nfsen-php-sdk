@@ -22,10 +22,10 @@ A divergência 10 só apareceu depois que a 3 caiu: foi a rasterização feita p
 | 3 | ~~Média~~ | 2.2.3 + Anexo I | ~~Sem linhas divisórias internas (grade) nos blocos~~ | **retirada — era falsa** |
 | 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente | **corrigida** |
 | 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT | **corrigida** |
-| 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" | aberta |
+| 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" | **corrigida** |
 | 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | **corrigida** |
-| 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT | aberta |
-| 9 | Cosmética | — | Alíquotas com ponto decimal (`2.00%`) num documento pt-BR | aberta |
+| 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT | **documentada** |
+| 9 | Cosmética | — | Alíquotas com ponto decimal (`2.00%`) num documento pt-BR | **corrigida** |
 | 10 | Média | 2.2.4 + Anexo I | Dois campos numa coluna à esquerda da que o Anexo lhes dá | **corrigida** |
 
 O relato de cada divergência descreve o estado no momento da auditoria; as corrigidas trazem ao fim a nota do que mudou.
@@ -165,6 +165,8 @@ O destinatário (`template.php:277-281`) e o intermediário (`template.php:330-3
 
 **Correção:** trocar por `CNPJ / CPF / NIF`.
 
+> **Corrigida.** Os quatro blocos usam agora a mesma forma, e o teste ancora a contagem do rótulo além de proibir a forma curta.
+
 ---
 
 ### 7 — Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN"
@@ -191,6 +193,8 @@ Como o 2.3.1 é permissivo ("poderão"), imprimir o bloco com traços não é in
 
 Funcionalmente é a decisão certa — um QR de homologação apontando para produção não resolve chave alguma. É, ainda assim, um desvio do texto literal. Vale registrar a justificativa em comentário no código, ou pelo menos no README, para que não seja lido como descuido numa auditoria fiscal.
 
+> **Documentada, e mantida.** A justificativa está na constante `CONSULTA_URL_HOMOLOGACAO`, onde quem revisa conformidade vai olhar: a chave de uma NFS-e de homologação não existe no portal de produção, e o cabeçalho já estampa "SEM VALIDADE JURÍDICA", de modo que apontar para o ambiente que responde serve ao propósito do item 2.4.3 sem risco de o documento passar por válido.
+
 ---
 
 ### 9 — Alíquotas com ponto decimal
@@ -200,6 +204,8 @@ Funcionalmente é a decisão certa — um QR de homologação apontando para pro
 `DanfseDataBuilder.php:291` (`$pAliq.'%'`) e `percentOrEmpty()` (`:386-391`) concatenam o valor cru do XML. Medido: `2.00%`. Todos os valores monetários passam por `Formatter::currency()` e saem com vírgula (`R$ 1.500,00`), então o documento mistura as duas convenções.
 
 A NT não especifica separador decimal para percentuais. Não é não conformidade — é inconsistência interna do documento em pt-BR.
+
+> **Corrigida** com `Formatter::percent()`, aplicado nos três pontos que emitiam percentual. O separador troca, mas as casas do XML ficam: `pAliq` traz duas, as alíquotas de IBS/CBS admitem mais, e reformatar com precisão fixa inventaria ou perderia dígito de campo fiscal.
 
 ---
 
@@ -327,7 +333,7 @@ Isto **não é não conformidade**: o item 2.1 é explícito — "Embora os tama
 4. ~~**Divergência 4** (nota 6)~~ — feita.
 5. ~~**Divergência 10** (colunas erradas)~~ — feita.
 6. ~~**Divergências 5 e 7**~~ — feitas. Nenhuma das restantes mexe em altura.
-7. **Divergências 6, 8 e 9** — um rótulo, uma justificativa a documentar e um separador decimal.
+7. ~~**Divergências 6, 8 e 9**~~ — feitas. Nada aberto: as nove divergências que sobreviveram à verificação estão fechadas.
 
 Vale acrescentar à suíte um teste de disposição que ancore as ordenadas relativas dos rótulos dentro de cada bloco de participante — é exatamente o tipo de regressão que o `Nt008GeometryTest` foi criado para pegar e que hoje passa despercebida, porque ele mede o cabeçalho e o QR Code, mas não o miolo. As divergências 1 e 10 são as duas faces do mesmo buraco de cobertura: uma na ordenada, outra na abscissa.
 

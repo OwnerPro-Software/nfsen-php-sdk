@@ -12,8 +12,18 @@ use Throwable;
 
 final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
 {
+    /** Endereço do QR Code fixado pelo item 2.4.3 da NT 008. */
     private const string CONSULTA_URL_PRODUCAO = 'https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=';
 
+    /**
+     * Desvio deliberado do item 2.4.3, que fixa um endereço só.
+     *
+     * A chave de uma NFS-e de homologação não existe no portal de produção: o QR da
+     * norma levaria o leitor a uma consulta sem resultado. Como o DANFSe de homologação
+     * já se anuncia "SEM VALIDADE JURÍDICA" no cabeçalho, apontar para o ambiente que
+     * de fato responde serve ao propósito do item — "consulta rápida via dispositivos
+     * móveis" — sem risco de confundir o documento com um válido.
+     */
     private const string CONSULTA_URL_HOMOLOGACAO = 'https://hom.nfse.fazenda.gov.br/ConsultaPublica/?tpc=1&chave=';
 
     private const string TEMPLATE_PATH = __DIR__.'/../../storage/danfse/template.php'; // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — constante de classe avaliada em tempo de compilação; mutações aparecem como UNCOVERED no PCOV.

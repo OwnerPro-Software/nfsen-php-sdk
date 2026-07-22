@@ -266,7 +266,7 @@ it('extracts tribMun fields including percent formatting', function () {
     expect($data->tribMun->tributacaoIssqn)->toBe('Operação Tributável');
     expect($data->tribMun->municipioIncidencia)->toBe('Niterói - RJ');
     expect($data->tribMun->bcIssqn)->toBe('R$ 1.350,00');
-    expect($data->tribMun->aliquota)->toBe('2.00%');
+    expect($data->tribMun->aliquota)->toBe('2,00%');
     expect($data->tribMun->issqnApurado)->toBe('R$ 27,00');
 });
 
@@ -288,7 +288,7 @@ it('prefers pAliqAplic over the emitter-declared tribMun/pAliq', function () {
     $xml = str_replace('<pAliqAplic>2.00</pAliqAplic>', '<pAliqAplic>3.50</pAliqAplic>', $this->xml);
     $data = $this->builder->build($xml);
 
-    expect($data->tribMun->aliquota)->toBe('3.50%');
+    expect($data->tribMun->aliquota)->toBe('3,50%');
 });
 
 it('falls back to tribMun/pAliq when pAliqAplic is absent', function () {
@@ -297,7 +297,7 @@ it('falls back to tribMun/pAliq when pAliqAplic is absent', function () {
     $xml = preg_replace('|<pAliqAplic>[^<]+</pAliqAplic>|', '', $this->xml);
     $data = $this->builder->build((string) $xml);
 
-    expect($data->tribMun->aliquota)->toBe('2.00%');
+    expect($data->tribMun->aliquota)->toBe('2,00%');
 });
 
 // NT 008, item 2.3.1 e nota 4 do item 2.4.5. Imunidade e exportação também não
@@ -466,9 +466,9 @@ it('returns a dash when the NFS-e has no retentions at all', function () {
 it('extracts totaisTributos percentages', function () {
     $data = $this->builder->build($this->xml);
 
-    expect($data->totaisTributos->federais)->toBe('4.50%');
-    expect($data->totaisTributos->estaduais)->toBe('0.10%');
-    expect($data->totaisTributos->municipais)->toBe('2.00%');
+    expect($data->totaisTributos->federais)->toBe('4,50%');
+    expect($data->totaisTributos->estaduais)->toBe('0,10%');
+    expect($data->totaisTributos->municipais)->toBe('2,00%');
 });
 
 it('returns dash for totaisTributos when absent', function () {
@@ -1148,12 +1148,12 @@ it('reads the IBS/CBS block from both the declared and the assessed sides', func
     expect($data->tribIbsCbs->cstClassTrib)->toBe('000 / 000001');
     expect($data->tribIbsCbs->indicadorOperacao)->toBe('000001 / 3550308 / São Paulo - SP');
     expect($data->tribIbsCbs->baseCalculo)->toBe('R$ 1.000,00');
-    expect($data->tribIbsCbs->aliquotaIbs)->toBe('10.00% / 2.00%');
-    expect($data->tribIbsCbs->aliquotaEfetivaEstadual)->toBe('9.00%');
+    expect($data->tribIbsCbs->aliquotaIbs)->toBe('10,00% / 2,00%');
+    expect($data->tribIbsCbs->aliquotaEfetivaEstadual)->toBe('9,00%');
     expect($data->tribIbsCbs->valorApuradoEstadual)->toBe('R$ 90,00');
     expect($data->tribIbsCbs->valorApuradoMunicipal)->toBe('R$ 18,00');
     expect($data->tribIbsCbs->valorTotalIbs)->toBe('R$ 108,00');
-    expect($data->tribIbsCbs->aliquotaCbs)->toBe('8.80%');
+    expect($data->tribIbsCbs->aliquotaCbs)->toBe('8,80%');
     expect($data->tribIbsCbs->valorTotalCbs)->toBe('R$ 80,00');
     expect($data->totais->totalIbsCbs)->toBe('R$ 188,00');
     expect($data->totais->valorLiquidoComIbsCbs)->toBe('R$ 1.188,00');
@@ -1324,7 +1324,7 @@ it('keeps the fixed totals line out of the complementary information', function 
 
     expect($data->informacoesComplementares)->not->toContain('Totais Aproximados');
     expect($data->totaisTributos->linhaNt008())
-        ->toBe('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: 4.50% ; Estaduais: 0.10% ; Municipais: 2.00%');
+        ->toBe('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: 4,50% ; Estaduais: 0,10% ; Municipais: 2,00%');
 });
 
 it('reads the monetary totals when the NFS-e reports values instead of percentages', function () {

@@ -110,6 +110,18 @@ it('codTribNacional returns input when length differs', function () {
     expect($this->fmt->codTribNacional('1'))->toBe('1');
 });
 
+it('percent writes the decimal separator the rest of the document uses', function () {
+    expect($this->fmt->percent('2.00'))->toBe('2,00%');
+});
+
+it('percent keeps the precision the XML brought', function () {
+    // pAliq vem com duas casas, mas as alíquotas de IBS/CBS admitem mais: reformatar
+    // com número fixo inventaria ou perderia precisão de um campo fiscal.
+    expect($this->fmt->percent('8.8'))->toBe('8,8%');
+    expect($this->fmt->percent('0.1234'))->toBe('0,1234%');
+    expect($this->fmt->percent('5'))->toBe('5%');
+});
+
 it('limit truncates long strings', function () {
     expect($this->fmt->limit('abcdefghij', 5))->toBe('abcde...');
 });

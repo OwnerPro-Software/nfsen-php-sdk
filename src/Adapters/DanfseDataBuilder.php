@@ -288,7 +288,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             exibeRegimeEImunidade: $this->algumPreenchido($regimeEspecial, $tipoImunidade, $suspensao, $nProcesso),
             exibeBeneficioEDeducoes: $this->algumPreenchido($beneficio, $calculoBM, $deducoes, $descontoIncond),
             bcIssqn: $vBC !== '' ? $this->fmt->currency($vBC) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
-            aliquota: $pAliq !== '' ? $pAliq.'%' : '-',
+            aliquota: $pAliq !== '' ? $this->fmt->percent($pAliq) : '-',
             retencaoIssqn: TpRetISSQN::labelOf($this->str($tribMun->tpRetISSQN)),
             issqnApurado: $vISSQN !== '' ? $this->fmt->currency($vISSQN) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             sujeitaAoIssqn: TribISSQN::tryFrom($this->str($tribMun->tribISSQN)) !== TribISSQN::NaoIncidencia,
@@ -406,7 +406,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     {
         $valor = $this->str($node);
 
-        return $valor !== '' ? $valor.'%' : '';
+        return $valor !== '' ? $this->fmt->percent($valor) : '';
     }
 
     private function percentOrDash(?SimpleXMLElement $node): string
@@ -478,7 +478,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     private function totalTributo(string $percentual, string $monetario): string
     {
         if ($percentual !== '') {
-            return $percentual.'%';
+            return $this->fmt->percent($percentual);
         }
 
         return $this->fmt->currency($monetario);
