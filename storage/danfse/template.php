@@ -148,16 +148,6 @@
                     <span class="label">Nome / Nome Empresarial</span>
                     <span class="value"><?= $h($data->emitente->nome) ?></span>
                 </td>
-                <td colspan="2">
-                    <span class="label">E-mail</span>
-                    <span class="value"><?= $h($data->emitente->email) ?></span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <span class="label">Endereço</span>
-                    <span class="value"><?= $h($data->emitente->endereco) ?></span>
-                </td>
                 <td>
                     <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->emitente->municipio) ?></span>
@@ -165,6 +155,16 @@
                 <td>
                     <span class="label">Código IBGE / CEP</span>
                     <span class="value"><?= $h($data->emitente->codigoIbge) ?> / <?= $h($data->emitente->cep) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="label">Endereço</span>
+                    <span class="value"><?= $h($data->emitente->endereco) ?></span>
+                </td>
+                <td colspan="2">
+                    <span class="label">E-mail</span>
+                    <span class="value"><?= $h($data->emitente->email) ?></span>
                 </td>
             </tr>
             <tr>
@@ -205,16 +205,6 @@
                     <span class="label">Nome / Nome Empresarial</span>
                     <span class="value"><?= $h($data->tomador->nome) ?></span>
                 </td>
-                <td colspan="2" style="width: 50%;">
-                    <span class="label">E-mail</span>
-                    <span class="value"><?= $h($data->tomador->email) ?></span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="width: 50%;">
-                    <span class="label">Endereço</span>
-                    <span class="value"><?= $h($data->tomador->endereco) ?></span>
-                </td>
                 <td style="width: 25%;">
                     <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->tomador->municipio) ?></span>
@@ -222,6 +212,16 @@
                 <td style="width: 25%;">
                     <span class="label">Código IBGE / CEP</span>
                     <span class="value"><?= $h($data->tomador->codigoIbge) ?> / <?= $h($data->tomador->cep) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Endereço</span>
+                    <span class="value"><?= $h($data->tomador->endereco) ?></span>
+                </td>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">E-mail</span>
+                    <span class="value"><?= $h($data->tomador->email) ?></span>
                 </td>
             </tr>
         </table>
@@ -253,16 +253,6 @@
                     <span class="label">Nome / Nome Empresarial</span>
                     <span class="value"><?= $h($data->destinatario->nome) ?></span>
                 </td>
-                <td colspan="2" style="width: 50%;">
-                    <span class="label">E-mail</span>
-                    <span class="value"><?= $h($data->destinatario->email) ?></span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="width: 50%;">
-                    <span class="label">Endereço</span>
-                    <span class="value"><?= $h($data->destinatario->endereco) ?></span>
-                </td>
                 <td style="width: 25%;">
                     <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->destinatario->municipio) ?></span>
@@ -270,6 +260,16 @@
                 <td style="width: 25%;">
                     <span class="label">Código IBGE / CEP</span>
                     <span class="value"><?= $h($data->destinatario->codigoIbge) ?> / <?= $h($data->destinatario->cep) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Endereço</span>
+                    <span class="value"><?= $h($data->destinatario->endereco) ?></span>
+                </td>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">E-mail</span>
+                    <span class="value"><?= $h($data->destinatario->email) ?></span>
                 </td>
             </tr>
         </table>
@@ -306,16 +306,6 @@
                     <span class="label">Nome / Nome Empresarial</span>
                     <span class="value"><?= $h($data->intermediario->nome) ?></span>
                 </td>
-                <td colspan="2" style="width: 50%;">
-                    <span class="label">E-mail</span>
-                    <span class="value"><?= $h($data->intermediario->email) ?></span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="width: 50%;">
-                    <span class="label">Endereço</span>
-                    <span class="value"><?= $h($data->intermediario->endereco) ?></span>
-                </td>
                 <td style="width: 25%;">
                     <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->intermediario->municipio) ?></span>
@@ -323,6 +313,16 @@
                 <td style="width: 25%;">
                     <span class="label">Código IBGE / CEP</span>
                     <span class="value"><?= $h($data->intermediario->codigoIbge) ?> / <?= $h($data->intermediario->cep) ?></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Endereço</span>
+                    <span class="value"><?= $h($data->intermediario->endereco) ?></span>
+                </td>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">E-mail</span>
+                    <span class="value"><?= $h($data->intermediario->email) ?></span>
                 </td>
             </tr>
         </table>
