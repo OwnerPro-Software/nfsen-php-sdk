@@ -10,7 +10,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 
 ## Funcionalidades
 
-- Emissão de NFSe (`emitir`) e emissão por decisão judicial (`emitirDecisaoJudicial`)
+- Emissão de NFSe (`emitir`)
 - Cancelamento de NFSe (`cancelar`)
 - Substituição de NFSe (`substituir`)
 - Consulta por chave de acesso, DPS, eventos e verificação de DPS
@@ -161,14 +161,27 @@ if ($response->sucesso) {
 }
 ```
 
-### Emitir NFSe por decisão judicial
+### Emitir NFSe por decisão judicial — não suportado
 
-Utiliza endpoint diferente (`emit_court_order`) para notas emitidas por determinação judicial:
+`emitirDecisaoJudicial()` existe na interface, mas lança `NfseException` na entrada, antes
+de qualquer evento ou requisição. A operação não é implementável a partir de uma DPS:
 
 ```php
-$response = $client->emitirDecisaoJudicial($dps);
-// Mesma estrutura de DPS e mesmo NfseResponse do emitir()
+$client->emitirDecisaoJudicial($dps);   // NfseException
 ```
+
+O `decisao-judicial/nfse` recebe o **documento NFS-e completo**, não a DPS — o corpo é
+`NFSeBypassPostRequest.xmlGZipB64`, descrito no `SefinNacional-swagger.json` como "Documento
+XML da NFSe compactado no padrão GZIP". Em `TCInfNFSe` a `DPS` é apenas o último filho, ao
+lado de campos que só o gerador da nota preenche — `nNFSe`, `nDFSe`, `cStat` (102 = NFS-e de
+Decisão Judicial), `dhProc` e os valores já apurados (`vBC`, `pAliqAplic`, `vISSQN`). O
+`ambGer` (`TSAmbGeradorNFSe`) admite apenas `1-Prefeitura` e `2-Sistema Nacional da NFS-e`:
+não há valor para contribuinte, e `tpEmis` 2 descreve "emissão original em leiaute próprio do
+município com transcrição para o modelo nacional".
+
+Emitir por decisão judicial cabe, portanto, a quem gera a NFS-e. Se você detém essa
+autorização e já monta o XML da nota, a chamada é um POST direto ao endpoint — este SDK não
+constrói nem assina documentos `NFSe`.
 
 ### Cancelar NFSe
 
@@ -449,7 +462,7 @@ Cada operação retorna um DTO tipado e imutável:
 
 ### `NfseResponse`
 
-Retornado por `emitir()`, `emitirDecisaoJudicial()`, `cancelar()`, `substituir()`, `consultar()->nfse()` e `consultar()->dps()`.
+Retornado por `emitir()`, `cancelar()`, `substituir()`, `consultar()->nfse()` e `consultar()->dps()`.
 
 | Propriedade | Tipo | Descricao |
 |-------------|------|-----------|
@@ -599,7 +612,7 @@ cobre cinco situações:
    status — shape que não ocorre em operação normal; ausência comprovada é
    sinalizada por HTTP 404, nunca por corpo vazio;
 5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
-   `emitirDecisaoJudicial`, `cancelar`, `substituir`) **sem rejeição estruturada
+   `cancelar`, `substituir`) **sem rejeição estruturada
    da SEFIN no corpo** — o erro pode ter vindo de um proxy antes da SEFIN, ou da
    própria SEFIN depois de gravar a nota, e nada no corpo distingue os dois. Um
    5xx que **traz** `erros`/`erro` preenchido é rejeição definitiva: prova que a
@@ -877,7 +890,7 @@ impressa.
 ### Geração automática do DANFSE
 
 **Desligada por padrão.** Ligada, anexa o PDF ao `NfseResponse` em `emitir()`,
-`emitirDecisaoJudicial()`, `substituir()` e `consultar()->nfse()` — cerca de 300 ms e
+`substituir()` e `consultar()->nfse()` — cerca de 300 ms e
 15 KB por nota, gastos mesmo que ninguém abra o documento. Sem ela, gere sob demanda
 com `$client->danfse()->toPdf($resp->xml)`.
 

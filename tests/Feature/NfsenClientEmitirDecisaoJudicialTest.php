@@ -1,174 +1,64 @@
 <?php
 
-use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
-use OwnerPro\Nfsen\Events\NfseEmitted;
-use OwnerPro\Nfsen\Events\NfseFailed;
-use OwnerPro\Nfsen\Events\NfseRejected;
-use OwnerPro\Nfsen\Events\NfseRequested;
-use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseEmitter;
 
 covers(NfsenClient::class, NfseEmitter::class);
 
-it('emitirDecisaoJudicial returns success NfseResponse', function (DpsData $data) {
-    Http::fake(['*' => Http::response(
-        json_decode(file_get_contents(__DIR__.'/../fixtures/responses/emitir_sucesso.json'), true),
-        201
-    )]);
+const MENSAGEM_DECISAO_JUDICIAL = 'emitirDecisaoJudicial() não é suportado por este SDK. '
+    .'O endpoint decisao-judicial/nfse recebe o documento NFS-e completo — '
+    .'NFSeBypassPostRequest.xmlGZipB64 é "Documento XML da NFSe" (SefinNacional-swagger.json) —, '
+    .'não uma DPS: em TCInfNFSe a DPS é apenas o último filho, ao lado de nNFSe, nDFSe, cStat, '
+    .'dhProc e dos valores já apurados, e ambGer admite somente 1-Prefeitura ou 2-Sistema Nacional. '
+    .'Emitir por decisão judicial cabe a quem gera a NFS-e.';
 
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->emitirDecisaoJudicial($data);
-
-    expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->not->toBeNull();
-    expect($response->xml)->toContain('<NFSe');
-    expect($response->tipoAmbiente)->toBe(2);
-
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/decisao-judicial/nfse' &&
-        $req->method() === 'POST' &&
-        isset($req['xmlGZipB64'])
-    );
-})->with('dpsData');
-
-it('emitirDecisaoJudicial returns rejection with erros array', function (DpsData $data) {
-    Http::fake(['*' => Http::response(
-        json_decode(file_get_contents(__DIR__.'/../fixtures/responses/emitir_rejeicao.json'), true),
-        200
-    )]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->emitirDecisaoJudicial($data);
-
-    expect($response->sucesso)->toBeFalse();
-    expect($response->erros[0]->descricao)->toContain('CNPJ');
-    expect($response->idDps)->toBe('DPS_ERR_001');
-})->with('dpsData');
-
-it('emitirDecisaoJudicial returns rejection when response has no chaveAcesso', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['status' => 'ok'], 201)]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->emitirDecisaoJudicial($data);
-
-    expect($response->sucesso)->toBeFalse();
-    expect($response->erros[0]->descricao)->toBe('Resposta da API não contém chaveAcesso.');
-})->with('dpsData');
-
-it('emitirDecisaoJudicial throws IndeterminateResultException on server error', function (DpsData $data) {
-    Http::fake(['*' => Http::response('Server Error', 500)]);
-
+it('emitirDecisaoJudicial lança NfseException explicando por que a operação não existe', function (DpsData $data) {
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
 
-    expect(fn () => $client->emitirDecisaoJudicial($data))
-        ->toThrow(IndeterminateResultException::class);
-})->with('dpsData');
-
-it('emitirDecisaoJudicial accepts array and coerces to DpsData', function () {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 201)]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $response = $client->emitirDecisaoJudicial([
-        'infDPS' => [
-            'tpAmb' => '2',
-            'dhEmi' => '2026-02-27T10:00:00-03:00',
-            'verAplic' => '1.0',
-            'serie' => '1',
-            'nDPS' => '1',
-            'dCompet' => '2026-02-27',
-            'tpEmit' => '1',
-            'cLocEmi' => '3501608',
-        ],
-        'prest' => [
-            'CNPJ' => '12345678000195',
-            'regTrib' => [
-                'opSimpNac' => '1',
-                'regEspTrib' => '0',
-            ],
-            'xNome' => 'Empresa',
-        ],
-        'serv' => [
-            'cServ' => [
-                'cTribNac' => '010101',
-                'xDescServ' => 'Serviço de Teste',
-                'cNBS' => '123456789',
-            ],
-            'cLocPrestacao' => '3501608',
-        ],
-        'valores' => [
-            'vServPrest' => ['vServ' => '100.00'],
-            'trib' => [
-                'tribMun' => [
-                    'tribISSQN' => '1',
-                    'tpRetISSQN' => '1',
-                ],
-                'indTotTrib' => '0',
-            ],
-        ],
-    ]);
-
-    expect($response->sucesso)->toBeTrue();
-    expect($response->chave)->toBe('CHAVE_ARRAY');
-
-    Http::assertSent(fn (Request $req) => $req->url() === 'https://sefin.producaorestrita.nfse.gov.br/SefinNacional/decisao-judicial/nfse' &&
-        isset($req['xmlGZipB64'])
-    );
-});
-
-it('emitirDecisaoJudicial uses xmlGZipB64 payload key', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $client->emitirDecisaoJudicial($data);
-
-    Http::assertSent(fn (Request $req) => isset($req['xmlGZipB64']) && ! isset($req['dpsXmlGZipB64']));
-})->with('dpsData');
-
-it('emitirDecisaoJudicial posts to decisao-judicial/nfse URL', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $client->emitirDecisaoJudicial($data);
-
-    Http::assertSent(fn (Request $req) => str_contains($req->url(), 'decisao-judicial/nfse'));
-})->with('dpsData');
-
-it('dispatches NfseRequested and NfseEmitted on successful emitirDecisaoJudicial', function (DpsData $data) {
-    Event::fake();
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $client->emitirDecisaoJudicial($data);
-
-    Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e) => $e->operacao === 'emitir_decisao_judicial');
-    Event::assertDispatched(NfseEmitted::class);
-})->with('dpsData');
-
-it('dispatches NfseRejected on emitirDecisaoJudicial rejection', function (DpsData $data) {
-    Event::fake();
-    Http::fake(['*' => Http::response(['erros' => [['descricao' => 'Erro', 'codigo' => 'E001']]], 200)]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
-    $client->emitirDecisaoJudicial($data);
-
-    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e) => $e->codigoErro === 'E001');
-})->with('dpsData');
-
-it('dispatches NfseFailed on emitirDecisaoJudicial IndeterminateResultException', function (DpsData $data) {
-    Event::fake();
-    Http::fake(['*' => Http::response('Server Error', 500)]);
-
-    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $mensagem = null;
 
     try {
         $client->emitirDecisaoJudicial($data);
-    } catch (IndeterminateResultException) {
-        // expected
+    } catch (NfseException $e) {
+        $mensagem = $e->getMessage();
     }
 
-    Event::assertDispatched(NfseRequested::class);
-    Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e) => $e->operacao === 'emitir_decisao_judicial');
+    expect($mensagem)->toBe(MENSAGEM_DECISAO_JUDICIAL);
 })->with('dpsData');
+
+it('emitirDecisaoJudicial não emite requisição alguma', function (DpsData $data) {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_DJ'], 201)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->emitirDecisaoJudicial($data))->toThrow(NfseException::class);
+
+    Http::assertNothingSent();
+})->with('dpsData');
+
+it('emitirDecisaoJudicial não dispara evento algum', function (DpsData $data) {
+    Event::fake();
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->emitirDecisaoJudicial($data))->toThrow(NfseException::class);
+
+    Event::assertNothingDispatched();
+})->with('dpsData');
+
+it('emitirDecisaoJudicial recusa a operação antes de coagir o array para DpsData', function () {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE_ARRAY'], 201)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    // Array vazio: se a operação ainda coagisse para DpsData, a falha seria de
+    // validação da DPS — e não a recusa da operação.
+    expect(fn () => $client->emitirDecisaoJudicial([]))
+        ->toThrow(NfseException::class, MENSAGEM_DECISAO_JUDICIAL);
+
+    Http::assertNothingSent();
+});

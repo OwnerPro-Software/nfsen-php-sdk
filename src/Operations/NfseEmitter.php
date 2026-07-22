@@ -9,6 +9,7 @@ use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Events\NfseEmitted;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Pipeline\Concerns\DispatchesEvents;
 use OwnerPro\Nfsen\Pipeline\NfseRequestPipeline;
 use OwnerPro\Nfsen\Responses\NfseResponse;
@@ -32,25 +33,14 @@ final readonly class NfseEmitter implements EmitsNfse
     /** @phpstan-param DpsData|DpsDataArray $data */
     public function emitir(DpsData|array $data): NfseResponse
     {
-        return $this->doEmitir($data, 'emitir', 'emit_nfse', 'dpsXmlGZipB64');
-    }
-
-    /** @phpstan-param DpsData|DpsDataArray $data */
-    public function emitirDecisaoJudicial(DpsData|array $data): NfseResponse
-    {
-        return $this->doEmitir($data, 'emitir_decisao_judicial', 'emit_court_order', 'xmlGZipB64');
-    }
-
-    /** @phpstan-param DpsData|DpsDataArray $data */
-    private function doEmitir(DpsData|array $data, string $operacao, string $operationKey, string $payloadKey): NfseResponse
-    {
         if (is_array($data)) {
             $data = DpsData::fromArray($data);
         }
 
+        $operacao = 'emitir';
         $this->dispatchEvent(new NfseRequested($operacao, []));
 
-        return $this->withFailureEvent($operacao, function () use ($data, $operacao, $operationKey, $payloadKey): NfseResponse {
+        return $this->withFailureEvent($operacao, function () use ($data, $operacao): NfseResponse {
             $xml = $this->dpsBuilder->buildAndValidate($data);
 
             $this->pipeline->validateIdentityAgainst($data);
@@ -69,7 +59,7 @@ final readonly class NfseEmitter implements EmitsNfse
              *     dataHoraProcessamento?: string,
              * } $result
              */
-            $result = $this->pipeline->signCompressSend($xml, 'infDPS', 'DPS', $payloadKey, $operationKey);
+            $result = $this->pipeline->signCompressSend($xml, 'infDPS', 'DPS', 'dpsXmlGZipB64', 'emit_nfse');
 
             if (ProcessingMessage::hasApiError($result)) {
                 $erros = ProcessingMessage::fromApiResult($result);
@@ -122,5 +112,23 @@ final readonly class NfseEmitter implements EmitsNfse
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
             );
         });
+    }
+
+    /**
+     * @phpstan-param DpsData|DpsDataArray $data
+     *
+     * @throws NfseException sempre: a operação não tem implementação possível a
+     *                       partir de uma DPS. Lançada na entrada, antes de
+     *                       qualquer evento ou requisição.
+     */
+    public function emitirDecisaoJudicial(DpsData|array $data): NfseResponse
+    {
+        throw new NfseException(
+            'emitirDecisaoJudicial() não é suportado por este SDK. O endpoint decisao-judicial/nfse '
+            .'recebe o documento NFS-e completo — NFSeBypassPostRequest.xmlGZipB64 é "Documento XML da NFSe" '
+            .'(SefinNacional-swagger.json) —, não uma DPS: em TCInfNFSe a DPS é apenas o último filho, ao lado '
+            .'de nNFSe, nDFSe, cStat, dhProc e dos valores já apurados, e ambGer admite somente 1-Prefeitura '
+            .'ou 2-Sistema Nacional. Emitir por decisão judicial cabe a quem gera a NFS-e.'
+        );
     }
 }
