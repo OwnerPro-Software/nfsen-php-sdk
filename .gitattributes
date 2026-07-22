@@ -9,7 +9,19 @@
 /CONTRIBUTING.md    export-ignore
 /SECURITY.md        export-ignore
 /phpstan.neon       export-ignore
+/phpstan-examples.neon export-ignore
 /psalm.xml          export-ignore
 /pint.json          export-ignore
 /rector.php         export-ignore
 /phpunit.xml        export-ignore
+/tools              export-ignore
+# Referência da NT 008 (1,2 MB): consumida só por tools/extract-nt008.py e
+# pelos links do README — os assets de runtime do DANFSE são template.php,
+# template.css e logo-nfse.png, que continuam no pacote.
+/storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf export-ignore
+# Leiaute v1.00 (~200 KB): nenhum código do SDK o valida — o runtime usa
+# DPS_v1.01.xsd e pedRegEvento_v1.01.xsd, cujos imports são todos v1.01 +
+# xmldsig. Fica no repositório como referência histórica. Os swaggers e os
+# XSDs v1.01 restantes seguem no pacote: os comentários do código citam os
+# primeiros como fonte do contrato, e XsdValidator é @api sobre os segundos.
+/storage/schemes/*_v1.00.xsd export-ignore

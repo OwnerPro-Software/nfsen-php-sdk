@@ -181,6 +181,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **O pacote dist encolhe pela metade (2,6 MB → 1,2 MB).** Entram no `export-ignore` do `.gitattributes`: o PDF de referência da NT 008 (`storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf`, ~46% do archive), o script `tools/extract-nt008.py`, o `phpstan-examples.neon` (cujo alvo `examples/` já era excluído) e os XSDs do leiaute v1.00 (~200 KB), que nenhum código do SDK valida — o runtime usa `DPS_v1.01.xsd` e `pedRegEvento_v1.01.xsd`, cujos imports são todos v1.01. Os swaggers e os XSDs v1.01 seguem no pacote: os comentários do código os citam como fonte do contrato, e `XsdValidator` é `@api` sobre eles; os assets do DANFSE (`template.php`, `template.css`, `logo-nfse.png`) também. Tudo segue no repositório como referência.
+
 - **BREAKING — `NfseData::$tomador` passou de `DanfseParticipante` para `?DanfseParticipante`.** A nota 2 do item 2.4.5 manda reduzir o bloco a uma única frase quando a NFS-e não traz tomador — "TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e" —, e o DANFSe desenhava o bloco inteiro com oito traços, o que afirma que os campos existem e vieram vazios. `intermediario` e `destinatario` já eram anuláveis e já colapsavam assim; o tomador passa a seguir o mesmo padrão, em vez de ganhar um sinalizador à parte para o mesmo problema.
 
   **Migração.** Quem lê `$data->tomador->nome` sem checar nulo quebra numa NFS-e sem `infDPS/toma` — use `?->` ou teste `=== null` antes. O bloco colapsado devolve 1,42 cm de altura aos quadros "Descrição do Serviço" e "Informações Complementares", que é o destino que o item 2.3.1 dá ao espaço liberado.
