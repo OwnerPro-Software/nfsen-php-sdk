@@ -16,8 +16,15 @@ trait DispatchesEvents
             try {
                 event($event);
             } catch (Throwable $e) {
+                // report() também resolve do container: com o framework
+                // instalado mas não bootado (standalone), lançaria — e evento
+                // é best-effort, jamais pode derrubar a operação.
                 if (function_exists('report')) {
-                    report($e);
+                    try {
+                        report($e);
+                    } catch (Throwable) {
+                        // sem handler disponível, a falha fica sem reporte
+                    }
                 }
             }
         }

@@ -5,9 +5,12 @@ use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Adapters\NfseHttpClient;
+use OwnerPro\Nfsen\Exceptions\CommunicationException;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
@@ -721,4 +724,39 @@ it('getResponse returns HttpResponse on 200 with empty json object body', functi
         ->statusCode->toBe(200)
         ->body->toBe('{}');
     expect($response->json)->toBe([]);
+});
+
+it('sends requests without a facade root, as forStandalone() requires', function () {
+    $app = Facade::getFacadeApplication();
+    Facade::clearResolvedInstances();
+    Facade::setFacadeApplication(null);
+
+    try {
+        $client = new NfseHttpClient(makeTestCertificate(), timeout: 1, connectTimeout: 1);
+
+        // Sem facade não há fake: o alvo é uma porta local fechada, e a falha
+        // de conexão tipada prova que a requisição saiu do adapter — antes,
+        // morria em RuntimeException("A facade root has not been set.").
+        expect(fn () => $client->head('http://127.0.0.1:1/nfse'))
+            ->toThrow(CommunicationException::class);
+    } finally {
+        Facade::setFacadeApplication($app);
+    }
+});
+
+it('shares the facade factory under Laravel so Http::fake() after construction still intercepts', function () {
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30);
+
+    Http::fake(['*' => Http::response(['ok' => true], 200)]);
+
+    expect($client->get('http://127.0.0.1:1/nfse'))->toBe(['ok' => true]);
+});
+
+it('accepts an injected factory, letting standalone consumers fake without the facade', function () {
+    $factory = new Factory;
+    $factory->fake(['*' => Factory::response(['ok' => true], 200)]);
+
+    $client = new NfseHttpClient(makeTestCertificate(), timeout: 30, http: $factory);
+
+    expect($client->get('http://127.0.0.1:1/nfse'))->toBe(['ok' => true]);
 });

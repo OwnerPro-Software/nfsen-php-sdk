@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Container\Container;
 use Illuminate\Support\Facades\Event;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
 use OwnerPro\Nfsen\Contracts\Driven\SendsRawHttpRequests;
@@ -467,4 +468,25 @@ it('dispatches NfseFailed when executeAndDownload throws', function (): void {
     }
 
     Event::assertDispatched(NfseFailed::class, fn (NfseFailed $e): bool => $e->operacao === 'consultar' && $e->mensagem === 'Connection failed');
+});
+
+// --- eventos sem container bootado (standalone com framework instalado) ---
+
+it('keeps the operation alive when neither events nor report resolve from the container', function (): void {
+    // Com laravel/framework instalado mas nenhum app bootado (standalone),
+    // event() e report() existem porém lançam BindingResolutionException ao
+    // resolver o container — evento é best-effort e não pode derrubar a consulta.
+    $original = Container::getInstance();
+    Container::setInstance(new Container);
+
+    try {
+        $pipeline = buildResponsePipeline(getResult: ['chaveAcesso' => 'CHAVE123']);
+
+        $response = $pipeline->executeAndDecompress('https://example.com/nfse/CHAVE123');
+
+        expect($response->sucesso)->toBeTrue()
+            ->and($response->chave)->toBe('CHAVE123');
+    } finally {
+        Container::setInstance($original);
+    }
 });

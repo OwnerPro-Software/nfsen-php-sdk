@@ -7,8 +7,10 @@ namespace OwnerPro\Nfsen\Adapters;
 use Closure;
 use GuzzleHttp\Exception\TransferException;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Http;
 use NFePHP\Common\Certificate;
 use OwnerPro\Nfsen\Contracts\Driven\SendsHttpRequests;
@@ -27,13 +29,37 @@ use SensitiveParameter;
  */
 final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRequests
 {
+    private Factory $http;
+
     public function __construct(
         #[SensitiveParameter] private Certificate $certificate,
         private int $timeout = 30,
         private int $connectTimeout = 10,
         private bool $sslVerify = true,
         private TempFileFactory $tempFileFactory = new TempFileFactory,
-    ) {}
+        ?Factory $http = null,
+    ) {
+        $this->http = $http ?? $this->resolveFactory();
+    }
+
+    /**
+     * O facade Http exige um app Laravel bootado — sem ele, a primeira
+     * requisição em `forStandalone()` morria com "A facade root has not been
+     * set.". Standalone, portanto, instancia a própria Factory; sob Laravel,
+     * usa a mesma instância do facade para que o `Http::fake()` dos
+     * consumidores continue interceptando.
+     */
+    private function resolveFactory(): Factory
+    {
+        if (Facade::getFacadeApplication() === null) {
+            return new Factory;
+        }
+
+        /** @var Factory $factory */
+        $factory = Http::getFacadeRoot();
+
+        return $factory;
+    }
 
     /**
      * @param  array<string, mixed>  $payload
@@ -53,7 +79,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     public function head(string $url): int
     {
         return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): int {
-            $response = $this->guardTransport(fn (): Response => Http::connectTimeout($this->connectTimeout)
+            $response = $this->guardTransport(fn (): Response => $this->http->connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->withOptions([
                     'verify' => $this->sslVerify,
@@ -74,7 +100,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     public function getBytes(string $url): string
     {
         return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): string {
-            $response = $this->guardTransport(fn (): Response => Http::connectTimeout($this->connectTimeout)
+            $response = $this->guardTransport(fn (): Response => $this->http->connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->withOptions([
                     'verify' => $this->sslVerify,
@@ -95,7 +121,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     public function getResponse(string $url): HttpResponse
     {
         return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($url): HttpResponse {
-            $response = $this->guardTransport(fn (): Response => Http::connectTimeout($this->connectTimeout)
+            $response = $this->guardTransport(fn (): Response => $this->http->connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->acceptJson()
                 ->withOptions([
@@ -136,7 +162,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
     private function request(string $method, string $url, array $payload): array
     {
         return $this->withCertificateFiles(function (string $certPath, string $keyPath) use ($method, $url, $payload): array {
-            $pending = Http::connectTimeout($this->connectTimeout)
+            $pending = $this->http->connectTimeout($this->connectTimeout)
                 ->timeout($this->timeout)
                 ->acceptJson()
                 ->withOptions([
