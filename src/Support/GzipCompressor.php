@@ -9,6 +9,15 @@ use Throwable;
 
 class GzipCompressor
 {
+    /**
+     * Teto de descompressão. O conteúdo gzip vem do servidor e, sem limite,
+     * uma bomba de descompressão (razões da ordem de 1000:1, CWE-409)
+     * expandiria GB em memória a partir de poucos MB de resposta. 50 MB
+     * comporta com folga qualquer XML de NFS-e ou documento de distribuição;
+     * acima disso gzdecode() retorna false e cai no contrato normal de erro.
+     */
+    private const int MAX_DECOMPRESSED_BYTES = 52_428_800; // @pest-mutate-ignore IncrementInteger,DecrementInteger — ±1 byte no teto não é observável por teste
+
     public function __invoke(string $data): string|false
     {
         return gzencode($data);
@@ -26,7 +35,7 @@ class GzipCompressor
         }
 
         try {
-            $decompressed = gzdecode($decoded);
+            $decompressed = gzdecode($decoded, self::MAX_DECOMPRESSED_BYTES);
             // @codeCoverageIgnoreStart
         } catch (Throwable) { // @pest-mutate-ignore
             $decompressed = false;
