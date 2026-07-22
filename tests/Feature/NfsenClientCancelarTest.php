@@ -6,6 +6,8 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
@@ -132,6 +134,44 @@ it('cancelar throws IndeterminateResultException on server error', function () {
         CodigoJustificativaCancelamento::ErroEmissao,
         'Erro na emissao da nota fiscal'
     ))->toThrow(IndeterminateResultException::class);
+});
+
+it('cancelar keeps the result indeterminate when nothing proves the event was registered', function (array $body, int $status) {
+    // EventosPostResponseSucesso declara eventoXmlGZipB64 required: sem
+    // rejeição estruturada e sem o recibo, sucesso: true seria silencioso.
+    Http::fake(['*' => Http::response($body, $status)]);
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
+    ))->toThrow(IndeterminateResultException::class, 'eventoXmlGZipB64');
+})->with([
+    '2xx sem eventoXmlGZipB64 (fora do contrato do swagger)' => [['tipoAmbiente' => 2], 201],
+    '2xx com eventoXmlGZipB64 vazio' => [['eventoXmlGZipB64' => ''], 201],
+    '4xx de proxy/WAF com JSON sem envelope da SEFIN' => [['message' => 'not found'], 404],
+]);
+
+it('cancelar dispatches NfseFailed, never NfseCancelled, when the event receipt is missing', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['tipoAmbiente' => 2], 201)]);
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    try {
+        $client->cancelar(
+            '12345678901234567890123456789012345678901234567890',
+            CodigoJustificativaCancelamento::ErroEmissao,
+            'Erro na emissao da nota fiscal'
+        );
+    } catch (IndeterminateResultException) {
+        // esperado
+    }
+
+    Event::assertDispatched(NfseFailed::class);
+    Event::assertNotDispatched(NfseCancelled::class);
 });
 
 it('cancelar succeeds and reports error when event listener throws', function () {

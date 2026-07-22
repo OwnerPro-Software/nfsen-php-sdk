@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Pipeline\Concerns;
 
 use OwnerPro\Nfsen\Events\NfseRejected;
+use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
 use OwnerPro\Nfsen\Support\GzipCompressor;
@@ -49,12 +50,25 @@ trait ParsesEventResponse
             );
         }
 
+        $eventoXml = $result['eventoXmlGZipB64'] ?? null;
+
+        // EventosPostResponseSucesso (SefinNacional-swagger.json) declara
+        // eventoXmlGZipB64 obrigatório: sem rejeição estruturada E sem o
+        // recibo, nada prova que o evento foi registrado — indeterminado,
+        // nunca sucesso silencioso (mesma régua de consultar()->eventos()).
+        // Chega aqui tanto o 2xx fora do contrato quanto o 4xx de proxy/WAF
+        // com JSON próprio que request() devolve para o resgate SEM_CHAVE
+        // do emitter — resgate que evento nenhum tem.
+        if (! is_string($eventoXml) || $eventoXml === '') {
+            throw IndeterminateResultException::fromMissingEventReceipt('eventoXmlGZipB64');
+        }
+
         $this->dispatchEvent($successEvent);
 
         return new NfseResponse(
             sucesso: true,
             chave: $chave,
-            xml: GzipCompressor::decompressB64($result['eventoXmlGZipB64'] ?? null),
+            xml: GzipCompressor::decompressB64($eventoXml),
             tipoAmbiente: $result['tipoAmbiente'] ?? null,
             versaoAplicativo: $result['versaoAplicativo'] ?? null,
             dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,

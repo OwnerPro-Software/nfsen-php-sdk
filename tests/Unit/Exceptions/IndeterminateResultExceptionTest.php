@@ -111,3 +111,13 @@ it('fromMissingResponseField sets body phase and names status and field', functi
         ->and($exception->getMessage())->toContain('HTTP 200')
         ->and($exception->getMessage())->toContain('"eventoXmlGZipB64"');
 });
+
+it('fromMissingEventReceipt sets body phase, names the field and points to the reconciliation flow', function () {
+    $exception = IndeterminateResultException::fromMissingEventReceipt('eventoXmlGZipB64');
+
+    expect($exception->phase)->toBe('body')
+        ->and($exception->getPrevious())->toBeNull()
+        ->and($exception->getMessage())->toStartWith('Resultado indeterminado')
+        ->and($exception->getMessage())->toContain('"eventoXmlGZipB64"')
+        ->and($exception->getMessage())->toEndWith('Reconcilie com consultar()->eventos().');
+});

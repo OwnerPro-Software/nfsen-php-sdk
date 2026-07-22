@@ -102,6 +102,25 @@ final class IndeterminateResultException extends CommunicationException
     }
 
     /**
+     * Resposta a um POST de evento sem rejeição estruturada e sem o recibo
+     * obrigatório: `EventosPostResponseSucesso` (SefinNacional-swagger.json)
+     * declara `eventoXmlGZipB64` required, então a ausência do campo é quebra
+     * de contrato — nada prova que o evento foi registrado. O status HTTP não
+     * chega a este ponto do pipeline; por isso a mensagem não o carrega.
+     */
+    public static function fromMissingEventReceipt(string $field): self
+    {
+        return new self(
+            sprintf(
+                'Resultado indeterminado: a resposta ao evento não trouxe rejeição estruturada nem o campo obrigatório "%s"; '.
+                'não há evidência de que o evento tenha sido registrado. Reconcilie com consultar()->eventos().',
+                $field,
+            ),
+            'body',
+        );
+    }
+
+    /**
      * 5xx sem rejeição estruturada da SEFIN numa operação que altera estado.
      *
      * Sem `phase`: nenhuma fase de transporte falhou — a resposta chegou inteira.

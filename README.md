@@ -587,9 +587,11 @@ cobre cinco situações:
    servidor processou, mas o resultado não pôde ser lido;
 3. **Resposta 2xx com corpo ilegível** (JSON inválido ou vazio) — o servidor
    confirmou o processamento, mas o resultado não pôde ser interpretado;
-4. **Resposta 2xx com JSON válido porém sem o campo obrigatório da operação**
-   (ex.: `consultar()->eventos()` sem `eventoXmlGZipB64`) — shape que não ocorre
-   em operação normal; ausência comprovada é sinalizada por HTTP 404, nunca por
+4. **Resposta com JSON válido porém sem o campo obrigatório da operação** —
+   um 2xx de `consultar()->eventos()` sem `eventoXmlGZipB64`, ou a resposta ao
+   POST do evento em `cancelar()` sem rejeição estruturada nem o recibo
+   `eventoXmlGZipB64`, qualquer que seja o status — shape que não ocorre em
+   operação normal; ausência comprovada é sinalizada por HTTP 404, nunca por
    corpo vazio;
 5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
    `emitirDecisaoJudicial`, `cancelar`, `substituir`) **sem rejeição estruturada
