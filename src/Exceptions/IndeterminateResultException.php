@@ -102,6 +102,23 @@ final class IndeterminateResultException extends CommunicationException
     }
 
     /**
+     * 2xx de consulta sem o campo obrigatório da operação, na rota em que o
+     * status não acompanha o corpo (`SendsHttpRequests::get()` devolve só o
+     * array — e ela só entrega corpo de 2xx ou de rejeição estruturada, já
+     * tratada antes): corpo legível, resultado ininterpretável.
+     */
+    public static function fromMissingQueryField(string $field): self
+    {
+        return new self(
+            sprintf(
+                'Resultado indeterminado: o servidor respondeu 2xx sem o campo obrigatório "%s"; a resposta não pôde ser interpretada.',
+                $field,
+            ),
+            'body',
+        );
+    }
+
+    /**
      * Resposta a um POST de evento sem rejeição estruturada e sem o recibo
      * obrigatório: `EventosPostResponseSucesso` (SefinNacional-swagger.json)
      * declara `eventoXmlGZipB64` required, então a ausência do campo é quebra

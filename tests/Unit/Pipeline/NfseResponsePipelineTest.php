@@ -108,13 +108,33 @@ it('returns successful response with decompressed xml and metadata on executeAnd
 it('dispatches NfseRequested and NfseQueried on successful executeAndDecompress', function (): void {
     Event::fake();
 
-    $pipeline = buildResponsePipeline(getResult: ['chaveAcesso' => 'ABC']);
+    $pipeline = buildResponsePipeline(getResult: [
+        'chaveAcesso' => 'ABC',
+        'nfseXmlGZipB64' => base64_encode((string) gzencode('<NFSe/>')),
+    ]);
 
     $pipeline->executeAndDecompress('https://example.com/nfse');
 
     Event::assertDispatched(NfseRequested::class, fn (NfseRequested $e): bool => $e->operacao === 'consultar');
     Event::assertDispatched(NfseQueried::class, fn (NfseQueried $e): bool => $e->operacao === 'consultar');
 });
+
+it('keeps a 2xx without nfseXmlGZipB64 indeterminate on executeAndDecompress', function (array $body): void {
+    // NFSeGetResponseSucesso declara o campo required no 200: sem o XML não
+    // há sucesso a relatar — NfseFailed no lugar de NfseQueried.
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(getResult: $body);
+
+    expect(fn () => $pipeline->executeAndDecompress('https://example.com/nfse'))
+        ->toThrow(IndeterminateResultException::class, 'nfseXmlGZipB64');
+
+    Event::assertDispatched(NfseFailed::class);
+    Event::assertNotDispatched(NfseQueried::class);
+})->with([
+    'campo ausente' => [['chaveAcesso' => 'ABC']],
+    'campo vazio' => [['chaveAcesso' => 'ABC', 'nfseXmlGZipB64' => '']],
+]);
 
 it('returns error response when erros key is present on executeAndDecompress', function (): void {
     Event::fake();
@@ -480,7 +500,10 @@ it('keeps the operation alive when neither events nor report resolve from the co
     Container::setInstance(new Container);
 
     try {
-        $pipeline = buildResponsePipeline(getResult: ['chaveAcesso' => 'CHAVE123']);
+        $pipeline = buildResponsePipeline(getResult: [
+            'chaveAcesso' => 'CHAVE123',
+            'nfseXmlGZipB64' => base64_encode((string) gzencode('<NFSe/>')),
+        ]);
 
         $response = $pipeline->executeAndDecompress('https://example.com/nfse/CHAVE123');
 

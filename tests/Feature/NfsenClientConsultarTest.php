@@ -141,6 +141,17 @@ it('consultar()->nfse throws NfseException on invalid gzip response', function (
         ->toThrow(NfseException::class, 'descomprimir');
 });
 
+it('consultar()->nfse keeps a 200 without nfseXmlGZipB64 indeterminate', function () {
+    // NFSeGetResponseSucesso declara chaveAcesso e nfseXmlGZipB64 required no
+    // 200: sem o XML, "sucesso" entregaria xml null a quem encadeia toPdf().
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123'], 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->nfse(makeChaveAcesso()))
+        ->toThrow(IndeterminateResultException::class, 'nfseXmlGZipB64');
+});
+
 it('consultar()->verificarDps returns true on 200', function () {
     Http::fake(['*' => Http::response('', 200)]);
 

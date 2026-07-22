@@ -219,10 +219,12 @@ use OwnerPro\Nfsen\Enums\TipoEvento;
 
 // Consultar NFSe por chave de acesso
 $response = $client->consultar()->nfse($chave);
-// sucesso: true apenas em HTTP 2xx com corpo legível. Qualquer outro status
-// (401, 404, 429, 5xx…) lança HttpException — inclusive quando o corpo é um
-// JSON de gateway sem o envelope `erros`/`erro` da SEFIN. Um 5xx que traz o
-// envelope é rejeição definitiva e volta como sucesso: false com os erros.
+// sucesso: true apenas em HTTP 2xx com corpo legível e com `nfseXmlGZipB64`
+// presente (um 2xx sem ele não ocorre em operação normal e lança
+// IndeterminateResultException — nunca vira sucesso com xml: null). Qualquer
+// outro status (401, 404, 429, 5xx…) lança HttpException — inclusive quando o
+// corpo é um JSON de gateway sem o envelope `erros`/`erro` da SEFIN. Um 5xx
+// que traz o envelope é rejeição definitiva e volta como sucesso: false.
 
 // Consultar DPS por ID
 $response = $client->consultar()->dps($idDps);
@@ -590,11 +592,12 @@ cobre cinco situações:
 3. **Resposta 2xx com corpo ilegível** (JSON inválido ou vazio) — o servidor
    confirmou o processamento, mas o resultado não pôde ser interpretado;
 4. **Resposta com JSON válido porém sem o campo obrigatório da operação** —
-   um 2xx de `consultar()->eventos()` sem `eventoXmlGZipB64`, um 2xx de
-   `consultar()->dps()` sem `chaveAcesso`, ou a resposta ao POST do evento em
-   `cancelar()` sem rejeição estruturada nem o recibo `eventoXmlGZipB64`,
-   qualquer que seja o status — shape que não ocorre em operação normal;
-   ausência comprovada é sinalizada por HTTP 404, nunca por corpo vazio;
+   um 2xx de `consultar()->nfse()` sem `nfseXmlGZipB64`, de
+   `consultar()->eventos()` sem `eventoXmlGZipB64` ou de `consultar()->dps()`
+   sem `chaveAcesso`, ou a resposta ao POST do evento em `cancelar()` sem
+   rejeição estruturada nem o recibo `eventoXmlGZipB64`, qualquer que seja o
+   status — shape que não ocorre em operação normal; ausência comprovada é
+   sinalizada por HTTP 404, nunca por corpo vazio;
 5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
    `emitirDecisaoJudicial`, `cancelar`, `substituir`) **sem rejeição estruturada
    da SEFIN no corpo** — o erro pode ter vindo de um proxy antes da SEFIN, ou da

@@ -65,12 +65,22 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
                 );
             }
 
+            $nfseXml = $result['nfseXmlGZipB64'] ?? null;
+
+            // NFSeGetResponseSucesso (SefinNacional-swagger.json) declara
+            // nfseXmlGZipB64 required no 200: sem o XML — o único fruto da
+            // consulta — não há sucesso a relatar. Mesma régua de eventos()
+            // e dps(); só o 2xx chega aqui (get() lança nos demais casos).
+            if (! is_string($nfseXml) || $nfseXml === '') {
+                throw IndeterminateResultException::fromMissingQueryField('nfseXmlGZipB64');
+            }
+
             $this->dispatchEvent(new NfseQueried('consultar'));
 
             return new NfseResponse(
                 sucesso: true,
                 chave: $result['chaveAcesso'] ?? null,
-                xml: GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null),
+                xml: GzipCompressor::decompressB64($nfseXml),
                 tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
