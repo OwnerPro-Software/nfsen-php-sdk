@@ -23,24 +23,16 @@ it('produces HTML containing chave de acesso', function (): void {
     expect($html)->toContain('33033021211222333000181000000000001026010000010000');
 });
 
-it('embeds QR code pointing to production consulta URL when ambiente is PRODUCAO', function (): void {
+// Item 2.4.3 fixa um endereço só, sem exceção para o ambiente de teste.
+it('embeds QR code pointing to the consulta URL the notice fixes', function (NfseAmbiente $ambiente): void {
     $r = new DanfseHtmlRenderer(fakeQrGen());
 
-    $html = $r->render(sampleData(NfseAmbiente::PRODUCAO));
+    $html = $r->render(sampleData($ambiente));
 
     expect($html)->toContain('FAKEQR_');
     $expectedPayload = 'https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=33033021211222333000181000000000001026010000010000';
     expect($html)->toContain(base64_encode($expectedPayload));
-});
-
-it('embeds QR code pointing to homologacao consulta URL when ambiente is HOMOLOGACAO', function (): void {
-    $r = new DanfseHtmlRenderer(fakeQrGen());
-
-    $html = $r->render(sampleData(NfseAmbiente::HOMOLOGACAO));
-
-    $expectedPayload = 'https://hom.nfse.fazenda.gov.br/ConsultaPublica/?tpc=1&chave=33033021211222333000181000000000001026010000010000';
-    expect($html)->toContain(base64_encode($expectedPayload));
-});
+})->with([NfseAmbiente::PRODUCAO, NfseAmbiente::HOMOLOGACAO]);
 
 it('marks a homologacao NFS-e as legally void in the header', function (): void {
     $r = new DanfseHtmlRenderer(fakeQrGen());
