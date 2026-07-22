@@ -21,7 +21,7 @@ A divergência 10 só apareceu depois que a 3 caiu: foi a rasterização feita p
 | 2 | Média | 2.4.5, nota 12 | Campo "E-mail" sai vazio em vez de `-` | **corrigida** |
 | 3 | ~~Média~~ | 2.2.3 + Anexo I | ~~Sem linhas divisórias internas (grade) nos blocos~~ | **retirada — era falsa** |
 | 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente | **corrigida** |
-| 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT | aberta |
+| 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT | **corrigida** |
 | 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" | aberta |
 | 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | aberta |
 | 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT | aberta |
@@ -146,6 +146,14 @@ O destinatário (`template.php:277-281`) e o intermediário (`template.php:330-3
 **Ressalva interpretativa:** o item 2.3.1 abre com "*Poderão* ser feitas as seguintes supressões", o que é permissivo, enquanto a nota 2 usa o imperativo "informar". A leitura conservadora (colapsar) é a que o Anexo I ilustra e a que o próprio código já adota para os outros dois blocos — a inconsistência interna é o argumento mais forte para corrigir.
 
 **Nota para quem for implementar:** a correção da divergência 2 removeu o único ponto do código que distinguia "tomador ausente" de "tomador presente e vazio". O colapso precisará de um sinalizador explícito em `NfseData`, na forma do `destinatarioEhTomador` que já existe — e não do `count() === 0` que havia em `tomador()`, que nunca chegou a alimentar o template.
+
+> **Corrigida**, mas não como a nota acima previa. O sinalizador seria um segundo mecanismo para um problema que o próprio DTO já resolve: `intermediario` e `destinatario` são `?DanfseParticipante`, e o template já os colapsa quando nulos. `tomador` passou a ser nulo do mesmo jeito — um bool ao lado de um participante de traços seria estado redundante.
+>
+> Isso devolve ao `ParticipanteBuilder` o guard que a correção da divergência 2 tinha matado, agora com efeito observável (nulo contra objeto) e sem supressão de mutante.
+>
+> Medido: sem `toma`, o documento encolhe de 19,45 cm para 18,03 cm — 1,42 cm devolvidos aos quadros elásticos, a maior folga das correções até aqui.
+>
+> **É mudança incompatível:** `NfseData::$tomador` deixou de ser garantido. Quem lê `$data->tomador->nome` sem checar nulo quebra numa NFS-e sem tomador. README atualizado; pede nota no CHANGELOG.
 
 ---
 
@@ -312,7 +320,7 @@ Isto **não é não conformidade**: o item 2.1 é explícito — "Embora os tama
 3. ~~**Divergência 3** (grade interna)~~ — retirada; não havia divergência.
 4. ~~**Divergência 4** (nota 6)~~ — feita.
 5. ~~**Divergência 10** (colunas erradas)~~ — feita.
-6. **Divergências 5 a 7** — colapsos de bloco; ganham altura para os quadros elásticos.
+6. ~~**Divergência 5**~~ — feita. Restam a 6 e a 7; só a 7 ainda ganha altura.
 7. **Divergências 8 e 9** — documentar a 8; a 9 é polimento.
 
 Vale acrescentar à suíte um teste de disposição que ancore as ordenadas relativas dos rótulos dentro de cada bloco de participante — é exatamente o tipo de regressão que o `Nt008GeometryTest` foi criado para pegar e que hoje passa despercebida, porque ele mede o cabeçalho e o QR Code, mas não o miolo. As divergências 1 e 10 são as duas faces do mesmo buraco de cobertura: uma na ordenada, outra na abscissa.

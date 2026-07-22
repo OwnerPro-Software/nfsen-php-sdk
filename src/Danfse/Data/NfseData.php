@@ -43,7 +43,13 @@ final readonly class NfseData
          */
         public string $municipioEmitente,
         public DanfseParticipante $emitente,
-        public DanfseParticipante $tomador,
+        /**
+         * Bloco "TOMADOR / ADQUIRENTE"; `null` quando a NFS-e não traz `infDPS/toma`.
+         *
+         * A NT 008, item 2.4.5, nota 2, manda informar nesse caso "apenas" a frase de
+         * não identificado — daí o nulo, e não um participante só de traços.
+         */
+        public ?DanfseParticipante $tomador,
         public ?DanfseParticipante $intermediario,
         /** Bloco "DESTINATÁRIO DA OPERAÇÃO" (`infDPS/IBSCBS/dest`); null quando ausente. */
         public ?DanfseParticipante $destinatario,

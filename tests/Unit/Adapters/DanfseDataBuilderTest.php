@@ -566,15 +566,21 @@ it('throws a typed error when infDPS carries no required group at all', function
     'infDPS totalmente vazio' => ['<infDPS/>'],
 ]);
 
-it('returns empty tomador when toma block is absent', function () {
+// NT 008, item 2.4.5, nota 2: sem dados de tomador o bloco traz "apenas" a frase de
+// não identificado. Um participante de traços diria que os campos existem e vieram
+// vazios, que é outra coisa — daí o nulo.
+it('reports no tomador at all when the toma block is absent', function () {
     $xml = preg_replace('|<toma>.*?</toma>|s', '', $this->xml);
     $data = $this->builder->build((string) $xml);
 
-    expect($data->tomador->nome)->toBe('-');
-    expect($data->tomador->cnpjCpf)->toBe('-');
-    expect($data->tomador->municipio)->toBe('-');
-    expect($data->tomador->email)->toBe('-');
-    expect($data->tomador->endereco)->toBe('-');
+    expect($data->tomador)->toBeNull();
+});
+
+it('still builds the tomador block when toma carries data', function () {
+    $data = $this->builder->build($this->xml);
+
+    expect($data->tomador)->not->toBeNull()
+        ->and($data->tomador?->nome)->toBe('CLIENTE FICTICIO COMERCIO S.A.');
 });
 
 it('builds tomador gracefully when end block is absent', function () {

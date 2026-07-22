@@ -188,6 +188,11 @@
     </div>
 
     <!-- Tomador -->
+    <?php if ($data->tomador === null): ?>
+    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+        TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e
+    </div>
+    <?php else: ?>
     <div class="bordered-section">
         <table>
             <tr>
@@ -233,6 +238,7 @@
             </tr>
         </table>
     </div>
+    <?php endif; ?>
 
     <!-- Destinatário da Operação -->
     <?php if ($data->destinatarioEhTomador): ?>

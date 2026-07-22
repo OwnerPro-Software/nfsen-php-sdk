@@ -797,8 +797,8 @@ echo $data->tribIbsCbs->valorTotalIbs;   // "R$ 108,00"
 | `emitidaPor` | `string` | Descrição de `tpEmit` |
 | `ambienteGerador` | `string` | Descrição de `ambGer` |
 | `municipioEmitente` | `string` | `xLocEmi / UF`; vazio quando a NT manda não exibir |
-| `emitente`, `tomador` | `DanfseParticipante` | Prestador e tomador |
-| `intermediario`, `destinatario` | `?DanfseParticipante` | `null` quando ausentes |
+| `emitente` | `DanfseParticipante` | Prestador |
+| `tomador`, `intermediario`, `destinatario` | `?DanfseParticipante` | `null` quando ausentes; o bloco vira a frase de "não identificado" da NT |
 | `destinatarioEhTomador` | `bool` | `indDest = 0` |
 | `servico` | `DanfseServico` | Códigos e descrições do serviço |
 | `tribMun`, `tribFed`, `tribIbsCbs` | DTOs de tributação | ISSQN, federal e IBS/CBS |

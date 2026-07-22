@@ -227,6 +227,31 @@ it('states the destinatário is the tomador instead of calling it unidentified',
     expect($html)->not->toContain('DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO');
 });
 
+it('collapses the tomador block to the notice wording when there is no tomador', function (): void {
+    // NT 008, item 2.4.5, nota 2: o bloco traz "apenas" a frase — não os campos vazios.
+    $base = sampleData();
+    $data = new NfseData(
+        chaveAcesso: $base->chaveAcesso, numeroNfse: $base->numeroNfse,
+        competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
+        numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
+        ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
+        emitidaPor: $base->emitidaPor, ambienteGerador: $base->ambienteGerador,
+        municipioEmitente: $base->municipioEmitente,
+        emitente: $base->emitente, tomador: null, intermediario: null,
+        destinatario: null, destinatarioEhTomador: false,
+        servico: $base->servico, tribMun: $base->tribMun, tribFed: $base->tribFed,
+        tribIbsCbs: $base->tribIbsCbs, totais: $base->totais, totaisTributos: $base->totaisTributos,
+        informacoesComplementares: $base->informacoesComplementares,
+    );
+
+    $html = (new DanfseHtmlRenderer(fakeQrGen()))->render($data);
+
+    expect($html)->toContain('TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e');
+    expect($html)->not->toContain('TOMADOR / ADQUIRENTE');
+    // O bloco do prestador, que usa os mesmos rótulos, continua inteiro.
+    expect($html)->toContain('PRESTADOR / FORNECEDOR');
+});
+
 it('omits the PIS/COFINS row once the competência passes 2026', function (): void {
     // NT 008, item 2.4.5, nota 6: a linha marcada com *** no Anexo I só é impressa
     // para competência até o final do ano-calendário de 2026.

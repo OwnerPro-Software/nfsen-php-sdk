@@ -80,13 +80,18 @@ final readonly class ParticipanteBuilder
     }
 
     /**
-     * Bloco "TOMADOR / ADQUIRENTE".
+     * Bloco "TOMADOR / ADQUIRENTE"; `null` quando o XML não traz `toma`.
      *
-     * Ausente no XML, o nó chega vazio e sai daqui só com os traços que a nota 12 do
-     * item 2.4.5 exige — o mesmo que um atalho para "não identificado" produziria.
+     * A nota 2 do item 2.4.5 distingue os dois casos: tomador informado rende o bloco
+     * de campos, tomador ausente rende só a frase de não identificado. Um participante
+     * de traços não serve — diria que os campos existem e vieram vazios.
      */
-    public function tomador(SimpleXMLElement $toma): DanfseParticipante
+    public function tomador(SimpleXMLElement $toma): ?DanfseParticipante
     {
+        if ($toma->count() === 0) {
+            return null;
+        }
+
         return $this->deInfoPessoa($toma);
     }
 
