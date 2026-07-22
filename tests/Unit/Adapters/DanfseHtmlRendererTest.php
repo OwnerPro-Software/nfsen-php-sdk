@@ -227,6 +227,45 @@ it('states the destinatário is the tomador instead of calling it unidentified',
     expect($html)->not->toContain('DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO');
 });
 
+it('collapses the ISSQN block when the operation falls outside the tax', function (): void {
+    // NT 008, item 2.3.1: o bloco traz "apenas" a frase, e a altura devolvida vai para
+    // os quadros elásticos.
+    $base = sampleData();
+    $tribMun = new DanfseTributacaoMunicipal(
+        tributacaoIssqn: 'Não Incidência', municipioIncidencia: $base->tribMun->municipioIncidencia,
+        regimeEspecial: $base->tribMun->regimeEspecial, tipoImunidade: $base->tribMun->tipoImunidade,
+        suspensaoExigibilidade: $base->tribMun->suspensaoExigibilidade,
+        numeroProcessoSuspensao: $base->tribMun->numeroProcessoSuspensao,
+        beneficioMunicipal: $base->tribMun->beneficioMunicipal, calculoBM: $base->tribMun->calculoBM,
+        totalDeducoesReducoes: $base->tribMun->totalDeducoesReducoes,
+        exibeRegimeEImunidade: false, exibeBeneficioEDeducoes: false,
+        bcIssqn: $base->tribMun->bcIssqn, aliquota: $base->tribMun->aliquota,
+        retencaoIssqn: $base->tribMun->retencaoIssqn, issqnApurado: $base->tribMun->issqnApurado,
+        sujeitaAoIssqn: false,
+    );
+    $data = new NfseData(
+        chaveAcesso: $base->chaveAcesso, numeroNfse: $base->numeroNfse,
+        competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
+        numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
+        ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
+        emitidaPor: $base->emitidaPor, ambienteGerador: $base->ambienteGerador,
+        municipioEmitente: $base->municipioEmitente,
+        emitente: $base->emitente, tomador: $base->tomador, intermediario: null,
+        destinatario: null, destinatarioEhTomador: false,
+        servico: $base->servico, tribMun: $tribMun, tribFed: $base->tribFed,
+        tribIbsCbs: $base->tribIbsCbs, totais: $base->totais, totaisTributos: $base->totaisTributos,
+        informacoesComplementares: $base->informacoesComplementares,
+    );
+
+    $html = (new DanfseHtmlRenderer(fakeQrGen()))->render($data);
+
+    expect($html)->toContain('TRIBUTAÇÃO MUNICIPAL (ISSQN) - OPERAÇÃO NÃO SUJEITA AO ISSQN');
+    expect($html)->not->toContain('BC ISSQN');
+    expect($html)->not->toContain('Alíquota Aplicada');
+    // Os blocos vizinhos seguem inteiros: a supressão é deste, não da tributação toda.
+    expect($html)->toContain('TRIBUTAÇÃO FEDERAL (EXCETO CBS)');
+});
+
 it('collapses the tomador block to the notice wording when there is no tomador', function (): void {
     // NT 008, item 2.4.5, nota 2: o bloco traz "apenas" a frase — não os campos vazios.
     $base = sampleData();

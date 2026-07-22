@@ -300,6 +300,21 @@ it('falls back to tribMun/pAliq when pAliqAplic is absent', function () {
     expect($data->tribMun->aliquota)->toBe('2.00%');
 });
 
+// NT 008, item 2.3.1 e nota 4 do item 2.4.5. Imunidade e exportação também não
+// recolhem ISSQN, mas a NT reserva campo no bloco para as duas — colapsá-las apagaria
+// o tipo de imunidade e o país do resultado, que é o dado que as distingue.
+it('marks only Não Incidência as outside the ISSQN', function (string $tribISSQN, bool $sujeita) {
+    $xml = str_replace('<tribISSQN>1</tribISSQN>', "<tribISSQN>$tribISSQN</tribISSQN>", $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->sujeitaAoIssqn)->toBe($sujeita);
+})->with([
+    'operação tributável' => ['1', true],
+    'imunidade' => ['2', true],
+    'exportação de serviço' => ['3', true],
+    'não incidência' => ['4', false],
+]);
+
 it('extracts tribFed fields', function () {
     $data = $this->builder->build($this->xml);
 

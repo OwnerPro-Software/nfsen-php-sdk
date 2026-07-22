@@ -291,6 +291,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             aliquota: $pAliq !== '' ? $pAliq.'%' : '-',
             retencaoIssqn: TpRetISSQN::labelOf($this->str($tribMun->tpRetISSQN)),
             issqnApurado: $vISSQN !== '' ? $this->fmt->currency($vISSQN) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
+            sujeitaAoIssqn: TribISSQN::tryFrom($this->str($tribMun->tribISSQN)) !== TribISSQN::NaoIncidencia,
         );
     }
 

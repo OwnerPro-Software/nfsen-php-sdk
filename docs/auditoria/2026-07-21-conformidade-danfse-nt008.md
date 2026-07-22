@@ -23,7 +23,7 @@ A divergência 10 só apareceu depois que a 3 caiu: foi a rasterização feita p
 | 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente | **corrigida** |
 | 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT | **corrigida** |
 | 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" | aberta |
-| 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | aberta |
+| 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | **corrigida** |
 | 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT | aberta |
 | 9 | Cosmética | — | Alíquotas com ponto decimal (`2.00%`) num documento pt-BR | aberta |
 | 10 | Média | 2.2.4 + Anexo I | Dois campos numa coluna à esquerda da que o Anexo lhes dá | **corrigida** |
@@ -175,6 +175,12 @@ O template sempre renderiza o bloco completo (`template.php:371-452`). `TribISSQ
 
 Como o 2.3.1 é permissivo ("poderão"), imprimir o bloco com traços não é infração. É, porém, a oportunidade que a NT oferece para devolver altura aos quadros elásticos de "Descrição do Serviço" e "Informações Complementares" — que é justamente onde o pior caso do documento aperta.
 
+> **Corrigida**, colapsando **apenas** `tribISSQN = 4` (Não Incidência).
+>
+> Imunidade (2) e exportação de serviço (3) também não recolhem ISSQN e caberiam na letra de "operações às quais não haja a incidência". Não colapsam porque a NT reserva campo no bloco para as duas: "Tipo de Imunidade do ISSQN" existe só para a imunidade, e o país de `cPaisResult` entra em "Município / UF / País da Incidência" só na exportação. Colapsá-las apagaria do DANFSe justamente o dado que as distingue — a leitura larga tornaria dois campos da própria NT letra morta. O motivo está no docblock de `DanfseTributacaoMunicipal::$sujeitaAoIssqn`, não só aqui: é decisão que alguém vai querer reverter sem saber por quê.
+>
+> Medido: com `tribISSQN = 4` o documento cai de 19,45 cm para 17,46 cm — 1,99 cm devolvidos, a maior folga das correções. Somada à da divergência 5, uma NFS-e sem tomador e fora do ISSQN devolve cerca de 3,4 cm.
+
 ---
 
 ### 8 — URL do QR Code em homologação
@@ -320,8 +326,8 @@ Isto **não é não conformidade**: o item 2.1 é explícito — "Embora os tama
 3. ~~**Divergência 3** (grade interna)~~ — retirada; não havia divergência.
 4. ~~**Divergência 4** (nota 6)~~ — feita.
 5. ~~**Divergência 10** (colunas erradas)~~ — feita.
-6. ~~**Divergência 5**~~ — feita. Restam a 6 e a 7; só a 7 ainda ganha altura.
-7. **Divergências 8 e 9** — documentar a 8; a 9 é polimento.
+6. ~~**Divergências 5 e 7**~~ — feitas. Nenhuma das restantes mexe em altura.
+7. **Divergências 6, 8 e 9** — um rótulo, uma justificativa a documentar e um separador decimal.
 
 Vale acrescentar à suíte um teste de disposição que ancore as ordenadas relativas dos rótulos dentro de cada bloco de participante — é exatamente o tipo de regressão que o `Nt008GeometryTest` foi criado para pegar e que hoje passa despercebida, porque ele mede o cabeçalho e o QR Code, mas não o miolo. As divergências 1 e 10 são as duas faces do mesmo buraco de cobertura: uma na ordenada, outra na abscissa.
 
