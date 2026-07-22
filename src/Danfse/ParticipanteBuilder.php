@@ -69,7 +69,7 @@ final readonly class ParticipanteBuilder
             cnpjCpf: $identificacao,
             im: $this->firstOf($prest->IM, $emit->IM) ?: '-',
             telefone: $this->fmt->phone($this->firstOf($prest->fone, $emit->fone)),
-            email: $this->firstOf($prest->email, $emit->email),
+            email: $this->firstOf($prest->email, $emit->email) ?: '-',
             endereco: $endereco !== '' ? $endereco : '-',
             municipio: $this->municipioDoPrestador($endPrest, $enderEmit, $inf),
             cep: $this->fmt->cep($this->firstOf($endPrest?->endNac?->CEP, $enderEmit->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — end/endNac são opcionais no XSD.
@@ -79,13 +79,14 @@ final readonly class ParticipanteBuilder
         );
     }
 
-    /** Bloco "TOMADOR / ADQUIRENTE". Ausente, vira o bloco de "não identificado". */
+    /**
+     * Bloco "TOMADOR / ADQUIRENTE".
+     *
+     * Ausente no XML, o nó chega vazio e sai daqui só com os traços que a nota 12 do
+     * item 2.4.5 exige — o mesmo que um atalho para "não identificado" produziria.
+     */
     public function tomador(SimpleXMLElement $toma): DanfseParticipante
     {
-        if ($toma->count() === 0) {
-            return $this->naoIdentificado();
-        }
-
         return $this->deInfoPessoa($toma);
     }
 
@@ -107,11 +108,6 @@ final readonly class ParticipanteBuilder
         return $this->participanteDe($dest, '-');
     }
 
-    public function naoIdentificado(): DanfseParticipante
-    {
-        return new DanfseParticipante('-', '-', '-', '-', '-', '-', '-', '-');
-    }
-
     /**
      * Tomador e intermediário são ambos `TCInfoPessoa`: mesma forma, mesmos nomes de
      * tag, mesma regra de endereço. A única diferença é o nó de onde saem.
@@ -131,7 +127,7 @@ final readonly class ParticipanteBuilder
     private function participanteDe(SimpleXMLElement $pessoa, string $im): DanfseParticipante
     {
         $end = $pessoa->end;
-        $endNac = $end->endNac;
+        $endNac = $end?->endNac; // @pest-mutate-ignore RemoveNullSafeOperator — end é null quando o próprio participante falta no XML; sem o ?-> o acesso emite warning.
 
         $identificacao = ($this->identificacao)(
             $this->str($pessoa->CNPJ),
@@ -147,7 +143,7 @@ final readonly class ParticipanteBuilder
             cnpjCpf: $identificacao,
             im: $im,
             telefone: $this->fmt->phone($this->str($pessoa->fone)),
-            email: $this->str($pessoa->email),
+            email: $this->str($pessoa->email, '-'),
             endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
             municipio: Municipios::lookup($this->str($endNac?->cMun)), // @pest-mutate-ignore RemoveNullSafeOperator — endNac null quando <end> ausente.
             cep: $this->fmt->cep($this->str($endNac?->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.

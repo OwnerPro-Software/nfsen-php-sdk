@@ -103,6 +103,18 @@ it('preserves tomador email case', function () {
     expect($data->tomador->email)->toBe('CONTATO@clienteficticio.com.br');
 });
 
+// NT 008, item 2.4.5, nota 12: "Os campos sem informações no XML devem ser
+// preenchidos com um traço (-)". O e-mail era o único campo do bloco a sair em
+// branco, e é a nota que o obriga a acompanhar os vizinhos.
+it('returns dash for every email the XML leaves out', function () {
+    $xml = preg_replace('|<email>[^<]*</email>|', '', $this->xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->emitente->email)->toBe('-');
+    expect($data->tomador->email)->toBe('-');
+    expect($data->intermediario?->email)->toBe('-');
+});
+
 it('returns dash for emitente IM when empty', function () {
     $xml = str_replace('<IM>987654</IM>', '<IM></IM>', $this->xml);
     $data = $this->builder->build($xml);
@@ -536,8 +548,6 @@ it('returns empty tomador when toma block is absent', function () {
     expect($data->tomador->nome)->toBe('-');
     expect($data->tomador->cnpjCpf)->toBe('-');
     expect($data->tomador->municipio)->toBe('-');
-    // email é o único campo em que o participante vazio difere de um <toma> vazio lido
-    // campo a campo ('-' contra ''): é ele que prova que o early return aconteceu.
     expect($data->tomador->email)->toBe('-');
     expect($data->tomador->endereco)->toBe('-');
 });
@@ -634,7 +644,7 @@ it('returns dash for emitente fields when text nodes are empty', function () {
 
     expect($data->emitente->nome)->toBe('-');
     expect($data->emitente->telefone)->toBe('-');
-    expect($data->emitente->email)->toBe('');
+    expect($data->emitente->email)->toBe('-');
     expect($data->emitente->endereco)->toBe('-');
     expect($data->emitente->cep)->toBe('-');
     expect($data->emitente->municipio)->toBe('-');

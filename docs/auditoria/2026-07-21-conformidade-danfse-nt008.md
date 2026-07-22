@@ -13,17 +13,19 @@ O DANFSe está **substancialmente conforme**. Os pilares obrigatórios da NT —
 
 Foram encontradas **9 divergências**, das quais **1 é estrutural** (ordem das linhas nos blocos de participante, que contraria a disposição obrigatória do Anexo I) e 3 são de média severidade. Nenhuma impede a emissão; todas são corrigíveis sem redesenho.
 
-| # | Severidade | Item da NT | Divergência |
-|---|-----------|-----------|-------------|
-| 1 | **Alta** | 2.2.4 + Anexo I + 2.4.5 | Ordem das linhas trocada em todos os blocos de participante |
-| 2 | Média | 2.4.5, nota 12 | Campo "E-mail" sai vazio em vez de `-` |
-| 3 | Média | 2.2.3 + Anexo I | Sem linhas divisórias internas (grade) nos blocos |
-| 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente |
-| 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT |
-| 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" |
-| 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" |
-| 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT |
-| 9 | Cosmética | — | Alíquotas com ponto decimal (`2.00%`) num documento pt-BR |
+| # | Severidade | Item da NT | Divergência | Situação |
+|---|-----------|-----------|-------------|----------|
+| 1 | **Alta** | 2.2.4 + Anexo I + 2.4.5 | Ordem das linhas trocada em todos os blocos de participante | **corrigida** |
+| 2 | Média | 2.4.5, nota 12 | Campo "E-mail" sai vazio em vez de `-` | **corrigida** |
+| 3 | Média | 2.2.3 + Anexo I | Sem linhas divisórias internas (grade) nos blocos | aberta |
+| 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente | aberta |
+| 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT | aberta |
+| 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" | aberta |
+| 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | aberta |
+| 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT | aberta |
+| 9 | Cosmética | — | Alíquotas com ponto decimal (`2.00%`) num documento pt-BR | aberta |
+
+O relato de cada divergência descreve o estado no momento da auditoria; as corrigidas trazem ao fim a nota do que mudou.
 
 ---
 
@@ -63,6 +65,10 @@ O E-mail está subindo uma linha e o Endereço, dividindo linha com Município/C
 
 **Correção:** reorganizar as três linhas centrais dos quatro blocos para `Nome | Município | IBGE/CEP` e `Endereço | E-mail`. O bloco do destinatário não tem Indicador Municipal (correto: `TCRTCInfoDest` não o declara e o item 2.1.5 não o lista) e deve manter Telefone ocupando o restante da primeira linha.
 
+> **Corrigida.** As duas linhas centrais dos quatro blocos trocaram de composição. Medido no PDF: nome, município e CEP em x 0,28 / 10,57 / 15,71 cm na mesma linha; endereço e e-mail em 0,28 / 10,57 cm na seguinte. Alturas de bloco inalteradas, documento ainda em uma página.
+>
+> O bloco do destinatário **expandido** não é exercitado por nenhum teste — as fixtures não trazem `<dest>` e todo `NfseData` de teste passa `destinatario: null`. A edição foi conferida à mão montando um `NfseData` com destinatário preenchido, mas a suíte não protegeria uma regressão ali. Vale uma fixture com `<dest>`.
+
 ---
 
 ### 2 — Campo "E-mail" sai vazio em vez de traço
@@ -74,9 +80,17 @@ O E-mail está subindo uma linha e o Endereço, dividindo linha com Município/C
 - `src/Danfse/ParticipanteBuilder.php:72` — `email: $this->firstOf($prest->email, $emit->email)` (prestador; `firstOf()` devolve `''`)
 - `src/Danfse/ParticipanteBuilder.php:150` — `email: $this->str($pessoa->email)` (tomador, intermediário, destinatário; sem o default `'-'` que os campos vizinhos usam)
 
-Verificado removendo `<email>` do XML de fixture: os três blocos renderizam `<span class="value"></span>`, imprimindo um campo em branco. Todos os demais campos do mesmo bloco (`nome`, `im`, `telefone`, `endereco`, `cep`, `codigoIbge`) já normalizam para `-`; o e-mail é a única exceção, e `naoIdentificado()` (`ParticipanteBuilder.php:112`) prova que a intenção era `-`.
+Verificado removendo `<email>` do XML de fixture: os três blocos renderizam `<span class="value"></span>`, imprimindo um campo em branco. Todos os demais campos do mesmo bloco (`nome`, `im`, `telefone`, `endereco`, `cep`, `codigoIbge`) já normalizam para `-`; o e-mail é a única exceção, e `naoIdentificado()` — que monta um participante só de traços — prova que a intenção era `-`.
 
 **Correção:** `?: '-'` na linha 72 e default `'-'` no `str()` da linha 150.
+
+> **Corrigida**, com duas consequências que a auditoria não previu.
+>
+> A primeira: o atalho de `tomador()` virou código morto. O teste que o cobria dizia por quê — "email é o único campo em que o participante vazio difere de um `<toma>` vazio lido campo a campo ('-' contra ''): é ele que prova que o early return aconteceu". Normalizado o e-mail, `naoIdentificado()` passou a produzir exatamente o que o caminho geral produz, e a mutação acusou os dois mutantes sobreviventes. O guard e o método foram removidos em vez de silenciados: a linha *podia* ser morta, então suprimi-la seria desonesto.
+>
+> A segunda: sem o guard, um `<toma>` ausente atravessava `participanteDe()`, onde `$endNac = $end->endNac` acessava propriedade de `null`. As linhas vizinhas já usavam `?->`; essa era a única sem. Corrigido lá.
+>
+> O teste da nota 12 agora cobre os três blocos, não só o emitente.
 
 ---
 
@@ -117,13 +131,15 @@ Note-se o contraste com a nota 5, que **está** implementada corretamente (`exib
 
 **Severidade: baixa.** Item 2.4.5, nota 2 e item 2.3.1.
 
-Quando o XML não traz `<toma>`, `ParticipanteBuilder::tomador()` devolve `naoIdentificado()` (`ParticipanteBuilder.php:85-87`) e o template imprime o bloco inteiro com oito traços. A NT (nota 2) diz "informar, nos respectivos blocos, **apenas**: 'TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e'".
+Quando o XML não traz `<toma>`, `ParticipanteBuilder::tomador()` devolve um participante só de traços e o template imprime o bloco inteiro com oito deles. A NT (nota 2) diz "informar, nos respectivos blocos, **apenas**: 'TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e'".
 
 Verificado: com `<toma>` removido, a string não aparece no HTML.
 
 O destinatário (`template.php:277-281`) e o intermediário (`template.php:330-334`) já implementam o colapso corretamente — o tomador é a lacuna.
 
 **Ressalva interpretativa:** o item 2.3.1 abre com "*Poderão* ser feitas as seguintes supressões", o que é permissivo, enquanto a nota 2 usa o imperativo "informar". A leitura conservadora (colapsar) é a que o Anexo I ilustra e a que o próprio código já adota para os outros dois blocos — a inconsistência interna é o argumento mais forte para corrigir.
+
+**Nota para quem for implementar:** a correção da divergência 2 removeu o único ponto do código que distinguia "tomador ausente" de "tomador presente e vazio". O colapso precisará de um sinalizador explícito em `NfseData`, na forma do `destinatarioEhTomador` que já existe — e não do `count() === 0` que havia em `tomador()`, que nunca chegou a alimentar o template.
 
 ---
 
@@ -229,7 +245,7 @@ Cada item abaixo foi conferido no código **e** confirmado por medição no PDF 
 | Nota 10 — linha fixa e obrigatória de totais aproximados, imune ao truncamento | ✅ `DanfseTotaisTributos::linhaNt008()` reproduz o texto e a pontuação da nota; o template a imprime em **célula própria**, fora da área que trunca (`template.php:623-627`) — atende ao "sem prejuízo da linha" |
 | Nota 10 — valores monetários **ou** percentuais | ✅ `totalTributo()` prefere `pTotTrib`, cai para `vTotTrib` |
 | Nota 11 — canhoto opcional | ✅ não implementado, o que a nota autoriza |
-| Nota 12 — campos sem informação com traço | ⚠️ atendido em toda parte **exceto** e-mail — ver divergência 2 |
+| Nota 12 — campos sem informação com traço | ✅ desde a correção da divergência 2; antes, o e-mail era a única exceção |
 | Ordem dos 10 campos de "Informações Complementares" | ✅ exatamente a da tabela 2.4.5, separados por ` \| `, rótulo some junto com o campo ausente |
 | Nota 3 — "O DESTINATÁRIO É O PRÓPRIO TOMADOR/ADQUIRENTE DA OPERAÇÃO" | ✅ derivado de `indDest = 0`, distinto do caso "não identificado" da nota 2 |
 | Nota 2 — destinatário e intermediário não identificados | ✅ (tomador é a exceção — divergência 5) |
@@ -260,9 +276,9 @@ Isto **não é não conformidade**: o item 2.1 é explícito — "Embora os tama
 
 ## Recomendação de ordem de correção
 
-1. **Divergência 1** (ordem das linhas) — única infração à disposição obrigatória do Anexo I. Reexecutar `Nt008GeometryTest` e `DanfseSinglePageTest` depois.
-2. **Divergência 2** (e-mail sem traço) — duas linhas, sem risco de layout.
-3. **Divergência 3** (grade interna) — resolve junto com a 1 se as bordas forem aplicadas na mesma passada; altera altura de linha, então valide a página única.
+1. ~~**Divergência 1** (ordem das linhas)~~ — feita.
+2. ~~**Divergência 2** (e-mail sem traço)~~ — feita.
+3. **Divergência 3** (grade interna) — altera a altura efetiva das linhas; valide a página única depois.
 4. **Divergência 4** (nota 6) — prazo real: competências a partir de 2027.
 5. **Divergências 5 a 7** — colapsos de bloco; ganham altura para os quadros elásticos.
 6. **Divergências 8 e 9** — documentar a 8; a 9 é polimento.
