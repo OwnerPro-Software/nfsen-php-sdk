@@ -127,7 +127,7 @@
                     <span class="value"><?= $h($data->emitente->cnpjCpf) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Inscrição Municipal</span>
+                    <span class="label">Indicador Municipal (Inscrição)</span>
                     <span class="value"><?= $h($data->emitente->im) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -151,7 +151,7 @@
                     <span class="value"><?= $h($data->emitente->endereco) ?></span>
                 </td>
                 <td>
-                    <span class="label">Município / UF</span>
+                    <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->emitente->municipio) ?></span>
                 </td>
                 <td>
@@ -184,7 +184,7 @@
                     <span class="value"><?= $h($data->tomador->cnpjCpf) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Inscrição Municipal</span>
+                    <span class="label">Indicador Municipal (Inscrição)</span>
                     <span class="value"><?= $h($data->tomador->im) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -256,7 +256,7 @@
                     <span class="value"><?= $h($data->destinatario->endereco) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Município / UF</span>
+                    <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->destinatario->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -285,7 +285,7 @@
                     <span class="value"><?= $h($data->intermediario->cnpjCpf) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Inscrição Municipal</span>
+                    <span class="label">Indicador Municipal (Inscrição)</span>
                     <span class="value"><?= $h($data->intermediario->im) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -309,7 +309,7 @@
                     <span class="value"><?= $h($data->intermediario->endereco) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Município / UF</span>
+                    <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->intermediario->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -374,14 +374,11 @@
                     <span class="label">Tipo de Tributação do ISSQN</span>
                     <span class="value"><?= $h($data->tribMun->tributacaoIssqn) ?></span>
                 </td>
-                <td style="width: 25%;">
-                    <span class="label">Município / UF / País da Incidência do ISSQN</span>
+                <td colspan="2" style="width: 50%;">
+                    <span class="label">Município / Sigla UF / País da Incidência do ISSQN</span>
                     <span class="value"><?= $h($data->tribMun->municipioIncidencia) ?></span>
                 </td>
-                <td colspan="2" style="width: 50%;">
-                    <span class="label">Valor do Serviço</span>
-                    <span class="value"><?= $h($data->tribMun->valorServico) ?></span>
-                </td>
+                <td style="width: 25%;"></td>
             </tr>
             <?php if ($data->tribMun->exibeRegimeEImunidade): ?>
             <tr>

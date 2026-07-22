@@ -64,7 +64,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
             tributacaoIssqn: 'Operação Tributável', municipioIncidencia: 'São Paulo - SP',
             regimeEspecial: 'Nenhum', tipoImunidade: '-', suspensaoExigibilidade: '-',
             numeroProcessoSuspensao: '-', beneficioMunicipal: '-', calculoBM: '-',
-            totalDeducoesReducoes: '-', exibeRegimeEImunidade: false, exibeBeneficioEDeducoes: false, valorServico: 'R$ 1.500,00', bcIssqn: 'R$ 1.350,00',
+            totalDeducoesReducoes: '-', exibeRegimeEImunidade: false, exibeBeneficioEDeducoes: false, bcIssqn: 'R$ 1.350,00',
             aliquota: '2.00%', retencaoIssqn: 'Retido pelo Tomador', issqnApurado: 'R$ 27,00',
         ),
         tribFed: new DanfseTributacaoFederal(

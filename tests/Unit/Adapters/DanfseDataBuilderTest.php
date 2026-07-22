@@ -253,7 +253,6 @@ it('extracts tribMun fields including percent formatting', function () {
 
     expect($data->tribMun->tributacaoIssqn)->toBe('Operação Tributável');
     expect($data->tribMun->municipioIncidencia)->toBe('Niterói - RJ');
-    expect($data->tribMun->valorServico)->toBe('R$ 1.500,00');
     expect($data->tribMun->bcIssqn)->toBe('R$ 1.350,00');
     expect($data->tribMun->aliquota)->toBe('2.00%');
     expect($data->tribMun->issqnApurado)->toBe('R$ 27,00');

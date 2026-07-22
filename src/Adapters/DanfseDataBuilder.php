@@ -287,7 +287,6 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             // imunidade nem benefício — a esmagadora maioria — imprime oito traços.
             exibeRegimeEImunidade: $this->algumPreenchido($regimeEspecial, $tipoImunidade, $suspensao, $nProcesso),
             exibeBeneficioEDeducoes: $this->algumPreenchido($beneficio, $calculoBM, $deducoes, $descontoIncond),
-            valorServico: $this->fmt->currency($this->str($valores->vServPrest->vServ)),
             bcIssqn: $vBC !== '' ? $this->fmt->currency($vBC) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             aliquota: $pAliq !== '' ? $pAliq.'%' : '-',
             retencaoIssqn: TpRetISSQN::labelOf($this->str($tribMun->tpRetISSQN)),

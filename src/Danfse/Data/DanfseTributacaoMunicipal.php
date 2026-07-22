@@ -26,7 +26,6 @@ final readonly class DanfseTributacaoMunicipal
          */
         public bool $exibeRegimeEImunidade,
         public bool $exibeBeneficioEDeducoes,
-        public string $valorServico,
         public string $bcIssqn,
         public string $aliquota,
         public string $retencaoIssqn,
