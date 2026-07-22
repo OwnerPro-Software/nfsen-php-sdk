@@ -188,7 +188,7 @@ it('trims whitespace from xTribNac before truncation', function () {
     expect($data->servico->descTribNacional)->toBe('ABC');
 });
 
-it('extracts codigoNbs when cNBS is present', function () {
+it('masks codigoNbs the way the notice writes it', function () {
     // Portal nacional prefixa "NBS: <cNBS>" nas informações complementares quando o código está presente.
     // O XSD ordena cServ como cTribNac, cTribMun, xDescServ, cNBS: inserir antes de
     // <xDescServ> produzia um XML que a API nunca emite, e o teste afirmava comportamento
@@ -200,7 +200,8 @@ it('extracts codigoNbs when cNBS is present', function () {
     );
     $data = $this->builder->build($xml);
 
-    expect($data->servico->codigoNbs)->toBe('111032200');
+    // Tabela do item 2.4.5: o campo sai em n.nnnn.nn.nn.
+    expect($data->servico->codigoNbs)->toBe('1.1103.22.00');
 });
 
 it('returns dash for codigoNbs when cNBS is absent', function () {

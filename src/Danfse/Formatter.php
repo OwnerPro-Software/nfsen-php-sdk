@@ -132,6 +132,22 @@ final class Formatter
         return $digits;
     }
 
+    /** Máscara `n.nnnn.nn.nn` que a tabela do item 2.4.5 dá ao código da NBS. */
+    public function codNbs(string $value): string
+    {
+        if ($value === '' || $value === '-') {
+            return '-';
+        }
+
+        $digits = (string) preg_replace('/\D/', '', $value); // @pest-mutate-ignore RemoveStringCast — defensivo.
+
+        if (strlen($digits) === 9) {
+            return (string) preg_replace('/(\d)(\d{4})(\d{2})(\d{2})/', '$1.$2.$3.$4', $digits); // @pest-mutate-ignore RemoveStringCast — defensivo.
+        }
+
+        return $digits;
+    }
+
     public function limit(string $value, int $limit, string $end = '...'): string
     {
         if (mb_strlen($value) <= $limit) {

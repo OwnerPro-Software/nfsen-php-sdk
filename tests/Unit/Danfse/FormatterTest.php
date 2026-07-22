@@ -110,6 +110,19 @@ it('codTribNacional returns input when length differs', function () {
     expect($this->fmt->codTribNacional('1'))->toBe('1');
 });
 
+it('codNbs formats the 9-digit code the way the notice masks it', function () {
+    expect($this->fmt->codNbs('115011000'))->toBe('1.1501.10.00');
+});
+
+it('codNbs returns dash for empty or dash', function () {
+    expect($this->fmt->codNbs(''))->toBe('-');
+    expect($this->fmt->codNbs('-'))->toBe('-');
+});
+
+it('codNbs returns input when length differs', function () {
+    expect($this->fmt->codNbs('1'))->toBe('1');
+});
+
 it('percent writes the decimal separator the rest of the document uses', function () {
     expect($this->fmt->percent('2.00'))->toBe('2,00%');
 });

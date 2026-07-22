@@ -164,11 +164,11 @@ it('prints the NBS code in the SERVIÇO PRESTADO block, where the notice puts it
     // de outros dez campos.
     $r = new DanfseHtmlRenderer(fakeQrGen());
 
-    $html = $r->render(sampleData(codigoNbs: '111032200'));
+    $html = $r->render(sampleData(codigoNbs: '1.1103.22.00'));
 
     $servico = substr($html, (int) strpos($html, 'SERVIÇO PRESTADO'), (int) strpos($html, 'TRIBUTAÇÃO MUNICIPAL') - (int) strpos($html, 'SERVIÇO PRESTADO'));
 
-    expect($servico)->toContain('Código da NBS')->toContain('111032200');
+    expect($servico)->toContain('Código da NBS')->toContain('1.1103.22.00');
 });
 
 it('prints a dash for the NBS code when the NFS-e has none', function (): void {
@@ -177,7 +177,7 @@ it('prints a dash for the NBS code when the NFS-e has none', function (): void {
 
     $html = $r->render(sampleData(codigoNbs: '-'));
 
-    expect($html)->toContain('Código da NBS')->not->toContain('111032200');
+    expect($html)->toContain('Código da NBS')->not->toContain('1.1103.22.00');
 });
 
 it('escapes HTML in data fields (XSS prevention)', function (): void {

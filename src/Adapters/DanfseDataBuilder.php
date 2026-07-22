@@ -219,7 +219,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             // isso uma descrição no limite do XSD empurra o DANFSe para a segunda
             // página, contrariando o item 2.2 ("obrigatoriamente, em uma única página").
             descricao: $this->fmt->limit($this->str($cServ->xDescServ, '-'), 1297), // @pest-mutate-ignore IncrementInteger,DecrementInteger — 1297 vem da NT 008.
-            codigoNbs: $cNBS !== '' ? $cNBS : '-',
+            codigoNbs: $this->fmt->codNbs($cNBS),
             // NT 008, item 2.4.5: `SE xTribMun <> "" ENTAO Descrição Municipal SENAO
             // Descrição Nacional`. É um campo só — imprimir as duas descrições lado a
             // lado contraria o item 2.2.4, que obriga a disposição do Anexo I.
