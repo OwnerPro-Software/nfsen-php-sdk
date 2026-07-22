@@ -167,12 +167,19 @@
                     <span class="value"><?= $h($data->emitente->email) ?></span>
                 </td>
             </tr>
+            <?php
+            /*
+             * A tabela do item 2.4.5 põe o regime de apuração em 10,51, mas o Anexo I o
+             * desenha colado ao Simples Nacional, em 5,41 — e é o Anexo que manda, pelo
+             * item 2.2.4. Mesmo conflito, mesma resolução, que a do bloco do ISSQN.
+             */
+            ?>
             <tr>
-                <td colspan="2">
+                <td>
                     <span class="label">Simples Nacional na Data de Competência</span>
                     <span class="value"><?= $h($data->emitente->simplesNacional) ?></span>
                 </td>
-                <td colspan="2">
+                <td colspan="3">
                     <span class="label">Regime de Apuração Tributária pelo SN</span>
                     <span class="value"><?= $h($data->emitente->regimeSN) ?></span>
                 </td>
@@ -243,7 +250,16 @@
                     <span class="label">CNPJ / CPF / NIF</span>
                     <span class="value"><?= $h($data->destinatario->cnpjCpf) ?></span>
                 </td>
-                <td colspan="2" style="width: 50%;">
+                <?php
+                /*
+                 * O destinatário não tem inscrição municipal — `TCRTCInfoDest` não
+                 * declara IM e o item 2.1.5 não a lista. A coluna fica vazia, como no
+                 * Anexo I: esticar o telefone sobre ela o tiraria dos 15,62 em que a
+                 * tabela do item 2.4.5 e o Anexo o põem, de acordo.
+                 */
+                ?>
+                <td style="width: 25%;"></td>
+                <td style="width: 25%;">
                     <span class="label">Telefone</span>
                     <span class="value"><?= $h($data->destinatario->telefone) ?></span>
                 </td>

@@ -4,6 +4,7 @@ use OwnerPro\Nfsen\Adapters\BaconQrCodeGenerator;
 use OwnerPro\Nfsen\Adapters\DanfseDataBuilder;
 use OwnerPro\Nfsen\Adapters\DanfseHtmlRenderer;
 use OwnerPro\Nfsen\Adapters\DompdfHtmlToPdfConverter;
+use OwnerPro\Nfsen\Danfse\Data\NfseData;
 
 /**
  * As medidas e posições que a NT 008 fixa em centímetros.
@@ -19,7 +20,17 @@ use OwnerPro\Nfsen\Adapters\DompdfHtmlToPdfConverter;
  */
 function nfsenConteudoPdf(string $xml): string
 {
-    $data = (new DanfseDataBuilder)->build($xml);
+    return nfsenConteudoPdfDe((new DanfseDataBuilder)->build($xml));
+}
+
+/**
+ * Mesma leitura, partindo do `NfseData` já montado.
+ *
+ * Existe para os blocos que a fixture não alcança: o do destinatário só aparece
+ * quando a NFS-e traz `IBSCBS/dest`, que nenhuma fixture tem.
+ */
+function nfsenConteudoPdfDe(NfseData $data): string
+{
     $html = (new DanfseHtmlRenderer(new BaconQrCodeGenerator))->render($data);
     $pdf = (new DompdfHtmlToPdfConverter)->convert($html);
 
@@ -102,6 +113,40 @@ it('places the município/ambiente quadro where the notice puts it', function ()
     // Tabela 2.4.5: o quadro começa em 15,62 cm. O texto vem 2pt adiante, que é o
     // recuo lateral da célula.
     nfsenPertoDe(nfsenEsquerdaEmCm($texto['x'] - 2), 15.62);
+});
+
+// A tabela do item 2.4.5 e o Anexo I discordam sobre esta coluna: a tabela dá 10,51,
+// o Anexo desenha o campo colado ao Simples Nacional. Manda o Anexo, pelo item 2.2.4.
+it('seats the SN tax regime in the column the Anexo draws it in', function () {
+    $texto = nfsenTexto($this->conteudo, 'Regime de Apura');
+
+    nfsenPertoDe(nfsenEsquerdaEmCm($texto['x']), 5.41);
+});
+
+// O destinatário não tem inscrição municipal, e a coluna dela fica vazia: o telefone
+// segue nos 15,62 em que a tabela do item 2.4.5 e o Anexo I concordam.
+it('keeps the destinatário phone in the fourth column, as the other blocks do', function () {
+    $base = sampleData();
+    $conteudo = nfsenConteudoPdfDe(new NfseData(
+        chaveAcesso: $base->chaveAcesso, numeroNfse: $base->numeroNfse,
+        competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
+        numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
+        ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
+        emitidaPor: $base->emitidaPor, ambienteGerador: $base->ambienteGerador,
+        municipioEmitente: $base->municipioEmitente,
+        emitente: $base->emitente, tomador: $base->tomador, intermediario: null,
+        destinatario: sampleParticipante('DESTINATARIO LTDA'), destinatarioEhTomador: false,
+        servico: $base->servico, tribMun: $base->tribMun, tribFed: $base->tribFed,
+        tribIbsCbs: $base->tribIbsCbs, totais: $base->totais, totaisTributos: $base->totaisTributos,
+        informacoesComplementares: $base->informacoesComplementares,
+    ));
+
+    preg_match_all('#BT ([\d.]+) [\d.]+ Td /\w+ [\d.]+ Tf\s*\[\(Telefone#', $conteudo, $telefones);
+
+    expect($telefones[1])->toHaveCount(3);
+    foreach ($telefones[1] as $x) {
+        nfsenPertoDe(nfsenEsquerdaEmCm((float) $x - 2), 15.62);
+    }
 });
 
 it('sets the identification labels in seven points, uppercase', function () {

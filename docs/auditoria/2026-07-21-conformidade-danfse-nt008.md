@@ -26,7 +26,7 @@ A divergência 10 só apareceu depois que a 3 caiu: foi a rasterização feita p
 | 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | aberta |
 | 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT | aberta |
 | 9 | Cosmética | — | Alíquotas com ponto decimal (`2.00%`) num documento pt-BR | aberta |
-| 10 | Média | 2.2.4 + Anexo I | Dois campos numa coluna à esquerda da que o Anexo lhes dá | aberta |
+| 10 | Média | 2.2.4 + Anexo I | Dois campos numa coluna à esquerda da que o Anexo lhes dá | **corrigida** |
 
 O relato de cada divergência descreve o estado no momento da auditoria; as corrigidas trazem ao fim a nota do que mudou.
 
@@ -208,6 +208,10 @@ Duas células ficam uma coluna à esquerda do lugar. Ambas pela mesma causa — 
 
 **Correção:** trocar os `colspan="2"` por células simples mais uma célula vazia na coluna que o Anexo deixa em branco — a terceira, em ambos os casos.
 
+> **Corrigida.** Medido: regime de apuração em 5,43 cm, telefone do destinatário em 15,71 cm — o mesmo dos outros três blocos. Página única mantida.
+>
+> Junto veio o fim do buraco de cobertura que deixou passar as divergências 1 e 10: o `Nt008GeometryTest` media o cabeçalho e o QR Code, mas nada do miolo. Agora há dois testes de coluna, e o helper de leitura do PDF aceita um `NfseData` pronto além do XML — sem isso o bloco do destinatário seria intestável, porque ele só aparece quando a NFS-e traz `IBSCBS/dest` e nenhuma fixture tem esse grupo. Os dois testes foram conferidos contra o layout antigo: falham nele.
+
 ---
 
 ## Conformidades verificadas
@@ -307,7 +311,7 @@ Isto **não é não conformidade**: o item 2.1 é explícito — "Embora os tama
 2. ~~**Divergência 2** (e-mail sem traço)~~ — feita.
 3. ~~**Divergência 3** (grade interna)~~ — retirada; não havia divergência.
 4. ~~**Divergência 4** (nota 6)~~ — feita.
-5. **Divergência 10** (colunas erradas) — próxima da fila: mesma família da 1, duas células, sem risco de altura.
+5. ~~**Divergência 10** (colunas erradas)~~ — feita.
 6. **Divergências 5 a 7** — colapsos de bloco; ganham altura para os quadros elásticos.
 7. **Divergências 8 e 9** — documentar a 8; a 9 é polimento.
 
