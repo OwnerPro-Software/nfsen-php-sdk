@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **Campo de máscara posicional perdia a posição vazia, e os valores restantes escorregavam para a casa da vizinha.** A tabela do item 2.4.5 descreve quatro campos por máscara de posições fixas — `CST / cClassTrib` (`nnn / nnnnnn`), o indicador de operação, `Red. Alíquota IBS / Red. Alíquota CBS` (`% / % / %`) e `Alíquota - IBS UF / IBS Mun` (`% / %`). Com só uma das reduções preenchida, o campo saía `1,00%`, que um leitor atribui à primeira posição da máscara — a redução do IBS estadual — quando o valor era da CBS. As posições ausentes passam a sair com o traço da nota 12, e o campo inteiro continua colapsando para um traço só quando nenhuma posição veio, para a NFS-e anterior à reforma não imprimir `- / - / -`. O município da incidência do ISSQN segue omitindo o país ausente: ali a concatenação é de nomes, não de máscara, e o país é a última posição.
+
+- **O quadro de informações complementares saía em branco quando o XML não preenchia nenhum dos dez campos.** A nota 12 manda traço em campo sem informação, e a área ficava vazia. A linha fixa de totais aproximados da nota 10 continua à parte, em célula própria.
+
+- **Situação e finalidade podiam estourar a coluna que a NT lhes dá.** As duas linhas do item 2.4.5 mandam cortar com reticências acima de 37 caracteres, em campos de 40 — a própria NT exemplifica a situação com "NFS-e de Decisão Judicial ou Administ...". Nenhuma descrição do leiaute chega lá hoje; o corte é guarda para a que chegar.
+
 - **Município e UF vinham separados por hífen, como no portal, e não por barra, como na NT.** As linhas "MUNICÍPIO / SIGLA UF", "LOCAL DA PRESTAÇÃO" e "MUNICÍPIO DA INCIDÊNCIA DO ISSQN" do item 2.4.5 mandam "Concatenar o nome do município com a respectiva UF. Ex.: Município / UF" — `Niterói - RJ` passa a sair `Niterói / RJ`, em todos os blocos de participante, no cabeçalho e nos campos de incidência. O quadro do cabeçalho já usava a barra; os demais, não.
 
   O "(ext)" do exemplo da mesma tabela ("Ex.: nnnnnnn / nn.nnn-nnn ou nnnnnnn / nnnnnnnnnnn (ext)") fica decidido como **anotação da tabela, não literal a imprimir**: a linha declara 21 como tamanho do campo, e `nnnnnnn / nnnnnnnnnnn` já ocupa exatamente 21 — o sufixo levaria o campo a 27 e estouraria a largura que a própria linha fixa. Registrado em `ParticipanteBuilder::codigoPostal()`.

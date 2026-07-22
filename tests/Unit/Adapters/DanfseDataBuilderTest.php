@@ -1442,3 +1442,25 @@ it('truncates the municipal benefit description', function () {
 
     expect($data->tribMun->beneficioMunicipal)->toBe("Alíquota Diferenciada de 'aliqDifBM'...");
 });
+
+// Nota 12: "os campos sem informações no XML devem ser preenchidos com um traço (-)".
+// O quadro saía em branco quando nenhum dos dez campos vinha preenchido.
+it('marks the complementary information with a dash when the XML fills none of it', function () {
+    $xml = preg_replace('|<infoCompl>.*?</infoCompl>|s', '', $this->xml);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->informacoesComplementares)->toBe('-');
+});
+
+// Máscara posicional "% / % / %" da tabela do item 2.4.5: descartar a posição vazia
+// deslocaria as demais, e a redução da CBS seria lida como redução do IBS estadual.
+it('keeps the empty slot of a positional field instead of shifting the others', function () {
+    $xml = str_replace(
+        ['<pRedAliqUF>10.00</pRedAliqUF>', '<pRedAliqMun>10.00</pRedAliqMun>', '<pRedAliqCBS>10.00</pRedAliqCBS>'],
+        ['', '', '<pRedAliqCBS>1.00</pRedAliqCBS>'],
+        $this->ibscbs,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tribIbsCbs->reducaoAliquotas)->toBe('- / - / 1,00%');
+});

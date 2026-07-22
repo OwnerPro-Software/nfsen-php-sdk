@@ -123,6 +123,30 @@ it('codNbs returns input when length differs', function () {
     expect($this->fmt->codNbs('1'))->toBe('1');
 });
 
+it('joinPresent drops the parts the XML left out', function () {
+    expect($this->fmt->joinPresent('Niterói / RJ', 'BR'))->toBe('Niterói / RJ / BR');
+    expect($this->fmt->joinPresent('Niterói / RJ', ''))->toBe('Niterói / RJ');
+    expect($this->fmt->joinPresent('-', 'BR'))->toBe('BR');
+});
+
+it('joinPresent returns dash when no part came', function () {
+    expect($this->fmt->joinPresent('', '-'))->toBe('-');
+});
+
+// Nota 12 sobre máscara posicional: a posição vazia vira traço em vez de sumir, para
+// as demais não escorregarem para a casa da vizinha.
+it('joinSlots keeps the empty position instead of shifting the others', function () {
+    expect($this->fmt->joinSlots('', '', '1,00%'))->toBe('- / - / 1,00%');
+    expect($this->fmt->joinSlots('10,00%', '', '1,00%'))->toBe('10,00% / - / 1,00%');
+    expect($this->fmt->joinSlots('000', '000001'))->toBe('000 / 000001');
+});
+
+it('joinSlots collapses to a single dash when no position came', function () {
+    // NFS-e anterior à reforma não traz o grupo inteiro, e "- / - / -" seria ruído.
+    expect($this->fmt->joinSlots('', '', ''))->toBe('-');
+    expect($this->fmt->joinSlots('-', '-'))->toBe('-');
+});
+
 it('percent writes the decimal separator the rest of the document uses', function () {
     expect($this->fmt->percent('2.00'))->toBe('2,00%');
 });

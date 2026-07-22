@@ -132,8 +132,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             ambiente: $ambiente,
             // A NT 008 manda imprimir a descrição da opção, não o código. Sem
             // correspondência no leiaute, '-' — o documento não pode inventar rótulo.
-            situacao: SituacaoNfse::labelOf($this->str($inf->cStat)),
-            finalidade: FinNFSe::labelOf($this->str($infDps->IBSCBS->finNFSe)),
+            // Reticências acima de 37, em campos de 40: a NT exemplifica a situação com
+            // "NFS-e de Decisão Judicial ou Administ...", descrição que já supera o corte.
+            situacao: $this->fmt->limit(SituacaoNfse::labelOf($this->str($inf->cStat)), 37), // @pest-mutate-ignore IncrementInteger,DecrementInteger — guarda para rótulo futuro; nenhum caso do leiaute chega a 37 hoje, então 36 e 38 produzem a mesma saída.
+            finalidade: $this->fmt->limit(FinNFSe::labelOf($this->str($infDps->IBSCBS->finNFSe)), 37), // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
             emitidaPor: TpEmit::labelOf($this->str($infDps->tpEmit)),
             ambienteGerador: AmbienteGerador::labelOf($this->str($inf->ambGer)),
             municipioEmitente: $this->buildMunicipioEmitente($inf, $emit, $cServ),
@@ -271,7 +273,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         return new DanfseTributacaoMunicipal(
             tributacaoIssqn: TribISSQN::labelOf($this->str($tribMun->tribISSQN)),
             // NT 008: "Município / UF / País". O país é o código ISO de 2 dígitos.
-            municipioIncidencia: $this->joinWithSlash(
+            municipioIncidencia: $this->fmt->joinPresent(
                 $this->resolveMunicipio($inf->cLocIncid, $inf->xLocIncid),
                 $this->str($tribMun->cPaisResult),
             ),
@@ -355,12 +357,12 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $gIbsCbs = $infDps->IBSCBS?->valores?->trib?->gIBSCBS; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
 
         return new DanfseTributacaoIbsCbs(
-            cstClassTrib: $this->joinWithSlash(
+            cstClassTrib: $this->fmt->joinSlots(
                 $this->str($gIbsCbs?->CST),
                 $this->str($gIbsCbs?->cClassTrib),
             ),
             // Concatena código da operação, código IBGE, município e UF da incidência.
-            indicadorOperacao: $this->joinWithSlash(
+            indicadorOperacao: $this->fmt->joinSlots(
                 $this->str($infDps->IBSCBS?->cIndOp), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
                 $this->str($ibsNfse?->cLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
                 $this->resolveMunicipio($ibsNfse?->cLocalidadeIncid, $ibsNfse?->xLocalidadeIncid), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
@@ -374,12 +376,12 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
                 $this->str($trib->tribFed->piscofins?->vCofins), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
             ),
             baseCalculo: $this->currencyOrDash($this->str($valIbs?->vBC)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
-            reducaoAliquotas: $this->joinWithSlash(
+            reducaoAliquotas: $this->fmt->joinSlots(
                 $this->percentOrEmpty($valIbs?->uf?->pRedAliqUF), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
                 $this->percentOrEmpty($valIbs?->mun?->pRedAliqMun), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
                 $this->percentOrEmpty($valIbs?->fed?->pRedAliqCBS), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
             ),
-            aliquotaIbs: $this->joinWithSlash(
+            aliquotaIbs: $this->fmt->joinSlots(
                 $this->percentOrEmpty($valIbs?->uf?->pIBSUF), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
                 $this->percentOrEmpty($valIbs?->mun?->pIBSMun), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
             ),
@@ -392,14 +394,6 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             aliquotaEfetivaCbs: $this->percentOrDash($valIbs?->fed?->pAliqEfetCBS), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
             valorTotalCbs: $this->currencyOrDash($this->str($totCibs?->gCBS?->vCBS)), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
         );
-    }
-
-    /** Junta com " / " os pedaços presentes, ou '-' quando nenhum veio. */
-    private function joinWithSlash(string ...$partes): string
-    {
-        $preenchidos = array_filter($partes, fn (string $p): bool => $p !== '' && $p !== '-');
-
-        return $preenchidos !== [] ? implode(' / ', $preenchidos) : '-';
     }
 
     private function percentOrEmpty(?SimpleXMLElement $node): string
@@ -525,8 +519,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             $preenchidos,
         ));
 
-        // Item 2.4.5: reticências acima de 1997 caracteres, num campo de 2000.
-        return $this->fmt->limit($texto, 1997); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 1997 vem da NT 008.
+        // Item 2.4.5: reticências acima de 1997 caracteres, num campo de 2000. Nenhum dos
+        // dez campos preenchido, o quadro leva o traço da nota 12, e não área em branco —
+        // a linha fixa de totais aproximados da nota 10 sai à parte, em célula própria.
+        return $texto !== '' ? $this->fmt->limit($texto, 1997) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — 1997 vem da NT 008.
     }
 
     /**

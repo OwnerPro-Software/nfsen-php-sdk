@@ -150,6 +150,43 @@ final class Formatter
         return $digits;
     }
 
+    /** Junta com " / " os pedaços presentes, ou '-' quando nenhum veio. */
+    public function joinPresent(string ...$partes): string
+    {
+        $preenchidos = array_filter($partes, $this->preenchido(...));
+
+        return $preenchidos !== [] ? implode(' / ', $preenchidos) : '-';
+    }
+
+    /**
+     * Junta com " / " campos que a tabela do item 2.4.5 descreve por máscara posicional
+     * — `nnn / nnnnnn`, `% / %`, `% / % / %` —, preenchendo com traço a posição vazia,
+     * como manda a nota 12.
+     *
+     * Descartar a posição vazia deslocaria as demais: numa redução de alíquota só da
+     * CBS, um `1,00%` solitário seria lido como redução do IBS estadual, que é a
+     * primeira posição da máscara. O campo inteiro continua virando '-' quando nenhuma
+     * posição veio, para a NFS-e anterior à reforma não sair com "- / - / -".
+     */
+    public function joinSlots(string ...$partes): string
+    {
+        if (array_filter($partes, $this->preenchido(...)) === []) {
+            return '-';
+        }
+
+        return implode(' / ', array_map($this->ouTraco(...), $partes));
+    }
+
+    private function preenchido(string $parte): bool
+    {
+        return $parte !== '' && $parte !== '-';
+    }
+
+    private function ouTraco(string $parte): string
+    {
+        return $parte !== '' ? $parte : '-';
+    }
+
     public function limit(string $value, int $limit, string $end = '...'): string
     {
         if (mb_strlen($value) <= $limit) {
