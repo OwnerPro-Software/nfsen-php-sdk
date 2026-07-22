@@ -24,7 +24,9 @@ final class Municipios
 
         $entry = self::$map[(int) $cMun] ?? null; // @pest-mutate-ignore RemoveIntegerCast — PHP normaliza chaves numéricas string→int; cast reflete a invariante.
 
-        return $entry !== null ? $entry['nome'].' - '.$entry['uf'] : '-';
+        // NT 008, item 2.4.5: "Concatenar o nome do município com a respectiva UF.
+        // Ex.: Município / UF". O portal nacional usa hífen; a norma, barra.
+        return $entry !== null ? $entry['nome'].' / '.$entry['uf'] : '-';
     }
 
     /**

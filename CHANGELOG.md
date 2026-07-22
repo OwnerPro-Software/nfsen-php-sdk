@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **Município e UF vinham separados por hífen, como no portal, e não por barra, como na NT.** As linhas "MUNICÍPIO / SIGLA UF", "LOCAL DA PRESTAÇÃO" e "MUNICÍPIO DA INCIDÊNCIA DO ISSQN" do item 2.4.5 mandam "Concatenar o nome do município com a respectiva UF. Ex.: Município / UF" — `Niterói - RJ` passa a sair `Niterói / RJ`, em todos os blocos de participante, no cabeçalho e nos campos de incidência. O quadro do cabeçalho já usava a barra; os demais, não.
+
+  O "(ext)" do exemplo da mesma tabela ("Ex.: nnnnnnn / nn.nnn-nnn ou nnnnnnn / nnnnnnnnnnn (ext)") fica decidido como **anotação da tabela, não literal a imprimir**: a linha declara 21 como tamanho do campo, e `nnnnnnn / nnnnnnnnnnn` já ocupa exatamente 21 — o sufixo levaria o campo a 27 e estouraria a largura que a própria linha fixa. Registrado em `ParticipanteBuilder::codigoPostal()`.
+
 - **O CEP saía na máscara de uso corrente, não na da NT.** A linha "CÓDIGO IBGE / CEP" do item 2.4.5 exemplifica o campo como `nnnnnnn / nn.nnn-nnn`, com ponto após o segundo dígito — `01310100` saía `01310-100` em vez de `01.310-100`.
 
 - **O código da NBS saía sem máscara.** A tabela do item 2.4.5 dá ao campo o formato `n.nnnn.nn.nn`, e `TSCodNBS` fixa exatamente nove dígitos (`[0-9]{9}`) — `115011000` era impresso cru, em vez de `1.1501.10.00`. CNPJ/CPF, telefone, CEP e código de tributação nacional já passavam pelo `Formatter`; a NBS ficou de fora por descuido, sem teste que cobrisse o formato.

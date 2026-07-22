@@ -36,7 +36,7 @@ it('extracts emitente fields completely', function () {
     // diferentes nos dois nós — é este par que revela de qual deles o campo sai.
     expect($data->emitente->email)->toBe('financeiro@empresaexemplo.com.br');
     expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Centro');
-    expect($data->emitente->municipio)->toBe('Niterói - RJ');
+    expect($data->emitente->municipio)->toBe('Niterói / RJ');
     expect($data->emitente->cep)->toBe('24.020-005');
     expect($data->emitente->simplesNacional)->toBe('Não Optante');
 });
@@ -47,7 +47,7 @@ it('resolves the prestador city from the IBGE code, not from the header text', f
     $xml = preg_replace('|<xLocEmi>[^<]+</xLocEmi>|', '<xLocEmi>OUTRA CIDADE</xLocEmi>', $this->xml);
     $data = $this->builder->build((string) $xml);
 
-    expect($data->emitente->municipio)->toBe('Niterói - RJ');
+    expect($data->emitente->municipio)->toBe('Niterói / RJ');
 });
 
 it('shows emitente city alone when UF is missing', function () {
@@ -95,7 +95,7 @@ it('extracts tomador fields completely', function () {
     expect($data->tomador->telefone)->toBe('(11) 98765-4321');
     expect($data->tomador->email)->toBe('contato@clienteficticio.com.br');
     expect($data->tomador->endereco)->toBe('Avenida Paulista, 1000, Bela Vista');
-    expect($data->tomador->municipio)->toBe('São Paulo - SP');
+    expect($data->tomador->municipio)->toBe('São Paulo / SP');
     expect($data->tomador->cep)->toBe('01.310-100');
 });
 
@@ -168,7 +168,7 @@ it('extracts servico fields', function () {
 
     expect($data->servico->codigoTribNacional)->toBe('01.07.00');
     expect($data->servico->codigoTribMunicipal)->toBe('007');
-    expect($data->servico->localPrestacao)->toBe('Niterói - RJ');
+    expect($data->servico->localPrestacao)->toBe('Niterói / RJ');
     expect($data->servico->descricao)->toBe('Desenvolvimento de sistema de gestão empresarial - Contrato #2026-001');
     // xTribNac/xTribMun têm 73 chars; truncados em 60 com retrocesso ao último espaço (word-boundary).
     expect($data->servico->descTribNacional)->toBe('Desenvolvimento e licenciamento de programas de computador...');
@@ -268,7 +268,7 @@ it('extracts tribMun fields including percent formatting', function () {
     $data = $this->builder->build($this->xml);
 
     expect($data->tribMun->tributacaoIssqn)->toBe('Operação Tributável');
-    expect($data->tribMun->municipioIncidencia)->toBe('Niterói - RJ');
+    expect($data->tribMun->municipioIncidencia)->toBe('Niterói / RJ');
     expect($data->tribMun->bcIssqn)->toBe('R$ 1.350,00');
     expect($data->tribMun->aliquota)->toBe('2,00%');
     expect($data->tribMun->issqnApurado)->toBe('R$ 27,00');
@@ -861,7 +861,7 @@ it('reads the prestador block from prest, not from emit', function () {
     expect($data->emitente->nome)->toBe('NOME DECLARADO NA DPS LTDA');
     expect($data->emitente->im)->toBe('111222');
     expect($data->emitente->endereco)->toBe('Rua Declarada, 77, Bairro Declarado');
-    expect($data->emitente->municipio)->toBe('São Paulo - SP');
+    expect($data->emitente->municipio)->toBe('São Paulo / SP');
     expect($data->emitente->cep)->toBe('01.310-100');
 });
 
@@ -882,7 +882,7 @@ it('composes city and UF from the portal text when no IBGE code is available', f
     $xml = preg_replace('|<cMun>3303302</cMun>|', '<cMun></cMun>', $this->xml, 1);
     $data = $this->builder->build((string) $xml);
 
-    expect($data->emitente->municipio)->toBe('Niterói - RJ');
+    expect($data->emitente->municipio)->toBe('Niterói / RJ');
 });
 
 // NT 008, item 2.4.5: os campos SITUAÇÃO DA NFS-E (cStat), FINALIDADE (finNFSe) e
@@ -931,7 +931,7 @@ it('reads the destinatário block from IBSCBS/dest', function () {
     expect($data->destinatario?->telefone)->toBe('(21) 2222-3333');
     expect($data->destinatario?->email)->toBe('contato@destinatarioficticio.com.br');
     expect($data->destinatario?->endereco)->toBe('Avenida Rio Branco, 50, Centro');
-    expect($data->destinatario?->municipio)->toBe('Rio de Janeiro - RJ');
+    expect($data->destinatario?->municipio)->toBe('Rio de Janeiro / RJ');
     expect($data->destinatario?->cep)->toBe('20.040-030');
 });
 
@@ -1090,7 +1090,7 @@ it('reads the IBS/CBS block from both the declared and the assessed sides', func
     $data = $this->builder->build($this->ibscbs);
 
     expect($data->tribIbsCbs->cstClassTrib)->toBe('000 / 000001');
-    expect($data->tribIbsCbs->indicadorOperacao)->toBe('110001 / 3303302 / Niterói - RJ');
+    expect($data->tribIbsCbs->indicadorOperacao)->toBe('110001 / 3303302 / Niterói / RJ');
     expect($data->tribIbsCbs->baseCalculo)->toBe('R$ 1.350,00');
     expect($data->tribIbsCbs->aliquotaIbs)->toBe('10,00% / 2,00%');
     expect($data->tribIbsCbs->reducaoAliquotas)->toBe('10,00% / 10,00% / 10,00%');
@@ -1158,7 +1158,7 @@ it('appends the country to the ISSQN incidence municipality', function () {
     $xml = str_replace('</tribMun>', '<cPaisResult>BR</cPaisResult></tribMun>', $this->xml);
     $data = $this->builder->build($xml);
 
-    expect($data->tribMun->municipioIncidencia)->toBe('Niterói - RJ / BR');
+    expect($data->tribMun->municipioIncidencia)->toBe('Niterói / RJ / BR');
 });
 
 it('omits the country when the NFS-e does not carry one', function () {
@@ -1166,7 +1166,7 @@ it('omits the country when the NFS-e does not carry one', function () {
     // uma barra órfã no fim.
     $data = $this->builder->build($this->xml);
 
-    expect($data->tribMun->municipioIncidencia)->toBe('Niterói - RJ');
+    expect($data->tribMun->municipioIncidencia)->toBe('Niterói / RJ');
 });
 
 it('falls back to the emit address for the prestador IBGE code', function () {
@@ -1357,7 +1357,7 @@ it('reads the address of a participant located abroad', function () {
 
     $data = $this->builder->build($xml);
 
-    expect($data->tomador?->municipio)->toBe('Buenos Aires - Buenos Aires');
+    expect($data->tomador?->municipio)->toBe('Buenos Aires / Buenos Aires');
     expect($data->tomador?->cep)->toBe('C1425DKE');
     // Não existe código do IBGE no exterior, e o campo é único no DANFSe.
     expect($data->tomador?->codigoIbge)->toBe('-');
@@ -1388,7 +1388,7 @@ it('prefers the foreign address the DPS declared over the emitente registry', fu
 
     $data = $this->builder->build($xml);
 
-    expect($data->emitente->municipio)->toBe('Lisboa - Lisboa');
+    expect($data->emitente->municipio)->toBe('Lisboa / Lisboa');
     expect($data->emitente->cep)->toBe('1000-001');
     expect($data->emitente->codigoIbge)->toBe('-');
 });

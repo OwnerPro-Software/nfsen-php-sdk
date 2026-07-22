@@ -51,8 +51,9 @@ trait ReadsXmlNodes
     /**
      * Resolve um município via tabela IBGE a partir do código, com fallback para o texto do portal.
      *
-     * Portal nacional renderiza "Cidade - UF" (ex.: "Canela - RS"). Quando o código IBGE está presente
-     * e válido, preferimos esse formato; senão caímos no texto literal do XML; e em último caso, '-'.
+     * O item 2.4.5 manda concatenar município e UF como "Município / UF". Com o código do IBGE
+     * presente e válido, é dele que sai o par; senão cai no texto literal do XML, que vem sem UF;
+     * e em último caso, '-'.
      */
     private function resolveMunicipio(?SimpleXMLElement $cMun, ?SimpleXMLElement $xFallback): string
     {

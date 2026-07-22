@@ -33,7 +33,7 @@ function sampleParticipante(string $nome = 'ACME LTDA'): DanfseParticipante
     return new DanfseParticipante(
         nome: $nome, cnpjCpf: '11.222.333/0001-81', im: '-',
         telefone: '(11) 3333-4444', email: 'acme@example.com',
-        endereco: 'Rua X, 100, Centro', municipio: 'São Paulo - SP',
+        endereco: 'Rua X, 100, Centro', municipio: 'São Paulo / SP',
         cep: '01.310-100', codigoIbge: '3550308', simplesNacional: 'Não Optante', regimeSN: '-',
     );
 }
@@ -61,7 +61,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
             codigoNbs: $codigoNbs,
         ),
         tribMun: new DanfseTributacaoMunicipal(
-            tributacaoIssqn: 'Operação Tributável', municipioIncidencia: 'São Paulo - SP',
+            tributacaoIssqn: 'Operação Tributável', municipioIncidencia: 'São Paulo / SP',
             regimeEspecial: 'Nenhum', tipoImunidade: '-', suspensaoExigibilidade: '-',
             numeroProcessoSuspensao: '-', beneficioMunicipal: '-', calculoBM: '-',
             totalDeducoesReducoes: '-', exibeRegimeEImunidade: false, exibeBeneficioEDeducoes: false, bcIssqn: 'R$ 1.350,00',

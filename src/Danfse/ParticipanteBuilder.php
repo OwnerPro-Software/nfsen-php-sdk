@@ -195,7 +195,7 @@ final readonly class ParticipanteBuilder
             $this->str($endExt?->xEstProvReg), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
         ], static fn (string $parte): bool => $parte !== '');
 
-        return $partes === [] ? '-' : implode(' - ', $partes);
+        return $partes === [] ? '-' : implode(' / ', $partes);
     }
 
     /**
@@ -204,6 +204,11 @@ final readonly class ParticipanteBuilder
      *
      * O código postal do exterior sai sem máscara: `TSCodigoEndPostal` é alfanumérico
      * e o formato de CEP brasileiro descartaria letras.
+     *
+     * O "(ext)" do exemplo da tabela — "Ex.: nnnnnnn / nn.nnn-nnn ou nnnnnnn / nnnnnnnnnnn
+     * (ext)" — é anotação da própria tabela, não literal a imprimir: a linha declara 21
+     * como tamanho do campo, e `nnnnnnn / nnnnnnnnnnn` já ocupa exatamente 21. Imprimir
+     * o sufixo levaria o campo a 27 e estouraria a largura que a mesma linha fixa.
      */
     private function codigoPostal(?SimpleXMLElement $endNac, ?SimpleXMLElement $endExt, ?SimpleXMLElement $fallbackNacional = null): string
     {
@@ -256,10 +261,10 @@ final readonly class ParticipanteBuilder
         $uf = $this->str($enderEmit->UF);
 
         if ($xLocEmi !== '' && $uf !== '') {
-            return $xLocEmi.' - '.$uf;
+            return $xLocEmi.' / '.$uf;
         }
 
-        // Sem xLocEmi não dá para compor "Cidade - UF": devolver '-' em vez de " - RJ".
+        // Sem xLocEmi não dá para compor "Município / UF": devolver '-' em vez de " / RJ".
         return $xLocEmi !== '' ? $xLocEmi : '-';
     }
 }
