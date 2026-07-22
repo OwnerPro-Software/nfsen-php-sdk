@@ -62,8 +62,10 @@ final class Formatter
 
         $digits = (string) preg_replace('/\D/', '', $value); // @pest-mutate-ignore RemoveStringCast — defensivo.
 
+        // Máscara `nn.nnn-nnn` do exemplo da tabela do item 2.4.5, não a `nnnnn-nnn` de uso
+        // corrente: a linha "CÓDIGO IBGE / CEP" traz `nnnnnnn / nn.nnn-nnn`.
         if (strlen($digits) === 8) {
-            return (string) preg_replace('/(\d{5})(\d{3})/', '$1-$2', $digits); // @pest-mutate-ignore RemoveStringCast — defensivo.
+            return (string) preg_replace('/(\d{2})(\d{3})(\d{3})/', '$1.$2-$3', $digits); // @pest-mutate-ignore RemoveStringCast — defensivo.
         }
 
         return $digits;

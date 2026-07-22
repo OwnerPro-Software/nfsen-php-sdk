@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **O CEP saía na máscara de uso corrente, não na da NT.** A linha "CÓDIGO IBGE / CEP" do item 2.4.5 exemplifica o campo como `nnnnnnn / nn.nnn-nnn`, com ponto após o segundo dígito — `01310100` saía `01310-100` em vez de `01.310-100`.
+
 - **O código da NBS saía sem máscara.** A tabela do item 2.4.5 dá ao campo o formato `n.nnnn.nn.nn`, e `TSCodNBS` fixa exatamente nove dígitos (`[0-9]{9}`) — `115011000` era impresso cru, em vez de `1.1501.10.00`. CNPJ/CPF, telefone, CEP e código de tributação nacional já passavam pelo `Formatter`; a NBS ficou de fora por descuido, sem teste que cobrisse o formato.
 
 - **O QR Code de uma NFS-e de homologação apontava para endereço fora da norma.** O item 2.4.3 fixa um endereço só — `https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=` —, e o renderizador o trocava pelo portal de homologação quando `tpAmb = 2`, para que a leitura do código encontrasse a nota. A troca não tem amparo na NT: o DANFSe de homologação é peça de teste, não circula, e o cabeçalho já o marca "NFS-e SEM VALIDADE JURÍDICA". Um QR que não resolve é o comportamento que a norma prescreve; um endereço próprio é divergência de conteúdo impresso.

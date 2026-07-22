@@ -43,7 +43,7 @@ it('phone returns input when length differs', function () {
 });
 
 it('cep formats 8 digits', function () {
-    expect($this->fmt->cep('01310100'))->toBe('01310-100');
+    expect($this->fmt->cep('01310100'))->toBe('01.310-100');
 });
 
 it('cep returns dash for empty or dash', function () {

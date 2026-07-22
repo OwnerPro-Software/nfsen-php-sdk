@@ -37,7 +37,7 @@ it('extracts emitente fields completely', function () {
     expect($data->emitente->email)->toBe('financeiro@empresaexemplo.com.br');
     expect($data->emitente->endereco)->toBe('Rua Visconde do Rio Branco, 100, Centro');
     expect($data->emitente->municipio)->toBe('Niterói - RJ');
-    expect($data->emitente->cep)->toBe('24020-005');
+    expect($data->emitente->cep)->toBe('24.020-005');
     expect($data->emitente->simplesNacional)->toBe('Não Optante');
 });
 
@@ -96,7 +96,7 @@ it('extracts tomador fields completely', function () {
     expect($data->tomador->email)->toBe('contato@clienteficticio.com.br');
     expect($data->tomador->endereco)->toBe('Avenida Paulista, 1000, Bela Vista');
     expect($data->tomador->municipio)->toBe('São Paulo - SP');
-    expect($data->tomador->cep)->toBe('01310-100');
+    expect($data->tomador->cep)->toBe('01.310-100');
 });
 
 it('preserves tomador email case', function () {
@@ -140,7 +140,7 @@ it('extracts intermediario fields completely', function () {
     expect($data->intermediario?->telefone)->toBe('(11) 3333-4444');
     expect($data->intermediario?->email)->toBe('contato@intermediarioficticio.com.br');
     expect($data->intermediario?->endereco)->toBe('Rua Santa Conceição, 333, Guarulhos');
-    expect($data->intermediario?->cep)->toBe('07095-130');
+    expect($data->intermediario?->cep)->toBe('07.095-130');
 });
 
 it('preserves intermediario email case', function () {
@@ -862,7 +862,7 @@ it('reads the prestador block from prest, not from emit', function () {
     expect($data->emitente->im)->toBe('111222');
     expect($data->emitente->endereco)->toBe('Rua Declarada, 77, Bairro Declarado');
     expect($data->emitente->municipio)->toBe('São Paulo - SP');
-    expect($data->emitente->cep)->toBe('01310-100');
+    expect($data->emitente->cep)->toBe('01.310-100');
 });
 
 it('falls back to emit for the prestador fields the DPS omits', function () {
@@ -932,7 +932,7 @@ it('reads the destinatário block from IBSCBS/dest', function () {
     expect($data->destinatario?->email)->toBe('contato@destinatarioficticio.com.br');
     expect($data->destinatario?->endereco)->toBe('Avenida Rio Branco, 50, Centro');
     expect($data->destinatario?->municipio)->toBe('Rio de Janeiro - RJ');
-    expect($data->destinatario?->cep)->toBe('20040-030');
+    expect($data->destinatario?->cep)->toBe('20.040-030');
 });
 
 it('leaves the destinatário null when the NFS-e predates the tax reform', function () {

@@ -34,7 +34,7 @@ function sampleParticipante(string $nome = 'ACME LTDA'): DanfseParticipante
         nome: $nome, cnpjCpf: '11.222.333/0001-81', im: '-',
         telefone: '(11) 3333-4444', email: 'acme@example.com',
         endereco: 'Rua X, 100, Centro', municipio: 'São Paulo - SP',
-        cep: '01310-100', codigoIbge: '3550308', simplesNacional: 'Não Optante', regimeSN: '-',
+        cep: '01.310-100', codigoIbge: '3550308', simplesNacional: 'Não Optante', regimeSN: '-',
     );
 }
 
