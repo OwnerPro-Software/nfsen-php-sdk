@@ -3,7 +3,7 @@
 **Data:** 2026-07-21
 **Fonte normativa:** `storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf` — Especificações Técnicas do DANFSe, Nota Técnica nº 008, versão 1.0, SE/CGNFS-e, 05/05/2026 (26 páginas).
 **Escopo auditado:** `storage/danfse/template.php`, `storage/danfse/template.css`, `src/Adapters/DanfseDataBuilder.php`, `src/Adapters/DanfseHtmlRenderer.php`, `src/Danfse/ParticipanteBuilder.php`, `src/Danfse/Formatter.php`, `src/Danfse/Data/*`, `src/Adapters/DompdfHtmlToPdfConverter.php`.
-**Método:** leitura integral da NT; leitura do código; e **medição do PDF gerado** — o content stream do Dompdf foi inflado e as coordenadas, corpos de fonte, cores e operadores de traço foram lidos diretamente (mesma técnica de `tests/Unit/Danfse/Nt008GeometryTest.php`). Nenhum código foi modificado.
+**Método:** leitura integral da NT; leitura do código; **medição do PDF gerado** — o content stream do Dompdf foi inflado e as coordenadas, corpos de fonte, cores e operadores de traço foram lidos diretamente (mesma técnica de `tests/Unit/Danfse/Nt008GeometryTest.php`); e, para o que depende do traçado, **rasterização das figuras da NT a 300 dpi**.
 
 ---
 
@@ -11,19 +11,22 @@
 
 O DANFSe está **substancialmente conforme**. Os pilares obrigatórios da NT — página única (2.2), papel A4 retrato (2.2.1), margens (2.2.2), borda de página e sombreamento (2.2.3), tamanhos mínimos de fonte (2.4.1 a 2.4.4), cabeçalho e QR Code (2.4.3), mapeamento campo→tag do item 2.4.5, notas 5/7/8/9/10/11 e marca d'água de cancelamento/substituição (2.5.1/2.5.2) — estão implementados e verificados.
 
-Foram encontradas **9 divergências**, das quais **1 é estrutural** (ordem das linhas nos blocos de participante, que contraria a disposição obrigatória do Anexo I) e 3 são de média severidade. Nenhuma impede a emissão; todas são corrigíveis sem redesenho.
+Foram levantadas 10 divergências; **uma delas (a 3) não resistiu à verificação e foi retirada**, restando **9**. As mais graves são de disposição — a ordem das linhas nos blocos de participante (1) e dois campos numa coluna errada (10) —, todas contra o Anexo I, que o item 2.2.4 torna obrigatório. Nenhuma impede a emissão; todas são corrigíveis sem redesenho.
+
+A divergência 10 só apareceu depois que a 3 caiu: foi a rasterização feita para derrubá-la que deu a régua para medir o modelo coluna a coluna.
 
 | # | Severidade | Item da NT | Divergência | Situação |
 |---|-----------|-----------|-------------|----------|
 | 1 | **Alta** | 2.2.4 + Anexo I + 2.4.5 | Ordem das linhas trocada em todos os blocos de participante | **corrigida** |
 | 2 | Média | 2.4.5, nota 12 | Campo "E-mail" sai vazio em vez de `-` | **corrigida** |
-| 3 | Média | 2.2.3 + Anexo I | Sem linhas divisórias internas (grade) nos blocos | aberta |
+| 3 | ~~Média~~ | 2.2.3 + Anexo I | ~~Sem linhas divisórias internas (grade) nos blocos~~ | **retirada — era falsa** |
 | 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente | aberta |
 | 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT | aberta |
 | 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" | aberta |
 | 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | aberta |
 | 8 | Baixa | 2.4.3 | QR Code de homologação usa URL diferente da fixada pela NT | aberta |
 | 9 | Cosmética | — | Alíquotas com ponto decimal (`2.00%`) num documento pt-BR | aberta |
+| 10 | Média | 2.2.4 + Anexo I | Dois campos numa coluna à esquerda da que o Anexo lhes dá | aberta |
 
 O relato de cada divergência descreve o estado no momento da auditoria; as corrigidas trazem ao fim a nota do que mudou.
 
@@ -94,22 +97,19 @@ Verificado removendo `<email>` do XML de fixture: os três blocos renderizam `<s
 
 ---
 
-### 3 — Blocos sem linhas divisórias internas
+### 3 — ~~Blocos sem linhas divisórias internas~~ (retirada: era falsa)
 
-**Severidade: média.** Item 2.2.3 ("As linhas divisórias dos blocos de conteúdo do DANFSe deverão ter 0,5 (meio) ponto de espessura") combinado com o Anexo I, que desenha grade completa: linhas horizontais entre as linhas de campos e separadores verticais entre colunas — visíveis também nos exemplos das notas 2, 3 e 4 (item 2.4.5.1).
+**A divergência não existe. O código já está conforme.**
 
-Medição do content stream do PDF gerado:
+O que eu havia afirmado: que o Anexo I desenha uma grade completa — horizontais entre as linhas de campos, verticais entre colunas — e que o DANFSe gerado, com 13 segmentos horizontais e nenhum vertical, não a reproduzia.
 
-```
-segmentos de reta: 13   horizontais = 13   verticais = 0
-retângulo de borda: 5.500 5.500 584.280 830.890 re S  (1 w)  ✓ item 2.2.3
-```
+A medição estava certa; a leitura do modelo, errada. Rasterizado a 300 dpi, o **Anexo I não tem nenhuma linha interna**: nem verticais entre colunas, nem horizontais entre as linhas de campos, nem dentro do bloco de identificação. Só linhas sólidas separando blocos — exatamente o que `.bordered-section { border-bottom: 0.5pt }` produz e o que o PDF gerado mostra. As figuras dos itens 2.5.1 e 2.5.2 concordam.
 
-Os 13 segmentos são as bordas *entre* blocos (`.bordered-section { border-bottom: 0.5pt }`, `template.css:49-52`). Dentro de cada bloco não há nenhuma linha: `td { border: none; }` em `template.css:35-38`. O documento sai como texto posicionado sobre fundo branco, sem a grade do modelo.
+A falsa divergência veio das figuras do item 2.4.5.1 (página 22), lidas em baixa resolução. Aquelas figuras têm traçado próprio, com guias de célula pontilhadas, e servem para ilustrar **o texto dos blocos colapsados** das notas 2, 3 e 4 — não o estilo das linhas. O item 2.2.4 elege o Anexo I como modelo, e é ele que manda.
 
-O texto do 2.2.3 fala em "linhas divisórias dos blocos", o que isoladamente admitiria a leitura atual; o Anexo I, que o 2.2.4 torna obrigatório, não admite.
+O único pontilhado do Anexo I é o retângulo em volta da logomarca, que é o box da imagem inserida no documento de origem.
 
-**Correção:** aplicar `border: 0.5pt solid #000` (ou ao menos `border-right`/`border-top`) nas células, com colapso já ativo (`border-collapse: collapse`). Atenção: acrescentar bordas muda a altura efetiva das linhas — reexecutar `DanfseSinglePageTest` depois.
+**Lição de método:** figura de norma lida em miniatura não sustenta uma afirmação sobre traçado. Rasterizar antes de acusar.
 
 ---
 
@@ -183,6 +183,27 @@ A NT não especifica separador decimal para percentuais. Não é não conformida
 
 ---
 
+### 10 — Dois campos numa coluna à esquerda da que o Anexo lhes dá
+
+**Severidade: média.** Item 2.2.4 (disposição do Anexo I obrigatória).
+
+Levantada ao rasterizar o Anexo I para apurar a divergência 3. Com a imagem a 300 dpi foi possível medir cada rótulo do modelo e comparar coluna a coluna com o documento gerado. A calibração se valida sozinha: a primeira linha do bloco do prestador cai em 5,41 / 10,52 / 15,62 cm, exatamente os valores da tabela 2.4.5.
+
+Duas células ficam uma coluna à esquerda do lugar. Ambas pela mesma causa — um `colspan="2"` que empurra o campo seguinte para o início do par, em vez de deixá-lo na sua coluna.
+
+| Campo | Anexo I | Tabela 2.4.5 | Gerado |
+|---|---|---|---|
+| `Regime de Apuração Tributária pelo SN` (prestador) | **5,41** | 10,51 | 10,57 |
+| `Telefone` (destinatário) | **15,62** | 15,62 | 10,57 |
+
+**Caso a — Regime de Apuração.** Aqui a NT contradiz a si mesma: a tabela 2.4.5 dá `regApTribSN` em Esq 10,51 / Larg 10,19, e o Anexo I o desenha colado ao "Simples Nacional na Data de Competência", na coluna 5,41. Prevalece o Anexo, pelo item 2.2.4 — a mesma resolução que o bloco ISSQN já adota, e pelo mesmo motivo (ver o comentário em `template.php`, bloco "TRIBUTAÇÃO MUNICIPAL (ISSQN)"). O template usa `colspan="2"` nas duas células, o que joga o Regime para 10,51.
+
+**Caso b — Telefone do destinatário.** Aqui não há contradição: Anexo I e tabela 2.4.5 concordam em 15,62, e o gerado é que está fora. O bloco do destinatário não tem "Indicador Municipal" — `TCRTCInfoDest` não declara `IM` e o item 2.1.5 não o lista — e o template preencheu a lacuna com `colspan="2"` no Telefone. O Anexo deixa a terceira coluna **vazia** e mantém o Telefone na quarta, alinhado com o "Código IBGE / CEP" da linha de baixo. Os outros três blocos já imprimem o Telefone em 15,71 cm; só o destinatário destoa.
+
+**Correção:** trocar os `colspan="2"` por células simples mais uma célula vazia na coluna que o Anexo deixa em branco — a terceira, em ambos os casos.
+
+---
+
 ## Conformidades verificadas
 
 Cada item abaixo foi conferido no código **e** confirmado por medição no PDF gerado, salvo indicação em contrário.
@@ -195,7 +216,7 @@ Cada item abaixo foi conferido no código **e** confirmado por medição no PDF 
 | 2.2.1 | A4 retrato, mínimo 210×297 mm | ✅ `@page { size: A4 portrait }` + `setPaper('A4','portrait')` |
 | 2.2.2 | Margem entre 0,15 e 0,20 cm em todos os lados | ✅ `margin: 5pt` = 0,176 cm; borda medida em `5.500 5.500 584.280 830.890` |
 | 2.2.3 | Borda de página de 1 ponto | ✅ operador `1 w` antes do retângulo de borda |
-| 2.2.3 | Divisórias de 0,5 ponto | ⚠️ presentes entre blocos (`0.5 w`), ausentes dentro deles — ver divergência 3 |
+| 2.2.3 | Divisórias de 0,5 ponto | ✅ 13 segmentos horizontais em `0.5 w`, um por bloco, e nenhuma linha interna — que é o traçado do Anexo I (ver divergência 3, retirada) |
 | 2.2.3 | Sombreado cinza 5% no cabeçalho, nos títulos de bloco e em "Emitente da NFS-e" e "Valor Líquido da NFS-e + IBS/CBS" | ✅ `#f2f2f2`, medido `0.949 0.949 0.949 rg`; 12 retângulos preenchidos = cabeçalho + 9 títulos + os 2 campos nominados |
 
 ### Cabeçalho e identificação (2.4.3, 2.1.1, 2.1.2)
@@ -278,9 +299,12 @@ Isto **não é não conformidade**: o item 2.1 é explícito — "Embora os tama
 
 1. ~~**Divergência 1** (ordem das linhas)~~ — feita.
 2. ~~**Divergência 2** (e-mail sem traço)~~ — feita.
-3. **Divergência 3** (grade interna) — altera a altura efetiva das linhas; valide a página única depois.
-4. **Divergência 4** (nota 6) — prazo real: competências a partir de 2027.
-5. **Divergências 5 a 7** — colapsos de bloco; ganham altura para os quadros elásticos.
-6. **Divergências 8 e 9** — documentar a 8; a 9 é polimento.
+3. ~~**Divergência 3** (grade interna)~~ — retirada; não havia divergência.
+4. **Divergência 10** (colunas erradas) — próxima da fila: mesma família da 1, duas células, sem risco de altura.
+5. **Divergência 4** (nota 6) — prazo real: competências a partir de 2027.
+6. **Divergências 5 a 7** — colapsos de bloco; ganham altura para os quadros elásticos.
+7. **Divergências 8 e 9** — documentar a 8; a 9 é polimento.
 
-Vale acrescentar à suíte um teste de disposição que ancore as ordenadas relativas dos rótulos dentro de cada bloco de participante — é exatamente o tipo de regressão que o `Nt008GeometryTest` foi criado para pegar e que hoje passa despercebida, porque ele mede o cabeçalho e o QR Code, mas não o miolo.
+Vale acrescentar à suíte um teste de disposição que ancore as ordenadas relativas dos rótulos dentro de cada bloco de participante — é exatamente o tipo de regressão que o `Nt008GeometryTest` foi criado para pegar e que hoje passa despercebida, porque ele mede o cabeçalho e o QR Code, mas não o miolo. As divergências 1 e 10 são as duas faces do mesmo buraco de cobertura: uma na ordenada, outra na abscissa.
+
+O método que fechou a 3 e abriu a 10 — rasterizar o Anexo I a 300 dpi, calibrar pelas colunas de posição conhecida e ler onde cada rótulo começa — cabe numa fixture: uma tabela de `bloco :: linha → colunas` extraída do modelo, conferida contra o PDF gerado. É o análogo geométrico do que `Nt008FieldCoverageTest` já faz com a tabela 2.4.5.
