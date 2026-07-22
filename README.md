@@ -292,6 +292,10 @@ $idDps = DpsId::generate(
 `DpsId` é a fonte única da regra fiscal de formação do ID — o mesmo código usado
 internamente na construção do XML da DPS. O retorno é validado contra o padrão
 `DPS[0-9]{42}` do schema nacional; entrada inválida lança `InvalidDpsArgument`.
+`cLocEmi`, `cnpj` e `cpf` são conferidos na largura exata do schema (7, 14 e 11
+dígitos, sem máscara): como entram no ID com largura fixa, um valor de tamanho
+errado seria acomodado — cortado ou preenchido com zeros — e produziria um
+identificador bem formado apontando para outro município ou outra inscrição.
 Informe o **mesmo** CNPJ ou CPF usado na emissão — ambos `null` lança
 `InvalidDpsArgument` (inscrição zerada só é válida para prestador estrangeiro
 com NIF/cNaoNIF, via `allowEmptyInscricao: true`).

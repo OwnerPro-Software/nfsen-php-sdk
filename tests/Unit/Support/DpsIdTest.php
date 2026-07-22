@@ -40,11 +40,25 @@ it('pads inscricao with 14 zeros for foreign prestador when explicitly allowed',
     expect(substr($id, 10, 15))->toBe('1'.'00000000000000');
 });
 
-it('truncates cLocEmi to 7 digits', function () {
-    $id = DpsId::generate('35503089', '12345678000195', null, '1', '1');
-
-    expect(substr($id, 3, 7))->toBe('3550308');
+it('refuses a cLocEmi of the wrong width instead of trimming it to another município', function () {
+    // O município entra com largura fixa, então o oitavo dígito era só descartado e o
+    // identificador saía bem formado apontando para 3550308 — outro município.
+    expect(fn () => DpsId::generate('35503089', '12345678000195', null, '1', '1'))
+        ->toThrow(InvalidDpsArgument::class, 'cLocEmi inválido para o identificador da DPS: "35503089". Esperado sete dígitos (TSCodMunIBGE).');
 });
+
+it('refuses an inscription of the wrong width instead of padding it into another one', function (?string $cnpj, ?string $cpf, string $trecho) {
+    // O zero-pad à esquerda acomoda qualquer tamanho: '12345' virava
+    // 00000000012345, uma inscrição que existe e não é a informada.
+    expect(fn () => DpsId::generate('3550308', $cnpj, $cpf, '1', '1'))
+        ->toThrow(InvalidDpsArgument::class, $trecho);
+})->with([
+    'CNPJ curto' => ['12345', null, 'CNPJ inválido para o identificador da DPS: "12345". Esperado catorze dígitos (TSCNPJ).'],
+    'CNPJ vazio' => ['', null, 'CNPJ inválido para o identificador da DPS: "". Esperado catorze dígitos (TSCNPJ).'],
+    'CNPJ com máscara' => ['12.345.678/0001-95', null, 'Esperado catorze dígitos (TSCNPJ).'],
+    'CPF curto' => [null, '123', 'CPF inválido para o identificador da DPS: "123". Esperado onze dígitos (TSCPF).'],
+    'CPF com máscara' => [null, '123.456.789-01', 'Esperado onze dígitos (TSCPF).'],
+]);
 
 it('left-pads serie to 5 and nDps to 15 digits', function () {
     $id = DpsId::generate('3550308', '12345678000195', null, '12', '345');
@@ -61,12 +75,12 @@ it('matches the TSIdDPS pattern from the national schema', function () {
 
 it('throws InvalidDpsArgument when cLocEmi contains non-digits', function () {
     expect(fn () => DpsId::generate('ABC1234', '12345678000195', null, '1', '1'))
-        ->toThrow(InvalidDpsArgument::class, 'Identificador de DPS gerado é inválido');
+        ->toThrow(InvalidDpsArgument::class, 'cLocEmi inválido para o identificador da DPS');
 });
 
 it('throws InvalidDpsArgument when cLocEmi is shorter than 7 digits', function () {
     expect(fn () => DpsId::generate('123', '12345678000195', null, '1', '1'))
-        ->toThrow(InvalidDpsArgument::class, 'DPS[0-9]{42}');
+        ->toThrow(InvalidDpsArgument::class, 'Esperado sete dígitos (TSCodMunIBGE)');
 });
 
 it('throws InvalidDpsArgument when serie exceeds 5 digits', function () {

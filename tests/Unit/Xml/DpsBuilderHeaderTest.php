@@ -195,7 +195,10 @@ it('generates Id with single-digit serie and ndps left-padded', function () {
     expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000042');
 });
 
-it('generates Id truncating cLocEmi to 7 chars', function () {
+it('refuses to build with a cLocEmi the schema would reject anyway', function () {
+    // `TSCodMunIBGE` é `[0-9]{7}` exato, então este XML nunca passaria por
+    // buildAndValidate(). O que passava era o identificador: o município entra nele
+    // com largura fixa, e os dígitos sobrando eram descartados em silêncio.
     $data = new DpsData(
         infDPS: makeInfDps(cLocEmi: '35016089999'),
         prest: makePrestadorCnpj(),
@@ -203,12 +206,8 @@ it('generates Id truncating cLocEmi to 7 chars', function () {
         valores: makeValoresMinimo(),
     );
 
-    $xml = buildDps($data);
-    $xpath = parseDpsXml($xml);
-
-    // Only first 7 chars of cLocEmi used
-    $infDps = $xpath->query('/n:DPS/n:infDPS')->item(0);
-    expect($infDps->getAttribute('Id'))->toBe('DPS350160821234567800019500001000000000000001');
+    expect(fn () => buildDps($data))
+        ->toThrow(InvalidDpsArgument::class, 'cLocEmi inválido para o identificador da DPS');
 });
 
 it('builds xml without whitespace or formatting', function (DpsData $data) {

@@ -46,8 +46,26 @@ final readonly class DpsId
             );
         }
 
+        // O município e a inscrição entram no identificador com largura fixa, então
+        // um valor de tamanho errado não estoura o padrão: é acomodado. Um cLocEmi de
+        // oito dígitos era cortado no sétimo e nomeava OUTRO município; um CNPJ curto
+        // ganhava zeros à esquerda e virava outra inscrição. Nos dois casos sai um
+        // identificador bem formado e errado — e, na reconciliação que esta classe
+        // existe para servir, `consultar()->dps($id)` responderia DPS_NOT_FOUND, que o
+        // contrato de IndeterminateResultException manda ler como "é seguro reemitir".
+        // Um engano de digitação viraria emissão em dobro.
+        self::assertPattern($cLocEmi, '/^\d{7}$/', 'cLocEmi', 'sete dígitos (TSCodMunIBGE)');
+
+        if ($cnpj !== null) {
+            self::assertPattern($cnpj, '/^\d{14}$/', 'CNPJ', 'catorze dígitos (TSCNPJ)');
+        }
+
+        if ($cpf !== null) {
+            self::assertPattern($cpf, '/^\d{11}$/', 'CPF', 'onze dígitos (TSCPF)');
+        }
+
         $id = 'DPS';
-        $id .= substr($cLocEmi, 0, 7);
+        $id .= $cLocEmi;
         $id .= $cnpj !== null ? '2' : '1';
         $id .= str_pad($cnpj ?? $cpf ?? '', 14, '0', STR_PAD_LEFT);
         $id .= str_pad($serie, 5, '0', STR_PAD_LEFT);
@@ -61,5 +79,19 @@ final readonly class DpsId
         }
 
         return $id;
+    }
+
+    private static function assertPattern(string $valor, string $pattern, string $campo, string $esperado): void
+    {
+        if (preg_match($pattern, $valor) === 1) {
+            return;
+        }
+
+        throw new InvalidDpsArgument(sprintf(
+            '%s inválido para o identificador da DPS: "%s". Esperado %s.',
+            $campo,
+            $valor,
+            $esperado,
+        ));
     }
 }
