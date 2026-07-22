@@ -172,3 +172,50 @@ it('accumulates every problem of a single document', function () {
         ->toContain('TipoEvento desconhecido')
         ->toContain('decodificar base64');
 });
+
+// O swagger do ADN declara NSU como integer/int64. Os casos abaixo são tolerância
+// deliberada para a resposta fora do contrato, não shape conhecido da API.
+it('recovers an NSU given as decimal text, which the swagger does not declare', function (string|int $nsu, int $expected) {
+    $doc = DocumentoFiscal::fromArray(['NSU' => $nsu, 'TipoDocumento' => 'NFSE']);
+
+    expect($doc->nsu)->toBe($expected)
+        ->and($doc->parseError)->toBeNull();
+})->with([
+    'inteiro' => [123, 123],
+    'texto' => ['123', 123],
+    'texto com zeros à esquerda' => ['00123', 123],
+]);
+
+it('keeps the rest of the document when the NSU is not readable as a whole number', function (mixed $valor, string $tipo) {
+    $doc = DocumentoFiscal::fromArray(['NSU' => $valor, 'TipoDocumento' => 'NFSE']);
+
+    expect($doc->nsu)->toBeNull()
+        ->and($doc->tipoDocumento)->toBe(TipoDocumentoFiscal::Nfse)
+        ->and($doc->parseError)->toBe(sprintf('Campo NSU veio como %s, e não como número inteiro.', $tipo));
+})->with([
+    'texto não numérico' => ['abc', 'string'],
+    'float' => [1.5, 'float'],
+    'array' => [[1], 'array'],
+    'bool' => [true, 'bool'],
+]);
+
+it('keeps the nsu and names any field whose declared type the response broke', function (string $campo, mixed $valor, string $tipo) {
+    $doc = DocumentoFiscal::fromArray(['NSU' => 77, 'TipoDocumento' => 'NFSE', $campo => $valor]);
+
+    expect($doc->nsu)->toBe(77)
+        ->and($doc->parseError)->toContain(sprintf('Campo %s veio como %s, e não como texto.', $campo, $tipo));
+})->with([
+    'ChaveAcesso como array' => ['ChaveAcesso', ['x'], 'array'],
+    'ChaveAcesso como float' => ['ChaveAcesso', 1.5, 'float'],
+    'DataHoraGeracao como bool' => ['DataHoraGeracao', true, 'bool'],
+    'ArquivoXml como array' => ['ArquivoXml', [], 'array'],
+    'TipoEvento como int' => ['TipoEvento', 4, 'int'],
+]);
+
+it('reports a TipoDocumento that came outside its declared string type', function () {
+    $doc = DocumentoFiscal::fromArray(['NSU' => 1, 'TipoDocumento' => 4]);
+
+    expect($doc->nsu)->toBe(1)
+        ->and($doc->tipoDocumento)->toBeNull()
+        ->and($doc->parseError)->toBe('Campo TipoDocumento veio como int, e não como texto.');
+});

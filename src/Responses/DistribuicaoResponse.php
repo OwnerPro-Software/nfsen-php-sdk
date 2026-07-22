@@ -55,8 +55,14 @@ final readonly class DistribuicaoResponse
             );
         }
 
-        /** @var list<array{NSU?: int|null, ChaveAcesso?: string|null, TipoDocumento?: string|null, TipoEvento?: string|null, ArquivoXml?: string|null, DataHoraGeracao?: string|null}> $loteDFe */
-        $loteDFe = $result['LoteDFe'] ?? [];
+        // O swagger declara `LoteDFe` como array de `DistribuicaoNSU`; esta guarda é
+        // tolerância para a resposta que não o seguir, no mesmo espírito de
+        // DocumentoFiscal::fromArray(). Item escalar não traz nsu nem chave: não há
+        // o que preservar dele, e passá-lo adiante custaria a página inteira num
+        // TypeError.
+        $loteBruto = $result['LoteDFe'] ?? [];
+        /** @var list<array<string, mixed>> $loteDFe */
+        $loteDFe = is_array($loteBruto) ? array_values(array_filter($loteBruto, is_array(...))) : [];
 
         /** @var list<array{mensagem?: string, Mensagem?: string, codigo?: string, Codigo?: string, descricao?: string, Descricao?: string, complemento?: string, Complemento?: string, parametros?: list<string>, Parametros?: list<string>}> $alertas */
         $alertas = $result['Alertas'] ?? [];

@@ -517,7 +517,7 @@ Cada item do lote na `DistribuicaoResponse`.
 | `tipoEvento` | `?TipoEventoDistribuicao` | Tipo do evento (quando `tipoDocumento` é `Evento`). `null` quando ausente ou desconhecido |
 | `arquivoXml` | `?string` | XML do documento (já descomprimido). `null` quando ausente ou indecodificável |
 | `dataHoraGeracao` | `?string` | Data/hora de geração |
-| `parseError` | `?string` | Por que o documento não pôde ser interpretado por completo; `null` quando íntegro. Nenhum campo de `DistribuicaoNSU` é obrigatório no contrato do ADN, e o governo pode emitir tipos que esta versão do SDK ainda não conhece — nesses casos o item entra no lote com os campos afetados em `null`, em vez de derrubar o lote inteiro |
+| `parseError` | `?string` | Por que o documento não pôde ser interpretado por completo; `null` quando íntegro. Nenhum campo de `DistribuicaoNSU` é obrigatório no contrato do ADN, e o governo pode emitir tipos que esta versão do SDK ainda não conhece — campo ausente ou com valor desconhecido entra no lote com aquele campo em `null` e o motivo aqui, em vez de derrubar o lote inteiro. O mesmo vale, por precaução, para valor fora do tipo que o swagger declara |
 
 ### `ProcessingMessage`
 

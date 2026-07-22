@@ -351,3 +351,46 @@ it('keeps the whole batch when a single document cannot be parsed', function () 
         ->and($response->lote[1]->parseError)->not->toBeNull()
         ->and($response->lote[2]->arquivoXml)->toBe('<NFSe/>');
 });
+
+it('delivers the rest of the page when one document carries an unreadable field', function () {
+    // Tolerância, não contrato: o swagger declara o tipo de cada campo. Sem a guarda,
+    // porém, uma resposta fora dele virava TypeError dentro do array_map e derrubava a
+    // página inteira — inclusive os NSU de que o chamador precisa para refazer a busca.
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => [
+            ['NSU' => 1, 'ChaveAcesso' => makeChaveAcesso(), 'TipoDocumento' => 'NFSE'],
+            ['NSU' => '2', 'ChaveAcesso' => ['quebrado'], 'TipoDocumento' => 'NFSE'],
+            ['NSU' => 3, 'TipoDocumento' => 'EVENTO', 'TipoEvento' => 'CANCELAMENTO'],
+        ],
+    ]);
+
+    expect($response->lote)->toHaveCount(3)
+        ->and(array_map(fn ($doc) => $doc->nsu, $response->lote))->toBe([1, 2, 3])
+        ->and($response->lote[0]->parseError)->toBeNull()
+        ->and($response->lote[1]->parseError)->toContain('Campo ChaveAcesso veio como array')
+        ->and($response->lote[2]->parseError)->toBeNull();
+});
+
+it('drops a lote entry that is not an object at all', function () {
+    // O swagger declara LoteDFe como array de DistribuicaoNSU. Um escalar não traz nsu
+    // nem chave: não há o que preservar dele, e passá-lo adiante custaria a página. Com o descarte vindo antes do documento bom,
+    // o lote só continua indexado a partir de zero se as chaves forem refeitas.
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => ['lixo', 7, ['NSU' => 1, 'TipoDocumento' => 'NFSE']],
+    ]);
+
+    expect($response->lote)->toHaveCount(1)
+        ->and(array_keys($response->lote))->toBe([0])
+        ->and($response->lote[0]->nsu)->toBe(1);
+});
+
+it('treats a LoteDFe that is not a list as an empty page', function () {
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => 'nada disso',
+    ]);
+
+    expect($response->lote)->toBeEmpty();
+});
