@@ -227,6 +227,40 @@ it('states the destinatário is the tomador instead of calling it unidentified',
     expect($html)->not->toContain('DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO');
 });
 
+it('omits the PIS/COFINS row once the competência passes 2026', function (): void {
+    // NT 008, item 2.4.5, nota 6: a linha marcada com *** no Anexo I só é impressa
+    // para competência até o final do ano-calendário de 2026.
+    $base = sampleData();
+    $tribFed = new DanfseTributacaoFederal(
+        irrf: $base->tribFed->irrf, cp: $base->tribFed->cp, csll: $base->tribFed->csll,
+        pis: $base->tribFed->pis, cofins: $base->tribFed->cofins,
+        descricaoContribuicoesRetidas: $base->tribFed->descricaoContribuicoesRetidas,
+        exibePisCofins: false,
+    );
+    $data = new NfseData(
+        chaveAcesso: $base->chaveAcesso, numeroNfse: $base->numeroNfse,
+        competencia: $base->competencia, emissaoNfse: $base->emissaoNfse,
+        numeroDps: $base->numeroDps, serieDps: $base->serieDps, emissaoDps: $base->emissaoDps,
+        ambiente: $base->ambiente, situacao: $base->situacao, finalidade: $base->finalidade,
+        emitidaPor: $base->emitidaPor, ambienteGerador: $base->ambienteGerador,
+        municipioEmitente: $base->municipioEmitente,
+        emitente: $base->emitente, tomador: $base->tomador, intermediario: null,
+        destinatario: null, destinatarioEhTomador: false,
+        servico: $base->servico, tribMun: $base->tribMun, tribFed: $tribFed, tribIbsCbs: $base->tribIbsCbs,
+        totais: $base->totais, totaisTributos: $base->totaisTributos,
+        informacoesComplementares: $base->informacoesComplementares,
+    );
+
+    $html = (new DanfseHtmlRenderer(fakeQrGen()))->render($data);
+
+    expect($html)->not->toContain('PIS - Débito Apuração Própria');
+    expect($html)->not->toContain('COFINS - Débito Apuração Própria');
+    expect($html)->not->toContain('Descrição Contrib. Sociais - Retidas');
+    // O resto do bloco fica: a nota 6 suprime a linha, não a tributação federal.
+    expect($html)->toContain('IRRF');
+    expect($html)->toContain('Contribuição Previdenciária - Retida');
+});
+
 it('omits the suppressible ISSQN rows the NFS-e has no data for', function (): void {
     $html = (new DanfseHtmlRenderer(fakeQrGen()))->render(sampleData());
 

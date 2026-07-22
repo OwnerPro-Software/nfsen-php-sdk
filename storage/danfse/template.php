@@ -471,6 +471,13 @@
                     <span class="value"><?= $h($data->tribFed->csll) ?></span>
                 </td>
             </tr>
+            <?php
+            /*
+             * Nota 6 do item 2.4.5: esta linha só sai para competência até o fim do
+             * ano-calendário de 2026. É a linha marcada com *** no Anexo I.
+             */
+            ?>
+            <?php if ($data->tribFed->exibePisCofins): ?>
             <tr>
                 <td style="width: 25%;">
                     <span class="label">PIS - Débito Apuração Própria</span>
@@ -485,6 +492,7 @@
                     <span class="value"><?= $h($data->tribFed->descricaoContribuicoesRetidas) ?></span>
                 </td>
             </tr>
+            <?php endif; ?>
         </table>
     </div>
 

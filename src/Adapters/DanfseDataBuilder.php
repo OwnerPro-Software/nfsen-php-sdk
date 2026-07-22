@@ -144,7 +144,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             destinatarioEhTomador: $destinatarioEhTomador,
             servico: $this->buildServico($inf, $serv, $cServ),
             tribMun: $this->buildTribMun($inf, $tribMun, $valores, $regTrib),
-            tribFed: $this->buildTribFed($tribFed),
+            tribFed: $this->buildTribFed($tribFed, $this->str($infDps->dCompet)),
             tribIbsCbs: $this->buildTribIbsCbs($inf, $infDps, $valores, $trib),
             totais: $this->buildTotais($tribMun, $tribFed, $valores, $valNfse, $inf),
             totaisTributos: $this->buildTotaisTributos($totTrib),
@@ -294,7 +294,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         );
     }
 
-    private function buildTribFed(SimpleXMLElement $tribFed): DanfseTributacaoFederal
+    private function buildTribFed(SimpleXMLElement $tribFed, string $dCompet): DanfseTributacaoFederal
     {
         $pc = $tribFed->piscofins;
         $irrf = $this->str($tribFed->vRetIRRF);
@@ -310,7 +310,25 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             pis: $pis !== '' ? $this->fmt->currency($pis) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
             cofins: $cofins !== '' ? $this->fmt->currency($cofins) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
             descricaoContribuicoesRetidas: TpRetPisCofins::labelOf($this->str($pc?->tpRetPisCofins)), // @pest-mutate-ignore RemoveNullSafeOperator — piscofins é minOccurs=0.
+            exibePisCofins: $this->competenciaAlcancaPisCofins($dCompet),
         );
+    }
+
+    /**
+     * Nota 6 do item 2.4.5: a linha de PIS/COFINS vale "para as NFS-e emitidas com
+     * data de competência até o final do ano-calendário de 2026".
+     *
+     * Competência ilegível não suprime nada. `dCompet` é obrigatório no XSD, e deixar
+     * de imprimir tributo declarado por causa de um campo defeituoso perde mais do que
+     * imprimir uma linha a mais.
+     */
+    private function competenciaAlcancaPisCofins(string $dCompet): bool
+    {
+        // `dCompet` é xs:date — os quatro primeiros caracteres são o ano. Com quatro
+        // dígitos de cada lado, comparar como texto ordena igual a comparar como número.
+        $ano = substr($dCompet, 0, 4);
+
+        return ! ctype_digit($ano) || $ano <= '2026';
     }
 
     /**

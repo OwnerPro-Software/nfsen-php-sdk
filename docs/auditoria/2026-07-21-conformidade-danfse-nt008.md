@@ -20,7 +20,7 @@ A divergência 10 só apareceu depois que a 3 caiu: foi a rasterização feita p
 | 1 | **Alta** | 2.2.4 + Anexo I + 2.4.5 | Ordem das linhas trocada em todos os blocos de participante | **corrigida** |
 | 2 | Média | 2.4.5, nota 12 | Campo "E-mail" sai vazio em vez de `-` | **corrigida** |
 | 3 | ~~Média~~ | 2.2.3 + Anexo I | ~~Sem linhas divisórias internas (grade) nos blocos~~ | **retirada — era falsa** |
-| 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente | aberta |
+| 4 | Média | 2.4.5, nota 6 | Linha PIS/COFINS impressa incondicionalmente | **corrigida** |
 | 5 | Baixa | 2.4.5, nota 2 | Tomador ausente não colapsa para a frase da NT | aberta |
 | 6 | Baixa | 2.4.5 | Rótulo do intermediário: "CNPJ / CPF" em vez de "CNPJ / CPF / NIF" | aberta |
 | 7 | Baixa | 2.3.1 + nota 4 | Sem tratamento de "OPERAÇÃO NÃO SUJEITA AO ISSQN" | aberta |
@@ -124,6 +124,12 @@ Note-se o contraste com a nota 5, que **está** implementada corretamente (`exib
 **Impacto temporal:** nulo até 31/12/2026; a partir de competência 2027 o DANFSe imprimirá uma linha que a NT manda omitir.
 
 **Correção:** derivar um booleano de `dCompet <= 2026-12-31` no builder e condicionar a segunda linha do bloco "TRIBUTAÇÃO FEDERAL (EXCETO CBS)".
+
+> **Corrigida.** `DanfseTributacaoFederal::$exibePisCofins` decide, e o template condiciona a linha marcada com `***` no Anexo I. Medido no PDF: competência 2025-12-31 e 2026-12-31 imprimem os três campos; 2027-01-01 não imprime nenhum, e o documento encurta 0,57 cm — folga que o item 2.5.3 manda realocar aos quadros elásticos.
+>
+> Competência ilegível **mantém** a linha: `dCompet` é obrigatório no XSD, e deixar de imprimir tributo declarado por causa de um campo defeituoso perde mais do que imprimir uma linha a mais.
+>
+> A primeira versão da regra (`preg_match('/^(\d{4})/')` mais `(int) $ano[1] <= 2026`) deixou três mutantes vivos, e os três diziam a mesma coisa: com esse padrão `$ano[0]` e `$ano[1]` são iguais, o cast é redundante porque PHP já compara string numérica como número, e sem o early return o índice indefinido vira `0` — que passa no teste por acidente. Reescrita com `substr` e `ctype_digit`.
 
 ---
 
@@ -300,8 +306,8 @@ Isto **não é não conformidade**: o item 2.1 é explícito — "Embora os tama
 1. ~~**Divergência 1** (ordem das linhas)~~ — feita.
 2. ~~**Divergência 2** (e-mail sem traço)~~ — feita.
 3. ~~**Divergência 3** (grade interna)~~ — retirada; não havia divergência.
-4. **Divergência 10** (colunas erradas) — próxima da fila: mesma família da 1, duas células, sem risco de altura.
-5. **Divergência 4** (nota 6) — prazo real: competências a partir de 2027.
+4. ~~**Divergência 4** (nota 6)~~ — feita.
+5. **Divergência 10** (colunas erradas) — próxima da fila: mesma família da 1, duas células, sem risco de altura.
 6. **Divergências 5 a 7** — colapsos de bloco; ganham altura para os quadros elásticos.
 7. **Divergências 8 e 9** — documentar a 8; a 9 é polimento.
 

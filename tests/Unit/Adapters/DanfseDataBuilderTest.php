@@ -310,6 +310,31 @@ it('extracts tribFed fields', function () {
     expect($data->tribFed->cofins)->toBe('R$ 45,00');
 });
 
+// NT 008, item 2.4.5, nota 6: a linha de PIS/COFINS "será impressa para as NFS-e
+// emitidas com data de competência até o final do ano-calendário de 2026".
+it('keeps the PIS/COFINS line through the last competência of 2026', function (string $dCompet) {
+    $xml = str_replace('<dCompet>2026-01-15</dCompet>', "<dCompet>$dCompet</dCompet>", $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribFed->exibePisCofins)->toBeTrue();
+})->with(['2025-06-30', '2026-01-15', '2026-12-31']);
+
+it('drops the PIS/COFINS line from the first competência of 2027', function (string $dCompet) {
+    $xml = str_replace('<dCompet>2026-01-15</dCompet>', "<dCompet>$dCompet</dCompet>", $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribFed->exibePisCofins)->toBeFalse();
+})->with(['2027-01-01', '2030-08-09']);
+
+// Suprimir tributo declarado por causa de uma data ilegível perderia mais do que
+// imprimir uma linha a mais — e dCompet é obrigatório no XSD.
+it('keeps the PIS/COFINS line when the competência cannot be read', function () {
+    $xml = str_replace('<dCompet>2026-01-15</dCompet>', '<dCompet></dCompet>', $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribFed->exibePisCofins)->toBeTrue();
+});
+
 it('builds successfully when tribFed block is absent', function () {
     // tribFed é minOccurs=0 no XSD. XMLs reais (Simples Nacional) não incluem o bloco.
     $xml = preg_replace('|<tribFed>.*?</tribFed>|s', '', $this->xml);
