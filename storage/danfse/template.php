@@ -337,11 +337,9 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td colspan="4" class="section-header">
+                <td style="width: 25%;" class="section-header">
                   <span class="section-title">SERVIÇO PRESTADO</span>
                 </td>
-            </tr>
-            <tr>
                 <td style="width: 25%;">
                     <span class="label">Código de Tributação Nacional / Municipal</span>
                     <span class="value"><?= $h($data->servico->codigoTribNacional) ?> / <?= $h($data->servico->codigoTribMunicipal) ?></span>
@@ -350,7 +348,7 @@
                     <span class="label">Código da NBS</span>
                     <span class="value"><?= $h($data->servico->codigoNbs) ?></span>
                 </td>
-                <td colspan="2" style="width: 50%;">
+                <td style="width: 25%;">
                     <span class="label">Local da Prestação / Sigla UF / País</span>
                     <span class="value"><?= $h($data->servico->localPrestacao) ?> / <?= $h($data->servico->paisPrestacao) ?></span>
                 </td>
@@ -373,20 +371,24 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td colspan="4" class="section-header">
+                <td style="width: 25%;" class="section-header">
                   <span class="section-title">TRIBUTAÇÃO MUNICIPAL (ISSQN)</span>
                 </td>
-            </tr>
-            <tr>
                 <td style="width: 25%;">
                     <span class="label">Tipo de Tributação do ISSQN</span>
                     <span class="value"><?= $h($data->tribMun->tributacaoIssqn) ?></span>
                 </td>
+                <?php
+                /*
+                 * A tabela do item 2.4.5 põe estes dois campos em 0,30 e 5,41, o que não
+                 * deixa coluna para o título do bloco. O Anexo I os desloca uma coluna à
+                 * direita, e é ele que manda: o item 2.2.4 exige a disposição do anexo.
+                 */
+                ?>
                 <td colspan="2" style="width: 50%;">
                     <span class="label">Município / Sigla UF / País da Incidência do ISSQN</span>
                     <span class="value"><?= $h($data->tribMun->municipioIncidencia) ?></span>
                 </td>
-                <td style="width: 25%;"></td>
             </tr>
             <?php if ($data->tribMun->exibeRegimeEImunidade): ?>
             <tr>
@@ -453,11 +455,9 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td colspan="4" class="section-header">
+                <td style="width: 25%;" class="section-header">
                   <span class="section-title">TRIBUTAÇÃO FEDERAL (EXCETO CBS)</span>
                 </td>
-            </tr>
-            <tr>
                 <td style="width: 25%;">
                     <span class="label">IRRF</span>
                     <span class="value"><?= $h($data->tribFed->irrf) ?></span>
@@ -470,7 +470,6 @@
                     <span class="label">Contribuições Sociais - Retidas</span>
                     <span class="value"><?= $h($data->tribFed->csll) ?></span>
                 </td>
-                <td style="width: 25%;"></td>
             </tr>
             <tr>
                 <td style="width: 25%;">
@@ -493,12 +492,10 @@
     <div class="bordered-section">
         <table>
             <tr>
-                <td colspan="4" class="section-header">
+                <td style="width: 25%;" class="section-header">
                   <span class="section-title">TRIBUTAÇÃO IBS / CBS</span>
                 </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="width: 50%;">
+                <td style="width: 25%;">
                     <span class="label">CST / cClassTrib</span>
                     <span class="value"><?= $h($data->tribIbsCbs->cstClassTrib) ?></span>
                 </td>
