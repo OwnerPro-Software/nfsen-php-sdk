@@ -1,6 +1,6 @@
 {
   "name": "ownerpro/nfsen-php-sdk",
-  "description": "Pacote Laravel para emissão de NFSe Nacional",
+  "description": "SDK PHP para emissão de NFS-e Nacional — Laravel ou standalone (sem framework)",
   "license": "MIT",
   "homepage": "https://github.com/OwnerPro-Software/nfsen-php-sdk",
   "keywords": [
@@ -9,6 +9,8 @@
     "nota-fiscal-servico",
     "nfse-nacional",
     "laravel",
+    "standalone",
+    "sdk",
     "php",
     "xml",
     "certificado-digital",
