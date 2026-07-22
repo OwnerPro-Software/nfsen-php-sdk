@@ -36,65 +36,6 @@ function nfsenContaPaginas(string $pdf): int
     return preg_match_all('#/Type\s*/Page[^s]#', $pdf);
 }
 
-/**
- * NFS-e no limite: todos os blocos preenchidos e os dois campos livres no tamanho
- * máximo que a NT admite — 1300 caracteres de descrição e 2000 de informações
- * complementares, ambos em caixa alta, que é mais larga e quebra linha antes.
- *
- * O pior caso vem da especificação, não de um número escolhido a dedo. E cabe com os
- * limites da própria NT: nada de corte extra do SDK para forçar a página única.
- */
-function nfsenXmlNoLimite(): string
-{
-    $xml = (string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-autorizada.xml');
-
-    $xml = str_replace(
-        '</tribMun>',
-        '<tpImunidade>5</tpImunidade>'
-        .'<exigSusp><tpSusp>2</tpSusp><nProcesso>0012345-67.2026.8.19.0002</nProcesso></exigSusp>'
-        .'<BM><nBM>99</nBM><vRedBCBM>90.00</vRedBCBM></BM></tribMun>',
-        $xml,
-    );
-
-    $xml = str_replace(
-        '</infDPS>',
-        '<IBSCBS><cIndOp>000001</cIndOp><indDest>1</indDest>'
-        .'<dest><CNPJ>91712343000134</CNPJ><xNome>DESTINATARIO DA OPERACAO SOCIEDADE ANONIMA</xNome>'
-        .'<end><endNac><cMun>3550308</cMun><CEP>01310100</CEP></endNac>'
-        .'<xLgr>Avenida Brigadeiro Faria Lima</xLgr><nro>5000</nro><xCpl>Conjunto 1801</xCpl>'
-        .'<xBairro>Itaim Bibi</xBairro></end>'
-        .'<fone>1155554444</fone><email>destinatario@example.com</email></dest>'
-        .'<valores><trib><gIBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib></gIBSCBS></trib></valores>'
-        .'</IBSCBS></infDPS>',
-        $xml,
-    );
-
-    $xml = str_replace(
-        '</infNFSe>',
-        '<IBSCBS><cLocalidadeIncid>3550308</cLocalidadeIncid><valores><vBC>1000.00</vBC>'
-        .'<uf><pIBSUF>10.00</pIBSUF><pRedAliqUF>1.00</pRedAliqUF><pAliqEfetUF>9.00</pAliqEfetUF></uf>'
-        .'<mun><pIBSMun>2.00</pIBSMun><pRedAliqMun>0.50</pRedAliqMun><pAliqEfetMun>1.80</pAliqEfetMun></mun>'
-        .'<fed><pCBS>8.80</pCBS><pRedAliqCBS>0.80</pRedAliqCBS><pAliqEfetCBS>8.00</pAliqEfetCBS></fed>'
-        .'</valores><totCIBS>'
-        .'<gIBS><gIBSUFTot><vIBSUF>90.00</vIBSUF></gIBSUFTot>'
-        .'<gIBSMunTot><vIBSMun>18.00</vIBSMun></gIBSMunTot><vIBSTot>108.00</vIBSTot></gIBS>'
-        .'<gCBS><vCBS>80.00</vCBS></gCBS><vTotNF>1188.00</vTotNF></totCIBS></IBSCBS></infNFSe>',
-        $xml,
-    );
-
-    $xml = (string) preg_replace(
-        '|<xDescServ>[^<]*</xDescServ>|',
-        '<xDescServ>'.str_repeat('DESCRICAO EXTENSA DO SERVICO PRESTADO NO LIMITE DA NORMA. ', 23).'</xDescServ>',
-        $xml,
-    );
-
-    return (string) preg_replace(
-        '|<xInfComp>[^<]*</xInfComp>|',
-        '<xInfComp>'.str_repeat('INFORMACAO COMPLEMENTAR RELEVANTE PARA O TOMADOR. ', 41).'</xInfComp>',
-        $xml,
-    );
-}
-
 it('prints a plain NFS-e on a single A4 page', function () {
     $pdf = nfsenRenderizaPdf((string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-autorizada.xml'));
 
