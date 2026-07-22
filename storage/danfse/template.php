@@ -55,7 +55,15 @@
 
     <!-- Grade de Identificação -->
     <div class="bordered-section first-section">
-        <table style="min-height: 100px;">
+        <?php
+        /*
+         * O bloco de identificação vai de 1,48 cm a 4,32 cm na tabela do item 2.4.5 —
+         * 2,84 cm, ou 81 pontos. Não é folga estética: o QR Code do item 2.4.3 começa em
+         * Y 1,67 e sua descrição desce até cerca de 4,0 cm; com o bloco mais curto que a
+         * norma, esse texto invade a primeira linha do bloco do prestador.
+         */
+        ?>
+        <table style="min-height: 81pt;">
             <tr>
                 <td colspan="3">
                     <span class="label">Chave de Acesso da NFS-e</span>

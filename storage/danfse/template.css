@@ -20,7 +20,6 @@ body {
     /* Item 2.2.2: margem de 0,15cm (4,25pt) a 0,20cm (5,67pt), inclusive em cima e
        embaixo. É essa folga que faz o pior caso caber na página única do item 2.2. */
     margin: 5pt;
-    padding: 0 5pt;
     /* Item 2.2.3: a página tem borda de 1 ponto. */
     border: 1pt #000 solid;
     /* A4 (841,89pt) menos as duas margens e as duas bordas. */
@@ -67,6 +66,16 @@ table > tbody > tr > td {
     color: #000;
     display: block;
     margin-bottom: 0;
+}
+
+/*
+ * Exceção do item 2.4.2: só os campos do item 2.1.2 (Dados de Identificação da NFS-e)
+ * têm rótulo de 7 pontos em caixa alta. Os demais seguem os 6 pontos do parágrafo
+ * anterior — daí a regra ser presa ao bloco, e não ao `.label` genérico.
+ */
+.first-section .label {
+    font-size: 7pt;
+    text-transform: uppercase;
 }
 
 /*
@@ -128,8 +137,10 @@ table > tbody > tr > td {
     vertical-align: middle;
 }
 
+/* Item 2.4.5: o quadro começa em 15,62 cm e tem 5,09 cm de largura. Largura aferida no
+   PDF, não calculada: a tabela do cabeçalho reparte a sobra entre as outras células. */
 .quadro-ident {
-    width: 150pt;
+    width: 142.4pt;
     text-align: left;
     vertical-align: top;
 }
@@ -162,17 +173,24 @@ table > tbody > tr > td {
     color: #ff0000;
 }
 
+/*
+ * Item 2.4.3: o QR Code fica em X 17,48 cm, Y 1,67 cm, com no mínimo 1,52 x 1,52 cm.
+ *
+ * O deslocamento negativo à direita anula o padding lateral da célula, que de outro modo
+ * empurraria o código 2pt para dentro. Os valores foram fechados medindo o PDF a 300 dpi.
+ */
 .qr-container {
     text-align: center;
     position: absolute;
-    right: 0;
-    top: 0;
+    right: -3pt;
+    top: 13pt;
 }
 
-/* Item 2.4.3: a descrição sob o QR Code, em formato normal e Microsoft Sans Serif. */
+/* Item 2.4.3: a descrição sob o QR Code, em seis pontos, formato normal e Microsoft
+   Sans Serif. O mesmo item a quer em três linhas — conferido no PDF renderizado. */
 .qr-complemento {
     font-family: 'Microsoft Sans Serif', Helvetica, Arial, sans-serif;
-    font-size: 5pt;
+    font-size: 6pt;
     line-height: 1.15;
     padding-top: 1pt;
     text-align: left;
