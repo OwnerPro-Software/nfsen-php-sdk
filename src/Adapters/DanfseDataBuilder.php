@@ -261,7 +261,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $suspensao = $this->fmt->limit(TpSusp::labelOf($this->str($exigSusp->tpSusp)), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
         $nProcesso = $this->str($exigSusp->nProcesso, '-');
 
-        $beneficio = TipoBeneficioMunicipal::labelOf($this->str($valNfse->tpBM));
+        $beneficio = $this->fmt->limit(TipoBeneficioMunicipal::labelOf($this->str($valNfse->tpBM)), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 vem da NT 008; 36/38 não representa regressão.
         // Apurado pelo fisco em infNFSe/valores; o declarado na DPS é a redução de
         // base em tribMun/BM. A NT lista os dois como origem do mesmo campo.
         $calculoBM = $this->currencyOrDash($this->firstOf($valNfse->vCalcBM, $tribMun->BM->vRedBCBM));

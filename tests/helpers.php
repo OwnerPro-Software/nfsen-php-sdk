@@ -346,6 +346,22 @@ function nfsenXmlReaderFiles(): array
                     'pessoa' => [$d.'/toma', $d.'/interm', $d.'/IBSCBS/dest'],
                     'end' => [$d.'/toma/end', $d.'/interm/end', $d.'/IBSCBS/dest/end'],
                     'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac', $d.'/IBSCBS/dest/end/endNac'],
+                    'endExt' => [$d.'/toma/end/endExt', $d.'/interm/end/endExt', $d.'/IBSCBS/dest/end/endExt'],
+                ],
+                // O método comum de município serve os três participantes de
+                // `participanteDe()` e também o prestador, que chega por
+                // `municipioDoPrestador()`.
+                'codigoIbgeDe' => [
+                    'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac', $d.'/IBSCBS/dest/end/endNac', $d.'/prest/end/endNac'],
+                    'endExt' => [$d.'/toma/end/endExt', $d.'/interm/end/endExt', $d.'/IBSCBS/dest/end/endExt', $d.'/prest/end/endExt'],
+                ],
+                'codigoPostal' => [
+                    'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac', $d.'/IBSCBS/dest/end/endNac', $d.'/prest/end/endNac'],
+                    'endExt' => [$d.'/toma/end/endExt', $d.'/interm/end/endExt', $d.'/IBSCBS/dest/end/endExt', $d.'/prest/end/endExt'],
+                ],
+                'municipioDaPessoa' => [
+                    'endNac' => [$d.'/toma/end/endNac', $d.'/interm/end/endNac', $d.'/IBSCBS/dest/end/endNac', $d.'/prest/end/endNac'],
+                    'endExt' => [$d.'/toma/end/endExt', $d.'/interm/end/endExt', $d.'/IBSCBS/dest/end/endExt', $d.'/prest/end/endExt'],
                 ],
             ],
         ],

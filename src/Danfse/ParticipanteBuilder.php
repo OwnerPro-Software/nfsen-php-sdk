@@ -65,17 +65,22 @@ final readonly class ParticipanteBuilder
         }
 
         return new DanfseParticipante(
-            nome: $this->firstOf($prest->xNome, $emit->xNome) ?: '-',
+            nome: $this->limitaNome($this->firstOf($prest->xNome, $emit->xNome)),
             cnpjCpf: $identificacao,
             im: $this->firstOf($prest->IM, $emit->IM) ?: '-',
             telefone: $this->fmt->phone($this->firstOf($prest->fone, $emit->fone)),
             email: $this->firstOf($prest->email, $emit->email) ?: '-',
-            endereco: $endereco !== '' ? $endereco : '-',
+            endereco: $this->limitaEndereco($endereco),
             municipio: $this->municipioDoPrestador($endPrest, $enderEmit, $inf),
-            cep: $this->fmt->cep($this->firstOf($endPrest?->endNac?->CEP, $enderEmit->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — end/endNac são opcionais no XSD.
-            codigoIbge: $this->firstOf($endPrest?->endNac?->cMun, $enderEmit->cMun) ?: '-', // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-            simplesNacional: OpSimpNac::labelOf($this->str($regTrib->opSimpNac)),
-            regimeSN: RegApTribSN::labelOf($this->str($regTrib->regApTribSN)),
+            // O endereço declarado na DPS vem antes do cadastro do fisco porque os dois
+            // descrevem o mesmo prestador: `emit/enderNac` é obrigatório em TCEmitente e
+            // traria um CEP brasileiro para quem a DPS declarou fora do país.
+            cep: $this->codigoPostal($endPrest?->endNac, $endPrest?->endExt, $enderEmit->CEP), // @pest-mutate-ignore RemoveNullSafeOperator — end/endNac/endExt são opcionais no XSD.
+            codigoIbge: $this->codigoIbgeDe($endPrest?->endNac, $endPrest?->endExt, $enderEmit->cMun), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            // A NT 008 corta estas descrições nos 37 e 77 caracteres da tabela do item
+            // 2.4.5; as do leiaute chegam a 59 e 136.
+            simplesNacional: $this->fmt->limit(OpSimpNac::labelOf($this->str($regTrib->opSimpNac)), 37), // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 vem da NT 008; 36/38 não representa regressão.
+            regimeSN: $this->fmt->limit(RegApTribSN::labelOf($this->str($regTrib->regApTribSN)), 77), // @pest-mutate-ignore IncrementInteger,DecrementInteger — 77 vem da NT 008; 76/78 não representa regressão.
         );
     }
 
@@ -133,6 +138,7 @@ final readonly class ParticipanteBuilder
     {
         $end = $pessoa->end;
         $endNac = $end?->endNac; // @pest-mutate-ignore RemoveNullSafeOperator — end é null quando o próprio participante falta no XML; sem o ?-> o acesso emite warning.
+        $endExt = $end?->endExt; // @pest-mutate-ignore RemoveNullSafeOperator — idem; `endExt` é o outro ramo do <xs:choice> de TCEndereco.
 
         $identificacao = ($this->identificacao)(
             $this->str($pessoa->CNPJ),
@@ -144,16 +150,86 @@ final readonly class ParticipanteBuilder
         $endereco = $this->joinAddress($end?->xLgr, $end?->nro, $end?->xCpl, $end?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 no XSD; ?-> previne crash quando <end> ausente.
 
         return new DanfseParticipante(
-            nome: $this->str($pessoa->xNome, '-'),
+            nome: $this->limitaNome($this->str($pessoa->xNome)),
             cnpjCpf: $identificacao,
             im: $im,
             telefone: $this->fmt->phone($this->str($pessoa->fone)),
             email: $this->str($pessoa->email, '-'),
-            endereco: $endereco !== '' ? $endereco : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — guard defensivo; joinAddress() já normaliza para '' quando vazio.
-            municipio: Municipios::lookup($this->str($endNac?->cMun)), // @pest-mutate-ignore RemoveNullSafeOperator — endNac null quando <end> ausente.
-            cep: $this->fmt->cep($this->str($endNac?->CEP)), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-            codigoIbge: $this->str($endNac?->cMun, '-'), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            endereco: $this->limitaEndereco($endereco),
+            municipio: $this->municipioDaPessoa($endNac, $endExt),
+            cep: $this->codigoPostal($endNac, $endExt),
+            codigoIbge: $this->codigoIbgeDe($endNac, $endExt),
         );
+    }
+
+    /**
+     * Lado esquerdo do campo "CÓDIGO IBGE / CEP" (item 2.4.5).
+     *
+     * Participante no exterior não tem código do IBGE, e o cadastro nacional que
+     * serve de fallback contradiria o endereço que a DPS declarou fora do país.
+     */
+    private function codigoIbgeDe(?SimpleXMLElement $endNac, ?SimpleXMLElement $endExt, ?SimpleXMLElement $fallbackNacional = null): string
+    {
+        if ($this->str($endExt?->xCidade) !== '') { // @pest-mutate-ignore RemoveNullSafeOperator — endExt null quando <end> ausente.
+            return '-';
+        }
+
+        return $this->firstOf($endNac?->cMun, $fallbackNacional) ?: '-'; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+    }
+
+    /**
+     * Campo "MUNICÍPIO / SIGLA UF" (item 2.4.5), que a tabela alimenta por dois
+     * caminhos: `end/endNac/cMun`, resolvido pela tabela do IBGE, ou `end/endExt`
+     * para quem está fora do país. No exterior não há UF — `xEstProvReg` é o que a
+     * identifica, e sem ele a cidade sai sozinha.
+     */
+    private function municipioDaPessoa(?SimpleXMLElement $endNac, ?SimpleXMLElement $endExt): string
+    {
+        $nacional = Municipios::lookup($this->str($endNac?->cMun)); // @pest-mutate-ignore RemoveNullSafeOperator — endNac null quando <end> ausente.
+        if ($nacional !== '-') {
+            return $nacional;
+        }
+
+        $partes = array_filter([
+            $this->str($endExt?->xCidade), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+            $this->str($endExt?->xEstProvReg), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+        ], static fn (string $parte): bool => $parte !== '');
+
+        return $partes === [] ? '-' : implode(' - ', $partes);
+    }
+
+    /**
+     * Lado direito do campo "CÓDIGO IBGE / CEP" (item 2.4.5): `endNac/CEP` ou, para
+     * quem está fora do país, `endExt/cEndPost`.
+     *
+     * O código postal do exterior sai sem máscara: `TSCodigoEndPostal` é alfanumérico
+     * e o formato de CEP brasileiro descartaria letras.
+     */
+    private function codigoPostal(?SimpleXMLElement $endNac, ?SimpleXMLElement $endExt, ?SimpleXMLElement $fallbackNacional = null): string
+    {
+        $cep = $this->str($endNac?->CEP); // @pest-mutate-ignore RemoveNullSafeOperator — endNac null quando <end> ausente.
+        if ($cep !== '') {
+            return $this->fmt->cep($cep);
+        }
+
+        $exterior = $this->str($endExt?->cEndPost); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+
+        return $exterior !== '' ? $exterior : $this->fmt->cep($this->str($fallbackNacional));
+    }
+
+    /**
+     * Nome e endereço saem de campos de 80 caracteres que a tabela do item 2.4.5 manda
+     * cortar com reticências acima de 77; o leiaute admite 255 em ambos, e um deles
+     * inteiro empurraria o DANFSe para a segunda página (item 2.2).
+     */
+    private function limitaNome(string $nome): string
+    {
+        return $nome !== '' ? $this->fmt->limit($nome, 77) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — 77 vem da NT 008; 76/78 não representa regressão.
+    }
+
+    private function limitaEndereco(string $endereco): string
+    {
+        return $endereco !== '' ? $this->fmt->limit($endereco, 77) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
     }
 
     /**
@@ -166,7 +242,7 @@ final readonly class ParticipanteBuilder
      */
     private function municipioDoPrestador(?SimpleXMLElement $endPrest, SimpleXMLElement $enderEmit, SimpleXMLElement $inf): string
     {
-        $municipio = $this->resolveMunicipio($endPrest?->endNac?->cMun, null); // @pest-mutate-ignore RemoveNullSafeOperator — end/endNac são opcionais no XSD.
+        $municipio = $this->municipioDaPessoa($endPrest?->endNac, $endPrest?->endExt); // @pest-mutate-ignore RemoveNullSafeOperator — end/endNac/endExt são opcionais no XSD.
         if ($municipio !== '-') {
             return $municipio;
         }

@@ -154,7 +154,7 @@
                 </td>
                 <td>
                     <span class="label">Código IBGE / CEP</span>
-                    <span class="value"><?= $h($data->emitente->codigoIbge) ?> / <?= $h($data->emitente->cep) ?></span>
+                    <span class="value"><?= $h($data->emitente->codigoIbgeCep()) ?></span>
                 </td>
             </tr>
             <tr>
@@ -223,7 +223,7 @@
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Código IBGE / CEP</span>
-                    <span class="value"><?= $h($data->tomador->codigoIbge) ?> / <?= $h($data->tomador->cep) ?></span>
+                    <span class="value"><?= $h($data->tomador->codigoIbgeCep()) ?></span>
                 </td>
             </tr>
             <tr>
@@ -281,7 +281,7 @@
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Código IBGE / CEP</span>
-                    <span class="value"><?= $h($data->destinatario->codigoIbge) ?> / <?= $h($data->destinatario->cep) ?></span>
+                    <span class="value"><?= $h($data->destinatario->codigoIbgeCep()) ?></span>
                 </td>
             </tr>
             <tr>
@@ -334,7 +334,7 @@
                 </td>
                 <td style="width: 25%;">
                     <span class="label">Código IBGE / CEP</span>
-                    <span class="value"><?= $h($data->intermediario->codigoIbge) ?> / <?= $h($data->intermediario->cep) ?></span>
+                    <span class="value"><?= $h($data->intermediario->codigoIbgeCep()) ?></span>
                 </td>
             </tr>
             <tr>

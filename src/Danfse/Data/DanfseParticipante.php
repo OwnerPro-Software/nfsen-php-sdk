@@ -29,4 +29,20 @@ final readonly class DanfseParticipante
         public string $simplesNacional = '-',
         public string $regimeSN = '-',
     ) {}
+
+    /**
+     * Campo "CÓDIGO IBGE / CEP" do item 2.4.5, que a NT preenche com `cMun + CEP`
+     * no endereço nacional e com `cEndPost` no endereço no exterior — daí o campo
+     * sair com um lado só quando o participante está fora do país, e não com o
+     * traço de campo ausente ao lado do código postal.
+     */
+    public function codigoIbgeCep(): string
+    {
+        $partes = array_filter(
+            [$this->codigoIbge, $this->cep],
+            static fn (string $parte): bool => $parte !== '' && $parte !== '-',
+        );
+
+        return $partes === [] ? '-' : implode(' / ', $partes);
+    }
 }

@@ -806,6 +806,17 @@ echo $data->tribIbsCbs->valorTotalIbs;   // "R$ 108,00"
 | `informacoesComplementares` | `string` | União dos dez campos, com reticências acima de 1997 caracteres |
 | `marcaDagua` | `?MarcaDagua` | "CANCELADA"/"SUBSTITUÍDA"; `null` na nota vigente |
 
+Em `DanfseParticipante`, `municipio`, `codigoIbge` e `cep` cobrem os dois ramos de
+endereço do leiaute: `end/endNac` (município da tabela do IBGE e CEP) e `end/endExt`
+(cidade, província e código postal do exterior, este último sem máscara, por ser
+alfanumérico). No exterior não há código do IBGE e `codigoIbge` sai `-`;
+`codigoIbgeCep()` monta o campo único "CÓDIGO IBGE / CEP" do item 2.4.5, com um lado só
+quando o participante está fora do país.
+
+Nome e endereço saem com reticências acima de 77 caracteres, como as descrições de
+opção do Simples Nacional (37), do regime de apuração pelo SN (77) e do benefício
+municipal (37) — os limites da tabela do item 2.4.5.
+
 Enums com `label()`, que devolvem a descrição do leiaute — todos conferidos contra a
 `<xs:documentation>` do XSD por teste:
 

@@ -1344,3 +1344,100 @@ it('falls back to a dash when the NFS-e names no issuing municipality', function
 
     expect($data->municipioEmitente)->toBe('-');
 });
+
+// NT 008, item 2.4.5: os blocos de participante têm caminho alternativo em
+// `end/endExt` — `xCidade` no lugar de `cMun` e `cEndPost` no lugar do CEP.
+it('reads the address of a participant located abroad', function () {
+    $xml = (string) preg_replace(
+        '|<endNac>\s*<cMun>3550308</cMun>\s*<CEP>01310100</CEP>\s*</endNac>|',
+        '<endExt><cPais>AR</cPais><cEndPost>C1425DKE</cEndPost><xCidade>Buenos Aires</xCidade><xEstProvReg>Buenos Aires</xEstProvReg></endExt>',
+        $this->xml,
+    );
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tomador?->municipio)->toBe('Buenos Aires - Buenos Aires');
+    expect($data->tomador?->cep)->toBe('C1425DKE');
+    // Não existe código do IBGE no exterior, e o campo é único no DANFSe.
+    expect($data->tomador?->codigoIbge)->toBe('-');
+    expect($data->tomador?->codigoIbgeCep())->toBe('C1425DKE');
+});
+
+it('keeps the city alone when the foreign address names no province', function () {
+    $xml = (string) preg_replace(
+        '|<endNac>\s*<cMun>3550308</cMun>\s*<CEP>01310100</CEP>\s*</endNac>|',
+        '<endExt><cPais>PT</cPais><cEndPost>1000-001</cEndPost><xCidade>Lisboa</xCidade></endExt>',
+        $this->xml,
+    );
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tomador?->municipio)->toBe('Lisboa');
+});
+
+it('prefers the foreign address the DPS declared over the emitente registry', function () {
+    // `emit/enderNac` é obrigatório em TCEmitente e traz endereço nacional mesmo
+    // para prestador no exterior; a NT amarra o bloco a `infDPS/prest/`.
+    $xml = str_replace(
+        '<fone>2130001234</fone>',
+        '<end><endExt><cPais>PT</cPais><cEndPost>1000-001</cEndPost><xCidade>Lisboa</xCidade><xEstProvReg>Lisboa</xEstProvReg></endExt>'
+            .'<xLgr>Avenida da Liberdade</xLgr><nro>10</nro><xBairro>Santo António</xBairro></end><fone>2130001234</fone>',
+        $this->xml,
+    );
+
+    $data = $this->builder->build($xml);
+
+    expect($data->emitente->municipio)->toBe('Lisboa - Lisboa');
+    expect($data->emitente->cep)->toBe('1000-001');
+    expect($data->emitente->codigoIbge)->toBe('-');
+});
+
+// NT 008, item 2.4.5: nome e endereço saem em campos de 80 caracteres, com
+// reticências acima de 77 — o leiaute admite bem mais que isso.
+it('truncates a participant name longer than the notice allows', function () {
+    $xml = str_replace(
+        '<xNome>CLIENTE FICTICIO COMERCIO S.A.</xNome>',
+        '<xNome>COMPANHIA BRASILEIRA DE DESENVOLVIMENTO DE SOFTWARE E SERVICOS DIGITAIS INTEGRADOS S.A.</xNome>',
+        $this->xml,
+    );
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tomador?->nome)->toBe('COMPANHIA BRASILEIRA DE DESENVOLVIMENTO DE SOFTWARE E SERVICOS DIGITAIS...');
+});
+
+it('truncates a participant address longer than the notice allows', function () {
+    $xml = str_replace(
+        '<xLgr>Avenida Paulista</xLgr>',
+        '<xLgr>Avenida Presidente Juscelino Kubitschek de Oliveira</xLgr>',
+        $this->xml,
+    );
+    $xml = str_replace('<nro>1000</nro>', '<nro>5000</nro><xCpl>Bloco B Andar 12</xCpl>', $xml);
+    $xml = str_replace('<xBairro>Bela Vista</xBairro>', '<xBairro>Vila Nova Conceicao</xBairro>', $xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tomador?->endereco)->toBe('Avenida Presidente Juscelino Kubitschek de Oliveira, 5000, Bloco B Andar 12,...');
+});
+
+// As descrições do leiaute passam dos 37 e 77 caracteres dos campos do item 2.4.5.
+it('truncates the Simples Nacional and its apuration regime descriptions', function () {
+    $xml = str_replace(
+        '<opSimpNac>1</opSimpNac>',
+        '<opSimpNac>2</opSimpNac><regApTribSN>3</regApTribSN>',
+        $this->xml,
+    );
+
+    $data = $this->builder->build($xml);
+
+    expect($data->emitente->simplesNacional)->toBe('Optante - Microempreendedor Individua...');
+    expect($data->emitente->regimeSN)->toBe('Regime de apuração dos tributos federais e municipal por fora do SN conforme...');
+});
+
+it('truncates the municipal benefit description', function () {
+    $xml = str_replace('<vLiq>', '<tpBM>4</tpBM><vLiq>', $this->xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->beneficioMunicipal)->toBe("Alíquota Diferenciada de 'aliqDifBM'...");
+});
