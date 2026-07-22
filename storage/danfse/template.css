@@ -55,6 +55,19 @@ table > tbody > tr > td {
     border-bottom: none;
 }
 
+/*
+ * Blocos reduzidos à frase única das notas 2, 3 e 4 do item 2.4.5. As notas fixam
+ * altura mínima de 0,32 cm (9,07 pt) e largura mínima de 20,40 cm — a largura já vem
+ * do bloco, que ocupa a linha inteira; a altura precisa ser declarada, porque uma
+ * linha de 7 pt fica abaixo do mínimo.
+ */
+.bloco-colapsado {
+    min-height: 9.1pt;
+    text-align: center;
+    font-weight: normal;
+    font-size: 7pt;
+}
+
 .first-section table td {
     padding-bottom: 0 !important;
 }

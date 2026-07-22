@@ -72,6 +72,28 @@ function nfsenTexto(string $conteudo, string $trecho): array
     return ['x' => (float) $m[1], 'y' => (float) $m[2], 'corpo' => (float) $m[3]];
 }
 
+/**
+ * Ordenadas das divisórias de bloco — os segmentos horizontais de meio ponto que o
+ * item 2.2.3 exige — da mais alta para a mais baixa, em pt.
+ *
+ * @return list<float>
+ */
+function nfsenDivisorias(string $conteudo): array
+{
+    preg_match_all('#([\d.]+) ([\d.]+) m\s+([\d.]+) ([\d.]+) l\s+S#', $conteudo, $m, PREG_SET_ORDER);
+
+    $ys = [];
+    foreach ($m as $traco) {
+        if ($traco[2] === $traco[4] && (float) $traco[3] - (float) $traco[1] > 400) {
+            $ys[] = (float) $traco[2];
+        }
+    }
+
+    rsort($ys);
+
+    return $ys;
+}
+
 beforeEach(function () {
     $this->conteudo = nfsenConteudoPdf((string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-autorizada.xml'));
 });
@@ -140,4 +162,23 @@ it('sets the QR description in six points, over three lines', function () {
     preg_match_all('#BT [\d.]+ ([\d.]+) Td /\w+ 6\.0 Tf\s*\[\((?:A autenticidade|leitura deste|acesso no)#', $this->conteudo, $linhas);
 
     expect(array_unique($linhas[1]))->toHaveCount(3);
+});
+
+// Notas 2, 3 e 4 do item 2.4.5: o bloco reduzido à frase única tem altura mínima de
+// 0,32 cm e largura mínima de 20,40 cm.
+it('gives a collapsed block the minimum height the notice sets', function () {
+    $frase = nfsenTexto($this->conteudo, 'DESTINAT')['y'];
+
+    $acima = null;
+    $abaixo = null;
+    foreach (nfsenDivisorias($this->conteudo) as $y) {
+        if ($y > $frase) {
+            $acima = $y;
+        } elseif ($abaixo === null) {
+            $abaixo = $y;
+        }
+    }
+
+    expect($acima)->not->toBeNull()->and($abaixo)->not->toBeNull();
+    expect(round(($acima - $abaixo) / 72 * 2.54, 3))->toBeGreaterThanOrEqual(0.32);
 });

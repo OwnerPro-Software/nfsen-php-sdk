@@ -189,7 +189,7 @@
 
     <!-- Tomador -->
     <?php if ($data->tomador === null): ?>
-    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+    <div class="bordered-section bloco-colapsado">
         TOMADOR/ADQUIRENTE DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e
     </div>
     <?php else: ?>
@@ -242,7 +242,7 @@
 
     <!-- Destinatário da Operação -->
     <?php if ($data->destinatarioEhTomador): ?>
-    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+    <div class="bordered-section bloco-colapsado">
         O DESTINATÁRIO É O PRÓPRIO TOMADOR/ADQUIRENTE DA OPERAÇÃO
     </div>
     <?php elseif ($data->destinatario): ?>
@@ -297,7 +297,7 @@
         </table>
     </div>
     <?php else: ?>
-    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+    <div class="bordered-section bloco-colapsado">
         DESTINATÁRIO DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e
     </div>
     <?php endif; ?>
@@ -350,7 +350,7 @@
         </table>
     </div>
     <?php else: ?>
-    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+    <div class="bordered-section bloco-colapsado">
         INTERMEDIÁRIO DA OPERAÇÃO NÃO IDENTIFICADO NA NFS-e
     </div>
     <?php endif; ?>
@@ -391,7 +391,7 @@
 
     <!-- Tributação Municipal -->
     <?php if (! $data->tribMun->sujeitaAoIssqn): ?>
-    <div class="bordered-section" style="text-align: center; font-weight: normal; font-size: 7pt;">
+    <div class="bordered-section bloco-colapsado">
         TRIBUTAÇÃO MUNICIPAL (ISSQN) - OPERAÇÃO NÃO SUJEITA AO ISSQN
     </div>
     <?php else: ?>
