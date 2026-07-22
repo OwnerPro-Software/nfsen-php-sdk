@@ -86,11 +86,11 @@
             </tr>
             <tr>
                 <td>
-                    <span class="label">Número do DPS</span>
+                    <span class="label">Número da DPS</span>
                     <span class="value"><?= $h($data->numeroDps) ?></span>
                 </td>
                 <td>
-                    <span class="label">Série do DPS</span>
+                    <span class="label">Série da DPS</span>
                     <span class="value"><?= $h($data->serieDps) ?></span>
                 </td>
                 <td>
@@ -151,7 +151,7 @@
                     <span class="value"><?= $h($data->emitente->endereco) ?></span>
                 </td>
                 <td>
-                    <span class="label">Município</span>
+                    <span class="label">Município / UF</span>
                     <span class="value"><?= $h($data->emitente->municipio) ?></span>
                 </td>
                 <td>
@@ -208,7 +208,7 @@
                     <span class="value"><?= $h($data->tomador->endereco) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Município</span>
+                    <span class="label">Município / Sigla UF</span>
                     <span class="value"><?= $h($data->tomador->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -256,7 +256,7 @@
                     <span class="value"><?= $h($data->destinatario->endereco) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Município</span>
+                    <span class="label">Município / UF</span>
                     <span class="value"><?= $h($data->destinatario->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -309,7 +309,7 @@
                     <span class="value"><?= $h($data->intermediario->endereco) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Município</span>
+                    <span class="label">Município / UF</span>
                     <span class="value"><?= $h($data->intermediario->municipio) ?></span>
                 </td>
                 <td style="width: 25%;">
@@ -371,11 +371,11 @@
             </tr>
             <tr>
                 <td style="width: 25%;">
-                    <span class="label">Tributação do ISSQN</span>
+                    <span class="label">Tipo de Tributação do ISSQN</span>
                     <span class="value"><?= $h($data->tribMun->tributacaoIssqn) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">Município de Incidência do ISSQN</span>
+                    <span class="label">Município / UF / País da Incidência do ISSQN</span>
                     <span class="value"><?= $h($data->tribMun->municipioIncidencia) ?></span>
                 </td>
                 <td colspan="2" style="width: 50%;">
@@ -449,7 +449,7 @@
         <table>
             <tr>
                 <td colspan="4" class="section-header">
-                  <span class="section-title">TRIBUTAÇÃO FEDERAL</span>
+                  <span class="section-title">TRIBUTAÇÃO FEDERAL (EXCETO CBS)</span>
                 </td>
             </tr>
             <tr>
@@ -462,19 +462,23 @@
                     <span class="value"><?= $h($data->tribFed->cp) ?></span>
                 </td>
                 <td style="width: 25%;">
-                    <span class="label">CSLL</span>
+                    <span class="label">Contribuições Sociais - Retidas</span>
                     <span class="value"><?= $h($data->tribFed->csll) ?></span>
                 </td>
                 <td style="width: 25%;"></td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td style="width: 25%;">
                     <span class="label">PIS - Débito Apuração Própria</span>
                     <span class="value"><?= $h($data->tribFed->pis) ?></span>
                 </td>
-                <td colspan="2">
+                <td style="width: 25%;">
                     <span class="label">COFINS - Débito Apuração Própria</span>
                     <span class="value"><?= $h($data->tribFed->cofins) ?></span>
+                </td>
+                <td colspan="2">
+                    <span class="label">Descrição Contrib. Sociais - Retidas</span>
+                    <span class="value"><?= $h($data->tribFed->descricaoContribuicoesRetidas) ?></span>
                 </td>
             </tr>
         </table>
