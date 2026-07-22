@@ -486,6 +486,26 @@ it('returns dash for totaisTributos when absent', function () {
     expect($data->totaisTributos->municipais)->toBe('-');
 });
 
+it('dashes the nota 10 line for the choice branches the NT gives no position to', function (string $ramo) {
+    // Conformidade deliberada, não lacuna. A nota 10 fixa a linha em três posições
+    // — Federais / Estaduais / Municipais — e a tabela do item 2.4.5 só as alimenta
+    // de vTotTrib ou pTotTrib. `pTotTribSN` é percentual único do Simples Nacional,
+    // que não se decompõe nas três esferas, e `indTotTrib` declara que não se
+    // informa total algum; nenhum dos dois aparece na NT 008. Sobra o traço da
+    // nota 12. Ver DanfseDataBuilder::buildTotaisTributos().
+    $xml = (string) preg_replace('#<pTotTrib>.*?</pTotTrib>#s', $ramo, $this->xml);
+    $data = $this->builder->build($xml);
+
+    expect($data->totaisTributos->federais)->toBe('-')
+        ->and($data->totaisTributos->estaduais)->toBe('-')
+        ->and($data->totaisTributos->municipais)->toBe('-')
+        ->and($data->totaisTributos->linhaNt008())
+        ->toBe('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: - ; Estaduais: - ; Municipais: -');
+})->with([
+    'pTotTribSN' => ['<pTotTribSN>6.00</pTotTribSN>'],
+    'indTotTrib' => ['<indTotTrib>0</indTotTrib>'],
+]);
+
 it('extracts informacoesComplementares', function () {
     $data = $this->builder->build($this->xml);
 

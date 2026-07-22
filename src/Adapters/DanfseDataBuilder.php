@@ -460,6 +460,23 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         );
     }
 
+    /**
+     * `TCTribTotal` é um `xs:choice` de quatro ramos e só dois são lidos aqui —
+     * de propósito.
+     *
+     * A nota 10 fixa a linha em três posições, "Federais / Estaduais / Municipais",
+     * e a tabela do item 2.4.5 só as alimenta de `totTrib/vTotTrib/` ou
+     * `totTrib/pTotTrib/`, cada um com o trio Fed/Est/Mun. Os outros dois ramos não
+     * têm onde entrar: `pTotTribSN` é percentual único da alíquota do Simples
+     * Nacional, que não se decompõe nas três esferas — repeti-lo nas três o
+     * triplicaria, e escolher uma seria arbitrário —, e `indTotTrib` vale zero
+     * justamente para declarar que não se informa total algum (Decreto 8.264/2014).
+     * Nenhum dos dois é citado uma vez sequer na NT 008.
+     *
+     * Com qualquer um deles, portanto, a linha sai com o traço da nota 12, que é o
+     * que a NT manda imprimir em campo sem informação no XML. Não "conserte" isso
+     * mapeando `pTotTribSN` para as três posições.
+     */
     private function buildTotaisTributos(SimpleXMLElement $totTrib): DanfseTotaisTributos
     {
         $p = $totTrib->pTotTrib;
