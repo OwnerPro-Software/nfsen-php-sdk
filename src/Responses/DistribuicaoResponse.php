@@ -30,8 +30,11 @@ final readonly class DistribuicaoResponse
     /** @param array<string, mixed> $result */
     public static function fromApiResult(array $result): self
     {
-        /** @var string $statusRaw */
-        $statusRaw = $result['StatusProcessamento'] ?? ''; // @pest-mutate-ignore EmptyStringToNotEmpty — any non-enum string produces null from tryFrom
+        // O swagger declara StatusProcessamento como enum de string; valor de
+        // outro tipo é a mesma resposta fora do contrato que o branch
+        // INVALID_RESPONSE existe para nomear — não um TypeError no tryFrom.
+        $statusBruto = $result['StatusProcessamento'] ?? null;
+        $statusRaw = is_string($statusBruto) ? $statusBruto : ''; // @pest-mutate-ignore EmptyStringToNotEmpty — any non-enum string produces null from tryFrom
         $status = StatusDistribuicao::tryFrom($statusRaw);
 
         if ($status === null) {
@@ -55,20 +58,23 @@ final readonly class DistribuicaoResponse
             );
         }
 
-        // O swagger declara `LoteDFe` como array de `DistribuicaoNSU`; esta guarda é
+        // O swagger declara `LoteDFe` como array de `DistribuicaoNSU`, e
+        // `Alertas`/`Erros` como arrays de mensagem; estas guardas são
         // tolerância para a resposta que não o seguir, no mesmo espírito de
-        // DocumentoFiscal::fromArray(). Item escalar não traz nsu nem chave: não há
-        // o que preservar dele, e passá-lo adiante custaria a página inteira num
-        // TypeError.
+        // DocumentoFiscal::fromArray(). Item escalar não traz nsu nem chave:
+        // não há o que preservar dele, e passá-lo adiante custaria a página
+        // inteira num TypeError.
         $loteBruto = $result['LoteDFe'] ?? [];
         /** @var list<array<string, mixed>> $loteDFe */
         $loteDFe = is_array($loteBruto) ? array_values(array_filter($loteBruto, is_array(...))) : [];
 
+        $alertasBruto = $result['Alertas'] ?? [];
         /** @var list<array{mensagem?: string, Mensagem?: string, codigo?: string, Codigo?: string, descricao?: string, Descricao?: string, complemento?: string, Complemento?: string, parametros?: list<string>, Parametros?: list<string>}> $alertas */
-        $alertas = $result['Alertas'] ?? [];
+        $alertas = is_array($alertasBruto) ? array_values(array_filter($alertasBruto, is_array(...))) : [];
 
+        $errosBruto = $result['Erros'] ?? [];
         /** @var list<array{mensagem?: string, Mensagem?: string, codigo?: string, Codigo?: string, descricao?: string, Descricao?: string, complemento?: string, Complemento?: string, parametros?: list<string>, Parametros?: list<string>}> $erros */
-        $erros = $result['Erros'] ?? [];
+        $erros = is_array($errosBruto) ? array_values(array_filter($errosBruto, is_array(...))) : [];
 
         return new self(
             sucesso: $status === StatusDistribuicao::DocumentosLocalizados,

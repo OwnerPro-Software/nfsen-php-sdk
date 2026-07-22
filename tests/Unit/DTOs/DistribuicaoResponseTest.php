@@ -193,6 +193,46 @@ it('includes raw API response when StatusProcessamento is invalid', function () 
         ->complemento->toBe('{"descrição":"caminho/para/recurso","StatusProcessamento":"UNKNOWN_VALUE"}');
 });
 
+it('returns rejection response when StatusProcessamento has the wrong type', function (mixed $status) {
+    // O swagger declara o campo como enum de string; qualquer outro tipo cai
+    // no mesmo branch INVALID_RESPONSE, nunca num TypeError.
+    $response = DistribuicaoResponse::fromApiResult(['StatusProcessamento' => $status]);
+
+    expect($response)
+        ->sucesso->toBeFalse()
+        ->statusProcessamento->toBe(StatusDistribuicao::Rejeicao)
+        ->erros->toHaveCount(1);
+    expect($response->erros[0])->codigo->toBe('INVALID_RESPONSE');
+})->with([
+    'int' => [1],
+    'bool' => [true],
+    'array' => [['REJEICAO']],
+]);
+
+it('drops non-array Alertas and Erros instead of dying in a TypeError', function () {
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'REJEICAO',
+        'Alertas' => 'oops',
+        'Erros' => 42,
+    ]);
+
+    expect($response->alertas)->toBeEmpty()
+        ->and($response->erros)->toBeEmpty();
+});
+
+it('keeps valid Alertas and Erros items while dropping scalar ones', function () {
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'REJEICAO',
+        'Alertas' => ['oops', ['Codigo' => 'A001']],
+        'Erros' => [42, ['Codigo' => 'E001']],
+    ]);
+
+    expect($response->alertas)->toHaveCount(1)
+        ->and($response->alertas[0]->codigo)->toBe('A001')
+        ->and($response->erros)->toHaveCount(1)
+        ->and($response->erros[0]->codigo)->toBe('E001');
+});
+
 it('fromHttpResponse delegates to fromApiResult on 2xx with valid JSON', function () {
     $json = [
         'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
