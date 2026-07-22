@@ -644,11 +644,11 @@ it('prints a foreign NIF raw instead of stripping its non-digits', function () {
     expect($data->tomador->cnpjCpf)->toBe('ES-B12345678');
 });
 
-it('reads the prestador NIF from prest, the only node the XSD lets carry it', function () {
-    // TCEmitente abre com <xs:choice>CNPJ|CPF</xs:choice>: infNFSe/emit não tem onde pôr
-    // um NIF. O prestador estrangeiro vive em DPS/infDPS/prest.
+it('reads the prestador NIF from prest, even with the emit CNPJ the XSD requires', function () {
+    // A tabela do item 2.4.5 amarra o campo a infDPS/prest/. TCEmitente exige CNPJ ou CPF,
+    // então o cadastro sempre traz um dos dois — e consultá-lo antes fazia o CNPJ vencer o
+    // NIF que a DPS declarou, identificando como brasileiro todo prestador estrangeiro.
     $xml = preg_replace('|(<prest>\s*)<CNPJ>[^<]+</CNPJ>|', '$1<NIF>PT501234567</NIF>', $this->xml, 1);
-    $xml = preg_replace('|(<emit>\s*)<CNPJ>[^<]+</CNPJ>|', '$1', (string) $xml, 1);
     $data = $this->builder->build((string) $xml);
 
     expect($data->emitente->cnpjCpf)->toBe('PT501234567');
@@ -663,10 +663,18 @@ it('explains why the identification is missing when cNaoNIF is present', functio
 
 it('explains a missing prestador identification via prest cNaoNIF', function () {
     $xml = preg_replace('|(<prest>\s*)<CNPJ>[^<]+</CNPJ>|', '$1<cNaoNIF>2</cNaoNIF>', $this->xml, 1);
-    $xml = preg_replace('|(<emit>\s*)<CNPJ>[^<]+</CNPJ>|', '$1', (string) $xml, 1);
     $data = $this->builder->build((string) $xml);
 
     expect($data->emitente->cnpjCpf)->toBe('Não exigência do NIF');
+});
+
+it('falls back to the emit registry when prest carries no identification at all', function () {
+    // O <xs:choice> de TCInfoPrestador é obrigatório: só XML fora do schema chega aqui, e
+    // o cadastro do emitente é melhor que um traço.
+    $xml = preg_replace('|(<prest>\s*)<CNPJ>[^<]+</CNPJ>|', '$1', $this->xml, 1);
+    $data = $this->builder->build((string) $xml);
+
+    expect($data->emitente->cnpjCpf)->toBe('11.222.333/0001-81');
 });
 
 it('prints a foreign NIF raw for the intermediario as well', function () {

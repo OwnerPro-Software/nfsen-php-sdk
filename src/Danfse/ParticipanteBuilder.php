@@ -49,15 +49,7 @@ final readonly class ParticipanteBuilder
         $endPrest = $prest->end;
         $enderEmit = $emit->enderNac;
 
-        // TCEmitente abre com <xs:choice>CNPJ|CPF</xs:choice> obrigatório, sem NIF.
-        // O prestador estrangeiro só existe em TCInfoPrestador, que aceita
-        // CNPJ|CPF|NIF|cNaoNIF — por isso NIF e cNaoNIF não têm fallback.
-        $identificacao = ($this->identificacao)(
-            $this->firstOf($prest->CNPJ, $emit->CNPJ),
-            $this->firstOf($prest->CPF, $emit->CPF),
-            $this->str($prest->NIF),
-            $this->str($prest->cNaoNIF),
-        );
+        $identificacao = $this->identificacaoDoPrestador($emit, $prest);
 
         $endereco = $this->joinAddress($endPrest?->xLgr, $endPrest?->nro, $endPrest?->xCpl, $endPrest?->xBairro); // @pest-mutate-ignore RemoveNullSafeOperator — end é minOccurs=0 em TCInfoPrestador; ?-> previne warning quando ausente.
         if ($endereco === '') {
@@ -98,6 +90,32 @@ final readonly class ParticipanteBuilder
         }
 
         return $this->deInfoPessoa($toma);
+    }
+
+    /**
+     * Campo "CNPJ / CPF / NIF" do prestador, que a tabela do item 2.4.5 amarra a
+     * `infDPS/prest/` — e só a ele.
+     *
+     * `TCInfoPrestador` abre com um `<xs:choice>` obrigatório de `CNPJ|CPF|NIF|cNaoNIF`,
+     * então o nó da NT sempre responde. `infNFSe/emit` fica como recurso para XML fora do
+     * schema, nunca como preferência: `TCEmitente` só aceita CNPJ ou CPF, e consultá-lo
+     * antes fazia o CNPJ do cadastro vencer o NIF que a DPS declarou — todo prestador
+     * estrangeiro saía identificado como brasileiro.
+     */
+    private function identificacaoDoPrestador(SimpleXMLElement $emit, SimpleXMLElement $prest): string
+    {
+        $daDps = ($this->identificacao)(
+            $this->str($prest->CNPJ),
+            $this->str($prest->CPF),
+            $this->str($prest->NIF),
+            $this->str($prest->cNaoNIF),
+        );
+
+        if ($daDps !== '-') {
+            return $daDps;
+        }
+
+        return $this->fmt->cnpjCpf($this->firstOf($emit->CNPJ, $emit->CPF));
     }
 
     /** Bloco "INTERMEDIÁRIO DA OPERAÇÃO". */
