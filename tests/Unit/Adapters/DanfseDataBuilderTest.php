@@ -12,6 +12,9 @@ covers(DanfseDataBuilder::class, ParticipanteBuilder::class);
 beforeEach(function () {
     $this->builder = new DanfseDataBuilder;
     $this->xml = (string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-autorizada.xml');
+    // Traz o grupo IBSCBS dos dois lados e um destinatário distinto do tomador — o que
+    // a nfse-autorizada, anterior à reforma, não tem.
+    $this->ibscbs = (string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-ibscbs.xml');
 });
 
 it('builds NfseData from authorized XML', function () {
@@ -920,40 +923,15 @@ it('shows a dash for a status code the layout does not define', function () {
 // infDPS/IBSCBS/dest. O SDK não o coletava — e ausência não deixa rastro: não há
 // caminho errado para detectar, o bloco simplesmente não saía no documento.
 it('reads the destinatário block from IBSCBS/dest', function () {
-    // IBSCBS vem depois de valores em TCInfDPS — inserir antes de <serv> geraria
-    // XML fora da ordem do schema.
-    $xml = str_replace(
-        '</infDPS>',
-        '<IBSCBS>
-                    <dest>
-                        <CNPJ>91712343000134</CNPJ>
-                        <xNome>DESTINATARIO DA OPERACAO LTDA</xNome>
-                        <end>
-                            <endNac>
-                                <cMun>3550308</cMun>
-                                <CEP>01310100</CEP>
-                            </endNac>
-                            <xLgr>Avenida Destino</xLgr>
-                            <nro>500</nro>
-                            <xCpl>Andar 3</xCpl>
-                            <xBairro>Centro</xBairro>
-                        </end>
-                        <fone>1155554444</fone>
-                        <email>destinatario@example.com</email>
-                    </dest>
-                </IBSCBS>
-            </infDPS>',
-        $this->xml,
-    );
-    $data = $this->builder->build($xml);
+    $data = $this->builder->build($this->ibscbs);
 
-    expect($data->destinatario?->nome)->toBe('DESTINATARIO DA OPERACAO LTDA');
-    expect($data->destinatario?->cnpjCpf)->toBe('91.712.343/0001-34');
-    expect($data->destinatario?->telefone)->toBe('(11) 5555-4444');
-    expect($data->destinatario?->email)->toBe('destinatario@example.com');
-    expect($data->destinatario?->endereco)->toBe('Avenida Destino, 500, Andar 3, Centro');
-    expect($data->destinatario?->municipio)->toBe('São Paulo - SP');
-    expect($data->destinatario?->cep)->toBe('01310-100');
+    expect($data->destinatario?->nome)->toBe('DESTINATARIO FICTICIO S.A.');
+    expect($data->destinatario?->cnpjCpf)->toBe('60.316.817/0001-03');
+    expect($data->destinatario?->telefone)->toBe('(21) 2222-3333');
+    expect($data->destinatario?->email)->toBe('contato@destinatarioficticio.com.br');
+    expect($data->destinatario?->endereco)->toBe('Avenida Rio Branco, 50, Centro');
+    expect($data->destinatario?->municipio)->toBe('Rio de Janeiro - RJ');
+    expect($data->destinatario?->cep)->toBe('20040-030');
 });
 
 it('leaves the destinatário null when the NFS-e predates the tax reform', function () {
@@ -966,12 +944,7 @@ it('leaves the destinatário null when the NFS-e predates the tax reform', funct
 
 it('shows a dash for the destinatário municipal registration the layout omits', function () {
     // TCRTCInfoDest não declara IM, e a NT 2.1.5 não lista o campo para este bloco.
-    $xml = str_replace(
-        '</infDPS>',
-        '<IBSCBS><dest><CNPJ>91712343000134</CNPJ></dest></IBSCBS></infDPS>',
-        $this->xml,
-    );
-    $data = $this->builder->build($xml);
+    $data = $this->builder->build($this->ibscbs);
 
     expect($data->destinatario?->im)->toBe('-');
 });
@@ -980,24 +953,14 @@ it('shows a dash for the destinatário municipal registration the layout omits',
 // (minOccurs=1 em IBSCBS) é quem os separa — sem lê-lo, uma NFS-e cujo destinatário
 // é o próprio tomador saía como "não identificado", que diz outra coisa.
 it('marks the destinatário as the tomador when indDest says so', function () {
-    $xml = str_replace(
-        '</infDPS>',
-        '<IBSCBS><indDest>0</indDest></IBSCBS></infDPS>',
-        $this->xml,
-    );
+    $xml = str_replace('<indDest>1</indDest>', '<indDest>0</indDest>', $this->ibscbs);
     $data = $this->builder->build($xml);
 
     expect($data->destinatarioEhTomador)->toBeTrue();
-    expect($data->destinatario)->toBeNull();
 });
 
 it('does not claim the destinatário is the tomador when indDest says otherwise', function () {
-    $xml = str_replace(
-        '</infDPS>',
-        '<IBSCBS><indDest>1</indDest></IBSCBS></infDPS>',
-        $this->xml,
-    );
-    $data = $this->builder->build($xml);
+    $data = $this->builder->build($this->ibscbs);
 
     expect($data->destinatarioEhTomador)->toBeFalse();
 });
@@ -1123,40 +1086,37 @@ it('keeps the benefit row when only the unconditional discount is present', func
 // vivem em infNFSe/IBSCBS (lado do fisco); CST, classificação e indicador de
 // operação vêm do que a DPS declarou em infDPS/IBSCBS.
 it('reads the IBS/CBS block from both the declared and the assessed sides', function () {
-    $xml = str_replace(
-        '</infDPS>',
-        '<IBSCBS><cIndOp>000001</cIndOp><valores><trib><gIBSCBS>'
-        .'<CST>000</CST><cClassTrib>000001</cClassTrib>'
-        .'</gIBSCBS></trib></valores></IBSCBS></infDPS>',
-        $this->xml,
-    );
-    $xml = str_replace(
-        '</infNFSe>',
-        '<IBSCBS><cLocalidadeIncid>3550308</cLocalidadeIncid>'
-        .'<valores><vBC>1000.00</vBC>'
-        .'<uf><pIBSUF>10.00</pIBSUF><pAliqEfetUF>9.00</pAliqEfetUF></uf>'
-        .'<mun><pIBSMun>2.00</pIBSMun><pAliqEfetMun>1.80</pAliqEfetMun></mun>'
-        .'<fed><pCBS>8.80</pCBS><pAliqEfetCBS>8.00</pAliqEfetCBS></fed>'
-        .'</valores>'
-        .'<totCIBS><gIBS><gIBSUFTot><vIBSUF>90.00</vIBSUF></gIBSUFTot>'
-        .'<gIBSMunTot><vIBSMun>18.00</vIBSMun></gIBSMunTot><vIBSTot>108.00</vIBSTot></gIBS>'
-        .'<gCBS><vCBS>80.00</vCBS></gCBS><vTotNF>1188.00</vTotNF></totCIBS></IBSCBS></infNFSe>',
-        $xml,
-    );
-    $data = $this->builder->build($xml);
+    $data = $this->builder->build($this->ibscbs);
 
     expect($data->tribIbsCbs->cstClassTrib)->toBe('000 / 000001');
-    expect($data->tribIbsCbs->indicadorOperacao)->toBe('000001 / 3550308 / São Paulo - SP');
-    expect($data->tribIbsCbs->baseCalculo)->toBe('R$ 1.000,00');
+    expect($data->tribIbsCbs->indicadorOperacao)->toBe('110001 / 3303302 / Niterói - RJ');
+    expect($data->tribIbsCbs->baseCalculo)->toBe('R$ 1.350,00');
     expect($data->tribIbsCbs->aliquotaIbs)->toBe('10,00% / 2,00%');
+    expect($data->tribIbsCbs->reducaoAliquotas)->toBe('10,00% / 10,00% / 10,00%');
     expect($data->tribIbsCbs->aliquotaEfetivaEstadual)->toBe('9,00%');
-    expect($data->tribIbsCbs->valorApuradoEstadual)->toBe('R$ 90,00');
-    expect($data->tribIbsCbs->valorApuradoMunicipal)->toBe('R$ 18,00');
-    expect($data->tribIbsCbs->valorTotalIbs)->toBe('R$ 108,00');
+    expect($data->tribIbsCbs->aliquotaEfetivaMunicipal)->toBe('1,80%');
+    expect($data->tribIbsCbs->valorApuradoEstadual)->toBe('R$ 121,50');
+    expect($data->tribIbsCbs->valorApuradoMunicipal)->toBe('R$ 24,30');
+    expect($data->tribIbsCbs->valorTotalIbs)->toBe('R$ 145,80');
     expect($data->tribIbsCbs->aliquotaCbs)->toBe('8,80%');
-    expect($data->tribIbsCbs->valorTotalCbs)->toBe('R$ 80,00');
-    expect($data->totais->totalIbsCbs)->toBe('R$ 188,00');
-    expect($data->totais->valorLiquidoComIbsCbs)->toBe('R$ 1.188,00');
+    expect($data->tribIbsCbs->aliquotaEfetivaCbs)->toBe('7,92%');
+    expect($data->tribIbsCbs->valorTotalCbs)->toBe('R$ 106,92');
+    expect($data->totais->totalIbsCbs)->toBe('R$ 252,72');
+    expect($data->totais->valorLiquidoComIbsCbs)->toBe('R$ 1.638,65');
+});
+
+// A NT define este campo como o somatório de cinco origens espalhadas pelo leiaute.
+it('sums the five sources the notice gives for the IBS/CBS exclusions', function () {
+    $data = $this->builder->build($this->ibscbs);
+
+    // vDescIncond 100,00 + vCalcReeRepRes 50,00 + vISSQN 27,00 + vPis 9,75 + vCofins 45,00
+    expect($data->tribIbsCbs->exclusoesReducoes)->toBe('R$ 231,75');
+});
+
+it('reads the finalidade from the IBSCBS group', function () {
+    $data = $this->builder->build($this->ibscbs);
+
+    expect($data->finalidade)->toBe('NFS-e regular');
 });
 
 it('dashes the whole IBS/CBS block on an NFS-e predating the tax reform', function () {

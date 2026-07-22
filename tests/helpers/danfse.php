@@ -146,57 +146,41 @@ function stubPdfConverter(string|Throwable $pdf = '%PDF-1.4'): ConvertsHtmlToPdf
  * O pior caso vem da especificação, não de um número escolhido a dedo. E cabe com os
  * limites da própria NT: nada de corte extra do SDK para forçar a página única.
  *
+ * Parte da fixture com IBSCBS, não da nfse-autorizada: os blocos de destinatário e de
+ * IBS/CBS só existem com o grupo da reforma, e montá-los aqui à mão produzia um XML
+ * que o schema rejeitaria — era o caso, com o IBSCBS de infNFSe depois do DPS e sem o
+ * finNFSe obrigatório. `DanfseFixtureSchemaTest` valida a fixture; um XML inventado
+ * neste helper escaparia dessa guarda.
+ *
  * Serve a dois testes por motivos diferentes: ao `DanfseSinglePageTest`, porque é o caso
  * que primeiro estoura a página; ao `Nt008TemplateCoverageTest`, porque é o único que traz
  * os blocos condicionais — destinatário e IBS/CBS — ao papel.
  */
 function nfsenXmlNoLimite(): string
 {
-    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
+    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-ibscbs.xml');
 
+    // Imunidade, suspensão e benefício municipal enchem as duas linhas que a nota 5 do
+    // item 2.4.5 deixa suprimir. Vão antes de tpRetISSQN, que é a ordem de TCTribMunicipal.
     $xml = str_replace(
-        '</tribMun>',
+        '<tpRetISSQN>',
         '<tpImunidade>5</tpImunidade>'
-        .'<exigSusp><tpSusp>2</tpSusp><nProcesso>0012345-67.2026.8.19.0002</nProcesso></exigSusp>'
-        .'<BM><nBM>99</nBM><vRedBCBM>90.00</vRedBCBM></BM></tribMun>',
+        .'<exigSusp><tpSusp>2</tpSusp><nProcesso>001234567202608190002000000000</nProcesso></exigSusp>'
+        .'<BM><nBM>99999999999999</nBM><vRedBCBM>90.00</vRedBCBM></BM>'
+        .'<tpRetISSQN>',
         $xml,
     );
 
-    $xml = str_replace(
-        '</infDPS>',
-        '<IBSCBS><cIndOp>000001</cIndOp><indDest>1</indDest>'
-        .'<dest><CNPJ>91712343000134</CNPJ><xNome>DESTINATARIO DA OPERACAO SOCIEDADE ANONIMA</xNome>'
-        .'<end><endNac><cMun>3550308</cMun><CEP>01310100</CEP></endNac>'
-        .'<xLgr>Avenida Brigadeiro Faria Lima</xLgr><nro>5000</nro><xCpl>Conjunto 1801</xCpl>'
-        .'<xBairro>Itaim Bibi</xBairro></end>'
-        .'<fone>1155554444</fone><email>destinatario@example.com</email></dest>'
-        .'<valores><trib><gIBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib></gIBSCBS></trib></valores>'
-        .'</IBSCBS></infDPS>',
-        $xml,
-    );
-
-    $xml = str_replace(
-        '</infNFSe>',
-        '<IBSCBS><cLocalidadeIncid>3550308</cLocalidadeIncid><valores><vBC>1000.00</vBC>'
-        .'<uf><pIBSUF>10.00</pIBSUF><pRedAliqUF>1.00</pRedAliqUF><pAliqEfetUF>9.00</pAliqEfetUF></uf>'
-        .'<mun><pIBSMun>2.00</pIBSMun><pRedAliqMun>0.50</pRedAliqMun><pAliqEfetMun>1.80</pAliqEfetMun></mun>'
-        .'<fed><pCBS>8.80</pCBS><pRedAliqCBS>0.80</pRedAliqCBS><pAliqEfetCBS>8.00</pAliqEfetCBS></fed>'
-        .'</valores><totCIBS>'
-        .'<gIBS><gIBSUFTot><vIBSUF>90.00</vIBSUF></gIBSUFTot>'
-        .'<gIBSMunTot><vIBSMun>18.00</vIBSMun></gIBSMunTot><vIBSTot>108.00</vIBSTot></gIBS>'
-        .'<gCBS><vCBS>80.00</vCBS></gCBS><vTotNF>1188.00</vTotNF></totCIBS></IBSCBS></infNFSe>',
-        $xml,
-    );
-
+    // rtrim: TSDesc2000 recusa texto terminado em espaço.
     $xml = (string) preg_replace(
         '|<xDescServ>[^<]*</xDescServ>|',
-        '<xDescServ>'.str_repeat('DESCRICAO EXTENSA DO SERVICO PRESTADO NO LIMITE DA NORMA. ', 23).'</xDescServ>',
+        '<xDescServ>'.rtrim(str_repeat('DESCRICAO EXTENSA DO SERVICO PRESTADO NO LIMITE DA NORMA. ', 23)).'</xDescServ>',
         $xml,
     );
 
     return (string) preg_replace(
         '|<xInfComp>[^<]*</xInfComp>|',
-        '<xInfComp>'.str_repeat('INFORMACAO COMPLEMENTAR RELEVANTE PARA O TOMADOR. ', 41).'</xInfComp>',
+        '<xInfComp>'.rtrim(str_repeat('INFORMACAO COMPLEMENTAR RELEVANTE PARA O TOMADOR. ', 40)).'</xInfComp>',
         $xml,
     );
 }

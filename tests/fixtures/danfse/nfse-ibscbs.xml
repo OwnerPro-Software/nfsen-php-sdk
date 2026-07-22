@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NFSe versao="1.01" xmlns="http://www.sped.fazenda.gov.br/nfse">
+    <infNFSe Id="NFS33033021211222333000181000000000002026010000020000">
+        <xLocEmi>Niterói</xLocEmi>
+        <xLocPrestacao>Niterói</xLocPrestacao>
+        <nNFSe>20</nNFSe>
+        <cLocIncid>3303302</cLocIncid>
+        <xLocIncid>Niterói</xLocIncid>
+        <xTribNac>Desenvolvimento e licenciamento de programas de computador customizáveis.</xTribNac>
+        <xTribMun>Desenvolvimento e licenciamento de programas de computador customizáveis.</xTribMun>
+        <verAplic>EXEMPLO_1.0.0</verAplic>
+        <ambGer>1</ambGer>
+        <tpEmis>1</tpEmis>
+        <procEmi>1</procEmi>
+        <cStat>100</cStat>
+        <dhProc>2026-01-15T14:30:00-03:00</dhProc>
+        <nDFSe>9900002</nDFSe>
+        <emit>
+            <CNPJ>11222333000181</CNPJ>
+            <IM>987654</IM>
+            <xNome>EMPRESA EXEMPLO DESENVOLVIMENTO LTDA</xNome>
+            <enderNac>
+                <xLgr>Rua Visconde do Rio Branco</xLgr>
+                <nro>100</nro>
+                <xBairro>Centro</xBairro>
+                <cMun>3303302</cMun>
+                <UF>RJ</UF>
+                <CEP>24020005</CEP>
+            </enderNac>
+            <fone>2130001234</fone>
+            <email>financeiro@example.org</email>
+        </emit>
+        <valores>
+            <vBC>1350.00</vBC>
+            <pAliqAplic>2.00</pAliqAplic>
+            <vISSQN>27.00</vISSQN>
+            <vLiq>1292.75</vLiq>
+        </valores>
+        <IBSCBS>
+            <cLocalidadeIncid>3303302</cLocalidadeIncid>
+            <xLocalidadeIncid>Niterói</xLocalidadeIncid>
+            <valores>
+                <vBC>1350.00</vBC>
+                <vCalcReeRepRes>50.00</vCalcReeRepRes>
+                <uf>
+                    <pIBSUF>10.00</pIBSUF>
+                    <pRedAliqUF>10.00</pRedAliqUF>
+                    <pAliqEfetUF>9.00</pAliqEfetUF>
+                </uf>
+                <mun>
+                    <pIBSMun>2.00</pIBSMun>
+                    <pRedAliqMun>10.00</pRedAliqMun>
+                    <pAliqEfetMun>1.80</pAliqEfetMun>
+                </mun>
+                <fed>
+                    <pCBS>8.80</pCBS>
+                    <pRedAliqCBS>10.00</pRedAliqCBS>
+                    <pAliqEfetCBS>7.92</pAliqEfetCBS>
+                </fed>
+            </valores>
+            <totCIBS>
+                <vTotNF>1638.65</vTotNF>
+                <gIBS>
+                    <vIBSTot>145.80</vIBSTot>
+                    <gIBSUFTot>
+                        <vIBSUF>121.50</vIBSUF>
+                    </gIBSUFTot>
+                    <gIBSMunTot>
+                        <vIBSMun>24.30</vIBSMun>
+                    </gIBSMunTot>
+                </gIBS>
+                <gCBS>
+                    <vCBS>106.92</vCBS>
+                </gCBS>
+            </totCIBS>
+        </IBSCBS>
+        <DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">
+            <infDPS Id="DPS330330211222333000181202601000000000000006">
+                <tpAmb>1</tpAmb>
+                <dhEmi>2026-01-15T14:00:00-03:00</dhEmi>
+                <verAplic>EXEMPLO_1.0.0</verAplic>
+                <serie>20261</serie>
+                <nDPS>6</nDPS>
+                <dCompet>2026-01-15</dCompet>
+                <tpEmit>1</tpEmit>
+                <cLocEmi>3303302</cLocEmi>
+                <prest>
+                    <CNPJ>11222333000181</CNPJ>
+                    <fone>2130001234</fone>
+                    <email>financeiro@empresaexemplo.com.br</email>
+                    <regTrib>
+                        <opSimpNac>1</opSimpNac>
+                        <regEspTrib>6</regEspTrib>
+                    </regTrib>
+                </prest>
+                <toma>
+                    <CNPJ>91712343000134</CNPJ>
+                    <IM>654321</IM>
+                    <xNome>CLIENTE FICTICIO COMERCIO S.A.</xNome>
+                    <end>
+                        <endNac>
+                            <cMun>3550308</cMun>
+                            <CEP>01310100</CEP>
+                        </endNac>
+                        <xLgr>Avenida Paulista</xLgr>
+                        <nro>1000</nro>
+                        <xBairro>Bela Vista</xBairro>
+                    </end>
+                    <fone>11987654321</fone>
+                    <email>contato@clienteficticio.com.br</email>
+                </toma>
+                <interm>
+                    <CNPJ>77150344000101</CNPJ>
+                    <IM>123456</IM>
+                    <xNome>INTERMEDIARIO FICTICIO LTDA</xNome>
+                    <end>
+                        <endNac>
+                            <cMun>3518800</cMun>
+                            <CEP>07095130</CEP>
+                        </endNac>
+                        <xLgr>Rua Santa Conceição</xLgr>
+                        <nro>333</nro>
+                        <xBairro>Guarulhos</xBairro>
+                    </end>
+                    <fone>1133334444</fone>
+                    <email>contato@intermediarioficticio.com.br</email>
+                </interm>
+                <serv>
+                    <locPrest>
+                        <cLocPrestacao>3303302</cLocPrestacao>
+                    </locPrest>
+                    <cServ>
+                        <cTribNac>010700</cTribNac>
+                        <cTribMun>007</cTribMun>
+                        <xDescServ>Desenvolvimento de sistema de gestão empresarial - Contrato #2026-001</xDescServ>
+                    </cServ>
+                    <infoCompl>
+                        <xInfComp>Referente ao contrato de prestação de serviços nº 2026-001, firmado em 02/01/2026. Pagamento conforme cronograma acordado. Pedido de compra: PC-00123.</xInfComp>
+                    </infoCompl>
+                </serv>
+                <valores>
+                    <vServPrest>
+                        <vServ>1500.00</vServ>
+                    </vServPrest>
+                    <vDescCondIncond>
+                        <vDescIncond>100.00</vDescIncond>
+                        <vDescCond>50.00</vDescCond>
+                    </vDescCondIncond>
+                    <trib>
+                        <tribMun>
+                            <tribISSQN>1</tribISSQN>
+                            <tpRetISSQN>2</tpRetISSQN>
+                            <pAliq>2.00</pAliq>
+                        </tribMun>
+                        <tribFed>
+                            <piscofins>
+                                <CST>01</CST>
+                                <vBCPisCofins>1500.00</vBCPisCofins>
+                                <pAliqPis>0.65</pAliqPis>
+                                <pAliqCofins>3.00</pAliqCofins>
+                                <vPis>9.75</vPis>
+                                <vCofins>45.00</vCofins>
+                            </piscofins>
+                            <vRetCP>15.00</vRetCP>
+                            <vRetIRRF>22.50</vRetIRRF>
+                            <vRetCSLL>15.00</vRetCSLL>
+                        </tribFed>
+                        <totTrib>
+                            <pTotTrib>
+                                <pTotTribFed>4.50</pTotTribFed>
+                                <pTotTribEst>0.10</pTotTribEst>
+                                <pTotTribMun>2.00</pTotTribMun>
+                            </pTotTrib>
+                        </totTrib>
+                    </trib>
+                </valores>
+                <IBSCBS>
+                    <finNFSe>0</finNFSe>
+                    <cIndOp>110001</cIndOp>
+                    <indDest>1</indDest>
+                    <dest>
+                        <CNPJ>60316817000103</CNPJ>
+                        <xNome>DESTINATARIO FICTICIO S.A.</xNome>
+                        <end>
+                            <endNac>
+                                <cMun>3304557</cMun>
+                                <CEP>20040030</CEP>
+                            </endNac>
+                            <xLgr>Avenida Rio Branco</xLgr>
+                            <nro>50</nro>
+                            <xBairro>Centro</xBairro>
+                        </end>
+                        <fone>2122223333</fone>
+                        <email>contato@destinatarioficticio.com.br</email>
+                    </dest>
+                    <valores>
+                        <trib>
+                            <gIBSCBS>
+                                <CST>000</CST>
+                                <cClassTrib>000001</cClassTrib>
+                            </gIBSCBS>
+                        </trib>
+                    </valores>
+                </IBSCBS>
+            </infDPS>
+        </DPS>
+    </infNFSe>
+    <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+        <SignedInfo>
+            <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+            <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
+            <Reference URI="#NFS33033021211222333000181000000000002026010000020000">
+                <Transforms>
+                    <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+                    <Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+                </Transforms>
+                <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
+                <DigestValue>AAAAAAAAAAAAAAAAAAAAAAAAAAA=</DigestValue>
+            </Reference>
+        </SignedInfo>
+        <SignatureValue>AAAAAAAAAAAAAAAAAAAAAAAAAAA=</SignatureValue>
+        <KeyInfo>
+            <X509Data>
+                <X509Certificate>AAAAAAAAAAAAAAAAAAAAAAAAAAA=</X509Certificate>
+            </X509Data>
+        </KeyInfo>
+    </Signature>
+</NFSe>
