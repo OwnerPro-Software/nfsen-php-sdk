@@ -381,6 +381,10 @@ $response = $client->distribuicao()->eventos($chave);
 $response = $client->distribuicao()->documentos(0, '99999999000100');
 ```
 
+Por padrão o `cnpjConsulta` vem do certificado. Com um e-CPF não há CNPJ a
+enviar, e o parâmetro — opcional no contrato do ADN — é omitido da URL; informe-o
+explicitamente se a consulta precisar dele.
+
 O fluxo típico de importação:
 
 1. Comece com NSU `0`

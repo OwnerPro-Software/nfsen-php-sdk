@@ -45,12 +45,21 @@ final readonly class NfseDistributor implements DistributesNfse
     {
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'distribute_documents', ['NSU' => $nsu]);
         $url = $this->buildUrl($this->adnBaseUrl, $path);
-        $url .= '?'.http_build_query([
-            'cnpjConsulta' => $cnpjConsulta ?? $this->cnpjAutor,
-            'lote' => $lote ? 'true' : 'false',
-        ]);
 
-        return $this->executeRequest($url);
+        $query = ['lote' => $lote ? 'true' : 'false'];
+
+        // `cnpjConsulta` é opcional no swagger do ADN (`required` ausente em
+        // GET /DFe/{NSU}), e o autor pode não ter CNPJ: com certificado e-CPF,
+        // `CertificateManager::extract()` devolve `cnpj => null` e o cliente guarda
+        // string vazia. Mandar `?cnpjConsulta=` é oferecer um valor malformado onde
+        // bastava calar — omitir deixa o ADN aplicar o próprio default.
+        $cnpj = $cnpjConsulta ?? $this->cnpjAutor;
+
+        if ($cnpj !== '') {
+            $query = ['cnpjConsulta' => $cnpj] + $query;
+        }
+
+        return $this->executeRequest($url.'?'.http_build_query($query));
     }
 
     private function executeRequest(string $url): DistribuicaoResponse

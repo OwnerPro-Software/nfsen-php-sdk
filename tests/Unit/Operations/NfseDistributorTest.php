@@ -53,11 +53,11 @@ function makeFakeRawHttpClient(int $statusCode, array $json, ?string $body = nul
     };
 }
 
-function makeDistributor(SendsRawHttpRequests $httpClient): NfseDistributor
+function makeDistributor(SendsRawHttpRequests $httpClient, string $cnpjAutor = '12345678000195'): NfseDistributor
 {
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
 
-    return new NfseDistributor($httpClient, $resolver, '9999999', 'https://adn.base', '12345678000195');
+    return new NfseDistributor($httpClient, $resolver, '9999999', 'https://adn.base', $cnpjAutor);
 }
 
 // --- URL construction tests ---
@@ -253,4 +253,28 @@ it('buildUrl trims trailing slash from baseUrl', function () {
     $distributor->documentos(0);
 
     expect($httpClient->urls[0])->toStartWith('https://adn.base/contribuintes/');
+});
+
+it('omits cnpjConsulta when the author has none, instead of sending it empty', function (string $metodo, string $lote) {
+    // `cnpjConsulta` não tem `required` no GET /DFe/{NSU} do swagger do ADN, e um
+    // certificado e-CPF não traz CNPJ: `cnpjAutor` chega vazio. Mandar
+    // `?cnpjConsulta=` oferece um valor malformado onde bastava calar.
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient, cnpjAutor: '');
+
+    $distributor->{$metodo}(7);
+
+    expect($httpClient->urls[0])->toBe('https://adn.base/contribuintes/DFe/7?lote='.$lote);
+})->with([
+    'documentos' => ['documentos', 'true'],
+    'documento' => ['documento', 'false'],
+]);
+
+it('still sends an explicit cnpjConsulta when the author has none', function () {
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient, cnpjAutor: '');
+
+    $distributor->documentos(7, '99999999000100');
+
+    expect($httpClient->urls[0])->toBe('https://adn.base/contribuintes/DFe/7?cnpjConsulta=99999999000100&lote=true');
 });
