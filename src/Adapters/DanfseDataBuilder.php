@@ -267,7 +267,17 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         // Apurado pelo fisco em infNFSe/valores; o declarado na DPS é a redução de
         // base em tribMun/BM. A NT lista os dois como origem do mesmo campo.
         $calculoBM = $this->currencyOrDash($this->firstOf($valNfse->vCalcBM, $tribMun->BM->vRedBCBM));
-        $deducoes = $this->currencyOrDash($this->firstOf($valores->vDedRed->vDR, $valNfse->vCalcDR));
+        // A NT 008 escreve este campo como "vDR | vCalcDR + vCalcReeRepRes": a barra
+        // separa duas origens, e a segunda é uma soma. O declarado na DPS vale
+        // sozinho; o apurado pelo fisco reúne vCalcDR, em infNFSe/valores, com o
+        // reembolso/repasse de vCalcReeRepRes, em infNFSe/IBSCBS/valores.
+        $vDR = $this->str($valores->vDedRed->vDR);
+        $deducoes = $vDR !== ''
+            ? $this->fmt->currency($vDR)
+            : $this->sumCurrency(
+                $this->str($valNfse->vCalcDR),
+                $this->str($inf->IBSCBS?->valores?->vCalcReeRepRes), // @pest-mutate-ignore RemoveNullSafeOperator — IBSCBS e valores são minOccurs=0; ausentes, SimpleXML devolve placeholder vazio e depois null.
+            );
         $descontoIncond = $this->currencyOrDash($this->str($valores->vDescCondIncond->vDescIncond));
 
         return new DanfseTributacaoMunicipal(

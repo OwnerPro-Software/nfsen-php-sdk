@@ -1014,6 +1014,29 @@ it('takes the BM calculation and total deductions the tax authority computed', f
     expect($data->tribMun->totalDeducoesReducoes)->toBe('R$ 75,50');
 });
 
+it('adds the reimbursement to the deductions the tax authority computed', function () {
+    // A NT escreve o campo como "vDR | vCalcDR + vCalcReeRepRes": o segundo caminho
+    // é uma soma, e a fixture já traz vCalcReeRepRes = 50,00 em IBSCBS/valores.
+    $xml = str_replace('<vLiq>', '<vCalcDR>200.00</vCalcDR><vLiq>', $this->ibscbs);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->totalDeducoesReducoes)->toBe('R$ 250,00');
+});
+
+it('shows the reimbursement alone when no vCalcDR accompanies it', function () {
+    $data = $this->builder->build($this->ibscbs);
+
+    expect($data->tribMun->totalDeducoesReducoes)->toBe('R$ 50,00');
+});
+
+it('keeps the deduction declared in the DPS out of the reimbursement sum', function () {
+    // O vDR declarado vale sozinho: está do outro lado da barra, não é parcela.
+    $xml = str_replace('</valores>', '<vDedRed><vDR>40.00</vDR></vDedRed></valores>', $this->ibscbs);
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->totalDeducoesReducoes)->toBe('R$ 40,00');
+});
+
 it('falls back to the values declared in the DPS for BM and deductions', function () {
     // A NT dá dois caminhos ao mesmo campo: o apurado em infNFSe/valores e o
     // declarado na DPS. Sem o apurado, o declarado tem de aparecer.
