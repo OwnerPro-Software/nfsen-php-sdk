@@ -3,7 +3,10 @@
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
@@ -139,6 +142,22 @@ it('consultar()->nfse throws NfseException on invalid gzip response', function (
 
     expect(fn () => $client->consultar()->nfse(makeChaveAcesso()))
         ->toThrow(NfseException::class, 'descomprimir');
+});
+
+it('consultar()->nfse dispatches NfseFailed, never NfseQueried, when the xml is corrupt', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['nfseXmlGZipB64' => '!!!invalid!!!'], 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    try {
+        $client->consultar()->nfse(makeChaveAcesso());
+    } catch (NfseException) {
+        // esperado
+    }
+
+    Event::assertDispatched(NfseFailed::class);
+    Event::assertNotDispatched(NfseQueried::class);
 });
 
 it('consultar()->nfse keeps a 200 without nfseXmlGZipB64 indeterminate', function () {

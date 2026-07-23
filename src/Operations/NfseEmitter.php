@@ -101,12 +101,20 @@ final readonly class NfseEmitter implements EmitsNfse
 
             $this->dispatchEvent(new NfseEmitted($chave));
 
+            $alertas = ProcessingMessage::fromArrayList($result['alertas'] ?? []);
+            try {
+                $xml = GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null);
+            } catch (NfseException $nfseException) {
+                $xml = null;
+                $alertas[] = ProcessingMessage::xmlIlegivel('consultar()->nfse($chave)', $nfseException->getMessage());
+            }
+
             return new NfseResponse(
                 sucesso: true,
                 chave: $chave,
-                xml: GzipCompressor::decompressB64($result['nfseXmlGZipB64'] ?? null),
+                xml: $xml,
                 idDps: $result['idDps'] ?? null,
-                alertas: ProcessingMessage::fromArrayList($result['alertas'] ?? []),
+                alertas: $alertas,
                 tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,

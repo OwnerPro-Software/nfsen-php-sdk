@@ -11,6 +11,7 @@ use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Events\NfseEmitted;
+use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
@@ -521,22 +522,69 @@ it('emitir validates XML against XSD before sending', function () {
     Http::assertNothingSent();
 });
 
-it('emitir throws NfseException on invalid base64 in nfseXmlGZipB64', function (DpsData $data) {
+it('emitir preserva a chave com xml null e alerta quando nfseXmlGZipB64 vem corrompido', function (DpsData $data, string $xmlCorrompido, string $motivo) {
+    // A nota foi autorizada (chaveAcesso presente): um XML ilegível não pode
+    // descartar a chave nem virar exceção — perder-se-ia a prova da emissão. O
+    // motivo técnico da falha vai no complemento, para o consumidor agir.
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => $xmlCorrompido], 201)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->chave)->toBe('CHAVE123')
+        ->and($response->xml)->toBeNull()
+        ->and($response->alertas)->toHaveCount(1)
+        ->and($response->alertas[0]->codigo)->toBe('XML_ILEGIVEL')
+        ->and($response->alertas[0]->descricao)->toContain('consultar()->nfse')
+        ->and($response->alertas[0]->complemento)->toBe($motivo);
+})->with('dpsData')->with([
+    'base64 inválido' => ['!!!invalid!!!', 'Falha ao decodificar base64 do XML.'],
+    'gzip inválido' => [base64_encode('not-gzip-data'), 'Falha ao descomprimir XML.'],
+]);
+
+it('emitir não anexa alerta de xml ilegível quando o campo não está corrompido', function (DpsData $data, array $body, ?string $xmlEsperado) {
+    // Válido → xml presente, sem alerta. Ausente/vazio → xml null, mas também sem
+    // alerta: só a corrupção comprovada de um campo presente gera o XML_ILEGIVEL.
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', ...$body], 201)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->chave)->toBe('CHAVE123')
+        ->and($response->xml)->toBe($xmlEsperado)
+        ->and(array_filter($response->alertas, fn ($a) => $a->codigo === 'XML_ILEGIVEL'))->toBeEmpty();
+})->with('dpsData')->with([
+    'nfseXmlGZipB64 válido' => [['nfseXmlGZipB64' => base64_encode(gzencode('<NFSe/>'))], '<NFSe/>'],
+    'nfseXmlGZipB64 ausente' => [[], null],
+    'nfseXmlGZipB64 vazio' => [['nfseXmlGZipB64' => ''], null],
+]);
+
+it('emitir dispara apenas NfseEmitted, nunca NfseFailed, quando o xml vem corrompido', function (DpsData $data) {
+    Event::fake();
     Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => '!!!invalid!!!'], 201)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $client->emitir($data);
 
-    expect(fn () => $client->emitir($data))
-        ->toThrow(NfseException::class, 'base64');
+    Event::assertDispatched(NfseEmitted::class);
+    Event::assertNotDispatched(NfseFailed::class);
 })->with('dpsData');
 
-it('emitir throws NfseException on invalid gzip in nfseXmlGZipB64', function (DpsData $data) {
-    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE123', 'nfseXmlGZipB64' => base64_encode('not-gzip-data')], 201)]);
+it('emitir preserva os alertas da API junto ao alerta de xml ilegível', function (DpsData $data) {
+    Http::fake(['*' => Http::response([
+        'chaveAcesso' => 'CHAVE123',
+        'nfseXmlGZipB64' => '!!!invalid!!!',
+        'alertas' => [['codigo' => 'A001', 'descricao' => 'Alerta da SEFIN']],
+    ], 201)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->emitir($data);
 
-    expect(fn () => $client->emitir($data))
-        ->toThrow(NfseException::class, 'descomprimir');
+    expect($response->alertas)->toHaveCount(2)
+        ->and($response->alertas[0]->codigo)->toBe('A001')
+        ->and($response->alertas[1]->codigo)->toBe('XML_ILEGIVEL');
 })->with('dpsData');
 
 it('emitir throws NfseException when gzip compression fails', function (DpsData $data) {

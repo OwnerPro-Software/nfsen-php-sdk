@@ -174,6 +174,45 @@ it('cancelar dispatches NfseFailed, never NfseCancelled, when the event receipt 
     Event::assertNotDispatched(NfseCancelled::class);
 });
 
+it('cancelar preserva o cancelamento com xml null e alerta quando o recibo vem corrompido', function (string $reciboCorrompido, string $motivo) {
+    // eventoXmlGZipB64 presente prova que o evento foi registrado: um recibo
+    // ilegível não pode reverter isso em falha. O motivo vai no complemento.
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => $reciboCorrompido, 'tipoAmbiente' => 2], 201)]);
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $response = $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
+    );
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->chave)->toBe('12345678901234567890123456789012345678901234567890')
+        ->and($response->xml)->toBeNull()
+        ->and($response->alertas)->toHaveCount(1)
+        ->and($response->alertas[0]->codigo)->toBe('XML_ILEGIVEL')
+        ->and($response->alertas[0]->descricao)->toContain('consultar()->eventos')
+        ->and($response->alertas[0]->complemento)->toBe($motivo);
+})->with([
+    'base64 inválido' => ['!!!invalid!!!', 'Falha ao decodificar base64 do XML.'],
+    'gzip inválido' => [base64_encode('not-gzip-data'), 'Falha ao descomprimir XML.'],
+]);
+
+it('cancelar dispara apenas NfseCancelled, nunca NfseFailed, quando o recibo vem corrompido', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(['eventoXmlGZipB64' => '!!!invalid!!!'], 201)]);
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
+    );
+
+    Event::assertDispatched(NfseCancelled::class);
+    Event::assertNotDispatched(NfseFailed::class);
+});
+
 it('cancelar succeeds and reports error when event listener throws', function () {
     Http::fake(['*' => Http::response(
         json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),

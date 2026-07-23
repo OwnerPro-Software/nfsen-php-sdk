@@ -75,12 +75,14 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
                 throw IndeterminateResultException::fromMissingQueryField('nfseXmlGZipB64');
             }
 
+            $xml = GzipCompressor::decompressB64($nfseXml);
+
             $this->dispatchEvent(new NfseQueried('consultar'));
 
             return new NfseResponse(
                 sucesso: true,
                 chave: $result['chaveAcesso'] ?? null,
-                xml: GzipCompressor::decompressB64($nfseXml),
+                xml: $xml,
                 tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,

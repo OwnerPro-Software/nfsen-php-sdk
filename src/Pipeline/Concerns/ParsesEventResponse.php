@@ -6,6 +6,7 @@ namespace OwnerPro\Nfsen\Pipeline\Concerns;
 
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
 use OwnerPro\Nfsen\Support\GzipCompressor;
@@ -65,10 +66,19 @@ trait ParsesEventResponse
 
         $this->dispatchEvent($successEvent);
 
+        try {
+            $xml = GzipCompressor::decompressB64($eventoXml);
+            $alertas = [];
+        } catch (NfseException $nfseException) {
+            $xml = null;
+            $alertas = [ProcessingMessage::xmlIlegivel('consultar()->eventos($chave)', $nfseException->getMessage())];
+        }
+
         return new NfseResponse(
             sucesso: true,
             chave: $chave,
-            xml: GzipCompressor::decompressB64($eventoXml),
+            xml: $xml,
+            alertas: $alertas,
             tipoAmbiente: $result['tipoAmbiente'] ?? null,
             versaoAplicativo: $result['versaoAplicativo'] ?? null,
             dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,

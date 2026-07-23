@@ -29,6 +29,16 @@ it('constructs with defaults when no arguments provided', function () {
         ->complemento->toBeNull();
 });
 
+it('xmlIlegivel builds an alert naming the recovery call and carrying the cause', function () {
+    $msg = ProcessingMessage::xmlIlegivel('consultar()->nfse($chave)', 'Falha ao descomprimir XML.');
+
+    expect($msg->codigo)->toBe('XML_ILEGIVEL')
+        ->and($msg->mensagem)->toBe('XML não pôde ser lido')
+        ->and($msg->descricao)->toContain('consultar()->nfse($chave)')
+        ->and($msg->descricao)->toContain('corrompido')
+        ->and($msg->complemento)->toBe('Falha ao descomprimir XML.');
+});
+
 it('creates from array with full data', function () {
     $msg = ProcessingMessage::fromArray([
         'mensagem' => 'Mensagem',

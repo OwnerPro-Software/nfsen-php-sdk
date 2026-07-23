@@ -26,6 +26,19 @@ final readonly class ProcessingMessage
         public array $parametros = [],
     ) {}
 
+    public static function xmlIlegivel(string $recuperarVia, string $causa): self
+    {
+        return new self(
+            mensagem: 'XML não pôde ser lido',
+            codigo: 'XML_ILEGIVEL',
+            descricao: sprintf(
+                'A operação foi confirmada, mas o XML compactado veio corrompido e não pôde ser descomprimido. Recupere o documento por %s.',
+                $recuperarVia,
+            ),
+            complemento: $causa,
+        );
+    }
+
     /** @phpstan-param MessageData $data */
     public static function fromArray(array $data): self
     {
