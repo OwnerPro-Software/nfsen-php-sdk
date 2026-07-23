@@ -565,7 +565,8 @@ Representa uma mensagem de erro ou alerta da API:
 | `IndeterminateResultException` | `CommunicationException` | **Resultado indeterminado**: a requisição pode ou não ter sido processada pela SEFIN. Reconcilie antes de retry (veja abaixo). `phase` indica a fase da falha quando detectável (`connect`, `dns`, `read`, `tls`, `transfer`, `body`); é `null` quando a resposta chegou inteira e o que falta é evidência de processamento, como num 5xx sem rejeição da SEFIN |
 | `RequestNotDeliveredException` | `CommunicationException` | **Não entregue**: a falha ocorreu comprovadamente antes de qualquer byte HTTP ser enviado (`phase`: `dns`, `connect` ou `tls`). A operação não foi processada — retry direto é seguro, sem reconciliação |
 | `HttpException` | `NfseException` | Resposta HTTP de erro recebida sem corpo estruturado (redirect, 4xx vazio, 5xx em consulta; status inesperado em `verificarDps()`/`dps()`). Acesse `getResponseBody()` para detalhes. **Num 5xx a operações que alteram estado** (`emitir`, `cancelar`, `substituir`) o SDK lança `IndeterminateResultException`, não esta |
-| `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado |
+| `CertificateExpiredException` | `NfseException` | Certificado PFX/P12 expirado (`validTo` no passado) |
+| `CertificateNotYetValidException` | `NfseException` | Certificado PFX/P12 com início de vigência no futuro (`validFrom` à frente do relógio) — renovação antecipada ou host com clock skew |
 | `InvalidDpsArgument` | `InvalidArgumentException` | Campos mutuamente exclusivos ou obrigatórios violados na DPS; ID de DPS fora do padrão `TSIdDPS` |
 
 ```php

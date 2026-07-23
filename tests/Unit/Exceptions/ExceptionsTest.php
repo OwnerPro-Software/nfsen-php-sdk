@@ -1,10 +1,11 @@
 <?php
 
 use OwnerPro\Nfsen\Exceptions\CertificateExpiredException;
+use OwnerPro\Nfsen\Exceptions\CertificateNotYetValidException;
 use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 
-covers(NfseException::class, CertificateExpiredException::class, HttpException::class);
+covers(NfseException::class, CertificateExpiredException::class, CertificateNotYetValidException::class, HttpException::class);
 
 it('NfseException is a RuntimeException', function () {
     $e = new NfseException('msg');
@@ -14,6 +15,11 @@ it('NfseException is a RuntimeException', function () {
 
 it('CertificateExpiredException extends NfseException', function () {
     $e = new CertificateExpiredException('cert expired');
+    expect($e)->toBeInstanceOf(NfseException::class);
+});
+
+it('CertificateNotYetValidException extends NfseException', function () {
+    $e = new CertificateNotYetValidException('not yet valid');
     expect($e)->toBeInstanceOf(NfseException::class);
 });
 
