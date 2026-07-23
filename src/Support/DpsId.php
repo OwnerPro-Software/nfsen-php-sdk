@@ -21,7 +21,10 @@ use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
  */
 final readonly class DpsId
 {
-    private const string PATTERN = '/^DPS\d{42}$/';
+    // /D: sem ele, `$` casa também antes de um \n final — um nDps de 15 dígitos com
+    // quebra de linha passaria como identificador bem formado, e a chave iria para a
+    // URL de consultar()->dps() com o \n. Mesma razão que ValidatesChaveAcesso.
+    private const string PATTERN = '/^DPS\d{42}$/D';
 
     /**
      * @param  bool  $allowEmptyInscricao  permite CNPJ e CPF ambos null, gerando
@@ -54,14 +57,14 @@ final readonly class DpsId
         // existe para servir, `consultar()->dps($id)` responderia DPS_NOT_FOUND, que o
         // contrato de IndeterminateResultException manda ler como "é seguro reemitir".
         // Um engano de digitação viraria emissão em dobro.
-        self::assertPattern($cLocEmi, '/^\d{7}$/', 'cLocEmi', 'sete dígitos (TSCodMunIBGE)');
+        self::assertPattern($cLocEmi, '/^\d{7}$/D', 'cLocEmi', 'sete dígitos (TSCodMunIBGE)');
 
         if ($cnpj !== null) {
-            self::assertPattern($cnpj, '/^\d{14}$/', 'CNPJ', 'catorze dígitos (TSCNPJ)');
+            self::assertPattern($cnpj, '/^\d{14}$/D', 'CNPJ', 'catorze dígitos (TSCNPJ)');
         }
 
         if ($cpf !== null) {
-            self::assertPattern($cpf, '/^\d{11}$/', 'CPF', 'onze dígitos (TSCPF)');
+            self::assertPattern($cpf, '/^\d{11}$/D', 'CPF', 'onze dígitos (TSCPF)');
         }
 
         $id = 'DPS';

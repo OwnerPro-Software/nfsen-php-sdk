@@ -51,7 +51,7 @@ final readonly class ProcessingMessage
             // tolerância: a SEFIN nomeia todo o resto da mensagem em minúscula, logo
             // seria esse o casing dela. Auditoria de 2026-07-21 confirmou que nenhum
             // dos dois swaggers declara `parametros` — não remova achando que é typo.
-            parametros: $data['parametros'] ?? $data['Parametros'] ?? [],
+            parametros: self::toList($data['parametros'] ?? $data['Parametros'] ?? null),
         );
     }
 
@@ -68,6 +68,23 @@ final readonly class ProcessingMessage
         $encoded = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         return $encoded !== false ? $encoded : null; // @pest-mutate-ignore FalseToTrue — json_encode on API data never returns false in practice
+    }
+
+    /**
+     * Normaliza `parametros` numa lista de strings. Como nenhum swagger declara o
+     * campo, sua forma não tem contrato: um escalar vira lista vazia e itens não-string
+     * saem, em vez de estourar TypeError no construtor tipado — mesma tolerância que
+     * {@see self::extractErrors()} aplica ao envelope de erro.
+     *
+     * @return list<string>
+     */
+    private static function toList(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter($value, is_string(...)));
     }
 
     /**

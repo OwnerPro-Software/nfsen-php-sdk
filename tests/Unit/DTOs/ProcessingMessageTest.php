@@ -313,3 +313,26 @@ it('defaults parametros to empty array when key absent in fromArray', function (
 
     expect($msg->parametros)->toBe([]);
 });
+
+// Nenhum swagger declara `parametros`, então sua forma não tem contrato. Um escalar
+// — como um proxy/WAF colocaria — ia direto para o `array $parametros` tipado e
+// estourava TypeError no construtor, fora do contrato de exceções do SDK. Mesma
+// tolerância que a lista de erros já aplica: o que não é lista de strings some.
+it('descarta parametros escalar sem estourar', function () {
+    /** @phpstan-ignore argument.type (resposta fora do contrato: parametros escalar) */
+    $msg = ProcessingMessage::fromArray([
+        'codigo' => 'E001',
+        'parametros' => 'Bad Gateway',
+    ]);
+
+    expect($msg->parametros)->toBe([]);
+});
+
+it('filtra itens não-string de parametros e reindexa', function () {
+    /** @phpstan-ignore argument.type (resposta fora do contrato: parametros com item não-string) */
+    $msg = ProcessingMessage::fromArray([
+        'parametros' => ['ok', 123, 'dois'],
+    ]);
+
+    expect($msg->parametros)->toBe(['ok', 'dois']);
+});
