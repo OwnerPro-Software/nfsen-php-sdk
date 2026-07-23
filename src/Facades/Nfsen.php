@@ -34,8 +34,8 @@ final class Nfsen extends Facade
         return NfsenClient::class;
     }
 
-    public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null): NfsenClient
+    public static function for(#[SensitiveParameter] string $pfxContent, #[SensitiveParameter] string $senha, string $prefeitura, ?NfseAmbiente $ambiente = null, ?bool $danfse = null): NfsenClient
     {
-        return NfsenClient::for($pfxContent, $senha, $prefeitura, $ambiente);
+        return NfsenClient::for($pfxContent, $senha, $prefeitura, $ambiente, $danfse);
     }
 }

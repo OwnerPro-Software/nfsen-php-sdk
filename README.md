@@ -920,6 +920,8 @@ $client = NfsenClient::for($pfx, $senha, $ibge, danfse: true);
 $client = NfsenClient::for($pfx, $senha, $ibge, danfse: false);
 ```
 
+A facade `Nfsen::for()` aceita o mesmo parâmetro: `Nfsen::for($pfx, $senha, $ibge, danfse: true)`.
+
 **Quando o PDF falha** (`$resp->sucesso === true` mas `$resp->pdf === null`): a NFS-e
 foi emitida com sucesso. Regenere sob demanda com `$client->danfse()->toPdf($resp->xml)`
 e inspecione `$resp->pdfErrors`.

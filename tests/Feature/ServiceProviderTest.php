@@ -79,6 +79,41 @@ it('facade for() returns configured NfsenClient without double resolution', func
     expect($client)->toBeInstanceOf(NfsenClient::class);
 });
 
+it('facade for() encaminha danfse: true e anexa o PDF', function (DpsData $data) {
+    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
+
+    Http::fake(['*' => Http::response([
+        'chaveAcesso' => 'CHAVE_FACADE_DANFSE',
+        'nfseXmlGZipB64' => base64_encode((string) gzencode($xml)),
+    ], 201)]);
+
+    config(['nfsen.validate_identity' => false]);
+
+    $client = Nfsen::for(makePfxContent(), 'secret', '3501608', danfse: true);
+
+    expect($client->emitir($data)->pdf)->toStartWith('%PDF-');
+})->with('dpsData');
+
+it('facade for() encaminha danfse: false, sobrepondo auto_danfse do config', function (DpsData $data) {
+    // Antes o parâmetro era engolido: a facade encaminhava só 4 args, e danfse
+    // desligado ainda anexava o PDF por seguir o config.
+    $xml = (string) file_get_contents(__DIR__.'/../fixtures/danfse/nfse-autorizada.xml');
+
+    Http::fake(['*' => Http::response([
+        'chaveAcesso' => 'CHAVE_FACADE_SEM_DANFSE',
+        'nfseXmlGZipB64' => base64_encode((string) gzencode($xml)),
+    ], 201)]);
+
+    config([
+        'nfsen.validate_identity' => false,
+        'nfsen.auto_danfse' => true,
+    ]);
+
+    $client = Nfsen::for(makePfxContent(), 'secret', '3501608', danfse: false);
+
+    expect($client->emitir($data)->pdf)->toBeNull();
+})->with('dpsData');
+
 it('throws RuntimeException when cert file is empty', function () {
     $emptyFile = tempnam(sys_get_temp_dir(), 'nfse_test_');
 
