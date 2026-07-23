@@ -10,11 +10,16 @@ use Throwable;
 class GzipCompressor
 {
     /**
-     * Teto de descompressão. O conteúdo gzip vem do servidor e, sem limite,
-     * uma bomba de descompressão (razões da ordem de 1000:1, CWE-409)
-     * expandiria GB em memória a partir de poucos MB de resposta. 50 MB
-     * comporta com folga qualquer XML de NFS-e ou documento de distribuição;
-     * acima disso gzdecode() retorna false e cai no contrato normal de erro.
+     * Teto de descompressão. O conteúdo gzip vem do servidor e, sem limite, uma bomba
+     * de descompressão (razões da ordem de 1000:1, CWE-409) expandiria GB em memória a
+     * partir de poucos MB de resposta. 50 MB comporta com folga qualquer XML de NFS-e
+     * ou documento de distribuição.
+     *
+     * É teto de memória, não corte exato: o `max_length` do gzdecode interrompe o
+     * inflate e devolve false quando a saída passaria do teto — na prática alguns MB
+     * acima do nominal, pelo arredondamento do buffer interno do zlib; o que cabe volta
+     * inteiro, nunca truncado. Uma bomba fica assim limitada a dezenas de MB e cai no
+     * contrato de erro (false → NfseException), que é o objetivo.
      */
     private const int MAX_DECOMPRESSED_BYTES = 52_428_800; // @pest-mutate-ignore IncrementInteger,DecrementInteger — ±1 byte no teto não é observável por teste
 
