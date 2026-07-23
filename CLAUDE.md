@@ -46,22 +46,14 @@ If a line genuinely can't be killed by mutation testing (e.g. defensive null-coa
 
 ## Comments
 
-Comment only what is critical and non-obvious. The default is no comment: well-named code explains itself, and a comment restating it is noise that rots.
+**Comments are a last resort.** The default is none. Well-named code — good identifiers, small extracted methods — is the goal, and most comments are noise that rots. The reflex to explain each block, everywhere, is the thing to drop: do not narrate.
 
-Write a comment when the reader would otherwise be unable to reconstruct **why**:
+Only comment to establish knowledge the code genuinely **cannot** carry at that spot — and then make it direct, clarifying, and short (one line; if it won't fit, extract a method instead):
 
-- A rule that comes from outside the code — an NT 008 item, an XSD constraint, a leiaute quirk. Cite the source (`item 2.4.5, nota 10`).
-- A decision that looks wrong until you know the constraint (a magic number from measurement, a deliberate deviation from a spec, a guard against a defect that already happened).
-- A `@pest-mutate-ignore`, which by definition needs its reason inline.
+- **Valid:** an external rule the code can't show (NT 008 item, XSD constraint — cite the source, `item 2.4.5, nota 10`); a decision that looks wrong until you know the constraint; a warning; `TODO`; a `@pest-mutate-ignore` with its reason.
+- **Never:** restating what the code already says (type, name, control flow), section banners, narrating a change you just made (that belongs in the commit/CHANGELOG), multi-line essays, or commented-out code (git remembers).
 
-Do **not** comment:
-
-- What the next line already says (`// lê o arquivo` above `file_get_contents()`).
-- Restating a type, a name, or an obvious control flow.
-- Section banners inside a function (`// --- monta o header ---`).
-- Narration of a change you just made ("agora usa X em vez de Y") — that belongs in the commit message or CHANGELOG, not the source.
-
-When tempted to explain a block, prefer extracting it into a named method.
+To lock behavior that must not regress, prefer a **test** over a comment.
 
 ## Documentation
 
