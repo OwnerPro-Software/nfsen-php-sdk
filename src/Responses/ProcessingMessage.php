@@ -102,14 +102,34 @@ final readonly class ProcessingMessage
      */
     private static function extractErrors(array $result): array
     {
-        $erros = $result['erros'] ?? [];
+        $erros = self::onlyMessages($result['erros'] ?? []);
 
         if ($erros !== []) {
             return $erros;
         }
 
-        $erro = $result['erro'] ?? [];
+        // `erro` singular só é envelope da SEFIN se for uma mensagem (array). Um
+        // escalar — como o `{"erro": "Bad Gateway"}` que um proxy/WAF devolve num
+        // 5xx — não prova rejeição da SEFIN: aceitá-lo classificava a falha do
+        // gateway como rejeição definitiva (convite a reemitir a nota que a SEFIN
+        // pode ter gravado) e ainda estourava TypeError em fromArray(), fora do
+        // contrato de exceções tipadas. Mesma régua de tolerância do
+        // DistribuicaoResponse: item que não é mensagem sai da classificação.
+        $erro = $result['erro'] ?? null;
 
-        return $erro !== [] ? [$erro] : [];
+        return is_array($erro) && $erro !== [] ? [$erro] : [];
+    }
+
+    /**
+     * @return list<MessageData>
+     */
+    private static function onlyMessages(mixed $items): array
+    {
+        if (! is_array($items)) {
+            return [];
+        }
+
+        /** @var list<MessageData> */
+        return array_values(array_filter($items, is_array(...)));
     }
 }

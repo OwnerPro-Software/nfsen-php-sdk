@@ -91,6 +91,12 @@ it('throws IndeterminateResultException on POST 5xx without a SEFIN rejection', 
     'corpo JSON de gateway' => [['message' => 'Internal server error'], 'gateway'],
     'corpo não-JSON' => ['Server Error', 'html'],
     'envelope de erro vazio' => [['erro' => []], 'vazio'],
+    // Proxy/WAF que responde com JSON próprio e `erro`/`erros` escalar não é
+    // rejeição da SEFIN. Antes do fix o corpo passava por hasApiError() e voltava
+    // como rejeição definitiva — mascarando um 5xx de gateway como nota rejeitada
+    // e estourando TypeError adiante em fromArray().
+    'erro escalar de proxy' => [['erro' => 'Bad Gateway'], 'erro-string'],
+    'erros como lista de strings' => [['erros' => ['Bad Gateway']], 'erros-strings'],
 ]);
 
 it('reports no transport phase for a server error, since the response arrived intact', function () {

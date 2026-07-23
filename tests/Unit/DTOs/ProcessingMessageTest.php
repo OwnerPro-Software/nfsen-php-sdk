@@ -151,7 +151,36 @@ it('hasApiError agrees with fromApiResult on every shape the API produces', func
     'erro vazio junto de payload de sucesso' => [['erro' => [], 'chaveAcesso' => '35123'], false],
     'ambos vazios' => [['erros' => [], 'erro' => []], false],
     'plural vazio, singular preenchido' => [['erros' => [], 'erro' => ['codigo' => 'E777']], true],
+    // Um proxy/WAF antes da SEFIN responde com JSON próprio, muitas vezes com
+    // `erro`/`erros` escalar. Não é rejeição da SEFIN: tem de sair da
+    // classificação para o 5xx cair em IndeterminateResultException, e sem isso
+    // fromArray() ainda estourava TypeError ao receber a string.
+    'erro escalar de proxy' => [['erro' => 'Bad Gateway'], false],
+    'erros escalar (nem lista)' => [['erros' => 'Bad Gateway'], false],
+    'erros como lista de strings' => [['erros' => ['Bad Gateway']], false],
+    'erros com item não-mensagem no meio' => [['erros' => [['codigo' => 'E1'], 'lixo']], true],
 ]);
+
+it('fromApiResult descarta um erro escalar sem estourar', function () {
+    /** @phpstan-ignore argument.type (resposta fora do contrato: proxy devolve erro escalar) */
+    $list = ProcessingMessage::fromApiResult(['erro' => 'Bad Gateway']);
+
+    expect($list)->toBeEmpty();
+});
+
+it('fromApiResult filtra itens não-mensagem da lista erros', function () {
+    $list = ProcessingMessage::fromApiResult([
+        'erros' => [
+            ['codigo' => 'E1', 'descricao' => 'Erro real'],
+            'lixo escalar',
+            ['codigo' => 'E2'],
+        ],
+    ]);
+
+    expect($list)->toHaveCount(2)
+        ->and($list[0]->codigo)->toBe('E1')
+        ->and($list[1]->codigo)->toBe('E2');
+});
 
 it('coerces non-string Mensagem to json preserving unicode and slashes', function () {
     /** @phpstan-ignore argument.type (testing runtime coercion of non-string values from API) */
