@@ -84,17 +84,17 @@ final readonly class DpsId
         return $id;
     }
 
-    private static function assertPattern(string $valor, string $pattern, string $campo, string $esperado): void
+    private static function assertPattern(string $value, string $pattern, string $field, string $expected): void
     {
-        if (preg_match($pattern, $valor) === 1) {
+        if (preg_match($pattern, $value) === 1) {
             return;
         }
 
         throw new InvalidDpsArgument(sprintf(
             '%s inválido para o identificador da DPS: "%s". Esperado %s.',
-            $campo,
-            $valor,
-            $esperado,
+            $field,
+            $value,
+            $expected,
         ));
     }
 }

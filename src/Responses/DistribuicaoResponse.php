@@ -33,8 +33,8 @@ final readonly class DistribuicaoResponse
         // O swagger declara StatusProcessamento como enum de string; valor de
         // outro tipo é a mesma resposta fora do contrato que o branch
         // INVALID_RESPONSE existe para nomear — não um TypeError no tryFrom.
-        $statusBruto = $result['StatusProcessamento'] ?? null;
-        $statusRaw = is_string($statusBruto) ? $statusBruto : ''; // @pest-mutate-ignore EmptyStringToNotEmpty — any non-enum string produces null from tryFrom
+        $rawStatus = $result['StatusProcessamento'] ?? null;
+        $statusRaw = is_string($rawStatus) ? $rawStatus : ''; // @pest-mutate-ignore EmptyStringToNotEmpty — any non-enum string produces null from tryFrom
         $status = StatusDistribuicao::tryFrom($statusRaw);
 
         if ($status === null) {
@@ -64,17 +64,17 @@ final readonly class DistribuicaoResponse
         // DocumentoFiscal::fromArray(). Item escalar não traz nsu nem chave:
         // não há o que preservar dele, e passá-lo adiante custaria a página
         // inteira num TypeError.
-        $loteBruto = $result['LoteDFe'] ?? [];
+        $rawLote = $result['LoteDFe'] ?? [];
         /** @var list<array<string, mixed>> $loteDFe */
-        $loteDFe = is_array($loteBruto) ? array_values(array_filter($loteBruto, is_array(...))) : [];
+        $loteDFe = is_array($rawLote) ? array_values(array_filter($rawLote, is_array(...))) : [];
 
-        $alertasBruto = $result['Alertas'] ?? [];
+        $rawAlertas = $result['Alertas'] ?? [];
         /** @var list<array{mensagem?: string, Mensagem?: string, codigo?: string, Codigo?: string, descricao?: string, Descricao?: string, complemento?: string, Complemento?: string, parametros?: list<string>, Parametros?: list<string>}> $alertas */
-        $alertas = is_array($alertasBruto) ? array_values(array_filter($alertasBruto, is_array(...))) : [];
+        $alertas = is_array($rawAlertas) ? array_values(array_filter($rawAlertas, is_array(...))) : [];
 
-        $errosBruto = $result['Erros'] ?? [];
+        $rawErros = $result['Erros'] ?? [];
         /** @var list<array{mensagem?: string, Mensagem?: string, codigo?: string, Codigo?: string, descricao?: string, Descricao?: string, complemento?: string, Complemento?: string, parametros?: list<string>, Parametros?: list<string>}> $erros */
-        $erros = is_array($errosBruto) ? array_values(array_filter($errosBruto, is_array(...))) : [];
+        $erros = is_array($rawErros) ? array_values(array_filter($rawErros, is_array(...))) : [];
 
         return new self(
             sucesso: $status === StatusDistribuicao::DocumentosLocalizados,

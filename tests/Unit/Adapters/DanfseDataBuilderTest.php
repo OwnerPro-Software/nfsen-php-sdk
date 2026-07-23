@@ -1086,9 +1086,13 @@ it('dashes the ISSQN fields the NFS-e does not carry', function () {
 // NT 008, item 2.4.5, nota 5: as duas linhas de imunidade/benefício podem ser
 // suprimidas quando NENHUM campo da linha tem dado. Sem isso, a esmagadora maioria
 // das NFS-e — sem imunidade nem benefício — imprime oito traços.
+//
+// regEspTrib é obrigatório (minOccurs=1), então o caso real "sem regime" não é o
+// campo ausente — que o XSD proíbe —, e sim "0 - Nenhum", o valor da maioria. É esse
+// que a linha tem de tratar como vazio para poder cair.
 function semDadosSuprimiveis(string $xml): string
 {
-    $xml = (string) preg_replace('|<regEspTrib>[^<]*</regEspTrib>|', '', $xml);
+    $xml = (string) preg_replace('|<regEspTrib>[^<]*</regEspTrib>|', '<regEspTrib>0</regEspTrib>', $xml);
 
     return (string) preg_replace('|<vDescCondIncond>.*?</vDescCondIncond>|s', '', $xml);
 }
@@ -1132,6 +1136,22 @@ it('keeps the benefit row when only the unconditional discount is present', func
 
     expect($data->tribMun->exibeRegimeEImunidade)->toBeFalse();
     expect($data->tribMun->exibeBeneficioEDeducoes)->toBeTrue();
+});
+
+it('still prints "Nenhum" for regEspTrib=0 when another field keeps the row', function () {
+    // A NT manda usar a descrição das opções 0 a 6 e 9, então "Nenhum" segue impresso
+    // quando a linha aparece por outro campo (aqui, o processo de suspensão). O 0 não
+    // sustenta a linha sozinho, mas também não é apagado quando ela existe.
+    $xml = str_replace('<regEspTrib>6</regEspTrib>', '<regEspTrib>0</regEspTrib>', $this->xml);
+    $xml = str_replace(
+        '</tribMun>',
+        '<exigSusp><nProcesso>123</nProcesso></exigSusp></tribMun>',
+        $xml,
+    );
+    $data = $this->builder->build($xml);
+
+    expect($data->tribMun->exibeRegimeEImunidade)->toBeTrue()
+        ->and($data->tribMun->regimeEspecial)->toBe('Nenhum');
 });
 
 // NT 008, item 2.1.10: bloco TRIBUTAÇÃO IBS / CBS. As alíquotas e valores apurados

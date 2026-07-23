@@ -194,14 +194,14 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             return '';
         }
 
-        $partes = array_filter(
+        $parts = array_filter(
             [$this->str($inf->xLocEmi), $this->str($emit->enderNac->UF)],
-            static fn (string $parte): bool => $parte !== '',
+            static fn (string $part): bool => $part !== '',
         );
 
         // `xLocEmi` é TSDesc150 num campo de 37. Ver ParticipanteBuilder::municipioDaPessoa()
         // para por que o corte usa a capacidade cheia da NT em vez de reservar as reticências.
-        return $partes === [] ? '-' : $this->fmt->limit(implode(' / ', $partes), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 é a capacidade da NT 008; 36/38 não representa regressão.
+        return $parts === [] ? '-' : $this->fmt->limit(implode(' / ', $parts), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 é a capacidade da NT 008; 36/38 não representa regressão.
     }
 
     private function buildServico(SimpleXMLElement $inf, SimpleXMLElement $serv, SimpleXMLElement $cServ): DanfseServico
@@ -239,12 +239,12 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     /** Aplica a regra do campo único de descrição de tributação (NT 008, item 2.4.5). */
     private function resolveDescricaoTributacao(string $xTribMun, string $xTribNac): string
     {
-        $escolhido = $xTribMun !== '' ? $xTribMun : $xTribNac;
+        $chosen = $xTribMun !== '' ? $xTribMun : $xTribNac;
 
         // 167, não 170: a NT manda usar reticências "caso a descrição supere 167
         // caracteres" num campo de 170 — os 3 restantes são as próprias reticências,
         // que limit() acrescenta ao cortar.
-        return $escolhido !== '' ? $this->fmt->limit($escolhido, 167) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — 167 vem da NT 008; 166/168 não representa regressão de comportamento.
+        return $chosen !== '' ? $this->fmt->limit($chosen, 167) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — 167 vem da NT 008; 166/168 não representa regressão de comportamento.
     }
 
     private function buildTribMun(
@@ -265,7 +265,8 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         // A NT 008 corta estas descrições em 37 caracteres (campo de 40); as de
         // imunidade citam o dispositivo constitucional e passam de 300.
-        $regimeEspecial = RegEspTrib::labelOf($this->str($regTrib->regEspTrib));
+        $regEspTribCode = $this->str($regTrib->regEspTrib);
+        $regimeEspecial = RegEspTrib::labelOf($regEspTribCode);
         $tipoImunidade = $this->fmt->limit(TpImunidade::labelOf($this->str($tribMun->tpImunidade)), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — 37 vem da NT 008; 36/38 não representa regressão.
         $suspensao = $this->fmt->limit(TpSusp::labelOf($this->str($exigSusp->tpSusp)), 37); // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
         $nProcesso = $this->str($exigSusp->nProcesso, '-');
@@ -309,8 +310,18 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             // NT 008, item 2.4.5, nota 5: estas duas linhas podem ser suprimidas
             // quando NENHUM dos campos da linha tem dado. Sem isso, toda NFS-e sem
             // imunidade nem benefício — a esmagadora maioria — imprime oito traços.
-            exibeRegimeEImunidade: $this->algumPreenchido($regimeEspecial, $tipoImunidade, $suspensao, $nProcesso),
-            exibeBeneficioEDeducoes: $this->algumPreenchido($beneficio, $calculoBM, $deducoes, $descontoIncond),
+            //
+            // regEspTrib é obrigatório e vale "0 - Nenhum" nessa maioria: é a ausência
+            // de regime especial, não um dado que sustente a linha. Contá-lo tornaria a
+            // supressão inútil (a linha nunca cairia, já que o campo nunca falta). A
+            // descrição "Nenhum" segue impressa quando a linha aparece por outro campo.
+            exibeRegimeEImunidade: $this->anyFilled(
+                $regEspTribCode === '0' ? '-' : $regimeEspecial,
+                $tipoImunidade,
+                $suspensao,
+                $nProcesso,
+            ),
+            exibeBeneficioEDeducoes: $this->anyFilled($beneficio, $calculoBM, $deducoes, $descontoIncond),
             bcIssqn: $vBC !== '' ? $this->fmt->currency($vBC) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             aliquota: $pAliq !== '' ? $this->fmt->percent($pAliq) : '-',
             retencaoIssqn: TpRetISSQN::labelOf($this->str($tribMun->tpRetISSQN)),
@@ -425,9 +436,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
     private function percentOrEmpty(?SimpleXMLElement $node): string
     {
-        $valor = $this->str($node);
+        $value = $this->str($node);
 
-        return $valor !== '' ? $this->fmt->percent($valor) : '';
+        return $value !== '' ? $this->fmt->percent($value) : '';
     }
 
     private function percentOrDash(?SimpleXMLElement $node): string
@@ -542,7 +553,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     ): string {
         $infoCompl = $serv->infoCompl;
 
-        $campos = [
+        $fields = [
             'Inf. Cont.: ' => $this->str($infoCompl?->xInfComp), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
             'NFS-e Subst.: ' => $this->str($infDps->subst?->chSubstda), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             'Doc. Ref.: ' => $this->str($infoCompl?->docRef), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
@@ -555,18 +566,18 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             'Inf. A. T. Mun.: ' => $this->str($inf->xOutInf),
         ];
 
-        $preenchidos = array_filter($campos, fn (string $valor): bool => $valor !== '');
+        $filled = array_filter($fields, fn (string $value): bool => $value !== '');
 
-        $texto = implode(' | ', array_map(
-            static fn (string $rotulo, string $valor): string => $rotulo.$valor,
-            array_keys($preenchidos),
-            $preenchidos,
+        $text = implode(' | ', array_map(
+            static fn (string $label, string $value): string => $label.$value,
+            array_keys($filled),
+            $filled,
         ));
 
         // Item 2.4.5: reticências acima de 1997 caracteres, num campo de 2000. Nenhum dos
         // dez campos preenchido, o quadro leva o traço da nota 12, e não área em branco —
         // a linha fixa de totais aproximados da nota 10 sai à parte, em célula própria.
-        return $texto !== '' ? $this->fmt->limit($texto, 1997) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — 1997 vem da NT 008.
+        return $text !== '' ? $this->fmt->limit($text, 1997) : '-'; // @pest-mutate-ignore IncrementInteger,DecrementInteger — 1997 vem da NT 008.
     }
 
     /**
@@ -580,9 +591,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $itens = [];
 
         foreach ($infoCompl?->gItemPed->xItemPed ?? [] as $item) { // @pest-mutate-ignore RemoveNullSafeOperator — idem; `?? []` cobre o nó ausente.
-            $valor = $this->str($item);
-            if ($valor !== '') {
-                $itens[] = $valor;
+            $value = $this->str($item);
+            if ($value !== '') {
+                $itens[] = $value;
             }
         }
 
@@ -590,10 +601,10 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     }
 
     /** Alguma das descrições da linha tem conteúdo? '-' é a marca de campo vazio. */
-    private function algumPreenchido(string ...$valores): bool
+    private function anyFilled(string ...$valores): bool
     {
-        foreach ($valores as $valor) {
-            if ($valor !== '-') {
+        foreach ($valores as $value) {
+            if ($value !== '-') {
                 return true;
             }
         }
@@ -602,9 +613,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     }
 
     /** Formata como moeda, ou '-' quando não há valor. */
-    private function currencyOrDash(string $valor): string
+    private function currencyOrDash(string $value): string
     {
-        return $valor !== '' ? $this->fmt->currency($valor) : '-'; // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
+        return $value !== '' ? $this->fmt->currency($value) : '-'; // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
     }
 
     private function sumCurrency(string ...$values): string
