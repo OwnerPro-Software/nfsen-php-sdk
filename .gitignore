@@ -14,4 +14,7 @@ tmp/
 
 # Scripts descartáveis de auditoria de conformidade (o relatório .md fica versionado)
 docs/auditoria/scripts/
+
+# Handoffs são correspondência com times consumidores, não documentação do SDK
+docs/handoffs/
 .venv-nt008/

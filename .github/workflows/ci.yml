@@ -47,8 +47,15 @@ jobs:
       - name: Run tests
         run: ./vendor/bin/pest --coverage --min=100
 
+      # O plugin analisa em forks (Pokio) que escrevem o mesmo cache
+      # `.temp/v3.php`; escritas cruzadas o deixam truncado no meio de um
+      # `' => '` e o fork seguinte morre num parse error. A segunda tentativa
+      # parte de cache limpo. Queda real abaixo de 100% falha nas duas.
       - name: Run type coverage
-        run: ./vendor/bin/pest --type-coverage --min=100
+        run: |
+          ./vendor/bin/pest --type-coverage --min=100 \
+            || (rm -rf vendor/pestphp/pest-plugin-type-coverage/.temp \
+                && ./vendor/bin/pest --type-coverage --min=100)
 
       - name: Generate Clover coverage report
         if: matrix.php == '8.4' && matrix.laravel == '12.*'
