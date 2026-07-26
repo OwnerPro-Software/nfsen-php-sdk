@@ -214,6 +214,9 @@ $response = $client->solicitarAnaliseFiscalCancelamento(
 );
 ```
 
+Os códigos de motivo são os mesmos do cancelamento: `ErroEmissao`, `ServicoNaoPrestado`,
+`Outros`.
+
 Sucesso aqui significa **pedido registrado**, não nota cancelada: a NFS-e segue válida até
 o fisco decidir. O SDK dispara `NfseFiscalAnalysisRequested`, nunca `NfseCancelled`.
 
@@ -240,9 +243,6 @@ situação da nota.
 
 Se você já consome `distribuicao()->documentos($nsu)`, os eventos `105104`/`105105` chegam
 nesse fluxo por NSU — o desfecho vem por lote, sem varrer nota a nota.
-
-Os códigos de motivo são os mesmos do cancelamento: `ErroEmissao`, `ServicoNaoPrestado`,
-`Outros`.
 
 ### Substituir NFSe
 
