@@ -21,6 +21,7 @@ use SensitiveParameter;
  * @method static NfseResponse emitir(DpsData|DpsDataArray $data)
  * @method static NfseResponse emitirDecisaoJudicial(DpsData|DpsDataArray $data)
  * @method static NfseResponse cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao)
+ * @method static NfseResponse solicitarAnaliseFiscalCancelamento(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao)
  * @method static NfseResponse substituir(string $chave, DpsData|DpsDataArray $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null)
  * @method static ConsultsNfse consultar()
  * @method static DistributesNfse distribuicao()

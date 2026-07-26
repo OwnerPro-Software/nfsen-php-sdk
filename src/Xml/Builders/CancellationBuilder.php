@@ -7,6 +7,7 @@ namespace OwnerPro\Nfsen\Xml\Builders;
 use DOMDocument;
 use InvalidArgumentException;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\EventoCancelamento;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XsdValidator;
 
@@ -31,12 +32,13 @@ final readonly class CancellationBuilder
         string $chNFSe,
         CodigoJustificativaCancelamento $codigoMotivo,
         string $descricao,
+        EventoCancelamento $evento = EventoCancelamento::Cancelamento,
     ): string {
         $this->validateDescricao($descricao);
 
         $xml = $this->build(
             $tpAmb, $verAplic, $dhEvento, $cnpjAutor, $cpfAutor,
-            $chNFSe, $codigoMotivo, $descricao,
+            $chNFSe, $codigoMotivo, $descricao, $evento,
         );
         $this->xsdValidator->validate($xml, 'pedRegEvento_v1.01.xsd');
 
@@ -52,6 +54,7 @@ final readonly class CancellationBuilder
         string $chNFSe,
         CodigoJustificativaCancelamento $codigoMotivo,
         string $descricao,
+        EventoCancelamento $evento = EventoCancelamento::Cancelamento,
     ): string {
         $doc = new DOMDocument('1.0', 'UTF-8');
         $doc->preserveWhiteSpace = false; // @pest-mutate-ignore FalseToTrue: only affects XML parsing, not serialization
@@ -62,7 +65,7 @@ final readonly class CancellationBuilder
         $root->setAttribute('xmlns', self::XMLNS);
 
         $infPedReg = $doc->createElement('infPedReg');
-        $infPedReg->setAttribute('Id', $this->generateId($chNFSe));
+        $infPedReg->setAttribute('Id', $this->generateId($chNFSe, $evento));
 
         $infPedReg->appendChild($this->text($doc, 'tpAmb', $tpAmb));
         $infPedReg->appendChild($this->text($doc, 'verAplic', $verAplic));
@@ -82,12 +85,12 @@ final readonly class CancellationBuilder
 
         $infPedReg->appendChild($this->text($doc, 'chNFSe', $chNFSe));
 
-        $evento = $doc->createElement('e101101');
-        $evento->appendChild($this->text($doc, 'xDesc', 'Cancelamento de NFS-e'));
-        $evento->appendChild($this->text($doc, 'cMotivo', $codigoMotivo->value));
-        $evento->appendChild($this->text($doc, 'xMotivo', $descricao));
+        $eventoElement = $doc->createElement($evento->tag());
+        $eventoElement->appendChild($this->text($doc, 'xDesc', $evento->xDesc()));
+        $eventoElement->appendChild($this->text($doc, 'cMotivo', $codigoMotivo->value));
+        $eventoElement->appendChild($this->text($doc, 'xMotivo', $descricao));
 
-        $infPedReg->appendChild($evento);
+        $infPedReg->appendChild($eventoElement);
 
         $root->appendChild($infPedReg);
         $doc->appendChild($root);
@@ -104,8 +107,8 @@ final readonly class CancellationBuilder
         }
     }
 
-    private function generateId(string $chNFSe): string
+    private function generateId(string $chNFSe, EventoCancelamento $evento): string
     {
-        return 'PRE'.$chNFSe.'101101';
+        return 'PRE'.$chNFSe.$evento->value;
     }
 }

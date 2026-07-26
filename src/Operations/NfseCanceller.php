@@ -6,8 +6,10 @@ namespace OwnerPro\Nfsen\Operations;
 
 use OwnerPro\Nfsen\Contracts\Driving\CancelsNfse;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\EventoCancelamento;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Events\NfseCancelled;
+use OwnerPro\Nfsen\Events\NfseFiscalAnalysisRequested;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Pipeline\Concerns\DispatchesEvents;
 use OwnerPro\Nfsen\Pipeline\Concerns\ParsesEventResponse;
@@ -32,17 +34,52 @@ final readonly class NfseCanceller implements CancelsNfse
 
     public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao): NfseResponse
     {
+        return $this->registerEvent(
+            EventoCancelamento::Cancelamento,
+            'cancelar',
+            $chave,
+            $codigoMotivo,
+            $descricao,
+            new NfseCancelled($chave),
+        );
+    }
+
+    /**
+     * Registra o pedido de análise fiscal (evento e101103) quando o município já
+     * não aceita o cancelamento direto — a NFS-e só sai de circulação se o fisco
+     * deferir, o que chega depois como evento 105104 (deferido) ou 105105
+     * (indeferido) em `consultar()->eventos()`.
+     */
+    public function solicitarAnaliseFiscalCancelamento(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao): NfseResponse
+    {
+        return $this->registerEvent(
+            EventoCancelamento::SolicitacaoAnaliseFiscal,
+            'solicitar_analise_fiscal',
+            $chave,
+            $codigoMotivo,
+            $descricao,
+            new NfseFiscalAnalysisRequested($chave),
+        );
+    }
+
+    private function registerEvent(
+        EventoCancelamento $evento,
+        string $operacao,
+        string $chave,
+        CodigoJustificativaCancelamento|string $codigoMotivo,
+        string $descricao,
+        object $successEvent,
+    ): NfseResponse {
         $this->validateChaveAcesso($chave);
 
         if (is_string($codigoMotivo)) {
             $codigoMotivo = CodigoJustificativaCancelamento::from($codigoMotivo);
         }
 
-        $operacao = 'cancelar';
         $this->dispatchEvent(new NfseRequested($operacao, ['chave' => $chave]));
 
-        return $this->withFailureEvent($operacao, function () use ($chave, $codigoMotivo, $descricao, $operacao): NfseResponse {
-            $identity = $this->pipeline->extractAuthorIdentity('cancelar');
+        return $this->withFailureEvent($operacao, function () use ($evento, $chave, $codigoMotivo, $descricao, $operacao, $successEvent): NfseResponse {
+            $identity = $this->pipeline->extractAuthorIdentity($operacao);
 
             $xml = $this->cancellationBuilder->buildAndValidate(
                 tpAmb: $this->ambiente->value,
@@ -57,12 +94,13 @@ final readonly class NfseCanceller implements CancelsNfse
                 chNFSe: $chave,
                 codigoMotivo: $codigoMotivo,
                 descricao: $descricao,
+                evento: $evento,
             );
 
             /**
              * @var array{
              *     erros?: list<MessageData>,
-             *     erro?: MessageData,
+             *     erro?: MessageData|list<MessageData>,
              *     eventoXmlGZipB64?: string,
              *     tipoAmbiente?: int,
              *     versaoAplicativo?: string,
@@ -73,7 +111,7 @@ final readonly class NfseCanceller implements CancelsNfse
                 $xml, 'infPedReg', 'pedRegEvento', 'pedidoRegistroEventoXmlGZipB64', 'cancel_nfse', ['chave' => $chave]
             );
 
-            return $this->parseEventResponse($result, $chave, $operacao, new NfseCancelled($chave));
+            return $this->parseEventResponse($result, $chave, $operacao, $successEvent);
         });
     }
 }

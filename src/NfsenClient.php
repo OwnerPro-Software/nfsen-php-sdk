@@ -197,6 +197,11 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         return $this->canceller->cancelar($chave, $codigoMotivo, $descricao);
     }
 
+    public function solicitarAnaliseFiscalCancelamento(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao): NfseResponse
+    {
+        return $this->canceller->solicitarAnaliseFiscalCancelamento($chave, $codigoMotivo, $descricao);
+    }
+
     /** @phpstan-param DpsData|DpsDataArray $dps */
     public function substituir(string $chave, DpsData|array $dps, CodigoJustificativaSubstituicao|string $codigoMotivo, ?string $descricao = null): NfseResponse
     {

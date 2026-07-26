@@ -3,12 +3,13 @@
 use OwnerPro\Nfsen\Events\NfseCancelled;
 use OwnerPro\Nfsen\Events\NfseEmitted;
 use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseFiscalAnalysisRequested;
 use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Events\NfseSubstituted;
 
-covers(NfseRequested::class, NfseEmitted::class, NfseCancelled::class, NfseSubstituted::class, NfseQueried::class, NfseFailed::class, NfseRejected::class);
+covers(NfseRequested::class, NfseFiscalAnalysisRequested::class, NfseEmitted::class, NfseCancelled::class, NfseSubstituted::class, NfseQueried::class, NfseFailed::class, NfseRejected::class);
 
 it('NfseRequested carries operacao and metadata', function () {
     $event = new NfseRequested('emitir', ['payload']);
@@ -23,6 +24,11 @@ it('NfseEmitted carries chave', function () {
 
 it('NfseCancelled carries chave', function () {
     $event = new NfseCancelled('CHAVE123');
+    expect($event->chave)->toBe('CHAVE123');
+});
+
+it('NfseFiscalAnalysisRequested carries chave', function () {
+    $event = new NfseFiscalAnalysisRequested('CHAVE123');
     expect($event->chave)->toBe('CHAVE123');
 });
 

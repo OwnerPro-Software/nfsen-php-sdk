@@ -1,6 +1,7 @@
 <?php
 
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+use OwnerPro\Nfsen\Enums\EventoCancelamento;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Support\XmlDocumentLoader;
 use OwnerPro\Nfsen\Support\XsdValidator;
@@ -141,6 +142,32 @@ it('builds xml without formatting or newlines', function (): void {
     );
 
     expect($xml)->not->toContain("\n");
+});
+
+it('builds the fiscal analysis request against the XSD', function (): void {
+    $builder = new CancellationBuilder(makeXsdValidator());
+    $chave = '12345678901234567890123456789012345678901234567890';
+
+    $xml = $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: $chave,
+        codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+        descricao: 'Prazo de cancelamento direto expirado',
+        evento: EventoCancelamento::SolicitacaoAnaliseFiscal,
+    );
+
+    $xpath = parseCancelamentoXml($xml);
+
+    expect($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))->toBe('PRE'.$chave.'101103')
+        ->and($xpath->query('//n:e101101')->length)->toBe(0)
+        ->and($xpath->query('//n:e101103')->length)->toBe(1)
+        ->and($xpath->evaluate('string(//n:e101103/n:xDesc)'))->toBe('Solicitação de Análise Fiscal para Cancelamento de NFS-e')
+        ->and($xpath->evaluate('string(//n:e101103/n:cMotivo)'))->toBe('1')
+        ->and($xpath->evaluate('string(//n:e101103/n:xMotivo)'))->toBe('Prazo de cancelamento direto expirado');
 });
 
 it('accepts descricao with exactly 15 characters', function (): void {

@@ -10,4 +10,6 @@ use OwnerPro\Nfsen\Responses\NfseResponse;
 interface CancelsNfse
 {
     public function cancelar(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao): NfseResponse;
+
+    public function solicitarAnaliseFiscalCancelamento(string $chave, CodigoJustificativaCancelamento|string $codigoMotivo, string $descricao): NfseResponse;
 }

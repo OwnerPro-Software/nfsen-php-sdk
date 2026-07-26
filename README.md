@@ -11,7 +11,7 @@ Pacote PHP para emissão, cancelamento, substituição e consulta de **NFSe Padr
 ## Funcionalidades
 
 - Emissão de NFSe (`emitir`)
-- Cancelamento de NFSe (`cancelar`)
+- Cancelamento de NFSe (`cancelar`) e solicitação de análise fiscal quando o prazo do município expirou (`solicitarAnaliseFiscalCancelamento`)
 - Substituição de NFSe (`substituir`)
 - Consulta por chave de acesso, DPS, eventos e verificação de DPS
 - Distribuição de documentos fiscais via ADN — consulta em lote por NSU (`distribuicao`)
@@ -196,6 +196,32 @@ $response = $client->cancelar(
 ```
 
 Codigos de cancelamento: `ErroEmissao`, `ServicoNaoPrestado`, `Outros`.
+
+### Solicitar análise fiscal para cancelamento
+
+Cada município parametriza o prazo de cancelamento direto. Passado esse prazo, a SEFIN
+rejeita `cancelar()` com o código `E0822` ("O prazo para o cancelamento da NFS-e expirou,
+conforme parametrização do município emissor da NFS-e") e o único caminho é pedir análise
+fiscal — o evento `e101103`, mesmo fluxo que o portal nacional oferece.
+
+```php
+use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
+
+$response = $client->solicitarAnaliseFiscalCancelamento(
+    chave: '00000000000000000000000000000000000000000000000000',
+    codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+    descricao: 'Prazo de cancelamento direto expirado',
+);
+```
+
+Sucesso aqui significa **pedido registrado**, não nota cancelada: a NFS-e segue válida até
+o fisco decidir. O resultado chega como um novo evento, consultável por
+`consultar()->eventos($chave, TipoEvento::CancelamentoDeferidoAnaliseFiscal)` (105104) ou
+`TipoEvento::CancelamentoIndeferidoAnaliseFiscal` (105105). O SDK dispara
+`NfseFiscalAnalysisRequested`, nunca `NfseCancelled`.
+
+Os códigos de motivo são os mesmos do cancelamento: `ErroEmissao`, `ServicoNaoPrestado`,
+`Outros`.
 
 ### Substituir NFSe
 
@@ -424,6 +450,9 @@ $response = Nfsen::emitir($dps);
 // Cancelar
 $response = Nfsen::cancelar($chave, $motivo, $descricao);
 
+// Pedir análise fiscal quando o prazo de cancelamento do município já passou
+$response = Nfsen::solicitarAnaliseFiscalCancelamento($chave, $motivo, $descricao);
+
 // Consultar
 $response = Nfsen::consultar()->nfse($chave);
 $danfse   = Nfsen::consultar()->danfse($chave);
@@ -447,6 +476,7 @@ O pacote dispara eventos Laravel que podem ser escutados na sua aplicação:
 |--------|-------------|-----------|
 | `NfseEmitted` | `chave` | NFSe emitida com sucesso |
 | `NfseCancelled` | `chave` | NFSe cancelada com sucesso |
+| `NfseFiscalAnalysisRequested` | `chave` | Pedido de análise fiscal para cancelamento registrado (a NFS-e segue válida até o fisco decidir) |
 | `NfseSubstituted` | `chave`, `chaveSubstituta` | NFSe substituída com sucesso |
 | `NfseQueried` | `operacao` | Consulta realizada |
 | `NfseRequested` | `operacao`, `metadata` | Operação iniciada |
@@ -555,6 +585,12 @@ Representa uma mensagem de erro ou alerta da API:
 | `descricao` | `?string` | Descrição detalhada |
 | `complemento` | `?string` | Informação complementar |
 | `parametros` | `list<string>` | Parâmetros adicionais da mensagem |
+
+A SEFIN envia o envelope de erro em três formas — `erros: [...]`, `erro: {...}` e
+`erro: [...]` (lista, confirmada em produção com `SefinNacional_1.6.0`) —, e o SDK
+normaliza as três nesta lista. Se a mensagem vier sem nenhuma chave conhecida, `codigo`
+recebe a constante `ProcessingMessage::FORMATO_DESCONHECIDO` e `complemento` carrega o
+item original em JSON, para que um formato novo da API não chegue vazio ao consumidor.
 
 ## Exceções
 

@@ -26,6 +26,9 @@ $FORA_DO_XSD = [
     // Códigos de evento: o swagger enumera 18, o XSD descreve 16 (467201 e 907201 não
     // têm elemento eNNNNNN). A fonte aqui é o swagger.
     'OwnerPro\Nfsen\Enums\TipoEvento' => 'enum do parâmetro tipoEvento no swagger da SEFIN',
+    // Os valores são os códigos dos elementos eNNNNNN do pedRegEvento (e101101,
+    // e101103), usados no Id do pedido — não saem de <xs:enumeration>.
+    'OwnerPro\Nfsen\Enums\EventoCancelamento' => 'códigos de evento do pedRegEvento (TE101101 e TE101103)',
     // Não é campo de leiaute: é a marca d'água dos itens 2.5.1/2.5.2 da NT 008,
     // escolhida por quem renderiza. Nenhum elemento do XSD a carrega.
     'OwnerPro\Nfsen\Enums\MarcaDagua' => 'apresentação do DANFSe (NT 008, itens 2.5.1 e 2.5.2)',
