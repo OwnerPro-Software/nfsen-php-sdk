@@ -17,6 +17,13 @@ namespace OwnerPro\Nfsen\Responses;
  */
 final readonly class ProcessingMessage
 {
+    /**
+     * Código atribuído quando a mensagem não traz nenhuma chave conhecida:
+     * `complemento` carrega o item original em JSON, para que um formato novo da
+     * SEFIN não fique indistinguível de uma resposta sem conteúdo.
+     */
+    public const string FORMATO_DESCONHECIDO = 'FORMATO_DESCONHECIDO';
+
     public function __construct(
         public ?string $mensagem = null,
         public ?string $codigo = null,
@@ -42,6 +49,18 @@ final readonly class ProcessingMessage
     /** @phpstan-param MessageData $data */
     public static function fromArray(array $data): self
     {
+        $knownKeys = array_flip([
+            'mensagem', 'Mensagem',
+            'codigo', 'Codigo',
+            'descricao', 'Descricao',
+            'complemento', 'Complemento',
+            'parametros', 'Parametros',
+        ]);
+
+        if ($data !== [] && array_intersect_key($data, $knownKeys) === []) {
+            return new self(codigo: self::FORMATO_DESCONHECIDO, complemento: self::toString($data));
+        }
+
         return new self(
             mensagem: self::toString($data['mensagem'] ?? $data['Mensagem'] ?? null),
             codigo: self::toString($data['codigo'] ?? $data['Codigo'] ?? null),
@@ -100,7 +119,7 @@ final readonly class ProcessingMessage
     /**
      * Normaliza as duas formas de erro da API (singular `erro` e plural `erros`) em uma lista tipada.
      *
-     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData}  $result
+     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>}  $result
      *
      * @return list<self>
      */
@@ -118,7 +137,7 @@ final readonly class ProcessingMessage
      * `{"erro": [], "chaveAcesso": "..."}` — forma que a API realmente produz —
      * virar rejeição sem mensagem alguma, descartando a chave de uma nota autorizada.
      *
-     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData}  $result
+     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>}  $result
      */
     public static function hasApiError(array $result): bool
     {
@@ -126,7 +145,7 @@ final readonly class ProcessingMessage
     }
 
     /**
-     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData}  $result
+     * @phpstan-param  array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>}  $result
      *
      * @return list<MessageData>
      */
@@ -147,10 +166,24 @@ final readonly class ProcessingMessage
         // DistribuicaoResponse: item que não é mensagem sai da classificação.
         $erro = $result['erro'] ?? null;
 
-        return is_array($erro) && $erro !== [] ? [$erro] : [];
+        if (! is_array($erro)) {
+            return [];
+        }
+
+        // A SEFIN usa `erro` nas duas formas: mensagem única (mapa, como declara
+        // ResponseErro no SefinNacional-swagger.json) e lista de mensagens —
+        // confirmado em produção, SefinNacional_1.6.0, rejeição E0822 de
+        // cancelamento. Embrulhar a lista tratava-a como mensagem de chaves
+        // numéricas e zerava código e descrição.
+        return self::onlyMessages(array_is_list($erro) ? $erro : [$erro]);
     }
 
     /**
+     * Item vazio sai junto do que não é mensagem: `{"erros":[{}]}` classificava
+     * como rejeição sem código nem texto, enquanto `{"erro":{}}` — mesma
+     * ausência de conteúdo — já não classificava. Sem mensagem alguma, o status
+     * HTTP é a informação definitiva, e ele chega por exceção com o corpo íntegro.
+     *
      * @return list<MessageData>
      */
     private static function onlyMessages(mixed $items): array
@@ -160,6 +193,6 @@ final readonly class ProcessingMessage
         }
 
         /** @var list<MessageData> */
-        return array_values(array_filter($items, is_array(...)));
+        return array_values(array_filter($items, static fn (mixed $item): bool => is_array($item) && $item !== []));
     }
 }

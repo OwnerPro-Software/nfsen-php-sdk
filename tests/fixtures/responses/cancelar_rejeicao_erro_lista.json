@@ -1,0 +1,11 @@
+{
+    "tipoAmbiente": 1,
+    "versaoAplicativo": "SefinNacional_1.6.0",
+    "dataHoraProcessamento": "2026-07-26T00:32:25.3970932-03:00",
+    "erro": [
+        {
+            "codigo": "E0822",
+            "descricao": "O prazo para o cancelamento da NFS-e expirou, conforme parametrização do município emissor da NFS-e."
+        }
+    ]
+}

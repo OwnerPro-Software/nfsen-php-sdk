@@ -23,7 +23,7 @@ trait ParsesEventResponse
     /**
      * @phpstan-param  array{
      *     erros?: list<MessageData>,
-     *     erro?: MessageData,
+     *     erro?: MessageData|list<MessageData>,
      *     eventoXmlGZipB64?: string,
      *     tipoAmbiente?: int,
      *     versaoAplicativo?: string,

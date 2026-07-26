@@ -48,7 +48,7 @@ final readonly class NfseEmitter implements EmitsNfse
             /**
              * @var array{
              *     erros?: list<MessageData>,
-             *     erro?: MessageData,
+             *     erro?: MessageData|list<MessageData>,
              *     chaveAcesso?: string,
              *     nfseXmlGZipB64?: string,
              *     idDps?: string,

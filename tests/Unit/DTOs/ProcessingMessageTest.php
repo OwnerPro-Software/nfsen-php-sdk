@@ -169,6 +169,11 @@ it('hasApiError agrees with fromApiResult on every shape the API produces', func
     'erros escalar (nem lista)' => [['erros' => 'Bad Gateway'], false],
     'erros como lista de strings' => [['erros' => ['Bad Gateway']], false],
     'erros com item não-mensagem no meio' => [['erros' => [['codigo' => 'E1'], 'lixo']], true],
+    // Forma confirmada em produção com SefinNacional_1.6.0.
+    'erro singular como lista de mensagens' => [['erro' => [['codigo' => 'E0822']]], true],
+    'erro singular como lista só de escalares' => [['erro' => ['Bad Gateway']], false],
+    'erros com item vazio' => [['erros' => [[]]], false],
+    'erro singular como lista de item vazio' => [['erro' => [[]]], false],
 ]);
 
 it('fromApiResult descarta um erro escalar sem estourar', function () {
@@ -326,6 +331,97 @@ it('descarta parametros escalar sem estourar', function () {
     ]);
 
     expect($msg->parametros)->toBe([]);
+});
+
+// Payload real de produção (SefinNacional_1.6.0): o envelope singular `erro` veio
+// com uma lista dentro. Embrulhá-la de novo fazia a mensagem virar um array de chave
+// numérica, e código e descrição chegavam nulos ao consumidor.
+it('lê o erro singular quando a SEFIN o envia como lista', function () {
+    $result = ['erro' => [
+        ['codigo' => 'E0822', 'descricao' => 'O prazo para o cancelamento da NFS-e expirou.'],
+    ]];
+
+    $list = ProcessingMessage::fromApiResult($result);
+
+    expect($list)->toHaveCount(1)
+        ->and($list[0]->codigo)->toBe('E0822')
+        ->and($list[0]->descricao)->toBe('O prazo para o cancelamento da NFS-e expirou.');
+});
+
+it('preserva todas as mensagens, na ordem, quando o erro singular é uma lista', function () {
+    $result = ['erro' => [
+        ['codigo' => 'E0822', 'descricao' => 'Prazo expirado'],
+        ['codigo' => 'E0999', 'descricao' => 'Justificativa inválida'],
+    ]];
+
+    $list = ProcessingMessage::fromApiResult($result);
+
+    expect($list)->toHaveCount(2)
+        ->and($list[0]->codigo)->toBe('E0822')
+        ->and($list[1]->codigo)->toBe('E0999');
+});
+
+it('descarta itens que não são mensagem na lista do erro singular', function () {
+    /** @phpstan-ignore argument.type (resposta fora do contrato: lista mista) */
+    $list = ProcessingMessage::fromApiResult(['erro' => [['codigo' => 'E0822'], 'Bad Gateway']]);
+
+    expect($list)->toHaveCount(1)
+        ->and($list[0]->codigo)->toBe('E0822');
+});
+
+it('mantém a precedência de erros sobre erro quando os dois vêm preenchidos', function () {
+    $list = ProcessingMessage::fromApiResult([
+        'erros' => [['codigo' => 'E001']],
+        'erro' => [['codigo' => 'E999']],
+    ]);
+
+    expect($list)->toHaveCount(1)
+        ->and($list[0]->codigo)->toBe('E001');
+});
+
+// Mensagem sem conteúdo nenhum não é rejeição: com `erro` isso já valia, e o plural
+// divergia — classificava e entregava um erro sem código nem texto.
+it('não classifica como rejeição um item de erro vazio', function () {
+    expect(ProcessingMessage::hasApiError(['erros' => [[]]]))->toBeFalse()
+        ->and(ProcessingMessage::fromApiResult(['erros' => [[], []]]))->toBe([]);
+});
+
+it('marca formato desconhecido e guarda o item bruto no complemento', function () {
+    /** @phpstan-ignore argument.type (resposta fora do contrato: chaves que o SDK não conhece) */
+    $msg = ProcessingMessage::fromArray(['error_code' => 'E0822', 'message' => 'Prazo expirado']);
+
+    expect($msg->codigo)->toBe(ProcessingMessage::FORMATO_DESCONHECIDO)
+        ->and($msg->complemento)->toBe('{"error_code":"E0822","message":"Prazo expirado"}')
+        ->and($msg->descricao)->toBeNull()
+        ->and($msg->mensagem)->toBeNull();
+});
+
+// Cada chave, sozinha, tem de bastar para o SDK reconhecer a mensagem: perder uma
+// delas da lista faria uma mensagem legítima cair como formato desconhecido e ter o
+// próprio conteúdo rebaixado a complemento.
+it('reconhece a mensagem por qualquer chave conhecida isolada', function (string $chave, string|array $valor) {
+    /** @phpstan-ignore argument.type (dataset monta a chave em runtime) */
+    $msg = ProcessingMessage::fromArray([$chave => $valor]);
+
+    expect($msg->codigo)->not->toBe(ProcessingMessage::FORMATO_DESCONHECIDO);
+})->with([
+    ['mensagem', 'texto'],
+    ['Mensagem', 'texto'],
+    ['codigo', 'E001'],
+    ['Codigo', 'E001'],
+    ['descricao', 'texto'],
+    ['Descricao', 'texto'],
+    ['complemento', 'texto'],
+    ['Complemento', 'texto'],
+    ['parametros', ['p1']],
+    ['Parametros', ['p1']],
+]);
+
+it('não marca formato desconhecido quando a mensagem vem vazia', function () {
+    $msg = ProcessingMessage::fromArray([]);
+
+    expect($msg->codigo)->toBeNull()
+        ->and($msg->complemento)->toBeNull();
 });
 
 it('filtra itens não-string de parametros e reindexa', function () {

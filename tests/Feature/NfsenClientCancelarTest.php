@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Events\NfseCancelled;
 use OwnerPro\Nfsen\Events\NfseFailed;
+use OwnerPro\Nfsen\Events\NfseRejected;
 use OwnerPro\Nfsen\Events\NfseRequested;
 use OwnerPro\Nfsen\Exceptions\IndeterminateResultException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
@@ -110,6 +111,29 @@ it('cancelar returns rejection NfseResponse on singular erro field', function ()
 
     expect($response->sucesso)->toBeFalse();
     expect($response->erros[0]->descricao)->toBe('Operação não permitida');
+});
+
+it('cancelar entrega o código real da SEFIN quando a rejeição vem com erro em lista', function () {
+    Event::fake();
+    Http::fake(['*' => Http::response(
+        json_decode((string) file_get_contents(__DIR__.'/../fixtures/responses/cancelar_rejeicao_erro_lista.json'), true),
+        200
+    )]);
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $response = $client->cancelar(
+        '12345678901234567890123456789012345678901234567890',
+        CodigoJustificativaCancelamento::ErroEmissao,
+        'Erro na emissao da nota fiscal'
+    );
+
+    expect($response->sucesso)->toBeFalse()
+        ->and($response->erros[0]->codigo)->toBe('E0822')
+        ->and($response->erros[0]->descricao)->toContain('prazo para o cancelamento');
+
+    Event::assertDispatched(NfseRejected::class, fn (NfseRejected $e): bool => $e->codigoErro === 'E0822'
+        && str_contains((string) $e->mensagemErro, 'prazo para o cancelamento')
+    );
 });
 
 it('cancelar throws NfseException when cert has no CNPJ nor CPF', function () {

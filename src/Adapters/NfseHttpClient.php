@@ -193,7 +193,7 @@ final readonly class NfseHttpClient implements SendsHttpRequests, SendsRawHttpRe
             // Envelope de erro da SEFIN (`erros`/`erro` preenchido) prova que a
             // requisição chegou, foi processada e rejeitada: resposta definitiva,
             // qualquer que seja o status.
-            /** @var array{erros?: list<MessageData>, erro?: MessageData} $envelope */
+            /** @var array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>} $envelope */
             $envelope = is_array($decoded) ? $decoded : [];
 
             if (ProcessingMessage::hasApiError($envelope)) {

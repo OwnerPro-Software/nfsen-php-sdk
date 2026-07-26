@@ -55,7 +55,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         /**
          * @var array{
          *     erros?: list<MessageData>,
-         *     erro?: MessageData,
+         *     erro?: MessageData|list<MessageData>,
          *     chaveAcesso?: string,
          *     idDps?: string,
          *     tipoAmbiente?: int,
@@ -176,7 +176,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         /**
          * @var array{
          *     erros?: list<MessageData>,
-         *     erro?: MessageData,
+         *     erro?: MessageData|list<MessageData>,
          *     eventoXmlGZipB64?: string,
          *     tipoAmbiente?: int,
          *     versaoAplicativo?: string,
@@ -238,7 +238,7 @@ final readonly class NfseConsulter implements ConsultsNfse
      * Erro dedicado de ausência comprovada (HTTP 404) seguido dos erros
      * originais da SEFIN, quando o corpo do 404 os traz.
      *
-     * @param  array{erros?: list<MessageData>, erro?: MessageData}  $result
+     * @param  array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>}  $result
      * @return list<ProcessingMessage>
      */
     private function notFoundErrors(ProcessingMessage $marker, array $result): array
@@ -251,7 +251,7 @@ final readonly class NfseConsulter implements ConsultsNfse
     {
         $body = $e->getResponseBody();
 
-        /** @var array{erros?: list<MessageData>, erro?: MessageData}|null $decoded */
+        /** @var array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>}|null $decoded */
         $decoded = json_decode($body, true);
 
         if (is_array($decoded) && ProcessingMessage::hasApiError($decoded)) {

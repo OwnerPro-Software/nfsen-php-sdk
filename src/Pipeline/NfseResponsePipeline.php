@@ -36,7 +36,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
             /**
              * @var array{
              *     erros?: list<MessageData>,
-             *     erro?: MessageData,
+             *     erro?: MessageData|list<MessageData>,
              *     nfseXmlGZipB64?: string,
              *     chaveAcesso?: string,
              *     tipoAmbiente?: int,
@@ -98,7 +98,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
         return $this->withFailureEvent($operacao, function () use ($url, $operacao, $requiredField): HttpResponse {
             $response = $this->httpClient->getResponse($url);
 
-            /** @var array{erros?: list<MessageData>, erro?: MessageData} $result */
+            /** @var array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>} $result */
             $result = $response->json;
 
             $hasStructuredError = ProcessingMessage::hasApiError($result);
@@ -133,7 +133,7 @@ final readonly class NfseResponsePipeline implements ExecutesNfseRequests
         });
     }
 
-    /** @param array{erros?: list<MessageData>, erro?: MessageData} $result */
+    /** @param array{erros?: list<MessageData>, erro?: MessageData|list<MessageData>} $result */
     private function dispatchResultEvents(array $result, string $operacao): void
     {
         if (ProcessingMessage::hasApiError($result)) {

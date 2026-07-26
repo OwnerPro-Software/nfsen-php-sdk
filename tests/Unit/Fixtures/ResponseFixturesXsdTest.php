@@ -29,6 +29,9 @@ $definicaoPorFixture = [
     'consultar_eventos.json' => 'EventosPostResponseSucesso',
     'cancelar_sucesso.json' => 'EventosPostResponseSucesso',
     'cancelar_rejeicao.json' => 'ResponseErro',
+    // Mesma definition, com `erro` em lista: forma capturada em produção
+    // (SefinNacional_1.6.0) que o swagger declara como objeto único.
+    'cancelar_rejeicao_erro_lista.json' => 'ResponseErro',
 ];
 
 /** @param  array<string, string>  $xsdPorRaiz */
