@@ -6,6 +6,7 @@ namespace OwnerPro\Nfsen\Operations\Decorators;
 
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
 use OwnerPro\Nfsen\Contracts\Driving\RendersDanfse;
+use OwnerPro\Nfsen\Enums\SituacaoCancelamento;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Operations\Decorators\Concerns\AttachesDanfsePdf;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
@@ -44,6 +45,11 @@ final readonly class ConsulterWithDanfse implements ConsultsNfse
         int $nSequencial = 1,
     ): EventsResponse {
         return $this->inner->eventos($chave, $tipoEvento, $nSequencial);
+    }
+
+    public function situacaoCancelamento(string $chave): SituacaoCancelamento
+    {
+        return $this->inner->situacaoCancelamento($chave);
     }
 
     public function verificarDps(string $id): bool

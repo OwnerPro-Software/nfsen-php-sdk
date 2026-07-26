@@ -29,6 +29,9 @@ $FORA_DO_XSD = [
     // Os valores são os códigos dos elementos eNNNNNN do pedRegEvento (e101101,
     // e101103), usados no Id do pedido — não saem de <xs:enumeration>.
     'OwnerPro\Nfsen\Enums\EventoCancelamento' => 'códigos de evento do pedRegEvento (TE101101 e TE101103)',
+    // Estado derivado dos eventos da nota, não campo de documento: nenhum XSD o
+    // declara — `TStat` segue 100 durante toda a análise fiscal.
+    'OwnerPro\Nfsen\Enums\SituacaoCancelamento' => 'situação deduzida dos eventos 101103/105104/105105',
     // Não é campo de leiaute: é a marca d'água dos itens 2.5.1/2.5.2 da NT 008,
     // escolhida por quem renderiza. Nenhum elemento do XSD a carrega.
     'OwnerPro\Nfsen\Enums\MarcaDagua' => 'apresentação do DANFSe (NT 008, itens 2.5.1 e 2.5.2)',

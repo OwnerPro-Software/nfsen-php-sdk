@@ -6,9 +6,14 @@ namespace OwnerPro\Nfsen\Operations;
 
 use OwnerPro\Nfsen\Contracts\Driven\ResolvesOperations;
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
+use OwnerPro\Nfsen\Contracts\Driving\DistributesNfse;
 use OwnerPro\Nfsen\Contracts\Driving\ExecutesNfseRequests;
+use OwnerPro\Nfsen\Enums\SituacaoCancelamento;
+use OwnerPro\Nfsen\Enums\StatusDistribuicao;
 use OwnerPro\Nfsen\Enums\TipoEvento;
+use OwnerPro\Nfsen\Enums\TipoEventoDistribuicao;
 use OwnerPro\Nfsen\Exceptions\HttpException;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Pipeline\Concerns\ValidatesChaveAcesso;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\EventsResponse;
@@ -31,6 +36,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         private string $adnBaseUrl,
         private ResolvesOperations $resolver,
         private string $codigoIbge,
+        private DistributesNfse $distributor,
     ) {}
 
     public function nfse(string $chave): NfseResponse
@@ -224,6 +230,42 @@ final readonly class NfseConsulter implements ConsultsNfse
             versaoAplicativo: $versaoAplicativo,
             dataHoraProcessamento: $dataHoraProcessamento,
         );
+    }
+
+    public function situacaoCancelamento(string $chave): SituacaoCancelamento
+    {
+        $events = $this->distributor->eventos($chave);
+
+        if ($events->statusProcessamento === StatusDistribuicao::Rejeicao) {
+            throw new NfseException('O ADN rejeitou a consulta de eventos da NFS-e: '.($events->erros[0]->descricao ?? 'motivo não informado.'));
+        }
+
+        $status = SituacaoCancelamento::SemPedido;
+        $highestNsu = PHP_INT_MIN;
+
+        foreach ($events->lote as $documento) {
+            $fromEvent = $this->analysisStatusOf($documento->tipoEvento);
+            $nsu = $documento->nsu ?? PHP_INT_MIN;
+
+            // Vence o maior NSU: um pedido novo depois de um indeferimento reabre a
+            // análise, e o ADN não promete ordem no lote.
+            if ($fromEvent instanceof SituacaoCancelamento && $nsu >= $highestNsu) {
+                $highestNsu = $nsu;
+                $status = $fromEvent;
+            }
+        }
+
+        return $status;
+    }
+
+    private function analysisStatusOf(?TipoEventoDistribuicao $tipoEvento): ?SituacaoCancelamento
+    {
+        return match ($tipoEvento) {
+            TipoEventoDistribuicao::SolicitacaoCancelamentoAnaliseFiscal => SituacaoCancelamento::EmAnalise,
+            TipoEventoDistribuicao::CancelamentoDeferidoAnaliseFiscal => SituacaoCancelamento::Deferido,
+            TipoEventoDistribuicao::CancelamentoIndeferidoAnaliseFiscal => SituacaoCancelamento::Indeferido,
+            default => null,
+        };
     }
 
     public function verificarDps(string $id): bool

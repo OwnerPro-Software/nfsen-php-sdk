@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Tests\Fakes;
 
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
+use OwnerPro\Nfsen\Enums\SituacaoCancelamento;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\EventsResponse;
@@ -24,6 +25,8 @@ final class FakeConsultsNfse implements ConsultsNfse
 
     public int $verificarDpsCalls = 0;
 
+    public int $situacaoCancelamentoCalls = 0;
+
     public function __construct(
         private readonly NfseResponse $nfseResponse = new NfseResponse(
             sucesso: true,
@@ -34,6 +37,7 @@ final class FakeConsultsNfse implements ConsultsNfse
         private readonly DanfseResponse $danfseResponse = new DanfseResponse(sucesso: true, pdf: '%PDF-official'),
         private readonly EventsResponse $eventosResponse = new EventsResponse(sucesso: true),
         private readonly bool $verificarDpsResponse = true,
+        private readonly SituacaoCancelamento $situacaoCancelamentoResponse = SituacaoCancelamento::SemPedido,
     ) {}
 
     public function nfse(string $chave): NfseResponse
@@ -66,6 +70,13 @@ final class FakeConsultsNfse implements ConsultsNfse
         $this->eventosNSequencialRecebido = $nSequencial;
 
         return $this->eventosResponse;
+    }
+
+    public function situacaoCancelamento(string $chave): SituacaoCancelamento
+    {
+        $this->situacaoCancelamentoCalls++;
+
+        return $this->situacaoCancelamentoResponse;
     }
 
     public function verificarDps(string $id): bool

@@ -9,6 +9,7 @@ use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\HttpResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
+use OwnerPro\Nfsen\Tests\Fakes\FakeDistributesNfse;
 
 covers(NfseConsulter::class);
 
@@ -58,7 +59,7 @@ function makeNfseConsulter(FakeNfsenClientForConsulta $fakeClient): NfseConsulte
 {
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
 
-    return new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    return new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 }
 
 it('calls executeAndDecompress with nfse url for nfse query', function () {
@@ -165,7 +166,7 @@ it('danfse returns success with pdf bytes', function () {
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -198,7 +199,7 @@ it('danfse returns failure on empty response', function () {
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -235,7 +236,7 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -279,7 +280,7 @@ it('danfse parses a SEFIN error envelope larger than 500 bytes', function () {
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -313,7 +314,7 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -352,7 +353,7 @@ it('danfse returns failure with parsed singular erro on HttpException', function
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -389,7 +390,7 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -533,7 +534,7 @@ it('throws ValueError for invalid int tipoEvento', function () {
 it('danfse uses adnBaseUrl when populated', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', 'https://adn.base', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', 'https://adn.base', $resolver, '9999999', new FakeDistributesNfse);
     $chave = makeChaveAcesso();
 
     $builder->danfse($chave);
@@ -595,7 +596,7 @@ it('throws InvalidArgumentException for invalid chaveAcesso on eventos', functio
 it('buildUrl trims trailing slash from baseUrl', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base/', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base/', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $builder->dps('DPS123');
 
@@ -612,7 +613,7 @@ it('buildUrl trims leading slash from path', function () {
 
     try {
         $resolver = new PrefeituraResolver($tmpJson);
-        $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999998');
+        $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999998', new FakeDistributesNfse);
         $chave = makeChaveAcesso();
         $builder->nfse($chave);
 
@@ -650,7 +651,7 @@ it('danfse appends the suspended-API notice when the response is empty', functio
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 
@@ -686,7 +687,7 @@ it('danfse appends the suspended-API notice on HttpException', function () {
     };
 
     $resolver = new PrefeituraResolver(__DIR__.'/../../../storage/prefeituras.json');
-    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999');
+    $builder = new NfseConsulter($fakeClient, 'https://sefin.base', '', $resolver, '9999999', new FakeDistributesNfse);
 
     $response = $builder->danfse(makeChaveAcesso());
 

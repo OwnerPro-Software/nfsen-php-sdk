@@ -215,10 +215,31 @@ $response = $client->solicitarAnaliseFiscalCancelamento(
 ```
 
 Sucesso aqui significa **pedido registrado**, não nota cancelada: a NFS-e segue válida até
-o fisco decidir. O resultado chega como um novo evento, consultável por
-`consultar()->eventos($chave, TipoEvento::CancelamentoDeferidoAnaliseFiscal)` (105104) ou
-`TipoEvento::CancelamentoIndeferidoAnaliseFiscal` (105105). O SDK dispara
-`NfseFiscalAnalysisRequested`, nunca `NfseCancelled`.
+o fisco decidir. O SDK dispara `NfseFiscalAnalysisRequested`, nunca `NfseCancelled`.
+
+#### Acompanhar a análise
+
+`TStat` (situação da NFS-e) não tem estado para análise em curso — a nota continua
+"Gerada" o tempo todo. O que muda são os eventos vinculados à chave, e
+`situacaoCancelamento()` os resume numa chamada ao ADN:
+
+```php
+use OwnerPro\Nfsen\Enums\SituacaoCancelamento;
+
+$situacao = $client->consultar()->situacaoCancelamento($chave);
+
+// SemPedido | EmAnalise | Deferido | Indeferido
+if ($situacao === SituacaoCancelamento::EmAnalise) {
+    // "cancelamento sob análise fiscal" — mesmo estado que o portal nacional exibe
+}
+```
+
+Vence o evento de maior NSU, então um pedido novo depois de um indeferimento volta a
+reportar `EmAnalise`. Consulta rejeitada pelo ADN lança `NfseException`: rejeição não é
+situação da nota.
+
+Se você já consome `distribuicao()->documentos($nsu)`, os eventos `105104`/`105105` chegam
+nesse fluxo por NSU — o desfecho vem por lote, sem varrer nota a nota.
 
 Os códigos de motivo são os mesmos do cancelamento: `ErroEmissao`, `ServicoNaoPrestado`,
 `Outros`.
@@ -302,6 +323,11 @@ $response = $client->consultar()->eventos(
 // Sinal inequívoco de "não existe" — qualquer outro sucesso: false é
 // inconclusivo. Um 2xx sem `eventoXmlGZipB64` não ocorre em operação normal e
 // lança IndeterminateResultException (nunca vira sucesso com xml: null).
+
+// Situação do cancelamento por análise fiscal (uma chamada ao ADN, resume os
+// eventos 101103/105104/105105 da nota)
+$situacao = $client->consultar()->situacaoCancelamento($chave);
+// SituacaoCancelamento::SemPedido | EmAnalise | Deferido | Indeferido
 
 // Verificar se DPS foi processada
 // true em HTTP 200; false APENAS em HTTP 404 (comprovadamente não existe).

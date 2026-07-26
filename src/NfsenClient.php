@@ -156,8 +156,8 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
         $canceller = new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente);
         $substitutor = new NfseSubstitutor($emitter);
-        $consulter = new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura);
         $distributor = new NfseDistributor($httpClient, $prefeituraResolver, $prefeitura, $adnUrl, $cnpjAutor);
+        $consulter = new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura, $distributor);
 
         if (! $danfse) {
             return new self(

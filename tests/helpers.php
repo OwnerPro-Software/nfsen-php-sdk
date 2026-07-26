@@ -155,13 +155,14 @@ function makeNfsenClient(
     $adnUrl = $prefeituraResolver->resolveAdnUrl($prefeitura, $ambiente);
 
     $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
+    $distributor = new NfseDistributor($httpClient, $prefeituraResolver, $prefeitura, $adnUrl, $certManager->extract()['cnpj'] ?? '');
 
     return new NfsenClient(
         emitter: $emitter,
         canceller: new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente),
         substitutor: new NfseSubstitutor($emitter),
-        consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura),
-        distributor: new NfseDistributor($httpClient, $prefeituraResolver, $prefeitura, $adnUrl, $certManager->extract()['cnpj'] ?? ''),
+        consulter: new NfseConsulter($queryExecutor, $seFinUrl, $adnUrl, $prefeituraResolver, $prefeitura, $distributor),
+        distributor: $distributor,
     );
 }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen\Contracts\Driving;
 
+use OwnerPro\Nfsen\Enums\SituacaoCancelamento;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
 use OwnerPro\Nfsen\Responses\EventsResponse;
@@ -38,6 +39,14 @@ interface ConsultsNfse
      * sucesso com `xml: null`.
      */
     public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::Cancelamento, int $nSequencial = 1): EventsResponse;
+
+    /**
+     * Em que ponto está o cancelamento por análise fiscal, deduzido dos eventos
+     * vinculados à chave (uma chamada ao ADN). Nota sem pedido algum devolve
+     * `SituacaoCancelamento::SemPedido`; consulta rejeitada pelo ADN lança
+     * `NfseException`, porque rejeição não é situação da nota.
+     */
+    public function situacaoCancelamento(string $chave): SituacaoCancelamento;
 
     /**
      * Retorna `true` para HTTP 200 e `false` APENAS para HTTP 404.

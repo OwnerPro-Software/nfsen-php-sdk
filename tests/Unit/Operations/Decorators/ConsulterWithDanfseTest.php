@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use OwnerPro\Nfsen\Enums\SituacaoCancelamento;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Operations\Decorators\ConsulterWithDanfse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
@@ -78,6 +79,18 @@ it('eventos() sem nSequencial usa default 1 (mata mutantes no default)', functio
     $decorator->eventos('CHAVE');
 
     expect($inner->eventosNSequencialRecebido)->toBe(1);
+});
+
+it('situacaoCancelamento() delega sem chamar renderer', function () {
+    $inner = new FakeConsultsNfse(situacaoCancelamentoResponse: SituacaoCancelamento::EmAnalise);
+    $renderer = new FakeRendersDanfse;
+    $decorator = new ConsulterWithDanfse($inner, $renderer);
+
+    $situacao = $decorator->situacaoCancelamento(makeChaveAcesso());
+
+    expect($inner->situacaoCancelamentoCalls)->toBe(1)
+        ->and($renderer->toPdfCalls)->toBe(0)
+        ->and($situacao)->toBe(SituacaoCancelamento::EmAnalise);
 });
 
 it('verificarDps() delega sem chamar renderer', function () {
