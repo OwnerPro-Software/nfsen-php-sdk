@@ -17,7 +17,12 @@ final readonly class EventsResponse
      */
     public const string EVENT_NOT_FOUND = 'EVENT_NOT_FOUND';
 
-    /** @param list<ProcessingMessage> $erros */
+    /**
+     * @param  list<ProcessingMessage>  $erros
+     * @param  array<string, mixed>|null  $raw  corpo JSON decodificado, como a API o
+     *                                          devolveu — o que a normalização não
+     *                                          reconhecer continua legível aqui
+     */
     public function __construct(
         public bool $sucesso,
         public ?string $xml = null,
@@ -25,5 +30,6 @@ final readonly class EventsResponse
         public ?int $tipoAmbiente = null,
         public ?string $versaoAplicativo = null,
         public ?string $dataHoraProcessamento = null,
+        public ?array $raw = null,
     ) {}
 }

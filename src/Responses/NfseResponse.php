@@ -20,6 +20,9 @@ final readonly class NfseResponse
      * @param  list<ProcessingMessage>  $alertas
      * @param  list<ProcessingMessage>  $erros
      * @param  list<ProcessingMessage>  $pdfErrors
+     * @param  array<string, mixed>|null  $raw  corpo JSON decodificado, como a API o
+     *                                          devolveu — o que a normalização não
+     *                                          reconhecer continua legível aqui
      */
     public function __construct(
         public bool $sucesso,
@@ -33,5 +36,6 @@ final readonly class NfseResponse
         public ?string $dataHoraProcessamento = null,
         public ?string $pdf = null,
         public array $pdfErrors = [],
+        public ?array $raw = null,
     ) {}
 }

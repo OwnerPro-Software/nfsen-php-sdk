@@ -40,6 +40,7 @@ trait AttachesDanfsePdf
             dataHoraProcessamento: $r->dataHoraProcessamento,
             pdf: $danfse->pdf,
             pdfErrors: $danfse->erros,
+            raw: $r->raw,
         );
     }
 }

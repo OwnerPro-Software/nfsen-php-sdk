@@ -531,6 +531,7 @@ Retornado por `emitir()`, `cancelar()`, `substituir()`, `consultar()->nfse()` e 
 | `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
 | `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
 | `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+| `raw` | `?array` | Corpo JSON decodificado, como a SEFIN o devolveu — ver [Corpo bruto](#corpo-bruto) |
 
 ### `DanfseResponse`
 
@@ -566,6 +567,7 @@ Retornado por `consultar()->eventos()`.
 | `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
 | `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
 | `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+| `raw` | `?array` | Corpo JSON decodificado, como a SEFIN o devolveu — ver [Corpo bruto](#corpo-bruto) |
 
 Constante `EventsResponse::EVENT_NOT_FOUND`: presente em `erros[0]->codigo`
 quando a SEFIN responde 404 — o evento comprovadamente não existe (distinto de
@@ -585,6 +587,7 @@ Retornado por `distribuicao()->documentos()`, `distribuicao()->documento()` e `d
 | `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
 | `versaoAplicativo` | `?string` | Versão do aplicativo |
 | `dataHoraProcessamento` | `?string` | Data/hora do processamento |
+| `raw` | `?array` | Corpo JSON decodificado, como o ADN o devolveu — ver [Corpo bruto](#corpo-bruto) |
 
 ### `DocumentoFiscal`
 
@@ -611,6 +614,26 @@ Representa uma mensagem de erro ou alerta da API:
 | `descricao` | `?string` | Descrição detalhada |
 | `complemento` | `?string` | Informação complementar |
 | `parametros` | `list<string>` | Parâmetros adicionais da mensagem |
+
+### Corpo bruto
+
+`NfseResponse`, `EventsResponse` e `DistribuicaoResponse` carregam em `raw` o corpo JSON
+decodificado, exatamente como a API o devolveu — em sucesso e em rejeição. É o que
+sobrevive quando a normalização não alcança a resposta: envelope renomeado, campo novo,
+mensagem em forma que o SDK ainda não conhece.
+
+```php
+$response = $client->cancelar($chave, $motivo, $descricao);
+
+if (! $response->sucesso && $response->erros === []) {
+    logger()->warning('NFSe: rejeição fora do contrato', ['raw' => $response->raw]);
+}
+```
+
+O conteúdo vem da API sem filtro nenhum: decida o que registrar antes de mandar para o
+log. `raw` é `[]` quando o corpo não trouxe JSON legível (5xx de gateway, 204) e `null`
+apenas em respostas construídas à mão. `DanfseResponse` não tem o campo — o corpo dela é
+o PDF binário, que já está em `pdf`.
 
 A SEFIN envia o envelope de erro em três formas — `erros: [...]`, `erro: {...}` e
 `erro: [...]` (lista, confirmada em produção com `SefinNacional_1.6.0`) —, e o SDK

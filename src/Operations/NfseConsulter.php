@@ -89,6 +89,7 @@ final readonly class NfseConsulter implements ConsultsNfse
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
+                raw: $result,
             );
         }
 
@@ -99,6 +100,7 @@ final readonly class NfseConsulter implements ConsultsNfse
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
+                raw: $result,
             );
         }
 
@@ -110,6 +112,7 @@ final readonly class NfseConsulter implements ConsultsNfse
             tipoAmbiente: $tipoAmbiente,
             versaoAplicativo: $versaoAplicativo,
             dataHoraProcessamento: $dataHoraProcessamento,
+            raw: $result,
         );
     }
 
@@ -209,6 +212,7 @@ final readonly class NfseConsulter implements ConsultsNfse
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
+                raw: $result,
             );
         }
 
@@ -219,6 +223,7 @@ final readonly class NfseConsulter implements ConsultsNfse
                 tipoAmbiente: $tipoAmbiente,
                 versaoAplicativo: $versaoAplicativo,
                 dataHoraProcessamento: $dataHoraProcessamento,
+                raw: $result,
             );
         }
 
@@ -229,6 +234,7 @@ final readonly class NfseConsulter implements ConsultsNfse
             tipoAmbiente: $tipoAmbiente,
             versaoAplicativo: $versaoAplicativo,
             dataHoraProcessamento: $dataHoraProcessamento,
+            raw: $result,
         );
     }
 

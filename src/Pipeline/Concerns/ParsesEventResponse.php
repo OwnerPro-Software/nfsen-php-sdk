@@ -48,6 +48,7 @@ trait ParsesEventResponse
                 tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+                raw: $result,
             );
         }
 
@@ -82,6 +83,7 @@ trait ParsesEventResponse
             tipoAmbiente: $result['tipoAmbiente'] ?? null,
             versaoAplicativo: $result['versaoAplicativo'] ?? null,
             dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+            raw: $result,
         );
     }
 }

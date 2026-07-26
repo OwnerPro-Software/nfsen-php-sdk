@@ -78,6 +78,7 @@ final readonly class NfseEmitter implements EmitsNfse
                     tipoAmbiente: $result['tipoAmbiente'] ?? null,
                     versaoAplicativo: $result['versaoAplicativo'] ?? null,
                     dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+                    raw: $result,
                 );
             }
 
@@ -96,6 +97,7 @@ final readonly class NfseEmitter implements EmitsNfse
                     tipoAmbiente: $result['tipoAmbiente'] ?? null,
                     versaoAplicativo: $result['versaoAplicativo'] ?? null,
                     dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+                    raw: $result,
                 );
             }
 
@@ -118,6 +120,7 @@ final readonly class NfseEmitter implements EmitsNfse
                 tipoAmbiente: $result['tipoAmbiente'] ?? null,
                 versaoAplicativo: $result['versaoAplicativo'] ?? null,
                 dataHoraProcessamento: $result['dataHoraProcessamento'] ?? null,
+                raw: $result,
             );
         });
     }

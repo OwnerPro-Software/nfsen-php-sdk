@@ -15,6 +15,9 @@ final readonly class DistribuicaoResponse
      * @param  list<DocumentoFiscal>  $lote
      * @param  list<ProcessingMessage>  $alertas
      * @param  list<ProcessingMessage>  $erros
+     * @param  array<string, mixed>|null  $raw  corpo JSON decodificado, como o ADN o
+     *                                          devolveu — o que a normalização não
+     *                                          reconhecer continua legível aqui
      */
     public function __construct(
         public bool $sucesso,
@@ -25,6 +28,7 @@ final readonly class DistribuicaoResponse
         public ?int $tipoAmbiente,
         public ?string $versaoAplicativo,
         public ?string $dataHoraProcessamento,
+        public ?array $raw = null,
     ) {}
 
     /** @param array<string, mixed> $result */
@@ -55,6 +59,7 @@ final readonly class DistribuicaoResponse
                 tipoAmbiente: null,
                 versaoAplicativo: null,
                 dataHoraProcessamento: null,
+                raw: $result,
             );
         }
 
@@ -85,6 +90,7 @@ final readonly class DistribuicaoResponse
             tipoAmbiente: self::mapTipoAmbiente($result['TipoAmbiente'] ?? null),
             versaoAplicativo: is_string($result['VersaoAplicativo'] ?? null) ? $result['VersaoAplicativo'] : null,
             dataHoraProcessamento: is_string($result['DataHoraProcessamento'] ?? null) ? $result['DataHoraProcessamento'] : null,
+            raw: $result,
         );
     }
 
@@ -108,6 +114,7 @@ final readonly class DistribuicaoResponse
                 tipoAmbiente: null,
                 versaoAplicativo: null,
                 dataHoraProcessamento: null,
+                raw: $response->json,
             );
         }
 
@@ -136,6 +143,7 @@ final readonly class DistribuicaoResponse
             tipoAmbiente: null,
             versaoAplicativo: null,
             dataHoraProcessamento: null,
+            raw: $response->json,
         );
     }
 
