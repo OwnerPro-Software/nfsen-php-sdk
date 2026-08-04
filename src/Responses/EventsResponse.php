@@ -18,10 +18,13 @@ final readonly class EventsResponse
     public const string EVENT_NOT_FOUND = 'EVENT_NOT_FOUND';
 
     /**
+     * @param  string|null  $xml  XML do primeiro evento de `$eventos`, já descomprimido
      * @param  list<ProcessingMessage>  $erros
      * @param  array<string, mixed>|null  $raw  corpo JSON decodificado, como a API o
      *                                          devolveu — o que a normalização não
      *                                          reconhecer continua legível aqui
+     * @param  list<EventoConsultado>  $eventos  os eventos que a rota devolveu para o
+     *                                           par `(tipoEvento, nSequencial)` consultado
      */
     public function __construct(
         public bool $sucesso,
@@ -31,5 +34,6 @@ final readonly class EventsResponse
         public ?string $versaoAplicativo = null,
         public ?string $dataHoraProcessamento = null,
         public ?array $raw = null,
+        public array $eventos = [],
     ) {}
 }

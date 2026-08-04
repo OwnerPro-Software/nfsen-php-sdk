@@ -23,6 +23,8 @@ class GzipCompressor
      */
     private const int MAX_DECOMPRESSED_BYTES = 52_428_800; // @pest-mutate-ignore IncrementInteger,DecrementInteger — ±1 byte no teto não é observável por teste
 
+    private const string GZIP_MAGIC = "\x1f\x8b";
+
     public function __invoke(string $data): string|false
     {
         return gzencode($data);
@@ -39,6 +41,8 @@ class GzipCompressor
             throw new NfseException('Falha ao decodificar base64 do XML.');
         }
 
+        $decoded = self::peelExtraBase64Layer($decoded);
+
         try {
             $decompressed = gzdecode($decoded, self::MAX_DECOMPRESSED_BYTES);
             // @codeCoverageIgnoreStart
@@ -53,5 +57,24 @@ class GzipCompressor
         }
 
         return $decompressed;
+    }
+
+    /**
+     * `eventos[].arquivoXml`, na rota GET de eventos do SefinNacional 1.6.0, traz
+     * uma segunda camada de base64 sobre o gzip; os demais campos trazem uma só.
+     *
+     * Tentar descascar sempre é seguro sem conferir antes se já é gzip: o primeiro
+     * byte do gzip (`0x1f`) está fora do alfabeto base64, então o decode estrito de
+     * um conteúdo já descomprimido falha por conta própria.
+     */
+    private static function peelExtraBase64Layer(string $decoded): string
+    {
+        $peeled = base64_decode($decoded, true);
+
+        if ($peeled === false || ! str_starts_with($peeled, self::GZIP_MAGIC)) {
+            return $decoded;
+        }
+
+        return $peeled;
     }
 }

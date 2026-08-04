@@ -62,7 +62,7 @@ trait ParsesEventResponse
         // com JSON próprio que request() devolve para o resgate SEM_CHAVE
         // do emitter — resgate que evento nenhum tem.
         if (! is_string($eventoXml) || $eventoXml === '') {
-            throw IndeterminateResultException::fromMissingEventReceipt('eventoXmlGZipB64');
+            throw IndeterminateResultException::fromMissingEventReceipt('eventoXmlGZipB64', $result);
         }
 
         $this->dispatchEvent($successEvent);

@@ -103,17 +103,17 @@ it('fromServerError carries no phase and truncates body to 200 chars', function 
         ->and($exception->getMessage())->not->toContain('Z');
 });
 
-it('fromMissingResponseField sets body phase and names status and field', function () {
-    $exception = IndeterminateResultException::fromMissingResponseField(200, 'eventoXmlGZipB64');
+it('fromMissingResponseField sets body phase and names status and every accepted field', function () {
+    $exception = IndeterminateResultException::fromMissingResponseField(200, '{}', [], 'eventoXmlGZipB64', 'eventos');
 
     expect($exception->phase)->toBe('body')
         ->and($exception->getPrevious())->toBeNull()
         ->and($exception->getMessage())->toContain('HTTP 200')
-        ->and($exception->getMessage())->toContain('"eventoXmlGZipB64"');
+        ->and($exception->getMessage())->toContain('("eventoXmlGZipB64", "eventos")');
 });
 
 it('fromMissingQueryField sets body phase and names the field', function () {
-    $exception = IndeterminateResultException::fromMissingQueryField('nfseXmlGZipB64');
+    $exception = IndeterminateResultException::fromMissingQueryField('nfseXmlGZipB64', []);
 
     expect($exception->phase)->toBe('body')
         ->and($exception->getPrevious())->toBeNull()
@@ -122,11 +122,63 @@ it('fromMissingQueryField sets body phase and names the field', function () {
 });
 
 it('fromMissingEventReceipt sets body phase, names the field and points to the reconciliation flow', function () {
-    $exception = IndeterminateResultException::fromMissingEventReceipt('eventoXmlGZipB64');
+    $exception = IndeterminateResultException::fromMissingEventReceipt('eventoXmlGZipB64', []);
 
     expect($exception->phase)->toBe('body')
         ->and($exception->getPrevious())->toBeNull()
         ->and($exception->getMessage())->toStartWith('Resultado indeterminado')
         ->and($exception->getMessage())->toContain('"eventoXmlGZipB64"')
         ->and($exception->getMessage())->toEndWith('Reconcilie com consultar()->eventos().');
+});
+
+it('preserves the evidence each factory has in scope', function (IndeterminateResultException $exception, ?int $statusCode, ?string $body, ?array $raw) {
+    expect($exception->statusCode)->toBe($statusCode)
+        ->and($exception->body)->toBe($body)
+        ->and($exception->raw)->toBe($raw);
+})->with([
+    'fromUnreadableResponse' => [
+        fn () => IndeterminateResultException::fromUnreadableResponse(200, '<html>gateway</html>'),
+        200,
+        '<html>gateway</html>',
+        null,
+    ],
+    'fromServerError' => [
+        fn () => IndeterminateResultException::fromServerError(502, 'Bad Gateway'),
+        502,
+        'Bad Gateway',
+        null,
+    ],
+    'fromMissingResponseField' => [
+        fn () => IndeterminateResultException::fromMissingResponseField(200, '{"tipoAmbiente":1}', ['tipoAmbiente' => 1], 'eventos'),
+        200,
+        '{"tipoAmbiente":1}',
+        ['tipoAmbiente' => 1],
+    ],
+    'fromMissingQueryField' => [
+        fn () => IndeterminateResultException::fromMissingQueryField('nfseXmlGZipB64', ['tipoAmbiente' => 1]),
+        null,
+        null,
+        ['tipoAmbiente' => 1],
+    ],
+    'fromMissingEventReceipt' => [
+        fn () => IndeterminateResultException::fromMissingEventReceipt('eventoXmlGZipB64', ['tipoAmbiente' => 1]),
+        null,
+        null,
+        ['tipoAmbiente' => 1],
+    ],
+    'fromTransportFailure' => [
+        fn () => IndeterminateResultException::fromTransportFailure(new ConnectionException('cURL error 7')),
+        null,
+        null,
+        null,
+    ],
+]);
+
+it('truncates the preserved body at 8 KiB, leaving the whole structure in raw', function () {
+    $body = str_repeat('x', 8192).'EXCEDENTE';
+
+    $exception = IndeterminateResultException::fromUnreadableResponse(200, $body);
+
+    expect($exception->body)->toHaveLength(8192)
+        ->and($exception->body)->not->toContain('EXCEDENTE');
 });

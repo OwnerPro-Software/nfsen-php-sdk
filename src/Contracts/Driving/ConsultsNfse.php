@@ -7,6 +7,7 @@ namespace OwnerPro\Nfsen\Contracts\Driving;
 use OwnerPro\Nfsen\Enums\SituacaoCancelamento;
 use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
+use OwnerPro\Nfsen\Responses\EventoConsultado;
 use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 
@@ -34,9 +35,16 @@ interface ConsultsNfse
      * de ausência, distinto de erros transitórios (que permanecem
      * `sucesso: false` sem esse código, portanto inconclusivos).
      *
-     * Um 2xx com JSON válido porém sem `eventoXmlGZipB64` não ocorre em
-     * operação normal e lança `IndeterminateResultException` — nunca vira
-     * sucesso com `xml: null`.
+     * No sucesso, `eventos` traz um {@see EventoConsultado} por item devolvido e
+     * `xml` repete o XML do primeiro deles. Duas formas de resposta são aceitas: a
+     * lista `eventos[]` com o XML em `arquivoXml`, que é o que o SefinNacional 1.6.0
+     * devolve, e o `eventoXmlGZipB64` de topo, que é o que o swagger declara e o que
+     * prefeituras de implementação própria podem devolver.
+     *
+     * Um 2xx sem nenhuma das duas formas lança `IndeterminateResultException` —
+     * nunca vira sucesso silencioso. Já um evento cujo XML não pôde ser lido mantém
+     * `sucesso: true` com `xml: null` e o motivo em `eventos[n]->parseError`: o
+     * servidor respondeu, e dizer o que faltou vale mais do que descartar a lista.
      */
     public function eventos(string $chave, TipoEvento|int $tipoEvento = TipoEvento::Cancelamento, int $nSequencial = 1): EventsResponse;
 

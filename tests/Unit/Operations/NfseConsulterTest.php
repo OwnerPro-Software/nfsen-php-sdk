@@ -42,9 +42,13 @@ class FakeNfsenClientForConsulta implements ExecutesNfseRequests
         return $this->headStatus;
     }
 
-    public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+    /** @var list<array{strings: list<string>, lists: list<string>}> */
+    public array $required = [];
+
+    public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
     {
         $this->calls[] = $url;
+        $this->required[] = ['strings' => $requiredStrings, 'lists' => $requiredLists];
 
         return $this->rawResponse ?? new HttpResponse(200, ['chaveAcesso' => null], '');
     }
@@ -52,7 +56,25 @@ class FakeNfsenClientForConsulta implements ExecutesNfseRequests
 
 function makeEventoResponse(int $statusCode = 200): HttpResponse
 {
-    return new HttpResponse($statusCode, ['eventoXmlGZipB64' => base64_encode((string) gzencode('<Evento/>'))], '');
+    return new HttpResponse($statusCode, ['eventos' => [makeEventoItem()]], '');
+}
+
+/**
+ * A rota GET de eventos do SefinNacional 1.6.0 entrega `arquivoXml` com duas camadas
+ * de base64 sobre o gzip. O fixture reproduz a codificação medida em produção — o
+ * defeito original nasceu de um fixture construído a partir do swagger.
+ *
+ * @return array<string, mixed>
+ */
+function makeEventoItem(string $xml = '<Evento/>', int $tipoEvento = 105104): array
+{
+    return [
+        'chaveAcesso' => makeChaveAcesso(),
+        'tipoEvento' => $tipoEvento,
+        'numeroPedidoRegistroEvento' => 1,
+        'dataHoraRecebimento' => '2026-08-03T07:31:39.737',
+        'arquivoXml' => base64_encode(base64_encode((string) gzencode($xml))),
+    ];
 }
 
 function makeNfseConsulter(FakeNfsenClientForConsulta $fakeClient): NfseConsulter
@@ -80,6 +102,20 @@ it('calls executeRaw with dps url', function () {
     $builder->dps('DPS456');
 
     expect($fakeClient->calls[0])->toBe('https://sefin.base/dps/DPS456');
+});
+
+it('declares to the port which field each query cannot do without, and in which shape', function () {
+    // A forma faz parte da exigência: um campo de texto que chegue como lista
+    // passaria adiante e estouraria TypeError no construtor tipado da resposta.
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = makeEventoResponse();
+    $builder = makeNfseConsulter($fakeClient);
+
+    $builder->dps('DPS456');
+    $builder->eventos(makeChaveAcesso());
+
+    expect($fakeClient->required[0])->toBe(['strings' => ['chaveAcesso'], 'lists' => []])
+        ->and($fakeClient->required[1])->toBe(['strings' => ['eventoXmlGZipB64'], 'lists' => ['eventos']]);
 });
 
 it('dps returns failure when erros key present', function () {
@@ -159,7 +195,7 @@ it('danfse returns success with pdf bytes', function () {
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -192,7 +228,7 @@ it('danfse returns failure on empty response', function () {
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -229,7 +265,7 @@ it('danfse returns failure with parsed JSON errors on HttpException', function (
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -273,7 +309,7 @@ it('danfse parses a SEFIN error envelope larger than 500 bytes', function () {
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -307,7 +343,7 @@ it('danfse returns failure with raw error on non-JSON HttpException', function (
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -346,7 +382,7 @@ it('danfse returns failure with parsed singular erro on HttpException', function
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -383,7 +419,7 @@ it('danfse falls back to raw error when JSON body has no erros/erro keys', funct
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -467,7 +503,7 @@ it('eventos prepends EVENT_NOT_FOUND and preserves singular SEFIN erro on 404', 
     expect($response->erros[1]->codigo)->toBe('E404');
 });
 
-it('eventos returns success with decompressed xml', function () {
+it('eventos returns success with decompressed xml from the top-level eventoXmlGZipB64', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
     $fakeClient->rawResponse = new HttpResponse(
         200,
@@ -488,6 +524,80 @@ it('eventos returns success with decompressed xml', function () {
     expect($response->tipoAmbiente)->toBe(2);
     expect($response->versaoAplicativo)->toBe('1.0.0');
     expect($response->dataHoraProcessamento)->toBe('2026-01-01T00:00:00');
+});
+
+it('eventos reads the eventos[] list the SefinNacional returns, with its second base64 layer', function () {
+    $chave = makeChaveAcesso();
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(200, ['eventos' => [makeEventoItem()]], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos($chave, TipoEvento::CancelamentoDeferidoAnaliseFiscal);
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->xml)->toBe('<Evento/>')
+        ->and($response->eventos)->toHaveCount(1)
+        ->and($response->eventos[0]->chaveAcesso)->toBe($chave)
+        ->and($response->eventos[0]->tipoEvento)->toBe(TipoEvento::CancelamentoDeferidoAnaliseFiscal)
+        ->and($response->eventos[0]->numeroPedidoRegistroEvento)->toBe(1)
+        ->and($response->eventos[0]->dataHoraRecebimento)->toBe('2026-08-03T07:31:39.737')
+        ->and($response->eventos[0]->xml)->toBe('<Evento/>')
+        ->and($response->eventos[0]->parseError)->toBeNull();
+});
+
+it('eventos exposes every item of the list and points xml at the first', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(200, [
+        'eventos' => [makeEventoItem('<Primeiro/>'), makeEventoItem('<Segundo/>')],
+    ], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos(makeChaveAcesso());
+
+    expect($response->xml)->toBe('<Primeiro/>')
+        ->and($response->eventos)->toHaveCount(2)
+        ->and($response->eventos[1]->xml)->toBe('<Segundo/>');
+});
+
+it('eventos reindexes a list that came keyed as a JSON object', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(200, [
+        'eventos' => ['b' => makeEventoItem('<Segundo/>'), 'a' => makeEventoItem('<Primeiro/>')],
+    ], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos(makeChaveAcesso());
+
+    expect($response->xml)->toBe('<Segundo/>')
+        ->and($response->eventos)->toHaveCount(2);
+});
+
+it('eventos keeps the response standing when an item cannot be read, stating why', function (array $evento, string $expectedError) {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(200, ['eventos' => [$evento]], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos(makeChaveAcesso());
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->xml)->toBeNull()
+        ->and($response->eventos[0]->parseError)->toContain($expectedError);
+})->with([
+    'arquivoXml corrompido' => [['arquivoXml' => '!!!nao-e-base64!!!'], 'Falha ao decodificar base64'],
+    'arquivoXml fora do tipo' => [['arquivoXml' => 123], 'veio como int'],
+]);
+
+it('eventos reports an unknown tipoEvento without losing the rest of the item', function () {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $fakeClient->rawResponse = new HttpResponse(200, ['eventos' => [makeEventoItem('<Evento/>', 999999)]], '');
+    $builder = makeNfseConsulter($fakeClient);
+
+    $response = $builder->eventos(makeChaveAcesso());
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->xml)->toBe('<Evento/>')
+        ->and($response->eventos[0]->tipoEvento)->toBeNull()
+        ->and($response->eventos[0]->parseError)->toBe('TipoEvento desconhecido: "999999".');
 });
 
 it('eventos uses default nSequencial = 1 in URL', function () {
@@ -644,7 +754,7 @@ it('danfse appends the suspended-API notice when the response is empty', functio
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }
@@ -680,7 +790,7 @@ it('danfse appends the suspended-API notice on HttpException', function () {
             return 200;
         }
 
-        public function executeRaw(string $url, ?string $requiredField = null): HttpResponse
+        public function executeRaw(string $url, array $requiredStrings = [], array $requiredLists = []): HttpResponse
         {
             return new HttpResponse(200, [], '');
         }

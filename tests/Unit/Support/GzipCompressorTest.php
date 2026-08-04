@@ -29,6 +29,22 @@ it('decompressB64 decompresses valid gzip base64', function () {
     expect(GzipCompressor::decompressB64($compressed))->toBe($original);
 });
 
+it('decompressB64 peels the second base64 layer of eventos[].arquivoXml', function () {
+    $original = '<Evento/>';
+    $duasCamadas = base64_encode(base64_encode((string) gzencode($original)));
+
+    expect(GzipCompressor::decompressB64($duasCamadas))->toBe($original);
+});
+
+it('decompressB64 does not salvage a corrupt second layer by discarding what does not belong to it', function () {
+    // Descartar caractere inválido em silêncio entregaria XML de um payload que
+    // chegou corrompido — o SDK diria "evento lido" sobre bytes que não conferem.
+    $camadaInterna = '!'.base64_encode((string) gzencode('<Evento/>'));
+
+    expect(fn () => GzipCompressor::decompressB64(base64_encode($camadaInterna)))
+        ->toThrow(NfseException::class, 'descomprimir');
+});
+
 it('decompressB64 throws NfseException on invalid base64', function () {
     expect(fn () => GzipCompressor::decompressB64('!!!invalid-base64!!!'))
         ->toThrow(NfseException::class, 'base64');

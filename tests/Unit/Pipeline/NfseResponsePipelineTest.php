@@ -281,23 +281,80 @@ it('throws IndeterminateResultException and dispatches NfseFailed when requiredF
 
     $pipeline = buildResponsePipeline(rawResult: new HttpResponse(200, [], '{}'));
 
-    expect(fn () => $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64'))
+    expect(fn () => $pipeline->executeRaw('https://example.com/eventos', ['eventoXmlGZipB64']))
         ->toThrow(IndeterminateResultException::class, 'eventoXmlGZipB64');
 
     Event::assertDispatched(NfseFailed::class);
     Event::assertNotDispatched(NfseQueried::class);
 });
 
-it('throws IndeterminateResultException when requiredField is empty or not a string on executeRaw', function (mixed $value): void {
+it('throws IndeterminateResultException when requiredField came empty on executeRaw', function (mixed $value): void {
     $pipeline = buildResponsePipeline(rawResult: new HttpResponse(200, ['eventoXmlGZipB64' => $value], ''));
 
-    expect(fn () => $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64'))
+    expect(fn () => $pipeline->executeRaw('https://example.com/eventos', ['eventoXmlGZipB64']))
         ->toThrow(IndeterminateResultException::class, 'eventoXmlGZipB64');
 })->with([
     'empty string' => [''],
+    'empty list' => [[]],
     'int' => [123],
     'null' => [null],
 ]);
+
+it('accepts a required field that came as a non-empty list, as the eventos route sends it', function (): void {
+    Event::fake();
+
+    $raw = new HttpResponse(200, ['eventos' => [['arquivoXml' => 'Z3ppcA==']]], '');
+    $pipeline = buildResponsePipeline(rawResult: $raw);
+
+    $response = $pipeline->executeRaw('https://example.com/eventos', ['eventoXmlGZipB64'], ['eventos']);
+
+    expect($response)->toBe($raw);
+    Event::assertDispatched(NfseQueried::class);
+});
+
+it('accepts any one of the required fields, and rejects only when none came', function (): void {
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(200, ['tipoAmbiente' => 1], '{"tipoAmbiente":1}'));
+
+    expect(fn () => $pipeline->executeRaw('https://example.com/eventos', ['eventoXmlGZipB64'], ['eventos']))
+        ->toThrow(IndeterminateResultException::class, '("eventoXmlGZipB64", "eventos")');
+});
+
+it('treats a field that came in the wrong shape as absent, not as present', function (array $json, array $strings, array $lists): void {
+    // Um valor fora da forma que a operação lê seguiria para um construtor tipado
+    // e estouraria TypeError — fora do contrato de exceções do SDK.
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(200, $json, ''));
+
+    expect(fn () => $pipeline->executeRaw('https://example.com/consulta', $strings, $lists))
+        ->toThrow(IndeterminateResultException::class);
+})->with([
+    'texto que veio como lista' => [['chaveAcesso' => ['CHAVE']], ['chaveAcesso'], []],
+    'lista que veio como texto' => [['eventos' => 'texto de proxy'], [], ['eventos']],
+    'lista que veio como texto, com o texto alternativo ausente' => [['eventos' => 'texto de proxy'], ['eventoXmlGZipB64'], ['eventos']],
+]);
+
+it('hands the response that motivated the failure to the exception and to NfseFailed', function (): void {
+    Event::fake();
+
+    $pipeline = buildResponsePipeline(rawResult: new HttpResponse(200, ['tipoAmbiente' => 1], '{"tipoAmbiente":1}'));
+
+    $exception = null;
+
+    try {
+        $pipeline->executeRaw('https://example.com/eventos', [], ['eventos']);
+    } catch (IndeterminateResultException $caught) {
+        $exception = $caught;
+    }
+
+    expect($exception?->statusCode)->toBe(200)
+        ->and($exception?->body)->toBe('{"tipoAmbiente":1}')
+        ->and($exception?->raw)->toBe(['tipoAmbiente' => 1]);
+
+    Event::assertDispatched(
+        NfseFailed::class,
+        fn (NfseFailed $e): bool => $e->throwable instanceof IndeterminateResultException
+            && $e->throwable->raw === ['tipoAmbiente' => 1],
+    );
+});
 
 it('returns response without requiredField check when body has structured error', function (): void {
     Event::fake();
@@ -305,7 +362,7 @@ it('returns response without requiredField check when body has structured error'
     $raw = new HttpResponse(400, ['erros' => [['codigo' => 'E1', 'descricao' => 'Rejeitada']]], '');
     $pipeline = buildResponsePipeline(rawResult: $raw);
 
-    $response = $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64');
+    $response = $pipeline->executeRaw('https://example.com/eventos', ['eventoXmlGZipB64']);
 
     expect($response)->toBe($raw);
     Event::assertDispatched(NfseRejected::class);
@@ -317,7 +374,7 @@ it('returns response when requiredField is present on executeRaw', function (): 
     $raw = new HttpResponse(200, ['eventoXmlGZipB64' => 'Z3ppcA=='], '');
     $pipeline = buildResponsePipeline(rawResult: $raw);
 
-    $response = $pipeline->executeRaw('https://example.com/eventos', 'eventoXmlGZipB64');
+    $response = $pipeline->executeRaw('https://example.com/eventos', ['eventoXmlGZipB64']);
 
     expect($response)->toBe($raw);
     Event::assertDispatched(NfseQueried::class);

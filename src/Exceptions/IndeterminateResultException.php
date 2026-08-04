@@ -41,13 +41,24 @@ use Throwable;
  */
 final class IndeterminateResultException extends CommunicationException
 {
+    /** Teto do corpo preservado em {@see self::$body}; `raw` guarda a estrutura inteira. */
+    private const int BODY_MAX_BYTES = 8192; // @pest-mutate-ignore IncrementInteger,DecrementInteger — ±1 byte no teto não é observável por teste
+
     /**
      * @param  'body'|'connect'|'dns'|'read'|'tls'|'transfer'|null  $phase  fase da falha, quando detectável
+     * @param  int|null  $statusCode  status HTTP da resposta, quando ela chegou
+     * @param  string|null  $body  corpo cru, truncado em 8 KiB; `null` quando a falha
+     *                             foi anterior a qualquer resposta ou quando o call
+     *                             site só recebeu o JSON já decodificado
+     * @param  array<string, mixed>|null  $raw  corpo JSON decodificado, quando houve um
      */
     public function __construct(
         string $message,
         public readonly ?string $phase = null,
         ?Throwable $previous = null,
+        public readonly ?int $statusCode = null,
+        public readonly ?string $body = null,
+        public readonly ?array $raw = null,
     ) {
         parent::__construct($message, 0, $previous);
     }
@@ -81,23 +92,30 @@ final class IndeterminateResultException extends CommunicationException
                 substr($body, 0, 200),
             ),
             'body',
+            statusCode: $statusCode,
+            body: self::truncate($body),
         );
     }
 
     /**
-     * Resposta 2xx com JSON válido, porém sem o campo obrigatório da operação:
-     * o corpo existe mas não é interpretável como resultado — mesma régua do
-     * 2xx ilegível, nunca um sucesso silencioso.
+     * Resposta 2xx com JSON válido, porém sem nenhum dos campos que a operação
+     * exige: o corpo existe mas não é interpretável como resultado — mesma régua
+     * do 2xx ilegível, nunca um sucesso silencioso.
+     *
+     * @param  array<string, mixed>  $raw
      */
-    public static function fromMissingResponseField(int $statusCode, string $field): self
+    public static function fromMissingResponseField(int $statusCode, string $body, array $raw, string ...$fields): self
     {
         return new self(
             sprintf(
-                'Resultado indeterminado: o servidor respondeu HTTP %d sem o campo obrigatório "%s"; a resposta não pôde ser interpretada.',
+                'Resultado indeterminado: o servidor respondeu HTTP %d, mas a resposta não traz nenhum dos campos exigidos pela operação (%s); não pôde ser interpretada.',
                 $statusCode,
-                $field,
+                self::listFields($fields),
             ),
             'body',
+            statusCode: $statusCode,
+            body: self::truncate($body),
+            raw: $raw,
         );
     }
 
@@ -106,8 +124,10 @@ final class IndeterminateResultException extends CommunicationException
      * status não acompanha o corpo (`SendsHttpRequests::get()` devolve só o
      * array — e ela só entrega corpo de 2xx ou de rejeição estruturada, já
      * tratada antes): corpo legível, resultado ininterpretável.
+     *
+     * @param  array<string, mixed>  $raw
      */
-    public static function fromMissingQueryField(string $field): self
+    public static function fromMissingQueryField(string $field, array $raw): self
     {
         return new self(
             sprintf(
@@ -115,6 +135,7 @@ final class IndeterminateResultException extends CommunicationException
                 $field,
             ),
             'body',
+            raw: $raw,
         );
     }
 
@@ -124,8 +145,10 @@ final class IndeterminateResultException extends CommunicationException
      * declara `eventoXmlGZipB64` required, então a ausência do campo é quebra
      * de contrato — nada prova que o evento foi registrado. O status HTTP não
      * chega a este ponto do pipeline; por isso a mensagem não o carrega.
+     *
+     * @param  array<string, mixed>  $raw
      */
-    public static function fromMissingEventReceipt(string $field): self
+    public static function fromMissingEventReceipt(string $field, array $raw): self
     {
         return new self(
             sprintf(
@@ -134,6 +157,7 @@ final class IndeterminateResultException extends CommunicationException
                 $field,
             ),
             'body',
+            raw: $raw,
         );
     }
 
@@ -152,7 +176,20 @@ final class IndeterminateResultException extends CommunicationException
                 $statusCode,
                 substr($body, 0, 200),
             ),
+            statusCode: $statusCode,
+            body: self::truncate($body),
         );
+    }
+
+    private static function truncate(string $body): string
+    {
+        return substr($body, 0, self::BODY_MAX_BYTES);
+    }
+
+    /** @param array<string> $fields */
+    private static function listFields(array $fields): string
+    {
+        return '"'.implode('", "', $fields).'"';
     }
 
     /**

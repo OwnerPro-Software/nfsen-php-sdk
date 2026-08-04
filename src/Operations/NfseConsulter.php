@@ -16,10 +16,10 @@ use OwnerPro\Nfsen\Exceptions\HttpException;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Pipeline\Concerns\ValidatesChaveAcesso;
 use OwnerPro\Nfsen\Responses\DanfseResponse;
+use OwnerPro\Nfsen\Responses\EventoConsultado;
 use OwnerPro\Nfsen\Responses\EventsResponse;
 use OwnerPro\Nfsen\Responses\NfseResponse;
 use OwnerPro\Nfsen\Responses\ProcessingMessage;
-use OwnerPro\Nfsen\Support\GzipCompressor;
 
 /**
  * @internal
@@ -56,7 +56,7 @@ final readonly class NfseConsulter implements ConsultsNfse
         // reconciliação pós-timeout — que é o fluxo que dps() existe para
         // servir — sem identificador algum da nota. O 404 não é afetado:
         // executeRaw retorna antes da checagem.
-        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path), 'chaveAcesso');
+        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path), ['chaveAcesso']);
 
         /**
          * @var array{
@@ -180,12 +180,13 @@ final readonly class NfseConsulter implements ConsultsNfse
             'nSequencial' => $nSequencial,
         ]);
 
-        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path), 'eventoXmlGZipB64');
+        $response = $this->client->executeRaw($this->buildUrl($this->seFinBaseUrl, $path), ['eventoXmlGZipB64'], ['eventos']);
 
         /**
          * @var array{
          *     erros?: list<MessageData>,
          *     erro?: MessageData|list<MessageData>,
+         *     eventos?: mixed,
          *     eventoXmlGZipB64?: string,
          *     tipoAmbiente?: int,
          *     versaoAplicativo?: string,
@@ -227,15 +228,38 @@ final readonly class NfseConsulter implements ConsultsNfse
             );
         }
 
+        $eventos = $this->parseEventos($result);
+
         return new EventsResponse(
             sucesso: true,
-            // executeRaw('eventoXmlGZipB64') garante string não-vazia neste ponto.
-            xml: GzipCompressor::decompressB64($result['eventoXmlGZipB64'] ?? null),
+            xml: $eventos[0]->xml,
             tipoAmbiente: $tipoAmbiente,
             versaoAplicativo: $versaoAplicativo,
             dataHoraProcessamento: $dataHoraProcessamento,
             raw: $result,
+            eventos: $eventos,
         );
+    }
+
+    /**
+     * O SefinNacional 1.6.0 devolve `eventos[]` com o XML em `arquivoXml`; o
+     * `eventoXmlGZipB64` de topo é o que o swagger declara para esta rota, e é o que
+     * as prefeituras de implementação própria (`storage/prefeituras.json`) podem
+     * devolver. `executeRaw` já garante que um dos dois veio preenchido na forma
+     * que se lê aqui: lista não-vazia, ou texto não-vazio.
+     *
+     * @param  array<string, mixed>  $result
+     * @return non-empty-list<EventoConsultado>
+     */
+    private function parseEventos(array $result): array
+    {
+        $eventos = $result['eventos'] ?? null;
+
+        if (is_array($eventos) && $eventos !== []) {
+            return array_values(array_map(EventoConsultado::fromArray(...), $eventos));
+        }
+
+        return [EventoConsultado::fromArray(['arquivoXml' => $result['eventoXmlGZipB64'] ?? null])];
     }
 
     public function situacaoCancelamento(string $chave): SituacaoCancelamento

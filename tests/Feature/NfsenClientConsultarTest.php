@@ -5,6 +5,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
+use OwnerPro\Nfsen\Enums\TipoEvento;
 use OwnerPro\Nfsen\Events\NfseFailed;
 use OwnerPro\Nfsen\Events\NfseQueried;
 use OwnerPro\Nfsen\Exceptions\HttpException;
@@ -33,7 +34,9 @@ it('consultar()->danfse returns DanfseResponse with pdf', function () {
     );
 });
 
-it('consultar()->eventos returns EventsResponse', function () {
+it('consultar()->eventos still reads the top-level eventoXmlGZipB64 the swagger declares', function () {
+    // Forma alternativa, para as prefeituras de implementação própria de
+    // `storage/prefeituras.json`. O SefinNacional 1.6.0 devolve `eventos[]`.
     $chave = makeChaveAcesso();
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 
@@ -48,7 +51,26 @@ it('consultar()->eventos returns EventsResponse', function () {
     );
 });
 
-it('consultar()->eventos throws IndeterminateResultException when no eventoXmlGZipB64', function () {
+it('consultar()->eventos reads the eventos[] envelope the SefinNacional returns', function () {
+    $chave = makeChaveAcesso();
+    Http::fake(['*' => Http::response(['eventos' => [[
+        'chaveAcesso' => $chave,
+        'tipoEvento' => 105104,
+        'numeroPedidoRegistroEvento' => 1,
+        'dataHoraRecebimento' => '2026-08-03T07:31:39.737',
+        'arquivoXml' => base64_encode(base64_encode((string) gzencode('<Evento/>'))),
+    ]]], 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+    $response = $client->consultar()->eventos($chave, TipoEvento::CancelamentoDeferidoAnaliseFiscal);
+
+    expect($response->sucesso)->toBeTrue()
+        ->and($response->xml)->toBe('<Evento/>')
+        ->and($response->eventos[0]->tipoEvento)->toBe(TipoEvento::CancelamentoDeferidoAnaliseFiscal)
+        ->and($response->eventos[0]->dataHoraRecebimento)->toBe('2026-08-03T07:31:39.737');
+});
+
+it('consultar()->eventos throws IndeterminateResultException when neither eventos nor eventoXmlGZipB64 came', function () {
     Http::fake(['*' => Http::response([], 200)]);
 
     $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
@@ -56,6 +78,32 @@ it('consultar()->eventos throws IndeterminateResultException when no eventoXmlGZ
     expect(fn () => $client->consultar()->eventos(makeChaveAcesso()))
         ->toThrow(IndeterminateResultException::class);
 });
+
+it('consultar()->eventos keeps a proxy body out of the success path', function () {
+    // `eventos` como texto passaria por uma checagem de "campo não-vazio" e viraria
+    // sucesso com xml null e nenhum motivo declarado.
+    Http::fake(['*' => Http::response(['eventos' => 'texto de proxy'], 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->eventos(makeChaveAcesso()))
+        ->toThrow(IndeterminateResultException::class);
+});
+
+it('consultar()->dps throws IndeterminateResultException on a 200 without chaveAcesso', function (mixed $chaveAcesso) {
+    // DpsGetResponse declara chaveAcesso required no 200: sem ela a reconciliação
+    // pós-timeout encerraria sem identificador algum da nota. Fora do tipo conta
+    // como ausente — senão o valor seguiria para um construtor que declara ?string.
+    Http::fake(['*' => Http::response(array_filter(['tipoAmbiente' => 2, 'chaveAcesso' => $chaveAcesso]), 200)]);
+
+    $client = NfsenClient::for(makePfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->consultar()->dps('DPS123'))
+        ->toThrow(IndeterminateResultException::class, 'chaveAcesso');
+})->with([
+    'ausente' => [null],
+    'veio como lista' => [['CHAVE']],
+]);
 
 it('consultar()->eventos returns EVENT_NOT_FOUND failure on 404', function () {
     Http::fake(['*' => Http::response([], 404)]);

@@ -318,11 +318,23 @@ $response = $client->consultar()->eventos(
 // BloqueioPorOficio — 305102                     DesbloqueioPorOficio — 305103
 // InclusaoNfseDan — 467201                       TributosNfseRecolhidos — 907201
 //
+// No sucesso, $response->eventos traz um EventoConsultado por item devolvido e
+// $response->xml repete o XML do primeiro:
+foreach ($response->eventos as $evento) {
+    $evento->tipoEvento;                  // TipoEvento|null
+    $evento->numeroPedidoRegistroEvento;  // int|null
+    $evento->dataHoraRecebimento;         // string|null
+    $evento->xml;                         // string|null, já descomprimido
+    $evento->parseError;                  // string|null — por que o item não pôde ser lido
+}
+//
 // Quando a SEFIN responde 404 (evento inexistente), a resposta traz um erro
 // dedicado: $response->erros[0]->codigo === EventsResponse::EVENT_NOT_FOUND.
 // Sinal inequívoco de "não existe" — qualquer outro sucesso: false é
-// inconclusivo. Um 2xx sem `eventoXmlGZipB64` não ocorre em operação normal e
-// lança IndeterminateResultException (nunca vira sucesso com xml: null).
+// inconclusivo. Um 2xx que não traga nem a lista `eventos` nem o
+// `eventoXmlGZipB64` de topo lança IndeterminateResultException (nunca vira
+// sucesso silencioso). Já um evento cujo XML não pôde ser lido mantém
+// sucesso: true, com xml: null e o motivo em $evento->parseError.
 
 // Situação do cancelamento por análise fiscal (uma chamada ao ADN, resume os
 // eventos 101103/105104/105105 da nota)
@@ -507,7 +519,7 @@ O pacote dispara eventos Laravel que podem ser escutados na sua aplicação:
 | `NfseQueried` | `operacao` | Consulta realizada |
 | `NfseRequested` | `operacao`, `metadata` | Operação iniciada |
 | `NfseRejected` | `operacao`, `codigoErro`, `mensagemErro`, `correcao` | Operação rejeitada pela API (`mensagemErro` e `correcao` ficam `null` quando a API não retorna os campos correspondentes ou no fallback `SEM_CHAVE`) |
-| `NfseFailed` | `operacao`, `mensagem` | Falha na operação |
+| `NfseFailed` | `operacao`, `mensagem`, `throwable` | Falha na operação |
 
 **Substituição:** como `substituir` delega ao `emitir` internamente, a sequência de eventos disparados é:
 `NfseRequested('emitir')` → `NfseEmitted` → `NfseSubstituted`
@@ -562,16 +574,33 @@ Retornado por `consultar()->eventos()`.
 | Propriedade | Tipo | Descricao |
 |-------------|------|-----------|
 | `sucesso` | `bool` | Se a consulta teve sucesso |
-| `xml` | `?string` | XML do evento (nunca `null` quando `sucesso` é `true`) |
+| `xml` | `?string` | XML do primeiro evento de `eventos`, já descomprimido |
 | `erros` | `list<ProcessingMessage>` | Erros de processamento |
 | `tipoAmbiente` | `?int` | 1 = Produção, 2 = Homologação |
 | `versaoAplicativo` | `?string` | Versão do aplicativo da SEFIN |
 | `dataHoraProcessamento` | `?string` | Data/hora do processamento |
 | `raw` | `?array` | Corpo JSON decodificado, como a SEFIN o devolveu — ver [Corpo bruto](#corpo-bruto) |
+| `eventos` | `list<EventoConsultado>` | Os eventos devolvidos para o par `(tipoEvento, nSequencial)` |
 
 Constante `EventsResponse::EVENT_NOT_FOUND`: presente em `erros[0]->codigo`
 quando a SEFIN responde 404 — o evento comprovadamente não existe (distinto de
 erro transitório, que permanece `sucesso: false` sem esse código).
+
+### `EventoConsultado`
+
+Um item de `EventsResponse::$eventos`.
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `chaveAcesso` | `?string` | Chave de acesso da NFS-e a que o evento se vincula |
+| `tipoEvento` | `?TipoEvento` | `null` quando o código não consta no enum |
+| `numeroPedidoRegistroEvento` | `?int` | Sequencial do pedido de registro |
+| `dataHoraRecebimento` | `?string` | Quando a SEFIN recebeu o evento |
+| `xml` | `?string` | XML do evento, já descomprimido |
+| `parseError` | `?string` | Por que o evento não pôde ser interpretado por completo; `null` quando íntegro |
+
+Um item que não pôde ser lido por completo não interrompe a resposta: os campos
+afetados vêm `null` e `parseError` diz o que faltou.
 
 ### `DistribuicaoResponse`
 
@@ -692,11 +721,11 @@ cobre cinco situações:
    confirmou o processamento, mas o resultado não pôde ser interpretado;
 4. **Resposta com JSON válido porém sem o campo obrigatório da operação** —
    um 2xx de `consultar()->nfse()` sem `nfseXmlGZipB64`, de
-   `consultar()->eventos()` sem `eventoXmlGZipB64` ou de `consultar()->dps()`
-   sem `chaveAcesso`, ou a resposta ao POST do evento em `cancelar()` sem
-   rejeição estruturada nem o recibo `eventoXmlGZipB64`, qualquer que seja o
-   status — shape que não ocorre em operação normal; ausência comprovada é
-   sinalizada por HTTP 404, nunca por corpo vazio;
+   `consultar()->eventos()` sem `eventos` nem `eventoXmlGZipB64`, ou de
+   `consultar()->dps()` sem `chaveAcesso`, ou a resposta ao POST do evento em
+   `cancelar()` sem rejeição estruturada nem o recibo `eventoXmlGZipB64`,
+   qualquer que seja o status — shape que não ocorre em operação normal;
+   ausência comprovada é sinalizada por HTTP 404, nunca por corpo vazio;
 5. **Resposta 5xx a uma operação que altera estado** (`emitir`,
    `cancelar`, `substituir`) **sem rejeição estruturada
    da SEFIN no corpo** — o erro pode ter vindo de um proxy antes da SEFIN, ou da
@@ -708,6 +737,21 @@ cobre cinco situações:
 > **204 não entra nesta lista.** "No Content" define corpo vazio, então a ausência
 > de JSON ali é a resposta correta e não estado indeterminado — `distribuicao()`
 > devolve `sucesso: false` com o código `EMPTY_RESPONSE`.
+
+**A exceção carrega a resposta que a motivou**, para que o diagnóstico saia do log
+em vez de exigir reproduzir a chamada:
+
+| Propriedade | Tipo | Descricao |
+|-------------|------|-----------|
+| `phase` | `?string` | Fase da falha de transporte (`dns`, `connect`, `tls`, `transfer`, `read`, `body`), quando detectável |
+| `statusCode` | `?int` | Status HTTP, quando a resposta chegou |
+| `body` | `?string` | Corpo cru, truncado em 8 KiB |
+| `raw` | `?array` | Corpo JSON decodificado, sem truncar |
+
+Preenche-se o que o ponto da falha tinha em mãos: `body`/`statusCode` ficam `null`
+nas rotas em que o SDK só recebe o JSON já decodificado, e `raw` fica `null` quando
+não houve JSON legível (é justamente a causa) ou quando a falha antecedeu a
+resposta. O mesmo objeto chega ao listener em `NfseFailed::$throwable`.
 
 Nos cinco casos a ação é a mesma: **nunca faça retry cego de emissão** (a NFS-e
 pode já existir e um retry causaria dupla emissão). Calcule o ID com

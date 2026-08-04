@@ -41,7 +41,7 @@ trait DispatchesEvents
         try {
             return $fn();
         } catch (Throwable $throwable) {
-            $this->dispatchEvent(new NfseFailed($operacao, $throwable->getMessage()));
+            $this->dispatchEvent(new NfseFailed($operacao, $throwable->getMessage(), $throwable));
             throw $throwable;
         }
     }

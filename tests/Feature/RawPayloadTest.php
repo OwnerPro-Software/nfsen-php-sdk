@@ -91,7 +91,8 @@ it('consultar()->eventos preserva o corpo decodificado', function (array $body, 
     expect($response->sucesso)->toBe($sucesso)
         ->and($response->raw)->toBe($body);
 })->with([
-    'sucesso' => [['eventoXmlGZipB64' => makeRawGzip(), 'campoDesconhecido' => 'x'], 200, true],
+    'sucesso na forma do SefinNacional' => [['eventos' => [['arquivoXml' => base64_encode(makeRawGzip())]], 'campoDesconhecido' => 'x'], 200, true],
+    'sucesso na forma do swagger' => [['eventoXmlGZipB64' => makeRawGzip(), 'campoDesconhecido' => 'x'], 200, true],
     'rejeição' => [['erro' => [['codigo' => 'E999', 'descricao' => 'Evento rejeitado']], 'campoDesconhecido' => 'x'], 200, false],
     '404' => [['campoDesconhecido' => 'x'], 404, false],
 ]);
