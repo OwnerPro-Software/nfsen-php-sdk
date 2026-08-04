@@ -8,6 +8,7 @@ use Closure;
 use OwnerPro\Nfsen\Contracts\Driven\GeneratesQrCode;
 use OwnerPro\Nfsen\Contracts\Driven\RendersDanfseHtml;
 use OwnerPro\Nfsen\Danfse\Data\NfseData;
+use OwnerPro\Nfsen\Exceptions\NfseException;
 use Throwable;
 
 final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
@@ -70,7 +71,7 @@ final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
         try {
             include self::TEMPLATE_PATH;
 
-            return ob_get_clean();
+            $html = ob_get_clean();
             // @codeCoverageIgnoreStart
         } catch (Throwable $throwable) {
             // Defensivo: se o template lançar, ob_get_clean() do try não roda — limpa o buffer órfão.
@@ -79,6 +80,15 @@ final readonly class DanfseHtmlRenderer implements RendersDanfseHtml
             throw $throwable;
         }
 
+        // ob_get_clean() só devolve false sem buffer ativo, e o ob_start() acima
+        // acabou de abrir um. Inalcançável — mas devolver a evidência é melhor do
+        // que estreitar o tipo por fora.
+        if ($html === false) { // @pest-mutate-ignore IfNegated,IdenticalToNotIdentical,FalseToTrue — guarda de invariante que teste algum alcança: o buffer foi aberto duas linhas acima.
+            throw new NfseException('Falha ao capturar o HTML do DANFSe: o buffer de saída não estava ativo.');
+        }
+
         // @codeCoverageIgnoreEnd
+
+        return $html;
     }
 }
