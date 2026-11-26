@@ -160,8 +160,8 @@ final readonly class NfseConsulter implements ConsultsNfse
         return new ProcessingMessage(
             mensagem: 'A API remota de DANFSe foi sobrestada',
             codigo: DanfseResponse::API_SOBRESTADA,
-            descricao: 'A Nota Técnica nº 008, de 05/05/2026, suspendeu a API de geração do DANFSe ' // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — texto informativo em três partes; os testes asseguram os trechos que importam ('01/07/2026' e 'toPdf').
-                .'em 01/07/2026. Gere o documento localmente a partir do XML da NFS-e: '
+            descricao: 'A Nota Técnica nº 008 suspendeu a API de geração do DANFSe ' // @pest-mutate-ignore ConcatRemoveLeft,ConcatRemoveRight,ConcatSwitchSides — texto informativo em três partes; os testes asseguram os trechos que importam ('03/08/2026' e 'toPdf').
+                .'em 03/08/2026. Gere o documento localmente a partir do XML da NFS-e: '
                 .'`$client->danfse()->toPdf($xml)`.',
         );
     }

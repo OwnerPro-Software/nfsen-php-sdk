@@ -5,7 +5,7 @@
 está o que isso exige do código.
 
 Este documento é só o levantamento. Na data dele, nada do que está listado tinha sido
-alterado. Os itens A1 e A2 foram feitos em seguida; os demais seguem abertos, sem
+alterado. Os itens A1, A2 e A3 foram feitos em seguida; os demais seguem abertos, sem
 decisão de desenho tomada.
 
 ## Resumo
@@ -14,7 +14,7 @@ decisão de desenho tomada.
 |---|---|---|---|---|---|
 | A1 | ~~DANFSe: PIS/COFINS retidos~~ — **feito** | NT 008 v1.02 | Atingia as NFS-e com `tpRetPisCofins` = 1 | Nada | Pequeno |
 | A2 | ~~Trocar a referência da NT 008 para a v1.02~~ — **feito** | NT 008 v1.02 | Não (é a base dos testes) | A1 | Médio |
-| A3 | Data em que a API de DANFSe saiu do ar: o README foi corrigido com o A2, resta a mensagem do aviso `DanfseResponse::API_SOBRESTADA` | NT 008 v1.01 | Mensagem de um aviso | Nada | Mínimo |
+| A3 | ~~Data em que a API de DANFSe saiu do ar~~ — **feito** | NT 008 v1.01 | Documentação e a mensagem de um aviso | Nada | Mínimo |
 | A4 | Distribuição: `cpfConsulta` e `TipoConsulta` | Manual do ADN v1.1 | A confirmar | Swagger atual do ADN | Pequeno |
 | B1 | `vAjusteBC/documentos` | NT 009, 2.3 | Não | Decisão de API | Grande |
 | B2 | `vAjusteBCIBSCBSComExt` | NT 009, 2.13 | Não | B3 | Pequeno |
@@ -93,7 +93,11 @@ Arquivos que citam o PDF ou a fixture: `tools/extract-nt008.py`, `.gitattributes
 `README.md`, `tests/Unit/Danfse/Nt008FieldCoverageTest.php` e
 `tests/Unit/Danfse/Nt008TemplateCoverageTest.php`.
 
-### A3. README: data em que a API de DANFSe saiu do ar
+### A3. Data em que a API de DANFSe saiu do ar — feito
+
+Feito junto com o A2. O levantamento subestimou o item: a data antiga estava também na
+mensagem do aviso `DanfseResponse::API_SOBRESTADA` e no docblock da constante, e não só
+no README.
 
 O README diz, em dois lugares, que a API remota de DANFSe foi sobrestada em 01/07/2026.
 Essa é a data da NT 008 v1.0. As v1.01 e v1.02 a mudaram, e a página de implantações

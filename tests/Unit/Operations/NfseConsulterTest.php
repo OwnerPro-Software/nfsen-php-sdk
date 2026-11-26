@@ -745,7 +745,7 @@ it('buildUrl trims leading slash from path', function () {
     }
 });
 
-// A NT 008, seção 1, sobrestou a API remota de DANFSe em 01/07/2026 e passou a
+// A NT 008 v1.02, seção 1, sobrestou a API remota de DANFSe em 03/08/2026 e passou a
 // geração para o emissor. Sem este aviso o consumidor recebe um 404 ou um corpo
 // vazio e vai depurar rede, certificado ou chave — nunca a causa real.
 it('danfse appends the suspended-API notice when the response is empty', function () {
@@ -819,6 +819,6 @@ it('danfse appends the suspended-API notice on HttpException', function () {
     ));
 
     expect($aviso)->toHaveCount(1);
-    expect($aviso[0]->descricao)->toContain('01/07/2026');
+    expect($aviso[0]->descricao)->toContain('03/08/2026');
     expect($aviso[0]->descricao)->toContain('toPdf');
 });

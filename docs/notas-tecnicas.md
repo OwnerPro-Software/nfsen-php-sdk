@@ -125,7 +125,7 @@ O portal publica a v1.02. Comparando o texto das duas versões:
 
 | Mudança | Versão | No SDK |
 |---|---|---|
-| Data de suspensão da API de DANFSe: de 01/07/2026 para 03/08/2026 | 1.01 e 1.02 | O README, que citava 01/07/2026, foi corrigido depois deste levantamento |
+| Data de suspensão da API de DANFSe: de 01/07/2026 para 03/08/2026 | 1.01 e 1.02 | **Corrigido depois deste levantamento.** O README e o aviso `DanfseResponse::API_SOBRESTADA` citavam 01/07/2026 |
 | A quantidade de caracteres do item 2.4.5 deixa de ser obrigatória | 1.02 | Sem efeito: o SDK segue os tamanhos sugeridos |
 | **Com `tpRetPisCofins` = 1, "Contribuições Sociais - Retidas" passa a ser `vRetCSLL` + `vPis` + `vCofins`, e "PIS" e "COFINS - Débito Apuração Própria" passam a `0,00`** | 1.02 | **Implementado depois deste levantamento.** Na data dele, `DanfseDataBuilder::buildTribFed()` imprimia os três campos como vinham, qualquer que fosse o `tpRetPisCofins` |
 | Correções de grafia ("DESTINATÁRIO", "INTERMEDIÁRIO", "BASE DE CÁLCULO", "IDENTIFICAÇÃO") | 1.02 | Sem efeito: o template já trazia a grafia correta nos três primeiros, e o quarto fica no canhoto, que é opcional e o SDK não imprime |
