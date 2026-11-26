@@ -16,14 +16,14 @@ use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
  * @phpstan-import-type DestArray from Dest
  * @phpstan-import-type ImovelArray from Imovel
  *
- * @phpstan-type IBSCBSArray array{finNFSe: string, cIndOp: string, indDest: string, valores: ValoresArray, indFinal?: string, tpOper?: string, refNFSe?: list<string>, tpEnteGov?: string, dest?: DestArray, imovel?: ImovelArray}
+ * @phpstan-type IBSCBSArray array{finNFSe: string, indDest: string, valores: ValoresArray, cIndOp?: string, indFinal?: string, tpOper?: string, refNFSe?: list<string>, tpEnteGov?: string, dest?: DestArray, imovel?: ImovelArray}
  */
 final readonly class IBSCBS
 {
     /** @param list<string>|null $refNFSe */
     public function __construct(
         public FinNFSe $finNFSe,
-        public string $cIndOp,
+        public ?string $cIndOp,
         public IndDest $indDest,
         public Valores $valores,
         public ?IndFinal $indFinal = null,
@@ -43,7 +43,7 @@ final readonly class IBSCBS
     {
         return new self(
             finNFSe: FinNFSe::from($data['finNFSe']),
-            cIndOp: $data['cIndOp'],
+            cIndOp: $data['cIndOp'] ?? null,
             indDest: IndDest::from($data['indDest']),
             valores: Valores::fromArray($data['valores']),
             indFinal: isset($data['indFinal']) ? IndFinal::from($data['indFinal']) : null,

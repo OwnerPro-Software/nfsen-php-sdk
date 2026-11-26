@@ -21,27 +21,34 @@ use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Imovel;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Valores;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
-use OwnerPro\Nfsen\Dps\DTO\Shared\End;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndFinal;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpEnteGov;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpOper;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Enums\Leiaute;
+use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
 
-final class IBSCBSBuilder
+final readonly class IBSCBSBuilder
 {
     use CreatesTextElements;
+
+    public function __construct(
+        private Leiaute $leiaute = Leiaute::V101,
+    ) {}
 
     public function build(DOMDocument $doc, IBSCBS $ibscbs): DOMElement
     {
         $el = $doc->createElement('IBSCBS');
 
-        $el->appendChild($this->text($doc, 'finNFSe', $ibscbs->finNFSe->value));
+        if ($this->leiaute === Leiaute::V101) {
+            $el->appendChild($this->text($doc, 'finNFSe', $ibscbs->finNFSe->value));
+        }
 
         if ($ibscbs->indFinal instanceof IndFinal) {
             $el->appendChild($this->text($doc, 'indFinal', $ibscbs->indFinal->value));
         }
 
-        $el->appendChild($this->text($doc, 'cIndOp', $ibscbs->cIndOp));
+        $this->appendCIndOp($doc, $el, $ibscbs->cIndOp);
 
         if ($ibscbs->tpOper instanceof TpOper) {
             $el->appendChild($this->text($doc, 'tpOper', $ibscbs->tpOper->value));
@@ -60,50 +67,39 @@ final class IBSCBSBuilder
             $el->appendChild($this->text($doc, 'tpEnteGov', $ibscbs->tpEnteGov->value));
         }
 
-        $el->appendChild($this->text($doc, 'indDest', $ibscbs->indDest->value));
-
-        if ($ibscbs->dest instanceof Dest) {
-            $el->appendChild($this->buildDest($doc, $ibscbs->dest));
+        if ($this->leiaute === Leiaute::V101) {
+            $this->appendDestinatario($doc, $el, $ibscbs);
         }
 
         if ($ibscbs->imovel instanceof Imovel) {
             $el->appendChild($this->buildImovel($doc, $ibscbs->imovel));
         }
 
-        $el->appendChild($this->buildValores($doc, $ibscbs->valores));
+        $el->appendChild($this->buildValores($doc, $ibscbs->valores, $ibscbs->cIndOp !== null));
 
         return $el;
     }
 
-    private function buildDest(DOMDocument $doc, Dest $dest): DOMElement
+    private function appendCIndOp(DOMDocument $doc, DOMElement $el, ?string $cIndOp): void
     {
-        $el = $doc->createElement('dest');
+        if ($cIndOp !== null) {
+            $el->appendChild($this->text($doc, 'cIndOp', $cIndOp));
 
-        if ($dest->CNPJ !== null) {
-            $el->appendChild($this->text($doc, 'CNPJ', $dest->CNPJ));
-        } elseif ($dest->CPF !== null) {
-            $el->appendChild($this->text($doc, 'CPF', $dest->CPF));
-        } elseif ($dest->NIF !== null) {
-            $el->appendChild($this->text($doc, 'NIF', $dest->NIF));
-        } elseif ($dest->cNaoNIF instanceof CNaoNIF) { // @pest-mutate-ignore InstanceOfToTrue unkillable — validation guarantees exactly one ID
-            $el->appendChild($this->text($doc, 'cNaoNIF', $dest->cNaoNIF->value));
+            return;
         }
 
-        $el->appendChild($this->text($doc, 'xNome', $dest->xNome));
-
-        if ($dest->end instanceof End) {
-            $el->appendChild($this->buildEnd($doc, $dest->end));
+        if ($this->leiaute === Leiaute::V101) {
+            throw new InvalidDpsArgument('IBSCBS/cIndOp é obrigatório no leiaute v1.01.');
         }
+    }
 
-        if ($dest->fone !== null) {
-            $el->appendChild($this->text($doc, 'fone', $dest->fone));
+    private function appendDestinatario(DOMDocument $doc, DOMElement $el, IBSCBS $ibscbs): void
+    {
+        $el->appendChild($this->text($doc, 'indDest', $ibscbs->indDest->value));
+
+        if ($ibscbs->dest instanceof Dest) {
+            $el->appendChild((new DestinatarioBuilder)->build($doc, $ibscbs->dest));
         }
-
-        if ($dest->email !== null) {
-            $el->appendChild($this->text($doc, 'email', $dest->email));
-        }
-
-        return $el;
     }
 
     private function buildImovel(DOMDocument $doc, Imovel $imovel): DOMElement
@@ -141,7 +137,7 @@ final class IBSCBSBuilder
         return $el;
     }
 
-    private function buildValores(DOMDocument $doc, Valores $valores): DOMElement
+    private function buildValores(DOMDocument $doc, Valores $valores, bool $declaresTaxation): DOMElement
     {
         $el = $doc->createElement('valores');
 
@@ -154,7 +150,7 @@ final class IBSCBSBuilder
             $el->appendChild($gReeRepRes);
         }
 
-        $el->appendChild($this->buildTrib($doc, $valores->trib->gIBSCBS));
+        $el->appendChild($this->buildTrib($doc, $valores->trib->gIBSCBS, $declaresTaxation));
 
         return $el;
     }
@@ -214,13 +210,15 @@ final class IBSCBSBuilder
         return $el;
     }
 
-    private function buildTrib(DOMDocument $doc, GIBSCBS $sitClas): DOMElement
+    private function buildTrib(DOMDocument $doc, GIBSCBS $sitClas, bool $declaresTaxation): DOMElement
     {
         $trib = $doc->createElement('trib');
         $gIBSCBS = $doc->createElement('gIBSCBS');
 
-        $gIBSCBS->appendChild($this->text($doc, 'CST', $sitClas->CST));
-        $gIBSCBS->appendChild($this->text($doc, 'cClassTrib', $sitClas->cClassTrib));
+        // NT 009, item 2.16: CST e cClassTrib saem de gIBSCBS e passam a precedê-lo.
+        $classification = $this->leiaute === Leiaute::Nt009 ? $trib : $gIBSCBS;
+        $classification->appendChild($this->text($doc, 'CST', $sitClas->CST));
+        $classification->appendChild($this->text($doc, 'cClassTrib', $sitClas->cClassTrib));
 
         if ($sitClas->cCredPres !== null) {
             $gIBSCBS->appendChild($this->text($doc, 'cCredPres', $sitClas->cCredPres));
@@ -241,7 +239,10 @@ final class IBSCBSBuilder
             $gIBSCBS->appendChild($gDif);
         }
 
-        $trib->appendChild($gIBSCBS);
+        // Anexo VI v1.04.01, regras 694/695 e 781/782: cIndOp e gIBSCBS vão juntos ou não vão.
+        if ($declaresTaxation || $gIBSCBS->hasChildNodes()) {
+            $trib->appendChild($gIBSCBS);
+        }
 
         return $trib;
     }

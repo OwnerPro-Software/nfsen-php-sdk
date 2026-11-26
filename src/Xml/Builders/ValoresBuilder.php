@@ -23,10 +23,15 @@ use OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VTotTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpImunidade;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetPisCofins;
+use OwnerPro\Nfsen\Enums\Leiaute;
 
-final class ValoresBuilder
+final readonly class ValoresBuilder
 {
     use CreatesTextElements;
+
+    public function __construct(
+        private Leiaute $leiaute = Leiaute::V101,
+    ) {}
 
     public function build(DOMDocument $doc, Valores $valores): DOMElement
     {
@@ -45,10 +50,22 @@ final class ValoresBuilder
         }
 
         if ($valores->vDedRed instanceof VDedRed) {
-            $el->appendChild($this->buildVDedRed($doc, $valores->vDedRed));
+            $el->appendChild($this->leiaute === Leiaute::Nt009
+                ? $this->buildVAjusteBC($doc, $valores->vDedRed)
+                : $this->buildVDedRed($doc, $valores->vDedRed));
         }
 
         $el->appendChild($this->buildTrib($doc, $valores->trib));
+
+        return $el;
+    }
+
+    // NT 009, item 2.3: vDedRed passa a se chamar vAjusteBC; pDR e vDR só mudam de nome.
+    private function buildVAjusteBC(DOMDocument $doc, VDedRed $info): DOMElement
+    {
+        $el = $doc->createElement('vAjusteBC');
+        $this->appendOptional($doc, $el, 'pAjusteBCISSQN', $info->pDR);
+        $this->appendOptional($doc, $el, 'vAjusteBCISSQN', $info->vDR);
 
         return $el;
     }

@@ -115,11 +115,16 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
 
         $intermediario = isset($infDps->interm) ? $this->participantes->intermediario($infDps->interm) : null;
         // IBSCBS e dest são minOccurs=0: NFS-e anterior à reforma não os traz.
-        $destinatario = isset($infDps->IBSCBS->dest) ? $this->participantes->destinatario($infDps->IBSCBS->dest) : null;
-        // indDest é minOccurs=1 dentro de IBSCBS e distingue os dois casos que a NT
+        // NT 009, itens 2.2 e 2.11: finNFSe, indDest e dest saem de IBSCBS para infDPS.
+        $destinatario = match (true) {
+            isset($infDps->dest) => $this->participantes->destinatario($infDps->dest),
+            isset($infDps->IBSCBS->dest) => $this->participantes->destinatario($infDps->IBSCBS->dest),
+            default => null,
+        };
+        // indDest é minOccurs=1 e distingue os dois casos que a NT
         // trata com frases diferentes: destinatário igual ao tomador (nota 3) e
         // destinatário sem dados (nota 2). Sem ele, os dois saíam como "não identificado".
-        $destinatarioEhTomador = IndDest::tryFrom($this->str($infDps->IBSCBS->indDest)) === IndDest::Tomador;
+        $destinatarioEhTomador = IndDest::tryFrom($this->firstOf($infDps->indDest, $infDps->IBSCBS->indDest)) === IndDest::Tomador;
 
         return new NfseData(
             chaveAcesso: $chave,
@@ -135,7 +140,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             // Reticências acima de 37, em campos de 40: a NT exemplifica a situação com
             // "NFS-e de Decisão Judicial ou Administ...", descrição que já supera o corte.
             situacao: $this->fmt->limit(SituacaoNfse::labelOf($this->str($inf->cStat)), 37), // @pest-mutate-ignore IncrementInteger,DecrementInteger — guarda para rótulo futuro; nenhum caso do leiaute chega a 37 hoje, então 36 e 38 produzem a mesma saída.
-            finalidade: $this->fmt->limit(FinNFSe::labelOf($this->str($infDps->IBSCBS->finNFSe)), 37), // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
+            finalidade: $this->fmt->limit(FinNFSe::labelOf($this->firstOf($infDps->finNFSe, $infDps->IBSCBS->finNFSe)), 37), // @pest-mutate-ignore IncrementInteger,DecrementInteger — idem.
             emitidaPor: TpEmit::labelOf($this->str($infDps->tpEmit)),
             ambienteGerador: AmbienteGerador::labelOf($this->str($inf->ambGer)),
             municipioEmitente: $this->buildMunicipioEmitente($inf, $emit, $cServ),
@@ -284,6 +289,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             ? $this->fmt->currency($vDR)
             : $this->sumCurrency(
                 $this->str($valNfse->vCalcDR),
+                // NT 008 não cita as tags da NT 009; parcelas novas inferidas da RN 57 do Anexo VI v1.04.01.
+                $this->str($valores->vAjusteBC->vAjusteBCISSQN),
+                $this->str($valNfse->vCalcAjusteBCISSQN),
                 $this->str($inf->IBSCBS?->valores?->vCalcReeRepRes), // @pest-mutate-ignore RemoveNullSafeOperator — IBSCBS e valores são minOccurs=0; ausentes, SimpleXML devolve placeholder vazio e depois null.
             );
         $descontoIncond = $this->currencyOrDash($this->str($valores->vDescCondIncond->vDescIncond));
@@ -387,12 +395,14 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $ibsNfse = $inf->IBSCBS;
         $valIbs = $ibsNfse?->valores; // @pest-mutate-ignore RemoveNullSafeOperator — IBSCBS é minOccurs=0.
         $totCibs = $ibsNfse?->totCIBS; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
-        $gIbsCbs = $infDps->IBSCBS?->valores?->trib?->gIBSCBS; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+        // NT 009, item 2.16: CST e cClassTrib saem de gIBSCBS e passam a precedê-lo em trib.
+        $tribIbsCbs = $infDps->IBSCBS?->valores?->trib; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+        $gIbsCbs = $tribIbsCbs?->gIBSCBS; // @pest-mutate-ignore RemoveNullSafeOperator — idem.
 
         return new DanfseTributacaoIbsCbs(
             cstClassTrib: $this->fmt->joinSlots(
-                $this->str($gIbsCbs?->CST),
-                $this->str($gIbsCbs?->cClassTrib),
+                $this->firstOf($tribIbsCbs?->CST, $gIbsCbs?->CST), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+                $this->firstOf($tribIbsCbs?->cClassTrib, $gIbsCbs?->cClassTrib), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
             ),
             // Concatena código da operação, código IBGE, município e UF da incidência.
             // Campo de 56, e `xLocalidadeIncid` é TSDesc600 — o maior recurso de texto
@@ -409,6 +419,9 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
             exclusoesReducoes: $this->sumCurrency(
                 $this->str($valores->vDescCondIncond->vDescIncond),
                 $this->str($valIbs?->vCalcReeRepRes), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
+                // NT 008 não cita as tags da NT 009; parcelas novas inferidas do item 2.3 da NT 009.
+                $this->str($valIbs?->vCalcAjusteBCIBSCBS), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+                $this->str($valIbs?->vCalcAjusteBCLocImoveis), // @pest-mutate-ignore RemoveNullSafeOperator — idem.
                 $this->str($inf->valores->vISSQN),
                 $this->str($trib->tribFed->piscofins?->vPis), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.
                 $this->str($trib->tribFed->piscofins?->vCofins), // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement) neste nível; defesa dupla é intencional.

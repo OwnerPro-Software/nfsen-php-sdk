@@ -28,6 +28,17 @@ it('navigates only paths that exist in the official NFS-e schema', function () {
         'NFSe/infNFSe/DPS/infDPS/valores/vDescCondIncond/vDescIncond',
     );
 
+    // Âncoras do leiaute da NT 009: as posições novas têm de ser lidas, não só as antigas.
+    expect($leitura['caminhos'])->toContain(
+        'NFSe/infNFSe/DPS/infDPS/finNFSe',
+        'NFSe/infNFSe/DPS/infDPS/indDest',
+        'NFSe/infNFSe/DPS/infDPS/IBSCBS/valores/trib/CST',
+        'NFSe/infNFSe/DPS/infDPS/valores/vAjusteBC/vAjusteBCISSQN',
+        'NFSe/infNFSe/valores/vCalcAjusteBCISSQN',
+        'NFSe/infNFSe/IBSCBS/valores/vCalcAjusteBCIBSCBS',
+        'NFSe/infNFSe/IBSCBS/valores/vCalcAjusteBCLocImoveis',
+    );
+
     // Piso, não igualdade: igualdade viraria ruído a cada campo novo. O piso existe
     // para que um refactor que quebre o extrator falhe alto, em vez de passar
     // verificando zero acesso.

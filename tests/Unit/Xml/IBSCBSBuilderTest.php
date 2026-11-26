@@ -27,10 +27,11 @@ use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpEnteGov;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpOper;
 use OwnerPro\Nfsen\Dps\Enums\IBSCBS\TpReeRepRes;
 use OwnerPro\Nfsen\Dps\Enums\Shared\CNaoNIF;
+use OwnerPro\Nfsen\Xml\Builders\DestinatarioBuilder;
 use OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder;
 use OwnerPro\Nfsen\Xml\DpsBuilder;
 
-covers(IBSCBSBuilder::class);
+covers(IBSCBSBuilder::class, DestinatarioBuilder::class);
 
 function makeMinimalIBSCBS(): IBSCBS
 {

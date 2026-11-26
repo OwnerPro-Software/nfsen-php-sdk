@@ -23,4 +23,7 @@ return [
     // Sobrescreva por chamada com NfsenClient::for(danfse: true|false). O documento em
     // si não tem configuração: o layout vem da NT 008 e o conteúdo, do XML.
     'auto_danfse' => (bool) env('NFSE_AUTO_DANFSE', false),
+
+    // 'v1.01' é o leiaute de produção; 'nt009' é o da NT 009, hoje só na Produção Restrita.
+    'leiaute' => env('NFSE_LEIAUTE', 'v1.01'),
 ];

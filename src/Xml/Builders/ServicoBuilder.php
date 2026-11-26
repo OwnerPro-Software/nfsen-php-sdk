@@ -15,10 +15,15 @@ use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
 use OwnerPro\Nfsen\Dps\DTO\Serv\InfoCompl;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Obra;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Enums\Leiaute;
 
-final class ServicoBuilder
+final readonly class ServicoBuilder
 {
     use CreatesTextElements;
+
+    public function __construct(
+        private Leiaute $leiaute = Leiaute::V101,
+    ) {}
 
     public function build(DOMDocument $doc, Serv $serv): DOMElement
     {
@@ -62,9 +67,15 @@ final class ServicoBuilder
         $el = $doc->createElement('cServ');
         $el->appendChild($this->text($doc, 'cTribNac', $cServ->cTribNac));
         $this->appendOptional($doc, $el, 'cTribMun', $cServ->cTribMun);
-        $el->appendChild($this->text($doc, 'xDescServ', $cServ->xDescServ));
+        if ($this->leiaute === Leiaute::V101) {
+            $el->appendChild($this->text($doc, 'xDescServ', $cServ->xDescServ));
+        }
+
         $this->appendOptional($doc, $el, 'cNBS', $cServ->cNBS);
         $this->appendOptional($doc, $el, 'cIntContrib', $cServ->cIntContrib);
+        if ($this->leiaute === Leiaute::Nt009) {
+            $el->appendChild($this->text($doc, 'xDescServ', $cServ->xDescServ));
+        }
 
         return $el;
     }

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use OwnerPro\Nfsen\Contracts\Driving\ConsultsNfse;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Enums\Leiaute;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use OwnerPro\Nfsen\Exceptions\RequestNotDeliveredException;
 use OwnerPro\Nfsen\Facades\Nfsen;
@@ -323,4 +324,52 @@ it('container binding classifies a pre-send failure as undelivered', function ()
 
     expect(fn () => app(NfsenClient::class)->consultar()->nfse(makeChaveAcesso()))
         ->toThrow(RequestNotDeliveredException::class);
+});
+
+function configureContainerClient(): void
+{
+    config([
+        'nfsen.certificado.path' => __DIR__.'/../fixtures/certs/fake.pfx',
+        'nfsen.certificado.senha' => 'secret',
+        'nfsen.prefeitura' => '3501608',
+    ]);
+}
+
+it('SP monta a DPS no leiaute de produção por padrão', function () {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE'], 201)]);
+    configureContainerClient();
+
+    Nfsen::emitir(makeDpsNucleo());
+
+    expect(childNames(sentDpsXml(), '/n:DPS/n:infDPS'))->not->toContain('finNFSe');
+});
+
+it('SP monta a DPS no leiaute da NT 009 quando nfsen.leiaute pede', function () {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE'], 201)]);
+    configureContainerClient();
+    config(['nfsen.leiaute' => 'nt009']);
+
+    Nfsen::emitir(makeDpsNucleo());
+
+    expect(childNames(sentDpsXml(), '/n:DPS/n:infDPS'))->toContain('finNFSe');
+});
+
+it('SP usa o leiaute de produção quando a config publicada não traz a chave', function () {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE'], 201)]);
+    configureContainerClient();
+    $config = config('nfsen');
+    unset($config['leiaute']);
+    config(['nfsen' => $config]);
+
+    Nfsen::emitir(makeDpsNucleo());
+
+    expect(childNames(sentDpsXml(), '/n:DPS/n:infDPS'))->not->toContain('finNFSe');
+});
+
+it('facade for() encaminha o leiaute', function () {
+    Http::fake(['*' => Http::response(['chaveAcesso' => 'CHAVE'], 201)]);
+
+    Nfsen::for(makePfxContent(), 'secret', '9999999', leiaute: Leiaute::Nt009)->emitir(makeDpsNucleo());
+
+    expect(childNames(sentDpsXml(), '/n:DPS/n:infDPS'))->toContain('finNFSe');
 });

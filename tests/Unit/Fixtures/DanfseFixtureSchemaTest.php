@@ -1,5 +1,6 @@
 <?php
 
+use OwnerPro\Nfsen\Enums\Leiaute;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 
 // As fixtures de DANFSE só valem como espelho de uma NFS-e real se casarem com o
@@ -23,4 +24,12 @@ it('keeps the worst-case NFS-e within the official schema', function () {
     $fragment = (string) preg_replace('|^<\?xml.*?\?>\s*|', '', nfsenXmlNoLimite());
 
     expect(fn () => makeXsdValidator()->validate($fragment, 'NFSe_v1.01.xsd'))->not->toThrow(NfseException::class);
+});
+
+it('validates the NT 009 DANFSE fixture against the schema published for it', function () {
+    $xml = (string) file_get_contents(__DIR__.'/../../fixtures/danfse/nfse-ibscbs-nt009.xml');
+    $fragment = (string) preg_replace('|^<\?xml.*?\?>\s*|', '', $xml);
+
+    expect(fn () => makeXsdValidator(Leiaute::Nt009)->validate($fragment, 'NFSe_v1.01.xsd'))->not->toThrow(NfseException::class);
+    expect(fn () => makeXsdValidator()->validate($fragment, 'NFSe_v1.01.xsd'))->toThrow(NfseException::class);
 });

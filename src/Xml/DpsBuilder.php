@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace OwnerPro\Nfsen\Xml;
 
 use DOMDocument;
+use DOMElement;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
+use OwnerPro\Nfsen\Dps\DTO\IBSCBS\Dest;
 use OwnerPro\Nfsen\Dps\DTO\IBSCBS\IBSCBS;
 use OwnerPro\Nfsen\Dps\DTO\InfDPS\Subst;
 use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\FinNFSe;
+use OwnerPro\Nfsen\Dps\Enums\IBSCBS\IndDest;
 use OwnerPro\Nfsen\Dps\Enums\InfDPS\CMotivoEmisTI;
+use OwnerPro\Nfsen\Enums\Leiaute;
 use OwnerPro\Nfsen\Support\DpsId;
 use OwnerPro\Nfsen\Support\XsdValidator;
 use OwnerPro\Nfsen\Xml\Builders\CreatesTextElements;
+use OwnerPro\Nfsen\Xml\Builders\DestinatarioBuilder;
 use OwnerPro\Nfsen\Xml\Builders\IBSCBSBuilder;
 use OwnerPro\Nfsen\Xml\Builders\PrestadorBuilder;
 use OwnerPro\Nfsen\Xml\Builders\ServicoBuilder;
@@ -29,6 +35,7 @@ final readonly class DpsBuilder
 
     public function __construct(
         private XsdValidator $xsdValidator,
+        private Leiaute $leiaute = Leiaute::V101,
     ) {}
 
     public function buildAndValidate(DpsData $data): string
@@ -41,6 +48,10 @@ final readonly class DpsBuilder
 
     public function build(DpsData $data): string
     {
+        if ($this->leiaute === Leiaute::Nt009) {
+            (new Nt009Scope)->assertSupports($data);
+        }
+
         $doc = new DOMDocument('1.0', 'UTF-8');
         $doc->preserveWhiteSpace = false; // @pest-mutate-ignore FalseToTrue: only affects XML parsing, not serialization
         $doc->formatOutput = false;
@@ -78,6 +89,8 @@ final readonly class DpsBuilder
             $infDps->appendChild($this->text($doc, 'cMotivoEmisTI', $d->cMotivoEmisTI->value));
         }
 
+        $this->appendFinNFSe($doc, $infDps, $data);
+
         if ($d->chNFSeRej !== null) {
             $infDps->appendChild($this->text($doc, 'chNFSeRej', $d->chNFSeRej));
         }
@@ -103,25 +116,58 @@ final readonly class DpsBuilder
             $infDps->appendChild((new TomadorBuilder)->build($doc, $data->toma));
         }
 
+        $this->appendDestinatario($doc, $infDps, $data);
+
         // interm (optional)
         if ($data->interm instanceof Toma) {
             $infDps->appendChild((new TomadorBuilder)->build($doc, $data->interm, 'interm'));
         }
 
         // serv (obrigatório)
-        $infDps->appendChild((new ServicoBuilder)->build($doc, $data->serv));
+        $infDps->appendChild((new ServicoBuilder($this->leiaute))->build($doc, $data->serv));
 
         // valores (obrigatório)
-        $infDps->appendChild((new ValoresBuilder)->build($doc, $data->valores));
+        $infDps->appendChild((new ValoresBuilder($this->leiaute))->build($doc, $data->valores));
 
         // IBSCBS (optional)
         if ($data->IBSCBS instanceof IBSCBS) {
-            $infDps->appendChild((new IBSCBSBuilder)->build($doc, $data->IBSCBS));
+            $infDps->appendChild((new IBSCBSBuilder($this->leiaute))->build($doc, $data->IBSCBS));
         }
 
         $dps->appendChild($infDps);
         $doc->appendChild($dps);
 
         return (string) $doc->saveXML($doc->documentElement); // @pest-mutate-ignore RemoveStringCast: saveXML returns string|false, cast is type-safety guard
+    }
+
+    // NT 009, item 2.2: finNFSe é 1-1 em infDPS, mesmo sem o grupo IBSCBS.
+    private function appendFinNFSe(DOMDocument $doc, DOMElement $infDps, DpsData $data): void
+    {
+        if ($this->leiaute !== Leiaute::Nt009) {
+            return;
+        }
+
+        $finNFSe = $data->IBSCBS instanceof IBSCBS ? $data->IBSCBS->finNFSe : FinNFSe::Regular; // @pest-mutate-ignore InstanceOfToFalse — TSRTCFinNFSe só admite 0 no XSD de 24/11; os dois ramos dão o mesmo valor.
+        $infDps->appendChild($this->text($doc, 'finNFSe', $finNFSe->value));
+    }
+
+    // NT 009, item 2.11: indDest é 1-1 em infDPS, mesmo sem o grupo IBSCBS.
+    private function appendDestinatario(DOMDocument $doc, DOMElement $infDps, DpsData $data): void
+    {
+        if ($this->leiaute !== Leiaute::Nt009) {
+            return;
+        }
+
+        if (! $data->IBSCBS instanceof IBSCBS) {
+            $infDps->appendChild($this->text($doc, 'indDest', IndDest::Tomador->value));
+
+            return;
+        }
+
+        $infDps->appendChild($this->text($doc, 'indDest', $data->IBSCBS->indDest->value));
+
+        if ($data->IBSCBS->dest instanceof Dest) {
+            $infDps->appendChild((new DestinatarioBuilder)->build($doc, $data->IBSCBS->dest));
+        }
     }
 }

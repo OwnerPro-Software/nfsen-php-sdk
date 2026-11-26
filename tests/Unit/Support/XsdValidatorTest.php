@@ -10,7 +10,7 @@ it('throws NfseException when scheme file does not exist', function () {
     $validator = new XsdValidator('/nonexistent/path');
 
     expect(fn () => $validator->validate('<root/>', 'missing.xsd'))
-        ->toThrow(NfseException::class, 'Schema XSD não encontrado');
+        ->toThrow(NfseException::class, "Schema XSD não encontrado: 'missing.xsd' em '/nonexistent/path'.");
 });
 
 it('throws NfseException when XML loading fails', function () {

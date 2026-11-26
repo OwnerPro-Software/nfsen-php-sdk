@@ -20,6 +20,7 @@ use OwnerPro\Nfsen\Dps\Enums\Prest\OpSimpNac;
 use OwnerPro\Nfsen\Dps\Enums\Prest\RegEspTrib;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TpRetISSQN;
 use OwnerPro\Nfsen\Dps\Enums\Valores\TribISSQN;
+use OwnerPro\Nfsen\Enums\Leiaute;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\NfsenClient;
 use OwnerPro\Nfsen\Operations\NfseCanceller;
@@ -49,9 +50,9 @@ function makeAlphanumericIcpBrPfxContent(): string
     return (string) file_get_contents(__DIR__.'/fixtures/certs/fake-icpbr-alphanumeric.pfx');
 }
 
-function makeXsdValidator(): XsdValidator
+function makeXsdValidator(Leiaute $leiaute = Leiaute::V101): XsdValidator
 {
-    return new XsdValidator(__DIR__.'/../storage/schemes');
+    return new XsdValidator($leiaute->schemasPath(__DIR__.'/../storage/schemes'));
 }
 
 function makeTestCertificate(): Certificate
@@ -182,6 +183,7 @@ function makeNfsenClient(
 }
 
 require_once __DIR__.'/helpers/danfse.php';
+require_once __DIR__.'/helpers/dps.php';
 require_once __DIR__.'/helpers/xsd.php';
 
 /**
@@ -196,11 +198,15 @@ require_once __DIR__.'/helpers/xsd.php';
 function nfsenXsdPaths(): array
 {
     static $cache = null;
-    if ($cache !== null) {
-        return $cache;
-    }
 
-    $schemes = __DIR__.'/../storage/schemes';
+    // O DanfseDataBuilder lê NFS-e dos dois leiautes, então navega caminhos de ambos.
+    return $cache ??= nfsenXsdPathsOf(Leiaute::Nt009) + nfsenXsdPathsOf(Leiaute::V101);
+}
+
+/** @return array<string, string> caminho => nome do tipo XSD */
+function nfsenXsdPathsOf(Leiaute $leiaute): array
+{
+    $schemes = $leiaute->schemasPath(__DIR__.'/../storage/schemes');
     $xs = 'http://www.w3.org/2001/XMLSchema';
 
     $tipos = [];
@@ -298,7 +304,7 @@ function nfsenXsdPaths(): array
     $tipoRaiz = $semPrefixo($raiz instanceof DOMElement ? $raiz->getAttribute('type') : '');
     $percorreTipo($tipos[$tipoRaiz] ?? null, 'NFSe', []);
 
-    return $cache = $caminhos;
+    return $caminhos;
 }
 
 /**
@@ -340,6 +346,7 @@ function nfsenXmlReaderFiles(): array
                 // Bloco IBS/CBS: valores apurados em infNFSe/IBSCBS, declarações em infDPS/IBSCBS.
                 'ibsNfse' => $n.'/IBSCBS', 'valIbs' => $n.'/IBSCBS/valores',
                 'totCibs' => $n.'/IBSCBS/totCIBS', 'gIbsCbs' => $d.'/IBSCBS/valores/trib/gIBSCBS',
+                'tribIbsCbs' => $d.'/IBSCBS/valores/trib',
             ],
             'porMetodo' => [],
         ],

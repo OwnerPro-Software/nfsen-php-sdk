@@ -1,5 +1,7 @@
 <?php
 
+use OwnerPro\Nfsen\Enums\Leiaute;
+
 /**
  * As fixtures têm de validar contra os XSDs que este repositório distribui.
  *
@@ -35,7 +37,7 @@ $definicaoPorFixture = [
 ];
 
 /** @param  array<string, string>  $xsdPorRaiz */
-function validateAgainstXsd(string $xml, array $xsdPorRaiz): void
+function validateAgainstXsd(string $xml, array $xsdPorRaiz, Leiaute $leiaute = Leiaute::V101): void
 {
     $doc = new DOMDocument;
 
@@ -49,7 +51,7 @@ function validateAgainstXsd(string $xml, array $xsdPorRaiz): void
         expect(array_key_exists($raiz, $xsdPorRaiz))->toBeTrue("Raiz <{$raiz}> não tem XSD mapeado.");
 
         libxml_clear_errors();
-        $valido = $doc->schemaValidate(__DIR__.'/../../../storage/schemes/'.$xsdPorRaiz[$raiz]);
+        $valido = $doc->schemaValidate($leiaute->schemasPath(__DIR__.'/../../../storage/schemes').'/'.$xsdPorRaiz[$raiz]);
 
         $erros = array_map(
             fn (LibXMLError $e): string => trim($e->message),
@@ -94,7 +96,9 @@ function camposGZipB64DoSwagger(string $definicao): array
 }
 
 it('validates every DANFSe fixture against its XSD', function (string $arquivo) use ($xsdPorRaiz) {
-    validateAgainstXsd((string) file_get_contents($arquivo), $xsdPorRaiz);
+    $leiaute = str_ends_with($arquivo, '-nt009.xml') ? Leiaute::Nt009 : Leiaute::V101;
+
+    validateAgainstXsd((string) file_get_contents($arquivo), $xsdPorRaiz, $leiaute);
 })->with(fn (): array => glob(__DIR__.'/../../fixtures/danfse/*.xml') ?: []);
 
 it('validates every XML embedded in a response fixture against its XSD', function (string $arquivo) use ($xsdPorRaiz, $definicaoPorFixture) {

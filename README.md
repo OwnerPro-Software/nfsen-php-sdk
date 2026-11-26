@@ -56,6 +56,7 @@ NFSE_CONNECT_TIMEOUT=10
 NFSE_SIGNING_ALGORITHM=sha1
 NFSE_SSL_VERIFY=true
 NFSE_VALIDATE_IDENTITY=true          # Valida CNPJ/CPF do certificado contra o prestador da DPS
+NFSE_LEIAUTE=v1.01                   # v1.01 = producao (padrao), nt009 = leiaute da NT 009
 ```
 
 A variavel `NFSE_VALIDATE_IDENTITY` (padrao: `true`) controla se o SDK verifica que o CNPJ ou CPF do certificado digital corresponde ao prestador informado na DPS antes de enviar a requisicao. Desative (`false`) apenas quando um representante legal (contador ou procurador com procuracao eletronica) emite notas em nome de terceiros.
@@ -188,8 +189,9 @@ de `tiposSimples_v1.01.xsd` que mudam o que a validação local aceita:
   recusados.
 - `TSDateTimeUTC`: a vírgula deixa de valer como dígito de mês e como sinal de fuso.
 
-O leiaute da NT 009, que o mesmo pacote traz, não foi adotado. Dois pontos
-divergem do pacote de propósito, e estão marcados no próprio XSD:
+O leiaute da NT 009, que o mesmo pacote traz, é opcional e fica em diretório próprio
+(ver "Leiaute da NT 009"). Dois pontos divergem do pacote de propósito, e estão
+marcados no próprio XSD:
 
 - `TSChaveNFSe` admite letras nas posições 10 a 23, onde a regra de formação
   descrita em `TSIdNFSe` põe a inscrição federal. O pacote admite nas posições 7 a
@@ -201,6 +203,71 @@ divergem do pacote de propósito, e estão marcados no próprio XSD:
 
 O suporte segue o XSD e a NT 009 (item 2.1); ainda não foi exercitado contra a
 SEFIN com um CNPJ alfanumérico real.
+
+### Leiaute da NT 009
+
+A NT 009 v1.01 muda a estrutura da DPS, e os dois leiautes se declaram `1.01`. A
+Produção valida pelo pacote `esquemas-xsd-v1.01-20260209`; a Produção Restrita, pelo
+`esquemas-xsd-producao-restrita-20261124`, que recusa a DPS do primeiro. O SDK carrega
+os dois e a escolha é de quem configura:
+
+| Valor | Leiaute | XSD |
+|---|---|---|
+| `v1.01` (padrão) | Produção | `storage/schemes/` |
+| `nt009` | NT 009, hoje só na Produção Restrita | `storage/schemes/nt009/` |
+
+```php
+use OwnerPro\Nfsen\Enums\Leiaute;
+
+$client = NfsenClient::for($pfxContent, $senha, $prefeitura, leiaute: Leiaute::Nt009);
+```
+
+Sem o argumento, `for()` segue `NFSE_LEIAUTE`; `forStandalone()` recebe `leiaute:` e usa
+`Leiaute::V101` por padrão. A escolha não está amarrada ao ambiente: no dia em que a
+Produção passar a exigir a NT 009, basta trocar a configuração.
+
+A mesma entrada serve aos dois leiautes. No `nt009`, o SDK reposiciona:
+
+| Entrada | XML no leiaute `nt009` |
+|---|---|
+| `IBSCBS.finNFSe` | `infDPS/finNFSe`. Sem o grupo `IBSCBS`, `0` |
+| `IBSCBS.indDest`, `IBSCBS.dest` | `infDPS/indDest` e `infDPS/dest`. Sem o grupo `IBSCBS`, `indDest = 0` |
+| `cServ.xDescServ` | último filho de `cServ` |
+| `trib.gIBSCBS.CST`, `.cClassTrib` | `IBSCBS/valores/trib/CST` e `/cClassTrib`, antes de `gIBSCBS` |
+| `trib.gIBSCBS` | emitido sempre que `IBSCBS.cIndOp` é informado, vazio quando só `CST` e `cClassTrib` vieram |
+| `IBSCBS.cIndOp` ausente | `cIndOp` e `gIBSCBS` não são emitidos (ver abaixo) |
+| `vDedRed.pDR`, `vDedRed.vDR` | `valores/vAjusteBC/pAjusteBCISSQN` e `/vAjusteBCISSQN` |
+
+Quatro grupos mudaram de forma na NT 009 e ainda são recusados no leiaute `nt009`, com
+`InvalidDpsArgument` antes de qualquer envio (`O grupo serv/comExt ainda não é suportado
+no leiaute da NT 009.`): `serv/comExt`, `IBSCBS/imovel`, `IBSCBS/valores/gReeRepRes` e
+`valores/vDedRed/documentos`.
+
+**Classificação sem tributação a declarar (item 2.16).** No leiaute `nt009`, as regras
+694/695 e 781/782 do Anexo VI v1.04.01 tratam `cIndOp` e `gIBSCBS` como um par: os dois
+são obrigatórios quando o `cClassTrib` indica tributação e os dois são proibidos quando
+não indica. O critério é o indicador `ind_gIBSCBS` da Tabela CST e Classificação
+Tributária, consultado por `cClassTrib` e data de competência; a NT cita os CST 400, 410
+e 820 "em particular", não como lista fechada. O SDK não conhece essa tabela, então quem
+decide é quem chama: **deixe `cIndOp` de fora** (`null` no DTO, chave ausente no array) e o SDK omite
+`cIndOp` e `gIBSCBS`. Um `gIBSCBS` com `cCredPres`, `gTribRegular` ou `gDif` é emitido
+mesmo sem `cIndOp`, para nada sumir em silêncio. No leiaute `v1.01` o `cIndOp` continua
+obrigatório, e a falta dele é recusada com `IBSCBS/cIndOp é obrigatório no leiaute v1.01.`
+
+Ficam de fora:
+
+- **Simples Nacional** (`opSimpNac` 4, `regApIBSCBSSN`, `cAtvSN`; item 2.4) e **notas de
+  ajuste** (`finNFSe` 1 e 2; item 2.2): a NT os descreve, mas o XSD de 24/11 não os traz.
+- **Grupos e campos novos do XSD de 24/11** sem entrada no DTO: `bensMoveis`,
+  `condominios`, `atvEvento/cMun` e os campos novos de `comExt`.
+
+Nada disto foi enviado à SEFIN: a validação é a do XSD publicado para a Produção
+Restrita em 24/11/2026. O diretório `nt009/` é cópia desse pacote, salvo as mesmas
+quatro divergências de `tiposSimples_v1.01.xsd` descritas em "CNPJ alfanumérico".
+
+Quem passa `schemasPath` próprio a `forStandalone()` precisa ter o subdiretório `nt009/`
+dentro dele, com os cinco arquivos de `storage/schemes/nt009/`. Sem isso, a emissão no
+leiaute `nt009` falha com `Schema XSD não encontrado: 'DPS_v1.01.xsd' em '<schemasPath>/nt009'.`
 
 ### Emitir NFSe por decisão judicial — não suportado
 
@@ -896,6 +963,24 @@ file_put_contents('danfse.html', $html);
 Diferente de `toPdf()`, que devolve `DanfseResponse` com `sucesso: false` em caso de
 falha, `toHtml()` retorna `string` e portanto **propaga** a exceção: `XmlParseException`
 quando o XML está malformado ou não traz algum grupo obrigatório da NFS-e.
+
+### NFS-e no leiaute da NT 009
+
+O DANFSe lê a NFS-e nos dois leiautes, sem configuração: procura `finNFSe`, `indDest`,
+`dest`, `CST` e `cClassTrib` na posição da NT 009 e, se ausentes, na anterior.
+
+A NT 008 nomeia as tags antigas e não foi atualizada. Para a NFS-e do leiaute novo, dois
+campos somados seguem fórmula inferida da NT 009, e não da NT 008:
+
+- **Total deduções/reduções:** `vAjusteBCISSQN + vCalcAjusteBCISSQN` (regra 57 do Anexo
+  VI v1.04.01). `vCalcAjusteBCIBSCBS` fica de fora: os tipos de ajuste 101 a 104 e 199
+  reduzem as duas bases, e somá-lo contaria o mesmo documento duas vezes.
+- **Exclusões e reduções da base de cálculo (IBS/CBS):** `vCalcAjusteBCIBSCBS` ou
+  `vCalcAjusteBCLocImoveis` no lugar de `vCalcReeRepRes` (item 2.3 da NT 009).
+
+Duas lacunas na leitura do leiaute novo: `Insc. Imob.` de uma NFS-e com o grupo `imovel`
+da NT 009 sai com traço, e `vAjusteBCIBSCBSComExt` (item 2.13, comércio exterior) não
+entra nas exclusões da base do IBS/CBS.
 
 ### Conformidade com a NT 008 (DANFSe v2.0)
 

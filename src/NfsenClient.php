@@ -23,6 +23,7 @@ use OwnerPro\Nfsen\Contracts\Driving\SubstitutesNfse;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaCancelamento;
 use OwnerPro\Nfsen\Enums\CodigoJustificativaSubstituicao;
+use OwnerPro\Nfsen\Enums\Leiaute;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Operations\Decorators\ConsulterWithDanfse;
 use OwnerPro\Nfsen\Operations\Decorators\EmitterWithDanfse;
@@ -60,6 +61,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
     /**
      * @param  bool|null  $danfse  `true`/`false` forçam ligar ou desligar o auto-render;
      *                             `null` (default) segue `config('nfsen.auto_danfse')`
+     * @param  Leiaute|null  $leiaute  `null` (default) segue `config('nfsen.leiaute')`
      */
     public static function for(
         #[SensitiveParameter] string $pfxContent,
@@ -67,10 +69,11 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         string $prefeitura,
         ?NfseAmbiente $ambiente = null,
         ?bool $danfse = null,
+        ?Leiaute $leiaute = null,
     ): self {
         $danfse ??= function_exists('config') && config('nfsen.auto_danfse');
 
-        return self::buildFor($pfxContent, $senha, $prefeitura, $ambiente, $danfse);
+        return self::buildFor($pfxContent, $senha, $prefeitura, $ambiente, $danfse, $leiaute);
     }
 
     private static function buildFor(
@@ -79,9 +82,10 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         string $prefeitura,
         ?NfseAmbiente $ambiente,
         bool $danfse,
+        ?Leiaute $leiaute,
     ): self {
         if (function_exists('config') && config('nfsen') !== null) {
-            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool, auto_danfse?: bool} $config */
+            /** @var array{ambiente: int|string, timeout: int, connect_timeout: int, signing_algorithm: string, ssl_verify: bool, validate_identity: bool, auto_danfse?: bool, leiaute?: string} $config */
             $config = config('nfsen');
 
             return self::forStandalone(
@@ -95,6 +99,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
                 danfse: $danfse,
+                leiaute: $leiaute ?? Leiaute::fromConfig($config['leiaute'] ?? Leiaute::V101->value),
             );
         }
 
@@ -104,6 +109,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
             prefeitura: $prefeitura,
             ambiente: $ambiente ?? NfseAmbiente::HOMOLOGACAO,
             danfse: $danfse,
+            leiaute: $leiaute ?? Leiaute::V101,
         );
     }
 
@@ -124,6 +130,7 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         int $connectTimeout = 10,
         bool $validateIdentity = true,
         bool $danfse = false,
+        Leiaute $leiaute = Leiaute::V101,
     ): self {
         $jsonPath = $prefeiturasJsonPath ?? __DIR__.'/../storage/prefeituras.json';
         $schemasPath ??= __DIR__.'/../storage/schemes';
@@ -153,7 +160,8 @@ final readonly class NfsenClient implements CancelsNfse, EmitsNfse, QueriesDistr
         $identity = $certManager->extract();
         $cnpjAutor = $identity['cnpj'] ?? ''; // @pest-mutate-ignore CoalesceRemoveLeft,EmptyStringToNotEmpty — cnpj may be null for CPF-only certs
 
-        $emitter = new NfseEmitter($pipeline, new DpsBuilder($xsdValidator));
+        $dpsBuilder = new DpsBuilder(new XsdValidator($leiaute->schemasPath($schemasPath)), $leiaute);
+        $emitter = new NfseEmitter($pipeline, $dpsBuilder);
         $canceller = new NfseCanceller($pipeline, new CancellationBuilder($xsdValidator), $ambiente);
         $substitutor = new NfseSubstitutor($emitter);
         $distributor = new NfseDistributor($httpClient, $prefeituraResolver, $prefeitura, $adnUrl, $cnpjAutor);

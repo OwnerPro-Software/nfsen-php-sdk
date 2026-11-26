@@ -201,3 +201,13 @@ it('IBSCBS::fromArray creates instance without optional indFinal', function () {
     expect($dto)->toBeInstanceOf(IBSCBS::class)
         ->and($dto->indFinal)->toBeNull();
 });
+
+it('IBSCBS::fromArray keeps cIndOp when informed and leaves it null when absent', function () {
+    $valores = ['trib' => ['gIBSCBS' => ['CST' => '410', 'cClassTrib' => '410001']]];
+
+    $informed = IBSCBS::fromArray(['finNFSe' => '0', 'cIndOp' => '010101', 'indDest' => '0', 'valores' => $valores]);
+    $absent = IBSCBS::fromArray(['finNFSe' => '0', 'indDest' => '0', 'valores' => $valores]);
+
+    expect($informed->cIndOp)->toBe('010101');
+    expect($absent->cIndOp)->toBeNull();
+});

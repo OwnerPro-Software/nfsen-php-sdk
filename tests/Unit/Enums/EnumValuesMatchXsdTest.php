@@ -35,6 +35,8 @@ $FORA_DO_XSD = [
     // Não é campo de leiaute: é a marca d'água dos itens 2.5.1/2.5.2 da NT 008,
     // escolhida por quem renderiza. Nenhum elemento do XSD a carrega.
     'OwnerPro\Nfsen\Enums\MarcaDagua' => 'apresentação do DANFSe (NT 008, itens 2.5.1 e 2.5.2)',
+    // Escolhe qual pacote de XSD valida a DPS; os dois se declaram versão 1.01.
+    'OwnerPro\Nfsen\Enums\Leiaute' => 'configuração do SDK, não campo de leiaute',
 ];
 
 /**

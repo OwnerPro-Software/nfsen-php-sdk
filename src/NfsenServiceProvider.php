@@ -6,6 +6,7 @@ namespace OwnerPro\Nfsen;
 
 use Illuminate\Support\ServiceProvider;
 use Override;
+use OwnerPro\Nfsen\Enums\Leiaute;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Exceptions\NfseException;
 use RuntimeException;
@@ -32,6 +33,7 @@ final class NfsenServiceProvider extends ServiceProvider
              *     ssl_verify: bool,
              *     validate_identity: bool,
              *     auto_danfse?: bool,
+             *     leiaute?: string,
              * } $config
              */
             $config = config('nfsen');
@@ -62,6 +64,7 @@ final class NfsenServiceProvider extends ServiceProvider
                 connectTimeout: $config['connect_timeout'],
                 validateIdentity: $config['validate_identity'],
                 danfse: (bool) ($config['auto_danfse'] ?? false),
+                leiaute: Leiaute::fromConfig($config['leiaute'] ?? Leiaute::V101->value),
             );
         });
     }

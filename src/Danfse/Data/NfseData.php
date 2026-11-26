@@ -28,7 +28,7 @@ final readonly class NfseData
         public NfseAmbiente $ambiente,
         /** Descrição de `infNFSe/cStat` — campo "SITUAÇÃO DA NFS-E" da NT 008. */
         public string $situacao,
-        /** Descrição de `infDPS/IBSCBS/finNFSe` — campo "FINALIDADE" da NT 008. */
+        /** Descrição de `finNFSe` (em `infDPS` na NT 009, em `infDPS/IBSCBS` antes) — campo "FINALIDADE" da NT 008. */
         public string $finalidade,
         /** Descrição de `infDPS/tpEmit` — campo "EMITENTE DA NFS-e" da NT 008. */
         public string $emitidaPor,
@@ -51,7 +51,7 @@ final readonly class NfseData
          */
         public ?DanfseParticipante $tomador,
         public ?DanfseParticipante $intermediario,
-        /** Bloco "DESTINATÁRIO DA OPERAÇÃO" (`infDPS/IBSCBS/dest`); null quando ausente. */
+        /** Bloco "DESTINATÁRIO DA OPERAÇÃO" (`dest`, em `infDPS` na NT 009, em `infDPS/IBSCBS` antes); null quando ausente. */
         public ?DanfseParticipante $destinatario,
         /**
          * `indDest = 0`: o destinatário é o próprio tomador/adquirente.
