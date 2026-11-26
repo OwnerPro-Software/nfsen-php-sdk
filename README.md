@@ -572,13 +572,39 @@ $response = $client->distribuicao()->documento(42);
 // Buscar todos os eventos de uma NFS-e
 $response = $client->distribuicao()->eventos($chave);
 
-// Usar CNPJ diferente do certificado (procurador/filiais)
+// Consultar outro CNPJ: mesma raiz do certificado, ou outra mediante procuração
 $response = $client->distribuicao()->documentos(0, '99999999000100');
+
+// Consultar uma pessoa física, mediante procuração
+$response = $client->distribuicao()->documentos(0, cpfConsulta: '12345678909');
+
+// Como o ADN autorizou a consulta
+$response->tipoConsulta; // 'InscricaoCertificado', 'CnpjBase', 'Procuracao' ou null
 ```
 
 Por padrão o `cnpjConsulta` vem do certificado. Com um e-CPF não há CNPJ a
 enviar, e o parâmetro — opcional no contrato do ADN — é omitido da URL; informe-o
 explicitamente se a consulta precisar dele.
+
+A consulta em nome de terceiros segue o [manual das APIs do ADN][manual-adn], v1.1, de
+03/11/2026 (item 1.1.1.a):
+
+| Consulta | Parâmetro | Procuração |
+|---|---|---|
+| Do próprio titular do certificado | nenhum | Não |
+| CNPJ com a mesma raiz do certificado | `cnpjConsulta` | Não |
+| CNPJ com outra raiz | `cnpjConsulta` | Sim; sem ela, o ADN rejeita com `E2245` |
+| CPF diferente do certificado | `cpfConsulta` | Sim; idem |
+
+Os dois parâmetros juntos são recusados pelo SDK com `InvalidArgumentException`, antes
+de qualquer requisição: o ADN os rejeitaria com `E2244`.
+
+`cpfConsulta` e `TipoConsulta` vêm só do manual. O `ADN-Contribuinte-swagger.json`
+embutido não os traz, e nada disso foi exercitado contra o ADN. `tipoConsulta` é o valor
+como veio, sem enum, e fica `null` quando a resposta não o traz. Ao consultar em nome de
+terceiros, confira-o antes de atribuir os documentos à inscrição pedida.
+
+[manual-adn]: storage/schemes/manual-contribuintes-api-adn-snnfse-v1-1-20261103.pdf
 
 O fluxo típico de importação:
 
@@ -727,6 +753,7 @@ Retornado por `distribuicao()->documentos()`, `distribuicao()->documento()` e `d
 | `versaoAplicativo` | `?string` | Versão do aplicativo |
 | `dataHoraProcessamento` | `?string` | Data/hora do processamento |
 | `raw` | `?array` | Corpo JSON decodificado, como o ADN o devolveu — ver [Corpo bruto](#corpo-bruto) |
+| `tipoConsulta` | `?string` | Como o ADN autorizou a consulta (`TipoConsulta`), no valor em que veio; `null` quando a resposta não traz |
 
 ### `DocumentoFiscal`
 

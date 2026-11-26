@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OwnerPro\Nfsen\Operations;
 
+use InvalidArgumentException;
 use OwnerPro\Nfsen\Contracts\Driven\ResolvesOperations;
 use OwnerPro\Nfsen\Contracts\Driven\SendsRawHttpRequests;
 use OwnerPro\Nfsen\Contracts\Driving\DistributesNfse;
@@ -22,14 +23,14 @@ final readonly class NfseDistributor implements DistributesNfse
         private string $cnpjAutor,
     ) {}
 
-    public function documentos(int $nsu, ?string $cnpjConsulta = null): DistribuicaoResponse
+    public function documentos(int $nsu, ?string $cnpjConsulta = null, ?string $cpfConsulta = null): DistribuicaoResponse
     {
-        return $this->fetchDfe($nsu, $cnpjConsulta, lote: true);
+        return $this->fetchDfe($nsu, $cnpjConsulta, $cpfConsulta, lote: true);
     }
 
-    public function documento(int $nsu, ?string $cnpjConsulta = null): DistribuicaoResponse
+    public function documento(int $nsu, ?string $cnpjConsulta = null, ?string $cpfConsulta = null): DistribuicaoResponse
     {
-        return $this->fetchDfe($nsu, $cnpjConsulta, lote: false);
+        return $this->fetchDfe($nsu, $cnpjConsulta, $cpfConsulta, lote: false);
     }
 
     public function eventos(string $chave): DistribuicaoResponse
@@ -41,12 +42,21 @@ final readonly class NfseDistributor implements DistributesNfse
         return $this->executeRequest($url);
     }
 
-    private function fetchDfe(int $nsu, ?string $cnpjConsulta, bool $lote): DistribuicaoResponse
+    private function fetchDfe(int $nsu, ?string $cnpjConsulta, ?string $cpfConsulta, bool $lote): DistribuicaoResponse
     {
+        // Manual das APIs do ADN v1.1 (03/11/2026), item 1.1.1.a: os dois juntos dão E2244.
+        if ($cnpjConsulta !== null && $cpfConsulta !== null) {
+            throw new InvalidArgumentException('Informe cnpjConsulta ou cpfConsulta, não os dois: o ADN rejeita a consulta com E2244.');
+        }
+
         $path = $this->resolver->resolveOperation($this->codigoIbge, 'distribute_documents', ['NSU' => $nsu]);
         $url = $this->buildUrl($this->adnBaseUrl, $path);
 
         $query = ['lote' => $lote ? 'true' : 'false'];
+
+        if ($cpfConsulta !== null) {
+            return $this->executeRequest($url.'?'.http_build_query(['cpfConsulta' => $cpfConsulta] + $query));
+        }
 
         // `cnpjConsulta` é opcional no swagger do ADN (`required` ausente em
         // GET /DFe/{NSU}), e o autor pode não ter CNPJ: com certificado e-CPF,

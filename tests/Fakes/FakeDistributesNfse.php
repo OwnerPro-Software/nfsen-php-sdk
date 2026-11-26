@@ -27,12 +27,12 @@ final class FakeDistributesNfse implements DistributesNfse
         ),
     ) {}
 
-    public function documentos(int $nsu, ?string $cnpjConsulta = null): DistribuicaoResponse
+    public function documentos(int $nsu, ?string $cnpjConsulta = null, ?string $cpfConsulta = null): DistribuicaoResponse
     {
         return $this->eventosResponse;
     }
 
-    public function documento(int $nsu, ?string $cnpjConsulta = null): DistribuicaoResponse
+    public function documento(int $nsu, ?string $cnpjConsulta = null, ?string $cpfConsulta = null): DistribuicaoResponse
     {
         return $this->eventosResponse;
     }

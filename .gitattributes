@@ -25,3 +25,6 @@
 # XSDs v1.01 restantes seguem no pacote: os comentários do código citam os
 # primeiros como fonte do contrato, e XsdValidator é @api sobre os segundos.
 /storage/schemes/*_v1.00.xsd export-ignore
+# Manual das APIs do ADN (~330 KB): fonte de `cpfConsulta` e `TipoConsulta`, que o
+# swagger embutido ainda não traz. Só referência.
+/storage/schemes/manual-contribuintes-api-adn-snnfse-v1-1-20261103.pdf export-ignore

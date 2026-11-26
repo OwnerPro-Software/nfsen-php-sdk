@@ -18,6 +18,10 @@ final readonly class DistribuicaoResponse
      * @param  array<string, mixed>|null  $raw  corpo JSON decodificado, como o ADN o
      *                                          devolveu — o que a normalização não
      *                                          reconhecer continua legível aqui
+     * @param  string|null  $tipoConsulta  `TipoConsulta` como o ADN devolveu. O manual das
+     *                                     APIs do ADN v1.1 (03/11/2026) cita
+     *                                     `InscricaoCertificado`, `CnpjBase` e `Procuracao`;
+     *                                     o swagger embutido não traz a propriedade
      */
     public function __construct(
         public bool $sucesso,
@@ -29,6 +33,7 @@ final readonly class DistribuicaoResponse
         public ?string $versaoAplicativo,
         public ?string $dataHoraProcessamento,
         public ?array $raw = null,
+        public ?string $tipoConsulta = null,
     ) {}
 
     /** @param array<string, mixed> $result */
@@ -91,6 +96,7 @@ final readonly class DistribuicaoResponse
             versaoAplicativo: is_string($result['VersaoAplicativo'] ?? null) ? $result['VersaoAplicativo'] : null,
             dataHoraProcessamento: is_string($result['DataHoraProcessamento'] ?? null) ? $result['DataHoraProcessamento'] : null,
             raw: $result,
+            tipoConsulta: is_string($result['TipoConsulta'] ?? null) ? $result['TipoConsulta'] : null,
         );
     }
 

@@ -11,9 +11,9 @@ use OwnerPro\Nfsen\Responses\DistribuicaoResponse;
  */
 interface DistributesNfse
 {
-    public function documentos(int $nsu, ?string $cnpjConsulta = null): DistribuicaoResponse;
+    public function documentos(int $nsu, ?string $cnpjConsulta = null, ?string $cpfConsulta = null): DistribuicaoResponse;
 
-    public function documento(int $nsu, ?string $cnpjConsulta = null): DistribuicaoResponse;
+    public function documento(int $nsu, ?string $cnpjConsulta = null, ?string $cpfConsulta = null): DistribuicaoResponse;
 
     public function eventos(string $chave): DistribuicaoResponse;
 }

@@ -270,6 +270,30 @@ it('omits cnpjConsulta when the author has none, instead of sending it empty', f
     'documento' => ['documento', 'false'],
 ]);
 
+// Manual "Guia para utilização das APIs do ADN" v1.1 (03/11/2026), item 1.1.1.a: a
+// consulta em nome de pessoa física usa `cpfConsulta`, e os dois parâmetros juntos
+// são rejeitados com E2244.
+it('queries by cpfConsulta without adding the CNPJ of the certificate', function (string $metodo, string $lote) {
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient);
+
+    $distributor->{$metodo}(7, cpfConsulta: '12345678909');
+
+    expect($httpClient->urls[0])->toBe('https://adn.base/contribuintes/DFe/7?cpfConsulta=12345678909&lote='.$lote);
+})->with([
+    'documentos' => ['documentos', 'true'],
+    'documento' => ['documento', 'false'],
+]);
+
+it('refuses cnpjConsulta and cpfConsulta together before any request', function (string $metodo) {
+    $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
+    $distributor = makeDistributor($httpClient);
+
+    expect(fn () => $distributor->{$metodo}(7, '99999999000100', '12345678909'))
+        ->toThrow(InvalidArgumentException::class, 'Informe cnpjConsulta ou cpfConsulta, não os dois');
+    expect($httpClient->urls)->toBe([]);
+})->with(['documentos', 'documento']);
+
 it('still sends an explicit cnpjConsulta when the author has none', function () {
     $httpClient = makeFakeRawHttpClient(200, makeFakeDistribuicaoJson());
     $distributor = makeDistributor($httpClient, cnpjAutor: '');

@@ -135,6 +135,38 @@ it('creates from API result with rejection', function () {
     expect($response->erros[0]->descricao)->toBe('CNPJ inválido');
 });
 
+// Manual "Guia para utilização das APIs do ADN" v1.1 (03/11/2026), item 1.1.1.a: a
+// resposta diz em `TipoConsulta` como a consulta foi autorizada. O swagger embutido
+// não traz a propriedade, e o valor é repassado como veio.
+it('exposes TipoConsulta as the ADN returned it', function () {
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => [],
+        'TipoConsulta' => 'Procuracao',
+    ]);
+
+    expect($response->tipoConsulta)->toBe('Procuracao');
+});
+
+it('leaves tipoConsulta null when the response does not carry it', function () {
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => [],
+    ]);
+
+    expect($response->tipoConsulta)->toBeNull();
+});
+
+it('tolerates a TipoConsulta that is not a string', function () {
+    $response = DistribuicaoResponse::fromApiResult([
+        'StatusProcessamento' => 'DOCUMENTOS_LOCALIZADOS',
+        'LoteDFe' => [],
+        'TipoConsulta' => 2,
+    ]);
+
+    expect($response->tipoConsulta)->toBeNull();
+});
+
 it('maps TipoAmbiente PRODUCAO to 1', function () {
     $result = [
         'StatusProcessamento' => 'NENHUM_DOCUMENTO_LOCALIZADO',

@@ -5,8 +5,8 @@
 está o que isso exige do código.
 
 Este documento é só o levantamento. Na data dele, nada do que está listado tinha sido
-alterado. Os itens A1, A2 e A3 foram feitos em seguida; os demais seguem abertos, sem
-decisão de desenho tomada.
+alterado. Os itens A1 a A4 foram feitos em seguida; os demais seguem abertos, sem decisão de
+desenho tomada.
 
 ## Resumo
 
@@ -15,7 +15,7 @@ decisão de desenho tomada.
 | A1 | ~~DANFSe: PIS/COFINS retidos~~ — **feito** | NT 008 v1.02 | Atingia as NFS-e com `tpRetPisCofins` = 1 | Nada | Pequeno |
 | A2 | ~~Trocar a referência da NT 008 para a v1.02~~ — **feito** | NT 008 v1.02 | Não (é a base dos testes) | A1 | Médio |
 | A3 | ~~Data em que a API de DANFSe saiu do ar~~ — **feito** | NT 008 v1.01 | Documentação e a mensagem de um aviso | Nada | Mínimo |
-| A4 | Distribuição: `cpfConsulta` e `TipoConsulta` | Manual do ADN v1.1 | A confirmar | Swagger atual do ADN | Pequeno |
+| A4 | ~~Distribuição: `cpfConsulta` e `TipoConsulta`~~ — **feito pelo manual, sem o swagger** | Manual do ADN v1.1 | A confirmar | Swagger atual do ADN | Pequeno |
 | B1 | `vAjusteBC/documentos` | NT 009, 2.3 | Não | Decisão de API | Grande |
 | B2 | `vAjusteBCIBSCBSComExt` | NT 009, 2.13 | Não | B3 | Pequeno |
 | B3 | `comExt` reestruturado | NT 009, 2.12 | Não | Decisão de API | Médio |
@@ -104,7 +104,12 @@ Essa é a data da NT 008 v1.0. As v1.01 e v1.02 a mudaram, e a página de implan
 registra a desativação em **03/08/2026**. O CHANGELOG repete a data antiga numa entrada
 da `3.0.0`, que é registro histórico e pode ficar como está.
 
-### A4. Distribuição: `cpfConsulta` e `TipoConsulta`
+### A4. Distribuição: `cpfConsulta` e `TipoConsulta` — feito pelo manual
+
+Feito depois deste levantamento, sem a conferência pedida abaixo: a documentação viva do
+ADN exige certificado de cliente. A fonte é só o manual, que entrou em
+`storage/schemes/`. `tipoConsulta` é repassado como veio, sem enum, porque o manual não
+mostra o formato do valor na resposta. Segue em aberto conferir o swagger atual.
 
 O manual "Guia de Utilização das APIs do ADN" v1.1, de 03/11/2026, muda o
 `GET /DFe/{NSU}`:
