@@ -34,7 +34,8 @@ a data, o ambiente em que está valendo e o que o SDK implementa dela.
 
 ## O que falta, por ordem de urgência
 
-Este documento é só o levantamento. Nenhuma das lacunas abaixo foi corrigida.
+Este documento é só o levantamento. Nenhuma das lacunas abaixo foi corrigida. O que cada uma
+exige do código está em [`adequacoes-pendentes.md`](adequacoes-pendentes.md).
 
 1. **NT 008 v1.02: PIS/COFINS retidos no DANFSe.** É a única lacuna que atinge a
    produção de hoje. Detalhe na seção da NT 008.
