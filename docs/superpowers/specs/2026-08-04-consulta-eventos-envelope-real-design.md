@@ -16,8 +16,7 @@ O defeito não foi pego porque `SefinNacional-swagger.json` declara
 dos testes foram construídos a partir dele. Suíte verde contra um contrato que o servidor
 não cumpre.
 
-Origem: incidente em produção do time Pulsar (nota central id 215 / número 122, IBGE
-4304408), handoff de 2026-08-04. Nota cancelada por análise fiscal com evento 105104
+Origem: incidente em produção relatado por um consumidor do SDK em 2026-08-04. Nota cancelada por análise fiscal com evento 105104
 registrado no SEFIN desde 2026-08-03 permanece autorizada no banco do consumidor.
 
 ## Evidência

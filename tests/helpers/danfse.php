@@ -57,7 +57,7 @@ function sampleData(NfseAmbiente $ambiente = NfseAmbiente::PRODUCAO, ?DanfsePart
         servico: new DanfseServico(
             codigoTribNacional: '01.07.00', descTribNacional: 'Desenvolvimento de software',
             codigoTribMunicipal: '007', descTribMunicipal: 'Desenvolvimento',
-            localPrestacao: 'São Paulo', paisPrestacao: '-', descricao: 'Projeto Pulsar',
+            localPrestacao: 'São Paulo', paisPrestacao: '-', descricao: 'Projeto Modelo',
             codigoNbs: $codigoNbs,
         ),
         tribMun: new DanfseTributacaoMunicipal(

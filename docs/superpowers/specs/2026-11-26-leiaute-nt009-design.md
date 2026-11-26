@@ -18,8 +18,8 @@ produção como padrão. No dia da virada o consumidor muda uma configuração.
 
 - Emitir a DPS no leiaute do pacote `esquemas-xsd-producao-restrita-20261124.zip`
   quando configurado, validada localmente pelo XSD desse pacote.
-- A mesma entrada (`DpsData` ou array) serve aos dois leiautes em tudo o que o
-  consumidor principal envia hoje: `infDPS`, `prest`, `toma`, `subst`, `serv/cServ`, `valores`
+- A mesma entrada (`DpsData` ou array) serve aos dois leiautes no núcleo da
+  DPS: `infDPS`, `prest`, `toma`, `subst`, `serv/cServ`, `valores`
   (`tribMun`, `tribFed`) e `IBSCBS` com `finNFSe`, `indFinal`, `cIndOp`,
   `indDest`, `CST`, `cClassTrib`.
 - Recusar antes do envio, com mensagem clara, o que a entrada não consegue
@@ -93,7 +93,7 @@ Tudo abaixo foi lido nos artefatos; **nada foi enviado à SEFIN**.
   `gIBSCBS` andam sempre juntos.
 - Página "Atualizações e Implantações" (atualizada em 25/11/2026 17h28): as
   entregas da NT 009 de 20/10 e 25/11 constam só na coluna Produção Restrita.
-- O consumidor principal envia `finNFSe = 0` e `indDest = 0` fixos, e há DPS
+- No uso comum, `finNFSe = 0` e `indDest = 0` são enviados fixos, e há DPS
   emitida sem o grupo `IBSCBS`.
 
 ## Abordagens
@@ -230,7 +230,7 @@ Lacuna conhecida: `Insc. Imob.` de uma NFS-e com o `imovel` novo sai com traço.
   XSD aceita o elemento vazio. Não sabemos se a SEFIN conta o vazio como
   informado.
 - **Padrões sem grupo `IBSCBS`.** `finNFSe = 0` e `indDest = 0` são os valores
-  que o consumidor principal já envia, mas o SDK passa a afirmá-los em nome de quem omitiu o
+  do caso regular, mas o SDK passa a afirmá-los em nome de quem omitiu o
   grupo.
 - **Classificação sem tributação depende de quem chama.** O critério é o
   `ind_gIBSCBS` da tabela de classificação (a NT cita os CST 400, 410 e 820
