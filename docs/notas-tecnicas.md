@@ -158,7 +158,7 @@ monta: são os grupos listados abaixo como recusados ou não montados.
 | 2.7 | `bensMoveis` | Sim | Não montado |
 | 2.8 | `gPgtoVinc` | Não | Não implementado |
 | 2.9 | `verCalcIBSCBS` na NFS-e | Sim | Campo de resposta. O SDK não o lê, e a NT 008 não o imprime |
-| 2.10 | Validação de endereços no subitem 17.05 | Regra, sem campo | Regra da SEFIN |
+| 2.10 | Município do endereço de tomador e destinatário conferido com o cadastro CNPJ/CPF, em todas as operações; incidência do ISSQN no subitem 17.05 | Regra, sem campo | Regra da SEFIN, ainda com código `EXXX` (regras 353 e 354 do Anexo VI). O SDK não consulta o cadastro |
 | 2.11 | `indDest` e `dest` em `infDPS` | Sim | **Implementado** |
 | 2.12 | Comércio exterior: `nDUE`, `nDUIMP`, `nContCambio`, `nFatura`, `vFatura` | Sim | Recusado com erro |
 | 2.13 | `vAjusteBCIBSCBSComExt` | Sim | Não montado |
@@ -167,6 +167,21 @@ monta: são os grupos listados abaixo como recusados ou não montados.
 | 2.16 | `CST` e `cClassTrib` em `trib`; `cIndOp` e `gIBSCBS` opcionais | Sim | **Implementado** |
 
 O DANFSe lê a NFS-e dos dois leiautes sem configuração.
+
+**Obrigatoriedade do tomador: em aberto.** No XSD, `infDPS/toma` é 0-1 nos dois
+leiautes. Na aba de regras de negócio da DPS do Anexo VI v1.04.01, as regras 321 a 323
+vêm sem caminho de campo, logo antes da linha de `toma`, com código `EXXX`: "este grupo"
+não deve ser informado nas notas de débito 01, 02, 03 e 05 nem na de crédito 05, e deve
+ser informado (1-1) quando `finNFSe = 0`. Se o grupo for `toma`, toda nota regular passa
+a exigir tomador. A leitura adotada é que não é: a aba de ajuste de leiaute do mesmo
+anexo mantém `toma` como 0-1 e só o veda na nota de débito 02, padrão que não bate com o
+das três regras. Reler quando o anexo trouxer o código definitivo ou o caminho do campo.
+
+Mesmo com essa leitura, as regras 350 e 351 (E0239 e E0243) já exigem tomador com CNPJ
+ou CPF e endereço nacional quando o `cClassTrib` indica tributação de IBS/CBS e o
+`cIndOp` põe a incidência no endereço do tomador, o que inclui o código residual de
+serviços, `100301` (Anexo VII v1.03.00). O README lista os casos em "Tomador sem
+endereço ou sem identificação".
 
 ## Fontes
 

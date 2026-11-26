@@ -190,15 +190,26 @@ cenários (Anexo VI v1.04.01, aba de regras de negócio da DPS, regras 329, 348 
 |---|---|---|
 | ISSQN retido pelo tomador (`tpRetISSQN = 2`) | `CNPJ` ou `CPF` e `end/endNac` | E0204, E0237, E0241 |
 | `cTribNac` com incidência do ISSQN no município do tomador | `CNPJ` ou `CPF` e `end/endNac` | E0241 |
-| IBS/CBS tributado com local de fornecimento no endereço do tomador (`cIndOp`) | `CNPJ` ou `CPF` e `end/endNac` | E0239, E0243 |
+| `cClassTrib` com tributação de IBS/CBS e `cIndOp` com incidência no endereço do tomador | `CNPJ` ou `CPF` e `end/endNac` | E0239, E0243 |
 | Tomador identificado por `NIF` ou `cNaoNIF` | `end/endExt` | E0242 |
+
+O terceiro caso inclui o código residual de serviços. Pelo Anexo VII v1.03.00, o local
+de incidência do IBS é o endereço do tomador nos `cIndOp` `010106`, `100101`, `100301` e
+`100501`, e o do destinatário — que com `indDest = 0` é o próprio tomador — nos
+`010103`, `100102`, `100201`, `100302`, `100401`, `100502` e `100601`. O `100301` é o
+código residual da tabela ("demais serviços, em operações onerosas"): com ele e com
+tributação de IBS/CBS, a nota sem tomador, ou com tomador sem endereço nacional, é
+rejeitada.
 
 O SDK não aplica essas regras: a DPS é enviada e a rejeição chega em `$response->erros`.
 A regra E0235 (endereço obrigatório para tomador com CNPJ) só é executada no
 compartilhamento de NFS-e dos municípios com o ADN, não na DPS enviada à SEFIN.
 
-Quando o endereço é informado, o `cMun` precisa ser o do cadastro CNPJ/CPF do tomador,
-ou a DPS é rejeitada (NT 009, item 2.10; regras 353 e 354).
+Pela NT 009 (item 2.10; regras 353 e 354, ainda com código `EXXX`), o `cMun` do endereço
+informado precisa ser o do cadastro CNPJ/CPF do tomador, em qualquer serviço, ou a DPS é
+rejeitada. O item entrou na Produção Restrita em 25/11/2026 e não tem data para a
+produção. O SDK não consulta o cadastro: quem emite com endereço digitado ou
+desatualizado precisa tratar essa rejeição.
 
 ### CNPJ alfanumérico
 
