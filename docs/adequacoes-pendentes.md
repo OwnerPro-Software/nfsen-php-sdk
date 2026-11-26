@@ -5,8 +5,8 @@
 está o que isso exige do código.
 
 Este documento é só o levantamento. Na data dele, nada do que está listado tinha sido
-alterado. Os itens A1 a A4 foram feitos em seguida; os demais seguem abertos, sem decisão de
-desenho tomada.
+alterado. Os itens A1 a A4 foram feitos em seguida; os itens B ficaram em espera, sem
+decisão de desenho tomada.
 
 ## Resumo
 
@@ -28,8 +28,8 @@ desenho tomada.
 | C1 a C5 | Simples Nacional, notas de ajuste, `gPgtoVinc`, `indZFMALC`, doação e estorno | NT 005, 007 e 009 | Não | **XSD que não foi publicado** | — |
 
 Os itens A valem para o leiaute de produção. Os itens B só passam a importar quando a
-produção adotar o leiaute da NT 009, o que não tem data. Os itens C não podem ser
-feitos.
+produção adotar o leiaute da NT 009, o que não tem data: estão **em espera**, com o
+gatilho descrito na seção B. Os itens C não podem ser feitos.
 
 ## A. Corrigir no que já vale em produção
 
@@ -130,6 +130,29 @@ da SEFIN. A API do ADN não é citada.
 ## B. Adequar ao leiaute da NT 009
 
 Tudo aqui é no leiaute `nt009`. O leiaute padrão não muda em nenhum byte.
+
+### Em espera desde 26/11/2026
+
+Decisão: nenhum item de B será feito antes de haver algo concreto em produção.
+
+- **O alvo ainda se mexe.** O XSD de 24/11/2026 está atrás do texto da NT 009, e a
+  Produção Restrita recebeu mais uma leva em 25/11/2026. Fazer B1 e B4 agora é arriscar
+  refazer.
+- **A única conferência possível é o XSD.** Nada do leiaute `nt009` foi enviado à SEFIN.
+- **Nada falha em silêncio.** O `nt009` recusa com erro os grupos que ainda não monta.
+- **O caminho comum já está coberto.** A DPS sem esses grupos sai válida no `nt009`.
+
+**Custo de esperar.** O aviso pode ser curto: na NT 004, foram 26 dias entre a Produção
+Restrita (10/12/2025) e a produção (05/01/2026). Quem usa um desses grupos fica sem
+emitir no leiaute novo até a adequação sair.
+
+**Gatilho para retomar.** Data de produção anunciada no portal, ou entrada da NT 009 na
+coluna de produção de "Atualizações e Implantações".
+
+**Ordem ao retomar.** Primeiro B3, B1 e B4: são grupos que existem hoje em produção e
+passam a ser recusados na virada. Depois B2, B7 e B8. Por último B5 e B6, grupos novos
+que ninguém emite ainda. Antes de começar, baixar de novo o pacote de XSD e refazer a
+comparação da árvore da DPS, porque este levantamento vale para o pacote de 24/11/2026.
 
 Hoje o `Nt009Scope` recusa com erro quatro grupos: `serv/comExt`,
 `valores/vDedRed/documentos`, `IBSCBS/imovel` e `IBSCBS/valores/gReeRepRes`. Os itens
