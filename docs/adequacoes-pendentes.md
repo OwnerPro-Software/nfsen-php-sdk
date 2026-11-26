@@ -5,16 +5,16 @@
 está o que isso exige do código.
 
 Este documento é só o levantamento. Na data dele, nada do que está listado tinha sido
-alterado. O item A1 foi feito em seguida; os demais seguem abertos, sem decisão de
-desenho tomada.
+alterado. Os itens A1 e A2 foram feitos em seguida; os demais seguem abertos, sem
+decisão de desenho tomada.
 
 ## Resumo
 
 | # | Item | Origem | Atinge a produção hoje? | Depende de | Tamanho |
 |---|---|---|---|---|---|
 | A1 | ~~DANFSe: PIS/COFINS retidos~~ — **feito** | NT 008 v1.02 | Atingia as NFS-e com `tpRetPisCofins` = 1 | Nada | Pequeno |
-| A2 | Trocar a referência da NT 008 para a v1.02 | NT 008 v1.02 | Não (é a base dos testes) | A1 | Médio |
-| A3 | README: data em que a API de DANFSe saiu do ar | NT 008 v1.01 | Só documentação | Nada | Mínimo |
+| A2 | ~~Trocar a referência da NT 008 para a v1.02~~ — **feito** | NT 008 v1.02 | Não (é a base dos testes) | A1 | Médio |
+| A3 | Data em que a API de DANFSe saiu do ar: o README foi corrigido com o A2, resta a mensagem do aviso `DanfseResponse::API_SOBRESTADA` | NT 008 v1.01 | Mensagem de um aviso | Nada | Mínimo |
 | A4 | Distribuição: `cpfConsulta` e `TipoConsulta` | Manual do ADN v1.1 | A confirmar | Swagger atual do ADN | Pequeno |
 | B1 | `vAjusteBC/documentos` | NT 009, 2.3 | Não | Decisão de API | Grande |
 | B2 | `vAjusteBCIBSCBSComExt` | NT 009, 2.13 | Não | B3 | Pequeno |
@@ -69,7 +69,11 @@ textos já formatados.
 **Como conferir.** Casos novos em `tests/Unit/Adapters/DanfseDataBuilderTest.php`, com
 `tpRetPisCofins` 1 e com outro valor.
 
-### A2. Trocar a referência da NT 008 para a v1.02
+### A2. Trocar a referência da NT 008 para a v1.02 — feito
+
+Feito depois deste levantamento. O extrator recebeu três correções, e duas delas valiam
+também para a v1.0: a fixture antiga trazia cinco blocos que não existem. O texto abaixo
+é o registro do que foi levantado.
 
 Os testes de cobertura do DANFSe partem de `tests/fixtures/nt008/campos-2.4.5.json`,
 que `tools/extract-nt008.py` extrai do PDF da v1.0 em `storage/danfse/`.

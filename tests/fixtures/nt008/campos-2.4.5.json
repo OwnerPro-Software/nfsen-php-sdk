@@ -373,7 +373,7 @@
       "sup": 8.22
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "campo": "CNPJ / CPF / NIF",
       "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
       "tag": "CNPJ /CPF /NIF",
@@ -385,7 +385,7 @@
       "sup": 8.86
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "campo": "TELEFONE",
       "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
       "tag": "fone",
@@ -397,7 +397,7 @@
       "sup": 8.86
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "campo": "NOME / NOME EMPRESARIAL",
       "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
       "tag": "xNome",
@@ -409,7 +409,7 @@
       "sup": 9.5
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "campo": "MUNICÍPIO / SIGLA UF",
       "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endNac/ | NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endExt/",
       "tag": "cMun | xCidade",
@@ -421,7 +421,7 @@
       "sup": 9.5
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "campo": "CÓDIGO IBGE / CEP",
       "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endNac/ | NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/endExt/",
       "tag": "cMun + CEP | cEndPost",
@@ -433,7 +433,7 @@
       "sup": 9.5
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "campo": "ENDEREÇO",
       "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/end/",
       "tag": "xLgr,nro,xCpl,xBairro",
@@ -445,7 +445,7 @@
       "sup": 10.16
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "campo": "E-MAIL",
       "caminho": "NFSe/infNFSe/DPS/infDPS/IBSCBS/dest/",
       "tag": "email",
@@ -507,7 +507,7 @@
     {
       "bloco": "INTERMEDIÁRIO DA OPERAÇÃO",
       "campo": "MUNICÍPIO / SIGLA UF",
-      "caminho": "NFSe/infNFSe/DPS/infDPS/interm/end/endNac/ |",
+      "caminho": "NFSe/infNFSe/DPS/infDPS/interm/end/endNac/ | NFSe/infNFSe/DPS/infDPS/interm/end/endExt/",
       "tag": "cMun | xCidade",
       "obs": "Leiaute prevê a informação do código do município com 7 dígitos da Tabela do IBGE. Utilizar a",
       "tamanho": "37",
@@ -711,7 +711,7 @@
     {
       "bloco": "TRIBUTAÇÃO MUNICIPAL (ISSQN)",
       "campo": "TOTAL DEDUÇÕES/REDUÇÕES",
-      "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/ |NFSe/infNFSe/valores/ +NFSe/infNFSe/IBSCBS/valores/",
+      "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDedRed/ | NFSe/infNFSe/valores/ +NFSe/infNFSe/IBSCBS/valores/",
       "tag": "vDR | vCalcDR + vCalcReeRepRes",
       "obs": "Nota 5",
       "tamanho": "1-15V2",
@@ -807,9 +807,9 @@
     {
       "bloco": "TRIBUTAÇÃO FEDERAL (EXCETO CBS)",
       "campo": "CONTRIBUIÇÕES SOCIAIS - RETIDAS",
-      "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/",
-      "tag": "vRetCSLL",
-      "obs": "",
+      "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/ | NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/ +NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/ +NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
+      "tag": "vRetCSLL | vRetCSLL + vPis + vCofins",
+      "obs": "Quando tpRetPisCofins = 1 (PIS/COFINS Retido), este campo retornará o somatório dos valores informados nos campos vRetCSLL ,vPis e vCofins. Nos demais casos, o campo retornará o valor informado em vRetCSLL.",
       "tamanho": "1-15V2",
       "alt": 0.63,
       "larg": 5.09,
@@ -821,7 +821,7 @@
       "campo": "PIS - DÉBITO APURAÇÃO PRÓPRIA",
       "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
       "tag": "vPis",
-      "obs": "Nota 6",
+      "obs": "Quando tpRetPisCofins = 1",
       "tamanho": "1-15V2",
       "alt": 0.63,
       "larg": 5.09,
@@ -833,7 +833,7 @@
       "campo": "COFINS - DÉBITO APURAÇÃO PRÓPRIA",
       "caminho": "NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
       "tag": "vCofins",
-      "obs": "Nota 6",
+      "obs": "Quando tpRetPisCofins = 1",
       "tamanho": "1-15V2",
       "alt": 0.63,
       "larg": 5.09,
@@ -878,7 +878,7 @@
     },
     {
       "bloco": "TRIBUTAÇÃO IBS / CBS",
-      "campo": "EXCLUSÕES E REDUÇÕES DA BÁSE DE CLÁCULO",
+      "campo": "EXCLUSÕES E REDUÇÕES DA BASE DE CÁLCULO",
       "caminho": "NFSe/infNFSe/DPS/infDPS/valores/vDescCondIncond/ + NFSe/infNFSe/IBSCBS/valores/ + NFSe/infNFSe/valores/ + NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/ + NFSe/infNFSe/DPS/infDPS/valores/trib/tribFed/piscofins/",
       "tag": "vDescIncond + vCalcReeRepRes + vISSQN + vPIS + vCOFINS",
       "obs": "Somatório de todos estes campos.",
@@ -985,7 +985,7 @@
       "sup": 20.26
     },
     {
-      "bloco": "CBS",
+      "bloco": "TRIBUTAÇÃO IBS / CBS",
       "campo": "ALÍQUOTA - CBS",
       "caminho": "NFSe/infNFSe/IBSCBS/valores/fed/",
       "tag": "pCBS",
@@ -997,7 +997,7 @@
       "sup": 20.26
     },
     {
-      "bloco": "CBS",
+      "bloco": "TRIBUTAÇÃO IBS / CBS",
       "campo": "ALÍQUOTA EFETIVA - CBS",
       "caminho": "NFSe/infNFSe/IBSCBS/valores/fed/",
       "tag": "pAliqEfetCBS",
@@ -1009,7 +1009,7 @@
       "sup": 20.26
     },
     {
-      "bloco": "CBS",
+      "bloco": "TRIBUTAÇÃO IBS / CBS",
       "campo": "VALOR TOTAL APURADO - CBS",
       "caminho": "NFSe/infNFSe/IBSCBS/totCIBS/gCBS/",
       "tag": "vCBS",
@@ -1117,7 +1117,7 @@
       "sup": 22.68
     },
     {
-      "bloco": "INDENTIFICAÇÃO E ASSINATURA",
+      "bloco": "IDENTIFICAÇÃO E ASSINATURA",
       "campo": "Nº NFS-E / CHAVE NFS-E",
       "caminho": "NFSe/infNFSe/",
       "tag": "nNFSe +",
@@ -1185,7 +1185,7 @@
       "sup": 6.92
     },
     {
-      "bloco": "DESTINÁRIO DA OPERAÇÃO",
+      "bloco": "DESTINATÁRIO DA OPERAÇÃO",
       "alt": 0.63,
       "larg": 5.09,
       "sup": 8.86
@@ -1221,36 +1221,6 @@
       "sup": 18.32
     },
     {
-      "bloco": "INDICADOR DE OPERAÇÃO / CÓDIGO",
-      "alt": null,
-      "larg": null,
-      "sup": null
-    },
-    {
-      "bloco": "IBGE INCIDÊNCIA / MUNICÍPIO",
-      "alt": null,
-      "larg": null,
-      "sup": null
-    },
-    {
-      "bloco": "INCIDÊNCIA / SIGLA UF",
-      "alt": null,
-      "larg": null,
-      "sup": null
-    },
-    {
-      "bloco": "RED. ALÍQUOTA IBS / RED. ALÍQUOTA",
-      "alt": null,
-      "larg": null,
-      "sup": null
-    },
-    {
-      "bloco": "CBS",
-      "alt": null,
-      "larg": null,
-      "sup": null
-    },
-    {
       "bloco": "VALOR TOTAL DA NFS-E",
       "alt": 0.67,
       "larg": 5.09,
@@ -1275,7 +1245,7 @@
       "sup": 28.1
     },
     {
-      "bloco": "INDENTIFICAÇÃO E ASSINATURA",
+      "bloco": "IDENTIFICAÇÃO E ASSINATURA",
       "alt": 0.67,
       "larg": 5.09,
       "sup": 28.1

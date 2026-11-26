@@ -665,8 +665,8 @@ Retornado por `consultar()->danfse()`.
 | `pdf` | `?string` | Conteúdo binário do PDF |
 | `erros` | `list<ProcessingMessage>` | Erros de processamento |
 
-> **A API remota de DANFSe foi sobrestada em 01/07/2026.** A Nota Técnica nº 008, de
-> 05/05/2026 (`storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf`, seção 1),
+> **A API remota de DANFSe foi sobrestada em 03/08/2026.** A Nota Técnica nº 008 v1.02, de
+> 14/07/2026 (`storage/danfse/nt-008-se-cgnfse-danfse-20260714-v1-02.pdf`, seção 1),
 > suspendeu `https://adn.nfse.gov.br/danfse` e transferiu a geração do documento para
 > o emissor. Toda falha de `consultar()->danfse()` passa a trazer, além do erro
 > original, uma mensagem com o código `DanfseResponse::API_SOBRESTADA`.
@@ -905,12 +905,12 @@ como indeterminado (sempre seguro).
 
 O SDK gera o DANFSE (PDF ou HTML) localmente a partir do XML da NFS-e autorizada.
 
-> **Este é o único caminho desde 01/07/2026.** A [Nota Técnica nº 008][nt008], de
-> 05/05/2026, sobrestou a API de geração do DANFSe (`https://adn.nfse.gov.br/danfse`)
+> **Este é o único caminho desde 03/08/2026.** A [Nota Técnica nº 008][nt008] v1.02, de
+> 14/07/2026, sobrestou a API de geração do DANFSe (`https://adn.nfse.gov.br/danfse`)
 > e transferiu a geração para o emissor. `consultar()->danfse()`, que chama aquele
 > endpoint, passa a devolver falha com o código `DanfseResponse::API_SOBRESTADA`.
 
-[nt008]: storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf
+[nt008]: storage/danfse/nt-008-se-cgnfse-danfse-20260714-v1-02.pdf
 
 ### Uso básico
 
@@ -985,8 +985,8 @@ entra nas exclusões da base do IBS/CBS.
 
 ### Conformidade com a NT 008 (DANFSe v2.0)
 
-O layout segue a [Nota Técnica nº 008][nt008], que define o **DANFSe v2.0**. A seção
-2.4.5 dela tabula 94 campos, cada um com o caminho no XML de onde sai — e os 94 são
+O layout segue a [Nota Técnica nº 008][nt008], na versão 1.02, de 14/07/2026, que define
+o **DANFSe v2.0**. A seção 2.4.5 dela tabula 94 campos, cada um com o caminho no XML de onde sai — e os 94 são
 lidos. A tabela está versionada em `tests/fixtures/nt008/campos-2.4.5.json`, extraída
 por `tools/extract-nt008.py`, e um teste confere a cada execução que cada caminho dela
 ainda existe no XSD e que o builder continua lendo todos.
@@ -1046,7 +1046,7 @@ Comportamentos que valem conhecer:
   de 14/07/2026, mudou o item 2.4.5: com `tpRetPisCofins` = 1, o campo soma `vRetCSLL` +
   `vPis` + `vCofins`, e "PIS" e "COFINS - Débito Apuração Própria" saem `R$ 0,00`. Nos
   demais tipos, cada campo imprime o seu valor. É a única regra da v1.02 que muda o que
-  é impresso; a tabela de campos versionada continua sendo a da v1.0.
+  é impresso.
 - **Totais aproximados de tributos não têm bloco próprio.** A nota 10 os põe dentro de
   "Informações Complementares", numa linha fixa e obrigatória. Ela vive em
   `DanfseTotaisTributos::linhaNt008()` e é impressa fora da área que trunca, porque a

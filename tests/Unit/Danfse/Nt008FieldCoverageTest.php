@@ -39,7 +39,6 @@ $TAGS_SEM_ELEMENTO = [
  */
 $CAMINHOS_INCOMPLETOS = [
     'TRIBUTAÇÃO IBS / CBS :: RED. ALÍQUOTA IBS / RED. ALÍQUOTA CBS' => 'a alternativa que carrega pRedAliqCBS quebra em três linhas na tabela',
-    'INTERMEDIÁRIO DA OPERAÇÃO :: MUNICÍPIO / SIGLA UF' => 'a alternativa .../interm/end/endExt/, que carrega xCidade, se perde na quebra',
 ];
 
 /** @return list<string> tags atômicas de uma célula "Campo" da NT */

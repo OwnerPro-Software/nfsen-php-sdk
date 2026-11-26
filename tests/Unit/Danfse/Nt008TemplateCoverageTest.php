@@ -26,8 +26,7 @@ $FIXTURE = __DIR__.'/../../fixtures/nt008/campos-2.4.5.json';
  */
 $SEM_ROTULO = [
     'SERVIÇO PRESTADO :: DESCRIÇÃO DO CÓDIGO DE TRIBUTAÇÃO NACIONAL / MUNICIPAL' => 'a observação da própria linha diz "Não há título (label) deste campo no DANFSe"',
-    'TRIBUTAÇÃO IBS / CBS :: EXCLUSÕES E REDUÇÕES DA BÁSE DE CLÁCULO' => 'erro de digitação na NT; o DANFSe grafa "Base de Cálculo", e assim deve ficar',
-    'INDENTIFICAÇÃO E ASSINATURA :: Nº NFS-E / CHAVE NFS-E' => 'canhoto, declarado opcional pela nota 11 do item 2.4.5',
+    'IDENTIFICAÇÃO E ASSINATURA :: Nº NFS-E / CHAVE NFS-E' => 'canhoto, declarado opcional pela nota 11 do item 2.4.5',
 ];
 
 /** Ignora caixa, acento e pontuação — o que sobra é o texto do rótulo. */

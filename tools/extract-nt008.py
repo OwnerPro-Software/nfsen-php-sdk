@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Extrai a tabela 2.4.5 da Nota Técnica nº 008 para uma fixture JSON.
 
-A seção 2.4.5 de `storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf` é a única
+A seção 2.4.5 de `storage/danfse/nt-008-se-cgnfse-danfse-20260714-v1-02.pdf` é a única
 fonte que diz de qual TAG do XML sai cada campo impresso do DANFSe. A suíte PHP
 não pode ler o PDF (exigiria Python no CI), então o dado entra no repositório
 como fixture derivada — e `Nt008FieldCoverageTest` confere cada caminho dela
@@ -15,6 +15,9 @@ Uso:
     .venv-nt008/bin/python tools/extract-nt008.py
 
 Escreve `tests/fixtures/nt008/campos-2.4.5.json`.
+
+Ao trocar de versão da nota: troque o PDF, o caminho em `PDF` e confira `PAGINAS`.
+A quebra de página muda de uma versão para outra.
 
 Sobre o método: as fronteiras de linha e coluna vêm das réguas vetoriais
 desenhadas no PDF, via pdfplumber. Duas tentativas anteriores parseavam texto
@@ -35,11 +38,11 @@ except ImportError:  # pragma: no cover
     sys.exit("pdfplumber ausente. Veja as instruções de uso no topo deste arquivo.")
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
-PDF = RAIZ / "storage/danfse/nt-008-se-cgnfse-danfse-20260505.pdf"
+PDF = RAIZ / "storage/danfse/nt-008-se-cgnfse-danfse-20260714-v1-02.pdf"
 SAIDA = RAIZ / "tests/fixtures/nt008/campos-2.4.5.json"
 
-# Páginas da seção 2.4.5 (0-based). A tabela começa na 16 e termina na 22.
-PAGINAS = range(15, 22)
+# Páginas da seção 2.4.5 (0-based). Na v1.02 a tabela vai da página 16 à 21.
+PAGINAS = range(15, 21)
 
 # Fronteiras das colunas, em pontos de PDF, lidas das réguas verticais do documento.
 COLUNAS = ((200, "nome"), (264, "caminho"), (300, "tag"), (321, "alt"),
@@ -76,6 +79,18 @@ def medida(celula: str) -> float | None:
     return float(achado.group(0).replace(",", ".")) if achado else None
 
 
+def topo_das_reguas(pagina: "pdfplumber.page.Page") -> list[float]:
+    """Ordenada onde começam as réguas verticais da página.
+
+    A linha que a quebra de página deixou no topo não tem régua superior, só as
+    verticais. Sem esta ordenada o pdfplumber não fecha as células dela e a linha
+    some da extração — na v1.02 é "IDENTIFICAÇÃO E ASSINATURA".
+    """
+    verticais = [e["top"] for e in pagina.edges if e["orientation"] == "v"]
+
+    return [min(verticais)] if verticais else []
+
+
 def extrair() -> list[dict[str, str]]:
     registros: list[dict[str, str]] = []
     blocos: list[dict[str, object]] = []
@@ -83,7 +98,8 @@ def extrair() -> list[dict[str, str]]:
 
     with pdfplumber.open(PDF) as pdf:
         for numero in PAGINAS:
-            for tabela in pdf.pages[numero].find_tables():
+            pagina = pdf.pages[numero]
+            for tabela in pagina.find_tables({"explicit_horizontal_lines": topo_das_reguas(pagina)}):
                 # Texto vem de extract() (já limpo); a coluna lógica vem do bbox
                 # correspondente em rows[].cells, alinhado por índice. Recortar a
                 # página de novo com crop() traz fragmentos da coluna vizinha.
@@ -107,20 +123,32 @@ def extrair() -> list[dict[str, str]]:
                     # Um caminho completo termina em "/"; só o que quebrou no meio de
                     # um token não termina ("NFSe/infNFSe/DPS" + "/infDPS/"). Anexar a
                     # um caminho já completo o corromperia com a cauda de outra linha.
+                    # A exceção é o "ou" sozinho na linha: ele só existe para abrir
+                    # outra alternativa na mesma célula.
                     if not nome:
-                        if caminho and registros and not registros[-1]["caminho"].endswith("/"):
-                            registros[-1]["caminho"] += caminho
+                        anterior = registros[-1]["caminho"] if registros else ""
+                        if caminho and registros and (caminho == "|" or not anterior.endswith("/")):
+                            juncao = " " if caminho == "|" or anterior.endswith("|") else ""
+                            registros[-1]["caminho"] = anterior + juncao + caminho
                         continue
 
                     if nome in ("NOME", "BLOCO", "CAMPO"):
                         continue
 
                     tag = normaliza(celulas.get("tag", ""))
+                    alt = medida(celulas.get("alt", ""))
+
+                    # Toda linha da tabela traz medidas. Nome sem medida é pedaço de
+                    # uma célula de várias linhas que o pdfplumber leu como tabela à
+                    # parte, e não abre bloco.
+                    if not caminho and not tag and alt is None:
+                        continue
+
                     if not caminho and not tag:
                         bloco = nome
                         blocos.append({
                             "bloco": nome,
-                            "alt": medida(celulas.get("alt", "")),
+                            "alt": alt,
                             "larg": medida(celulas.get("larg", "")),
                             "sup": medida(celulas.get("sup", "")),
                         })
@@ -136,7 +164,7 @@ def extrair() -> list[dict[str, str]]:
                         # Medidas em centímetros: altura e largura mínimas do campo e
                         # sua posição em relação à margem. São elas que dizem se o
                         # documento cabe na página única que o item 2.2 exige.
-                        "alt": medida(celulas.get("alt", "")),
+                        "alt": alt,
                         "larg": medida(celulas.get("larg", "")),
                         "esq": medida(celulas.get("esq", "")),
                         "sup": medida(celulas.get("sup", "")),
