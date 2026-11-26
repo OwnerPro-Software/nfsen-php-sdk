@@ -209,7 +209,8 @@ SEFIN com um CNPJ alfanumérico real.
 A NT 009 v1.01 muda a estrutura da DPS, e os dois leiautes se declaram `1.01`. A
 Produção valida pelo pacote `esquemas-xsd-v1.01-20260209`; a Produção Restrita, pelo
 `esquemas-xsd-producao-restrita-20261124`, que recusa a DPS do primeiro. O SDK carrega
-os dois e a escolha é de quem configura:
+os dois e a escolha é de quem configura. O que o SDK implementa de cada nota técnica
+da reforma está em [`docs/notas-tecnicas.md`](docs/notas-tecnicas.md).
 
 | Valor | Leiaute | XSD |
 |---|---|---|
