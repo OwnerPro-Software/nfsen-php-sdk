@@ -16,6 +16,7 @@ use OwnerPro\Nfsen\Dps\DTO\Valores\Piscofins;
 use OwnerPro\Nfsen\Dps\DTO\Valores\PTotTrib;
 use OwnerPro\Nfsen\Dps\DTO\Valores\Trib;
 use OwnerPro\Nfsen\Dps\DTO\Valores\TribFed;
+use OwnerPro\Nfsen\Dps\DTO\Valores\TribMun;
 use OwnerPro\Nfsen\Dps\DTO\Valores\Valores;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VDedRed;
 use OwnerPro\Nfsen\Dps\DTO\Valores\VDescCondIncond;
@@ -31,35 +32,22 @@ final class ValoresBuilder
     {
         $el = $doc->createElement('valores');
 
-        // vServPrest (obrigatório)
         $vServPrest = $doc->createElement('vServPrest');
-        if ($valores->vServPrest->vReceb !== null) {
-            $vServPrest->appendChild($this->text($doc, 'vReceb', $valores->vServPrest->vReceb));
-        }
-
+        $this->appendOptional($doc, $vServPrest, 'vReceb', $valores->vServPrest->vReceb);
         $vServPrest->appendChild($this->text($doc, 'vServ', $valores->vServPrest->vServ));
         $el->appendChild($vServPrest);
 
-        // vDescCondIncond (opcional)
         if ($valores->vDescCondIncond instanceof VDescCondIncond) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where vDescCondIncond is set
             $vDesc = $doc->createElement('vDescCondIncond');
-            if ($valores->vDescCondIncond->vDescIncond !== null) {
-                $vDesc->appendChild($this->text($doc, 'vDescIncond', $valores->vDescCondIncond->vDescIncond));
-            }
-
-            if ($valores->vDescCondIncond->vDescCond !== null) {
-                $vDesc->appendChild($this->text($doc, 'vDescCond', $valores->vDescCondIncond->vDescCond));
-            }
-
+            $this->appendOptional($doc, $vDesc, 'vDescIncond', $valores->vDescCondIncond->vDescIncond);
+            $this->appendOptional($doc, $vDesc, 'vDescCond', $valores->vDescCondIncond->vDescCond);
             $el->appendChild($vDesc);
         }
 
-        // vDedRed (opcional)
         if ($valores->vDedRed instanceof VDedRed) {
             $el->appendChild($this->buildVDedRed($doc, $valores->vDedRed));
         }
 
-        // trib (obrigatório)
         $el->appendChild($this->buildTrib($doc, $valores->trib));
 
         return $el;
@@ -112,10 +100,7 @@ final class ValoresBuilder
         }
 
         $el->appendChild($this->text($doc, 'tpDedRed', $docDedRed->tpDedRed->value));
-        if ($docDedRed->xDescOutDed !== null) {
-            $el->appendChild($this->text($doc, 'xDescOutDed', $docDedRed->xDescOutDed));
-        }
-
+        $this->appendOptional($doc, $el, 'xDescOutDed', $docDedRed->xDescOutDed);
         $el->appendChild($this->text($doc, 'dtEmiDoc', $docDedRed->dtEmiDoc));
         $el->appendChild($this->text($doc, 'vDedutivelRedutivel', $docDedRed->vDedutivelRedutivel));
         $el->appendChild($this->text($doc, 'vDeducaoReducao', $docDedRed->vDeducaoReducao));
@@ -130,114 +115,108 @@ final class ValoresBuilder
     private function buildTrib(DOMDocument $doc, Trib $trib): DOMElement
     {
         $el = $doc->createElement('trib');
+        $el->appendChild($this->buildTribMun($doc, $trib->tribMun));
 
-        // tribMun (obrigatório)
-        $tribMun = $doc->createElement('tribMun');
-        $tribMun->appendChild($this->text($doc, 'tribISSQN', $trib->tribMun->tribISSQN->value));
-        if ($trib->tribMun->cPaisResult !== null) {
-            $tribMun->appendChild($this->text($doc, 'cPaisResult', $trib->tribMun->cPaisResult));
-        }
-
-        if ($trib->tribMun->tpImunidade instanceof TpImunidade) {
-            $tribMun->appendChild($this->text($doc, 'tpImunidade', $trib->tribMun->tpImunidade->value));
-        }
-
-        if ($trib->tribMun->exigSusp instanceof ExigSusp) {
-            $exigSusp = $doc->createElement('exigSusp');
-            $exigSusp->appendChild($this->text($doc, 'tpSusp', $trib->tribMun->exigSusp->tpSusp->value));
-            $exigSusp->appendChild($this->text($doc, 'nProcesso', $trib->tribMun->exigSusp->nProcesso));
-            $tribMun->appendChild($exigSusp);
-        }
-
-        if ($trib->tribMun->BM instanceof BM) {
-            $bm = $doc->createElement('BM');
-            $bm->appendChild($this->text($doc, 'nBM', $trib->tribMun->BM->nBM));
-            if ($trib->tribMun->BM->vRedBCBM !== null) {
-                $bm->appendChild($this->text($doc, 'vRedBCBM', $trib->tribMun->BM->vRedBCBM));
-            } elseif ($trib->tribMun->BM->pRedBCBM !== null) {
-                $bm->appendChild($this->text($doc, 'pRedBCBM', $trib->tribMun->BM->pRedBCBM));
-            }
-
-            $tribMun->appendChild($bm);
-        }
-
-        $tribMun->appendChild($this->text($doc, 'tpRetISSQN', $trib->tribMun->tpRetISSQN->value));
-        if ($trib->tribMun->pAliq !== null) {
-            $tribMun->appendChild($this->text($doc, 'pAliq', $trib->tribMun->pAliq));
-        }
-
-        $el->appendChild($tribMun);
-
-        // tribFed (opcional)
         if ($trib->tribFed instanceof TribFed) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where tribFed is set
-            $tribFed = $doc->createElement('tribFed');
-            if ($trib->tribFed->piscofins instanceof Piscofins) {
-                $piscofins = $doc->createElement('piscofins');
-                $piscofins->appendChild($this->text($doc, 'CST', $trib->tribFed->piscofins->CST->value));
-
-                if ($trib->tribFed->piscofins->vBCPisCofins !== null) {
-                    $piscofins->appendChild($this->text($doc, 'vBCPisCofins', $trib->tribFed->piscofins->vBCPisCofins));
-                }
-
-                if ($trib->tribFed->piscofins->pAliqPis !== null) {
-                    $piscofins->appendChild($this->text($doc, 'pAliqPis', $trib->tribFed->piscofins->pAliqPis));
-                }
-
-                if ($trib->tribFed->piscofins->pAliqCofins !== null) {
-                    $piscofins->appendChild($this->text($doc, 'pAliqCofins', $trib->tribFed->piscofins->pAliqCofins));
-                }
-
-                if ($trib->tribFed->piscofins->vPis !== null) {
-                    $piscofins->appendChild($this->text($doc, 'vPis', $trib->tribFed->piscofins->vPis));
-                }
-
-                if ($trib->tribFed->piscofins->vCofins !== null) {
-                    $piscofins->appendChild($this->text($doc, 'vCofins', $trib->tribFed->piscofins->vCofins));
-                }
-
-                if ($trib->tribFed->piscofins->tpRetPisCofins instanceof TpRetPisCofins) {
-                    $piscofins->appendChild($this->text($doc, 'tpRetPisCofins', $trib->tribFed->piscofins->tpRetPisCofins->value));
-                }
-
-                $tribFed->appendChild($piscofins);
-            }
-
-            if ($trib->tribFed->vRetCP !== null) {
-                $tribFed->appendChild($this->text($doc, 'vRetCP', $trib->tribFed->vRetCP));
-            }
-
-            if ($trib->tribFed->vRetIRRF !== null) {
-                $tribFed->appendChild($this->text($doc, 'vRetIRRF', $trib->tribFed->vRetIRRF));
-            }
-
-            if ($trib->tribFed->vRetCSLL !== null) {
-                $tribFed->appendChild($this->text($doc, 'vRetCSLL', $trib->tribFed->vRetCSLL));
-            }
-
-            $el->appendChild($tribFed);
+            $el->appendChild($this->buildTribFed($doc, $trib->tribFed));
         }
 
-        // totTrib
-        $totTrib = $doc->createElement('totTrib');
+        $el->appendChild($this->buildTotTrib($doc, $trib));
+
+        return $el;
+    }
+
+    private function buildTribMun(DOMDocument $doc, TribMun $tribMun): DOMElement
+    {
+        $el = $doc->createElement('tribMun');
+        $el->appendChild($this->text($doc, 'tribISSQN', $tribMun->tribISSQN->value));
+        $this->appendOptional($doc, $el, 'cPaisResult', $tribMun->cPaisResult);
+
+        if ($tribMun->tpImunidade instanceof TpImunidade) {
+            $el->appendChild($this->text($doc, 'tpImunidade', $tribMun->tpImunidade->value));
+        }
+
+        if ($tribMun->exigSusp instanceof ExigSusp) {
+            $exigSusp = $doc->createElement('exigSusp');
+            $exigSusp->appendChild($this->text($doc, 'tpSusp', $tribMun->exigSusp->tpSusp->value));
+            $exigSusp->appendChild($this->text($doc, 'nProcesso', $tribMun->exigSusp->nProcesso));
+            $el->appendChild($exigSusp);
+        }
+
+        if ($tribMun->BM instanceof BM) {
+            $el->appendChild($this->buildBM($doc, $tribMun->BM));
+        }
+
+        $el->appendChild($this->text($doc, 'tpRetISSQN', $tribMun->tpRetISSQN->value));
+        $this->appendOptional($doc, $el, 'pAliq', $tribMun->pAliq);
+
+        return $el;
+    }
+
+    private function buildBM(DOMDocument $doc, BM $bm): DOMElement
+    {
+        $el = $doc->createElement('BM');
+        $el->appendChild($this->text($doc, 'nBM', $bm->nBM));
+        if ($bm->vRedBCBM !== null) {
+            $el->appendChild($this->text($doc, 'vRedBCBM', $bm->vRedBCBM));
+        } elseif ($bm->pRedBCBM !== null) {
+            $el->appendChild($this->text($doc, 'pRedBCBM', $bm->pRedBCBM));
+        }
+
+        return $el;
+    }
+
+    private function buildTribFed(DOMDocument $doc, TribFed $tribFed): DOMElement
+    {
+        $el = $doc->createElement('tribFed');
+        if ($tribFed->piscofins instanceof Piscofins) {
+            $el->appendChild($this->buildPiscofins($doc, $tribFed->piscofins));
+        }
+
+        $this->appendOptional($doc, $el, 'vRetCP', $tribFed->vRetCP);
+        $this->appendOptional($doc, $el, 'vRetIRRF', $tribFed->vRetIRRF);
+        $this->appendOptional($doc, $el, 'vRetCSLL', $tribFed->vRetCSLL);
+
+        return $el;
+    }
+
+    private function buildPiscofins(DOMDocument $doc, Piscofins $piscofins): DOMElement
+    {
+        $el = $doc->createElement('piscofins');
+        $el->appendChild($this->text($doc, 'CST', $piscofins->CST->value));
+        $this->appendOptional($doc, $el, 'vBCPisCofins', $piscofins->vBCPisCofins);
+        $this->appendOptional($doc, $el, 'pAliqPis', $piscofins->pAliqPis);
+        $this->appendOptional($doc, $el, 'pAliqCofins', $piscofins->pAliqCofins);
+        $this->appendOptional($doc, $el, 'vPis', $piscofins->vPis);
+        $this->appendOptional($doc, $el, 'vCofins', $piscofins->vCofins);
+
+        if ($piscofins->tpRetPisCofins instanceof TpRetPisCofins) {
+            $el->appendChild($this->text($doc, 'tpRetPisCofins', $piscofins->tpRetPisCofins->value));
+        }
+
+        return $el;
+    }
+
+    private function buildTotTrib(DOMDocument $doc, Trib $trib): DOMElement
+    {
+        $el = $doc->createElement('totTrib');
         if ($trib->vTotTrib instanceof VTotTrib) {
             $vTotTrib = $doc->createElement('vTotTrib');
             $vTotTrib->appendChild($this->text($doc, 'vTotTribFed', $trib->vTotTrib->vTotTribFed));
             $vTotTrib->appendChild($this->text($doc, 'vTotTribEst', $trib->vTotTrib->vTotTribEst));
             $vTotTrib->appendChild($this->text($doc, 'vTotTribMun', $trib->vTotTrib->vTotTribMun));
-            $totTrib->appendChild($vTotTrib);
+            $el->appendChild($vTotTrib);
         } elseif ($trib->pTotTrib instanceof PTotTrib) {
             $pTotTrib = $doc->createElement('pTotTrib');
             $pTotTrib->appendChild($this->text($doc, 'pTotTribFed', $trib->pTotTrib->pTotTribFed));
             $pTotTrib->appendChild($this->text($doc, 'pTotTribEst', $trib->pTotTrib->pTotTribEst));
             $pTotTrib->appendChild($this->text($doc, 'pTotTribMun', $trib->pTotTrib->pTotTribMun));
-            $totTrib->appendChild($pTotTrib);
+            $el->appendChild($pTotTrib);
         } elseif ($trib->indTotTrib !== null) {
-            $totTrib->appendChild($this->text($doc, 'indTotTrib', $trib->indTotTrib));
+            $el->appendChild($this->text($doc, 'indTotTrib', $trib->indTotTrib));
         } elseif ($trib->pTotTribSN !== null) {
-            $totTrib->appendChild($this->text($doc, 'pTotTribSN', $trib->pTotTribSN));
+            $el->appendChild($this->text($doc, 'pTotTribSN', $trib->pTotTribSN));
         }
-
-        $el->appendChild($totTrib);
 
         return $el;
     }

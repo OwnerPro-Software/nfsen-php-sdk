@@ -20,6 +20,13 @@ trait CreatesTextElements
         return $el;
     }
 
+    private function appendOptional(DOMDocument $doc, DOMElement $parent, string $name, ?string $value): void
+    {
+        if ($value !== null) {
+            $parent->appendChild($this->text($doc, $name, $value));
+        }
+    }
+
     private function buildEnd(DOMDocument $doc, End $end): DOMElement
     {
         $el = $doc->createElement('end');

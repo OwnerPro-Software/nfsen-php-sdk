@@ -8,6 +8,7 @@ use DOMDocument;
 use DOMElement;
 use OwnerPro\Nfsen\Dps\DTO\Serv\AtvEvento;
 use OwnerPro\Nfsen\Dps\DTO\Serv\ComExt;
+use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndExt;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndObra;
 use OwnerPro\Nfsen\Dps\DTO\Serv\EndSimples;
@@ -22,156 +23,139 @@ final class ServicoBuilder
     public function build(DOMDocument $doc, Serv $serv): DOMElement
     {
         $el = $doc->createElement('serv');
+        $el->appendChild($this->buildLocPrest($doc, $serv));
+        $el->appendChild($this->buildCServ($doc, $serv->cServ));
 
-        // locPrest
-        $locPrest = $doc->createElement('locPrest');
-        if ($serv->cLocPrestacao !== null) {
-            $locPrest->appendChild($this->text($doc, 'cLocPrestacao', $serv->cLocPrestacao));
-        } elseif ($serv->cPaisPrestacao !== null) {
-            $locPrest->appendChild($this->text($doc, 'cPaisPrestacao', $serv->cPaisPrestacao));
-        }
-
-        $el->appendChild($locPrest);
-
-        // cServ
-        $cServ = $doc->createElement('cServ');
-        $cServ->appendChild($this->text($doc, 'cTribNac', $serv->cServ->cTribNac));
-        if ($serv->cServ->cTribMun !== null) {
-            $cServ->appendChild($this->text($doc, 'cTribMun', $serv->cServ->cTribMun));
-        }
-
-        $cServ->appendChild($this->text($doc, 'xDescServ', $serv->cServ->xDescServ));
-        if ($serv->cServ->cNBS !== null) {
-            $cServ->appendChild($this->text($doc, 'cNBS', $serv->cServ->cNBS));
-        }
-
-        if ($serv->cServ->cIntContrib !== null) {
-            $cServ->appendChild($this->text($doc, 'cIntContrib', $serv->cServ->cIntContrib));
-        }
-
-        $el->appendChild($cServ);
-
-        // comExt (optional)
         if ($serv->comExt instanceof ComExt) {
-            $comExt = $doc->createElement('comExt');
-            $comExt->appendChild($this->text($doc, 'mdPrestacao', $serv->comExt->mdPrestacao->value));
-            $comExt->appendChild($this->text($doc, 'vincPrest', $serv->comExt->vincPrest->value));
-            $comExt->appendChild($this->text($doc, 'tpMoeda', $serv->comExt->tpMoeda));
-            $comExt->appendChild($this->text($doc, 'vServMoeda', $serv->comExt->vServMoeda));
-            $comExt->appendChild($this->text($doc, 'mecAFComexP', $serv->comExt->mecAFComexP->value));
-            $comExt->appendChild($this->text($doc, 'mecAFComexT', $serv->comExt->mecAFComexT->value));
-            $comExt->appendChild($this->text($doc, 'movTempBens', $serv->comExt->movTempBens->value));
-            if ($serv->comExt->nDI !== null) {
-                $comExt->appendChild($this->text($doc, 'nDI', $serv->comExt->nDI));
-            }
-
-            if ($serv->comExt->nRE !== null) {
-                $comExt->appendChild($this->text($doc, 'nRE', $serv->comExt->nRE));
-            }
-
-            $comExt->appendChild($this->text($doc, 'mdic', $serv->comExt->mdic->value));
-            $el->appendChild($comExt);
+            $el->appendChild($this->buildComExt($doc, $serv->comExt));
         }
 
-        // obra (optional)
         if ($serv->obra instanceof Obra) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where obra is set
-            $obra = $doc->createElement('obra');
-            if ($serv->obra->inscImobFisc !== null) {
-                $obra->appendChild($this->text($doc, 'inscImobFisc', $serv->obra->inscImobFisc));
-            }
-
-            if ($serv->obra->cObra !== null) {
-                $obra->appendChild($this->text($doc, 'cObra', $serv->obra->cObra));
-            } elseif ($serv->obra->cCIB !== null) {
-                $obra->appendChild($this->text($doc, 'cCIB', $serv->obra->cCIB));
-            } elseif ($serv->obra->end instanceof EndObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EndObra when reached
-                $endObra = $doc->createElement('end');
-                if ($serv->obra->end->CEP !== null) {
-                    $endObra->appendChild($this->text($doc, 'CEP', $serv->obra->end->CEP));
-                } elseif ($serv->obra->end->endExt instanceof EndExt) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
-                    $endExt = $doc->createElement('endExt');
-                    $endExt->appendChild($this->text($doc, 'cEndPost', $serv->obra->end->endExt->cEndPost));
-                    $endExt->appendChild($this->text($doc, 'xCidade', $serv->obra->end->endExt->xCidade));
-                    $endExt->appendChild($this->text($doc, 'xEstProvReg', $serv->obra->end->endExt->xEstProvReg));
-                    $endObra->appendChild($endExt);
-                }
-
-                $endObra->appendChild($this->text($doc, 'xLgr', $serv->obra->end->xLgr));
-                $endObra->appendChild($this->text($doc, 'nro', $serv->obra->end->nro));
-                if ($serv->obra->end->xCpl !== null) {
-                    $endObra->appendChild($this->text($doc, 'xCpl', $serv->obra->end->xCpl));
-                }
-
-                $endObra->appendChild($this->text($doc, 'xBairro', $serv->obra->end->xBairro));
-                $obra->appendChild($endObra);
-            }
-
-            $el->appendChild($obra);
+            $el->appendChild($this->buildObra($doc, $serv->obra));
         }
 
-        // atvEvento (optional)
         if ($serv->atvEvento instanceof AtvEvento) {
-            $atvEvento = $doc->createElement('atvEvento');
-            $atvEvento->appendChild($this->text($doc, 'xNome', $serv->atvEvento->xNome));
-            $atvEvento->appendChild($this->text($doc, 'dtIni', $serv->atvEvento->dtIni));
-            $atvEvento->appendChild($this->text($doc, 'dtFim', $serv->atvEvento->dtFim));
-            if ($serv->atvEvento->idAtvEvt !== null) {
-                $atvEvento->appendChild($this->text($doc, 'idAtvEvt', $serv->atvEvento->idAtvEvt));
-            } elseif ($serv->atvEvento->end instanceof EndSimples) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EndSimples when reached
-                $endEl = $doc->createElement('end');
-                if ($serv->atvEvento->end->CEP !== null) {
-                    $endEl->appendChild($this->text($doc, 'CEP', $serv->atvEvento->end->CEP));
-                } elseif ($serv->atvEvento->end->endExt instanceof EndExt) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
-                    $endExt = $doc->createElement('endExt');
-                    $endExt->appendChild($this->text($doc, 'cEndPost', $serv->atvEvento->end->endExt->cEndPost));
-                    $endExt->appendChild($this->text($doc, 'xCidade', $serv->atvEvento->end->endExt->xCidade));
-                    $endExt->appendChild($this->text($doc, 'xEstProvReg', $serv->atvEvento->end->endExt->xEstProvReg));
-                    $endEl->appendChild($endExt);
-                }
-
-                $endEl->appendChild($this->text($doc, 'xLgr', $serv->atvEvento->end->xLgr));
-                $endEl->appendChild($this->text($doc, 'nro', $serv->atvEvento->end->nro));
-                if ($serv->atvEvento->end->xCpl !== null) {
-                    $endEl->appendChild($this->text($doc, 'xCpl', $serv->atvEvento->end->xCpl));
-                }
-
-                $endEl->appendChild($this->text($doc, 'xBairro', $serv->atvEvento->end->xBairro));
-                $atvEvento->appendChild($endEl);
-            }
-
-            $el->appendChild($atvEvento);
+            $el->appendChild($this->buildAtvEvento($doc, $serv->atvEvento));
         }
 
-        // infoCompl (optional)
         if ($serv->infoCompl instanceof InfoCompl) { // @pest-mutate-ignore InstanceOfToTrue — coverage-guided mutation only runs tests where infoCompl is set
-            $infoCompl = $doc->createElement('infoCompl');
-            if ($serv->infoCompl->idDocTec !== null) {
-                $infoCompl->appendChild($this->text($doc, 'idDocTec', $serv->infoCompl->idDocTec));
-            }
-
-            if ($serv->infoCompl->docRef !== null) {
-                $infoCompl->appendChild($this->text($doc, 'docRef', $serv->infoCompl->docRef));
-            }
-
-            if ($serv->infoCompl->xPed !== null) {
-                $infoCompl->appendChild($this->text($doc, 'xPed', $serv->infoCompl->xPed));
-            }
-
-            if ($serv->infoCompl->xItemPed !== null) {
-                $gItemPed = $doc->createElement('gItemPed');
-                foreach ($serv->infoCompl->xItemPed as $item) {
-                    $gItemPed->appendChild($this->text($doc, 'xItemPed', $item));
-                }
-
-                $infoCompl->appendChild($gItemPed);
-            }
-
-            if ($serv->infoCompl->xInfComp !== null) {
-                $infoCompl->appendChild($this->text($doc, 'xInfComp', $serv->infoCompl->xInfComp));
-            }
-
-            $el->appendChild($infoCompl);
+            $el->appendChild($this->buildInfoCompl($doc, $serv->infoCompl));
         }
+
+        return $el;
+    }
+
+    private function buildLocPrest(DOMDocument $doc, Serv $serv): DOMElement
+    {
+        $el = $doc->createElement('locPrest');
+        if ($serv->cLocPrestacao !== null) {
+            $el->appendChild($this->text($doc, 'cLocPrestacao', $serv->cLocPrestacao));
+        } elseif ($serv->cPaisPrestacao !== null) {
+            $el->appendChild($this->text($doc, 'cPaisPrestacao', $serv->cPaisPrestacao));
+        }
+
+        return $el;
+    }
+
+    private function buildCServ(DOMDocument $doc, CServ $cServ): DOMElement
+    {
+        $el = $doc->createElement('cServ');
+        $el->appendChild($this->text($doc, 'cTribNac', $cServ->cTribNac));
+        $this->appendOptional($doc, $el, 'cTribMun', $cServ->cTribMun);
+        $el->appendChild($this->text($doc, 'xDescServ', $cServ->xDescServ));
+        $this->appendOptional($doc, $el, 'cNBS', $cServ->cNBS);
+        $this->appendOptional($doc, $el, 'cIntContrib', $cServ->cIntContrib);
+
+        return $el;
+    }
+
+    private function buildComExt(DOMDocument $doc, ComExt $comExt): DOMElement
+    {
+        $el = $doc->createElement('comExt');
+        $el->appendChild($this->text($doc, 'mdPrestacao', $comExt->mdPrestacao->value));
+        $el->appendChild($this->text($doc, 'vincPrest', $comExt->vincPrest->value));
+        $el->appendChild($this->text($doc, 'tpMoeda', $comExt->tpMoeda));
+        $el->appendChild($this->text($doc, 'vServMoeda', $comExt->vServMoeda));
+        $el->appendChild($this->text($doc, 'mecAFComexP', $comExt->mecAFComexP->value));
+        $el->appendChild($this->text($doc, 'mecAFComexT', $comExt->mecAFComexT->value));
+        $el->appendChild($this->text($doc, 'movTempBens', $comExt->movTempBens->value));
+        $this->appendOptional($doc, $el, 'nDI', $comExt->nDI);
+        $this->appendOptional($doc, $el, 'nRE', $comExt->nRE);
+        $el->appendChild($this->text($doc, 'mdic', $comExt->mdic->value));
+
+        return $el;
+    }
+
+    private function buildObra(DOMDocument $doc, Obra $obra): DOMElement
+    {
+        $el = $doc->createElement('obra');
+        $this->appendOptional($doc, $el, 'inscImobFisc', $obra->inscImobFisc);
+
+        if ($obra->cObra !== null) {
+            $el->appendChild($this->text($doc, 'cObra', $obra->cObra));
+        } elseif ($obra->cCIB !== null) {
+            $el->appendChild($this->text($doc, 'cCIB', $obra->cCIB));
+        } elseif ($obra->end instanceof EndObra) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EndObra when reached
+            $el->appendChild($this->buildSimpleAddress($doc, $obra->end));
+        }
+
+        return $el;
+    }
+
+    private function buildAtvEvento(DOMDocument $doc, AtvEvento $atvEvento): DOMElement
+    {
+        $el = $doc->createElement('atvEvento');
+        $el->appendChild($this->text($doc, 'xNome', $atvEvento->xNome));
+        $el->appendChild($this->text($doc, 'dtIni', $atvEvento->dtIni));
+        $el->appendChild($this->text($doc, 'dtFim', $atvEvento->dtFim));
+
+        if ($atvEvento->idAtvEvt !== null) {
+            $el->appendChild($this->text($doc, 'idAtvEvt', $atvEvento->idAtvEvt));
+        } elseif ($atvEvento->end instanceof EndSimples) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already EndSimples when reached
+            $el->appendChild($this->buildSimpleAddress($doc, $atvEvento->end));
+        }
+
+        return $el;
+    }
+
+    private function buildSimpleAddress(DOMDocument $doc, EndObra|EndSimples $end): DOMElement
+    {
+        $el = $doc->createElement('end');
+        if ($end->CEP !== null) {
+            $el->appendChild($this->text($doc, 'CEP', $end->CEP));
+        } elseif ($end->endExt instanceof EndExt) { // @pest-mutate-ignore InstanceOfToTrue — last branch in elseif, value is already the expected type when reached
+            $endExt = $doc->createElement('endExt');
+            $endExt->appendChild($this->text($doc, 'cEndPost', $end->endExt->cEndPost));
+            $endExt->appendChild($this->text($doc, 'xCidade', $end->endExt->xCidade));
+            $endExt->appendChild($this->text($doc, 'xEstProvReg', $end->endExt->xEstProvReg));
+            $el->appendChild($endExt);
+        }
+
+        $el->appendChild($this->text($doc, 'xLgr', $end->xLgr));
+        $el->appendChild($this->text($doc, 'nro', $end->nro));
+        $this->appendOptional($doc, $el, 'xCpl', $end->xCpl);
+        $el->appendChild($this->text($doc, 'xBairro', $end->xBairro));
+
+        return $el;
+    }
+
+    private function buildInfoCompl(DOMDocument $doc, InfoCompl $infoCompl): DOMElement
+    {
+        $el = $doc->createElement('infoCompl');
+        $this->appendOptional($doc, $el, 'idDocTec', $infoCompl->idDocTec);
+        $this->appendOptional($doc, $el, 'docRef', $infoCompl->docRef);
+        $this->appendOptional($doc, $el, 'xPed', $infoCompl->xPed);
+
+        if ($infoCompl->xItemPed !== null) {
+            $gItemPed = $doc->createElement('gItemPed');
+            foreach ($infoCompl->xItemPed as $item) {
+                $gItemPed->appendChild($this->text($doc, 'xItemPed', $item));
+            }
+
+            $el->appendChild($gItemPed);
+        }
+
+        $this->appendOptional($doc, $el, 'xInfComp', $infoCompl->xInfComp);
 
         return $el;
     }

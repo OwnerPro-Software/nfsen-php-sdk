@@ -603,13 +603,7 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
     /** Alguma das descrições da linha tem conteúdo? '-' é a marca de campo vazio. */
     private function anyFilled(string ...$valores): bool
     {
-        foreach ($valores as $value) {
-            if ($value !== '-') {
-                return true;
-            }
-        }
-
-        return false;
+        return array_filter($valores, static fn (string $value): bool => $value !== '-') !== [];
     }
 
     /** Formata como moeda, ou '-' quando não há valor. */
