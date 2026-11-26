@@ -22,17 +22,17 @@ final class Formatter
             return '-';
         }
 
-        $digits = (string) preg_replace('/\D/', '', $value); // @pest-mutate-ignore RemoveStringCast — preg_replace retorna ?string; cast defensivo.
+        $document = (string) preg_replace('/[^0-9A-Z]/', '', $value); // @pest-mutate-ignore RemoveStringCast — preg_replace retorna ?string; cast defensivo.
 
-        if (strlen($digits) === 14) {
-            return (string) preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $digits); // @pest-mutate-ignore RemoveStringCast — defensivo.
+        if (strlen($document) === 14) {
+            return (string) preg_replace('/(.{2})(.{3})(.{3})(.{4})(.{2})/', '$1.$2.$3/$4-$5', $document); // @pest-mutate-ignore RemoveStringCast — defensivo.
         }
 
-        if (strlen($digits) === 11) {
-            return (string) preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $digits); // @pest-mutate-ignore RemoveStringCast — defensivo.
+        if (strlen($document) === 11) {
+            return (string) preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $document); // @pest-mutate-ignore RemoveStringCast — defensivo.
         }
 
-        return $digits;
+        return $document;
     }
 
     public function phone(string $value): string

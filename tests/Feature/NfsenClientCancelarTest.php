@@ -363,6 +363,61 @@ it('cancelar rejects a chaveAcesso with a trailing newline', function () {
     Http::assertNothingSent();
 });
 
+it('cancelar sends the pedido for a chaveAcesso with an alphanumeric CNPJ', function () {
+    Http::fake(['*' => Http::response(
+        json_decode(file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
+        201
+    )]);
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client->cancelar(makeAlphanumericChaveAcesso(), CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
+
+    Http::assertSent(function (Request $req) {
+        $xml = (string) gzdecode((string) base64_decode($req['pedidoRegistroEventoXmlGZipB64']));
+
+        return str_contains($req->url(), '/nfse/'.makeAlphanumericChaveAcesso().'/eventos')
+            && str_contains($xml, '<chNFSe>'.makeAlphanumericChaveAcesso().'</chNFSe>');
+    });
+});
+
+it('cancelar names the alphanumeric CNPJ of the certificate as author of the pedido', function () {
+    Http::fake(['*' => Http::response(
+        json_decode((string) file_get_contents(__DIR__.'/../fixtures/responses/cancelar_sucesso.json'), true),
+        201
+    )]);
+
+    $client = NfsenClient::for(makeAlphanumericIcpBrPfxContent(), 'secret', '9999999');
+    $client->cancelar(makeAlphanumericChaveAcesso(), CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal');
+
+    Http::assertSent(function (Request $req): bool {
+        $xml = (string) gzdecode((string) base64_decode($req['pedidoRegistroEventoXmlGZipB64']));
+
+        return str_contains($xml, '<CNPJAutor>12ABC34501DE35</CNPJAutor>');
+    });
+});
+
+it('cancelar refuses a malformed chaveAcesso before any request', function (string $chave) {
+    Http::fake();
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->cancelar($chave, CodigoJustificativaCancelamento::ErroEmissao, 'Erro na emissao da nota fiscal'))
+        ->toThrow(InvalidArgumentException::class, sprintf(
+            "chaveAcesso inválida: '%s'. Esperado: 50 posições numéricas, admitidas letras maiúsculas apenas na inscrição federal (posições 10 a 23).",
+            $chave,
+        ));
+
+    Http::assertNothingSent();
+})->with([
+    'letra na posição 9' => ['33033021A'.'12345678000195'.'000000000000126010000010000'],
+    'letra na posição 24' => ['330330212'.'12345678000195'.'A00000000000126010000010000'],
+    'minúsculas na inscrição' => ['330330212'.'12abc34501de35'.'000000000000126010000010000'],
+    '49 posições' => ['330330212'.'12ABC34501DE35'.'00000000000012601000001000'],
+    '51 posições' => ['330330212'.'12ABC34501DE35'.'0000000000001260100000100000'],
+    'alfanumérica com quebra de linha' => ['330330212'.'12ABC34501DE35'."000000000000126010000010000\n"],
+    'separador de caminho' => ['330330212'.'12ABC34501DE/5'.'000000000000126010000010000'],
+]);
+
 it('cancelar throws NfseException when gzip compression fails', function () {
     Http::fake(['*' => Http::response(['eventoXmlGZipB64' => base64_encode(gzencode('<Evento/>'))], 200)]);
 

@@ -82,6 +82,12 @@ it('extracts CNPJ from certificate via ExtractsAuthorIdentity port', function ()
         ->and($identity['cpf'])->toBeNull();
 });
 
+it('extracts an alphanumeric CNPJ from the certificate with its letters intact', function () {
+    $manager = new CertificateManager(makeAlphanumericIcpBrPfxContent(), 'secret');
+
+    expect($manager->extract())->toBe(['cnpj' => '12ABC34501DE35', 'cpf' => null]);
+});
+
 it('extracts CPF from certificate when present', function () {
     $pfxContent = file_get_contents(__DIR__.'/../../fixtures/certs/fake-icpbr-cpf.pfx');
     $manager = new CertificateManager($pfxContent, 'secret');

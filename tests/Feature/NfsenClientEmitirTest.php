@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use OwnerPro\Nfsen\Dps\DTO\DpsData;
 use OwnerPro\Nfsen\Dps\DTO\Serv\CServ;
 use OwnerPro\Nfsen\Dps\DTO\Serv\Serv;
+use OwnerPro\Nfsen\Dps\DTO\Toma\Toma;
 use OwnerPro\Nfsen\Enums\NfseAmbiente;
 use OwnerPro\Nfsen\Events\NfseEmitted;
 use OwnerPro\Nfsen\Events\NfseFailed;
@@ -670,4 +671,66 @@ it('emitir skips identity validation when validateIdentity is false', function (
 
     expect($response->sucesso)->toBeTrue();
     expect($response->chave)->toBe('CHAVE_SKIP_VALID');
+});
+
+it('emitir sends a DPS on behalf of a prestador with an alphanumeric CNPJ', function (): void {
+    Http::fake(['*' => Http::response(
+        json_decode((string) file_get_contents(__DIR__.'/../fixtures/responses/emitir_sucesso.json'), true),
+        201
+    )]);
+
+    $client = NfsenClient::forStandalone(makeIcpBrPfxContent(), 'secret', '9999999', validateIdentity: false);
+    $client->emitir(new DpsData(
+        infDPS: makeInfDps(),
+        subst: null,
+        prest: makePrestadorCnpj(CNPJ: makeAlphanumericCnpj()),
+        toma: new Toma(CNPJ: makeAlphanumericCnpj(), xNome: 'Tomador Ltda'),
+        interm: null,
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    ));
+
+    Http::assertSent(function (Request $req): bool {
+        $xml = (string) gzdecode((string) base64_decode($req['dpsXmlGZipB64']));
+
+        return str_contains($xml, 'Id="DPS3501608212ABC34501DE3500001000000000000001"')
+            && str_contains($xml, '<prest><CNPJ>12ABC34501DE35</CNPJ>')
+            && str_contains($xml, '<toma><CNPJ>12ABC34501DE35</CNPJ>');
+    });
+});
+
+it('emitir validates the identity of a certificate whose CNPJ is alphanumeric', function (): void {
+    Http::fake(['*' => Http::response(
+        json_decode((string) file_get_contents(__DIR__.'/../fixtures/responses/emitir_sucesso.json'), true),
+        201
+    )]);
+
+    $client = NfsenClient::for(makeAlphanumericIcpBrPfxContent(), 'secret', '9999999');
+    $client->emitir(new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: makeAlphanumericCnpj()),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    ));
+
+    Http::assertSent(function (Request $req): bool {
+        $xml = (string) gzdecode((string) base64_decode($req['dpsXmlGZipB64']));
+
+        return str_contains($xml, '<prest><CNPJ>12ABC34501DE35</CNPJ>');
+    });
+});
+
+it('emitir refuses a prestador whose CNPJ differs from the alphanumeric one in the certificate', function (): void {
+    Http::fake();
+
+    $client = NfsenClient::for(makeAlphanumericIcpBrPfxContent(), 'secret', '9999999');
+
+    expect(fn () => $client->emitir(new DpsData(
+        infDPS: makeInfDps(),
+        prest: makePrestadorCnpj(CNPJ: '12ABC34501DE43'),
+        serv: makeServicoMinimo(),
+        valores: makeValoresMinimo(),
+    )))->toThrow(NfseException::class, 'CNPJ do certificado (12ABC34501DE35) não corresponde ao CNPJ do Prestador, que emite a DPS (12ABC34501DE43).');
+
+    Http::assertNothingSent();
 });

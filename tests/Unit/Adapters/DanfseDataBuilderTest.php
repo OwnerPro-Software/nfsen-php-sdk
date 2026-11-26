@@ -25,6 +25,15 @@ it('builds NfseData from authorized XML', function () {
     expect($data->numeroNfse)->toBe('10');
 });
 
+it('prints an alphanumeric CNPJ and the chave that carries it', function () {
+    $xml = str_replace('11222333000181', makeAlphanumericCnpj(), $this->xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->emitente->cnpjCpf)->toBe('12.ABC.345/01DE-35')
+        ->and($data->chaveAcesso)->toBe('33033021212ABC34501DE35000000000001026010000010000');
+});
+
 it('extracts emitente fields completely', function () {
     $data = $this->builder->build($this->xml);
 

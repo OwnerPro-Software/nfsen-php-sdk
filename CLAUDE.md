@@ -70,7 +70,7 @@ Never commit the `composer.lock` file — this is a library, not an application;
 - **Dual-mode (Laravel + standalone).** The SDK must keep working under Laravel *and* without it. `NfsenClient::for()` is the Laravel path; `NfsenClient::forStandalone()` is the framework-free path. Don't pull Laravel-only helpers into `Operations/`, `Pipeline/`, `Adapters/`, `Xml/`, or `Support/`.
 - **SSL in production is non-negotiable.** `NfsenClient::forStandalone()` forces `sslVerify=true` whenever `ambiente === PRODUCAO`, regardless of the `$sslVerify` argument. Do not "simplify" this away — it's a safety-critical invariant guarded by a reflection-based test (the sanctioned exception to "no reflection in tests" — see below).
 - **Identity validation default.** `validateIdentity` defaults to `true` and checks that the certificate's CNPJ/CPF matches the DPS prestador before sending. Only disable it for the legal-representative use case (accountant / procurador emitting on behalf of a third party).
-- **Cert fixtures.** Tests use fake ICP-BR certs under `tests/fixtures/certs/` (`fake.pfx`, `fake-icpbr.pfx`, `fake-icpbr-cpf.pfx`, `expired.pfx`). Reuse them — don't generate new ones.
+- **Cert fixtures.** Tests use fake ICP-BR certs under `tests/fixtures/certs/` (`fake.pfx`, `fake-icpbr.pfx`, `fake-icpbr-cpf.pfx`, `fake-icpbr-alphanumeric.pfx`, `expired.pfx`). Reuse them — don't generate new ones.
 
 ## Testing Principles (Uncle Bob / Clean Code)
 

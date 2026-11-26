@@ -95,6 +95,18 @@ it('calls executeAndDecompress with nfse url for nfse query', function () {
     expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/'.$chave);
 });
 
+it('queries a chaveAcesso whose inscrição federal carries letters', function (string $chave) {
+    $fakeClient = new FakeNfsenClientForConsulta;
+    $builder = makeNfseConsulter($fakeClient);
+
+    $builder->nfse($chave);
+
+    expect($fakeClient->calls[0])->toBe('https://sefin.base/nfse/'.$chave);
+})->with([
+    'CNPJ alfanumérico' => ['33033021212ABC34501DE35000000000000126010000010000'],
+    'letras nas posições 10 e 23' => ['330330212'.'A234567890123Z'.'000000000000126010000010000'],
+]);
+
 it('calls executeRaw with dps url', function () {
     $fakeClient = new FakeNfsenClientForConsulta;
     $builder = makeNfseConsulter($fakeClient);

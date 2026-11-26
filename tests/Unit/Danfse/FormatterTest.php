@@ -16,6 +16,26 @@ it('cnpjCpf formats 11-digit CPF', function () {
     expect($this->fmt->cnpjCpf('12345678901'))->toBe('123.456.789-01');
 });
 
+it('cnpjCpf keeps the letters of an alphanumeric CNPJ', function () {
+    expect($this->fmt->cnpjCpf('12ABC34501DE35'))->toBe('12.ABC.345/01DE-35');
+});
+
+it('cnpjCpf does not mask a CNPJ with three letters as CPF', function () {
+    expect($this->fmt->cnpjCpf('ABC12345678901'))->toBe('AB.C12.345/6789-01');
+});
+
+it('cnpjCpf formats an already masked alphanumeric CNPJ', function () {
+    expect($this->fmt->cnpjCpf('12.ABC.345/01DE-35'))->toBe('12.ABC.345/01DE-35');
+});
+
+it('cnpjCpf formats an already masked CPF', function () {
+    expect($this->fmt->cnpjCpf('123.456.789-01'))->toBe('123.456.789-01');
+});
+
+it('cnpjCpf keeps the letters of a value that is neither CNPJ nor CPF', function () {
+    expect($this->fmt->cnpjCpf('AB-123'))->toBe('AB123');
+});
+
 it('cnpjCpf returns dash for empty or dash', function () {
     expect($this->fmt->cnpjCpf(''))->toBe('-');
     expect($this->fmt->cnpjCpf('-'))->toBe('-');

@@ -268,3 +268,42 @@ it('throws NfseException when XML loading fails', function (): void {
         descricao: 'Erro na emissao da nota fiscal',
     ))->toThrow(NfseException::class, 'falha ao carregar documento');
 });
+
+it('validates a pedido whose author and chave carry an alphanumeric CNPJ', function (): void {
+    $builder = new CancellationBuilder(makeXsdValidator());
+
+    $xml = $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: makeAlphanumericCnpj(),
+        cpfAutor: null,
+        chNFSe: makeAlphanumericChaveAcesso(),
+        codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+        descricao: 'Erro na emissao da nota fiscal',
+    );
+
+    $xpath = parseCancelamentoXml($xml);
+
+    expect($xpath->query('//n:infPedReg')->item(0)->getAttribute('Id'))->toBe('PRE'.makeAlphanumericChaveAcesso().'101101')
+        ->and($xpath->evaluate('string(//n:CNPJAutor)'))->toBe('12ABC34501DE35')
+        ->and($xpath->evaluate('string(//n:chNFSe)'))->toBe(makeAlphanumericChaveAcesso());
+});
+
+it('refuses a chave with a letter outside the inscrição federal', function (string $chave): void {
+    $builder = new CancellationBuilder(makeXsdValidator());
+
+    expect(fn () => $builder->buildAndValidate(
+        tpAmb: 2,
+        verAplic: '1.0',
+        dhEvento: '2026-03-01T10:00:00-03:00',
+        cnpjAutor: '12345678000195',
+        cpfAutor: null,
+        chNFSe: $chave,
+        codigoMotivo: CodigoJustificativaCancelamento::ErroEmissao,
+        descricao: 'Erro na emissao da nota fiscal',
+    ))->toThrow(NfseException::class, "attribute 'Id'");
+})->with([
+    'letra na posição 9' => ['33033021A'.'12345678000195'.'000000000000126010000010000'],
+    'letra na posição 24' => ['330330212'.'12345678000195'.'A00000000000126010000010000'],
+]);

@@ -170,3 +170,20 @@ it('substituir does not inject xMotivo when descricao is null', function (DpsDat
         return str_contains($xml, '<chSubstda>') && ! str_contains($xml, '<xMotivo>');
     });
 })->with('dpsData');
+
+it('substituir replaces a NFS-e whose chave carries an alphanumeric CNPJ', function (DpsData $dps) {
+    $chave = makeAlphanumericChaveAcesso();
+
+    Http::fake(['*' => Http::response(['chaveAcesso' => makeChaveAcesso(), 'nfseXmlGZipB64' => base64_encode((string) gzencode('<NFSe/>'))], 201)]);
+
+    $client = NfsenClient::for(makeIcpBrPfxContent(), 'secret', '9999999');
+    $client->substituir($chave, $dps, CodigoJustificativaSubstituicao::Outros, 'Motivo para substituicao da nota fiscal');
+
+    Http::assertSent(function (Request $req) use ($chave): bool {
+        if (! isset($req['dpsXmlGZipB64'])) {
+            return false;
+        }
+
+        return str_contains((string) gzdecode((string) base64_decode($req['dpsXmlGZipB64'])), '<chSubstda>'.$chave.'</chSubstda>');
+    });
+})->with('dpsData');

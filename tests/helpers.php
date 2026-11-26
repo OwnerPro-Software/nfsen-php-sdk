@@ -44,6 +44,11 @@ function makeIcpBrPfxContent(): string
     return file_get_contents(__DIR__.'/fixtures/certs/fake-icpbr.pfx');
 }
 
+function makeAlphanumericIcpBrPfxContent(): string
+{
+    return (string) file_get_contents(__DIR__.'/fixtures/certs/fake-icpbr-alphanumeric.pfx');
+}
+
 function makeXsdValidator(): XsdValidator
 {
     return new XsdValidator(__DIR__.'/../storage/schemes');
@@ -110,6 +115,16 @@ function makeServicoMinimo(?string $cLocPrestacao = null): Serv
 function makeChaveAcesso(): string
 {
     return '12345678901234567890123456789012345678901234567890';
+}
+
+function makeAlphanumericCnpj(): string
+{
+    return '12ABC34501DE35';
+}
+
+function makeAlphanumericChaveAcesso(): string
+{
+    return '330330212'.makeAlphanumericCnpj().'000000000000126010000010000';
 }
 
 function makeValoresMinimo(?string $vServ = null): Valores

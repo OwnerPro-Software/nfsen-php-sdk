@@ -63,6 +63,15 @@ it('distribuicao()->documento sends lote=false', function () {
     );
 });
 
+it('distribuicao()->documentos queries the alphanumeric CNPJ of the certificate', function () {
+    Http::fake(['*' => Http::response(makeDistribuicaoApiResponse(), 200)]);
+
+    $client = NfsenClient::for(makeAlphanumericIcpBrPfxContent(), 'secret', '9999999');
+    $client->distribuicao()->documentos(0);
+
+    Http::assertSent(fn (Request $req) => str_contains($req->url(), 'cnpjConsulta=12ABC34501DE35'));
+});
+
 it('distribuicao()->documentos with custom cnpjConsulta', function () {
     Http::fake(['*' => Http::response(makeDistribuicaoApiResponse(), 200)]);
 

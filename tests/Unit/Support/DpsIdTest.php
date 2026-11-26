@@ -12,6 +12,12 @@ it('generates id for CNPJ with tipo de inscricao 2', function () {
         ->and(strlen($id))->toBe(45);
 });
 
+it('generates id for an alphanumeric CNPJ', function () {
+    $id = DpsId::generate('3550308', '12ABC34501DE35', null, '1', '42');
+
+    expect($id)->toBe('DPS3550308'.'2'.'12ABC34501DE35'.'00001'.'000000000000042');
+});
+
 it('generates id for CPF with tipo de inscricao 1 and left-pads to 14 digits', function () {
     $id = DpsId::generate('3550308', null, '12345678901', '900', '7');
 
@@ -53,11 +59,16 @@ it('refuses an inscription of the wrong width instead of padding it into another
     expect(fn () => DpsId::generate('3550308', $cnpj, $cpf, '1', '1'))
         ->toThrow(InvalidDpsArgument::class, $trecho);
 })->with([
-    'CNPJ curto' => ['12345', null, 'CNPJ inválido para o identificador da DPS: "12345". Esperado catorze dígitos (TSCNPJ).'],
-    'CNPJ vazio' => ['', null, 'CNPJ inválido para o identificador da DPS: "". Esperado catorze dígitos (TSCNPJ).'],
-    'CNPJ com máscara' => ['12.345.678/0001-95', null, 'Esperado catorze dígitos (TSCNPJ).'],
+    'CNPJ curto' => ['12345', null, 'CNPJ inválido para o identificador da DPS: "12345". Esperado catorze posições, as doze primeiras com dígitos ou letras maiúsculas e as duas últimas com dígitos (TSCNPJ).'],
+    'CNPJ vazio' => ['', null, 'CNPJ inválido para o identificador da DPS: "". Esperado catorze posições'],
+    'CNPJ com máscara' => ['12.345.678/0001-95', null, 'CNPJ inválido para o identificador da DPS: "12.345.678/0001-95".'],
+    'CNPJ alfanumérico em minúsculas' => ['12abc34501de35', null, 'CNPJ inválido para o identificador da DPS: "12abc34501de35".'],
+    'CNPJ com letra no dígito verificador' => ['12ABC34501DE3X', null, 'CNPJ inválido para o identificador da DPS: "12ABC34501DE3X".'],
+    'CNPJ alfanumérico com quinze posições' => ['12ABC34501DE350', null, 'CNPJ inválido para o identificador da DPS: "12ABC34501DE350".'],
+    'CNPJ alfanumérico com quebra de linha' => ["12ABC34501DE35\n", null, 'CNPJ inválido para o identificador da DPS'],
     'CPF curto' => [null, '123', 'CPF inválido para o identificador da DPS: "123". Esperado onze dígitos (TSCPF).'],
     'CPF com máscara' => [null, '123.456.789-01', 'Esperado onze dígitos (TSCPF).'],
+    'CPF com letras' => [null, '12ABC345678', 'CPF inválido para o identificador da DPS: "12ABC345678".'],
 ]);
 
 it('left-pads serie to 5 and nDps to 15 digits', function () {
@@ -67,11 +78,16 @@ it('left-pads serie to 5 and nDps to 15 digits', function () {
         ->and(substr($id, 30))->toBe('000000000000345');
 });
 
-it('matches the TSIdDPS pattern from the national schema', function () {
-    $id = DpsId::generate('3550308', null, '12345678901', '1', '1');
+it('matches the TSIdDPS pattern from the national schema', function (?string $cnpj, ?string $cpf) {
+    $id = DpsId::generate('3550308', $cnpj, $cpf, '1', '1');
 
-    expect(preg_match('/^DPS[0-9]{42}$/', $id))->toBe(1);
-});
+    expect(preg_match('/^DPS[0-9]{7}(1[0-9]{14}|2[0-9A-Z]{14})[0-9]{20}$/D', $id))->toBe(1);
+})->with([
+    'CPF' => [null, '12345678901'],
+    'CNPJ numérico' => ['12345678000195', null],
+    'CNPJ alfanumérico' => ['12ABC34501DE35', null],
+    'CNPJ com letras na primeira e na décima segunda posição' => ['A2345678901Z35', null],
+]);
 
 it('throws InvalidDpsArgument when cLocEmi contains non-digits', function () {
     expect(fn () => DpsId::generate('ABC1234', '12345678000195', null, '1', '1'))
@@ -85,5 +101,14 @@ it('throws InvalidDpsArgument when cLocEmi is shorter than 7 digits', function (
 
 it('throws InvalidDpsArgument when serie exceeds 5 digits', function () {
     expect(fn () => DpsId::generate('3550308', '12345678000195', null, '123456', '1'))
-        ->toThrow(InvalidDpsArgument::class);
+        ->toThrow(InvalidDpsArgument::class, 'Esperado o padrão DPS[0-9]{7}(1[0-9]{14}|2[0-9A-Z]{14})[0-9]{20} (TSIdDPS).');
 });
+
+it('refuses letters in serie and nDps, which only the inscription may carry', function (string $serie, string $nDps) {
+    expect(fn () => DpsId::generate('3550308', '12ABC34501DE35', null, $serie, $nDps))
+        ->toThrow(InvalidDpsArgument::class, 'Identificador de DPS gerado é inválido');
+})->with([
+    'série com letra' => ['A1', '1'],
+    'nDps com letra' => ['1', '4B'],
+    'nDps de 15 dígitos com quebra de linha' => ['1', "000000000000042\n"],
+]);

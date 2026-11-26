@@ -161,6 +161,47 @@ if ($response->sucesso) {
 }
 ```
 
+### CNPJ alfanumérico
+
+O SDK aceita o CNPJ alfanumérico — 14 posições, as doze primeiras com dígitos ou
+letras maiúsculas e as duas últimas numéricas — nos campos de CNPJ da DPS e do
+pedido de evento, no identificador da DPS, na chave de acesso e no DANFSe.
+
+Informe o CNPJ **sem máscara e em maiúsculas**: `12ABC34501DE35`, não
+`12.ABC.345/01DE-35` nem `12abc34501de35`. Qualquer outra forma é recusada antes
+do envio:
+
+| Onde | O que é aceito | Exceção |
+|------|----------------|---------|
+| CNPJ de quem emite a DPS (`DpsId::generate()`) | `[0-9A-Z]{12}[0-9]{2}` | `InvalidDpsArgument` |
+| Demais CNPJs (tomador, intermediário, autor do evento) | `[0-9A-Z]{14}` (`TSCNPJ`) | `NfseException` da validação XSD |
+| Chave de acesso | 50 posições numéricas, com letras só na inscrição federal (posições 10 a 23) | `InvalidArgumentException` |
+
+O leiaute embarcado em `storage/schemes/` continua sendo o de produção
+(`esquemas-xsd-v1.01-20260209.zip`). Do pacote de Produção Restrita
+`esquemas-xsd-producao-restrita-20261124.zip` vieram os padrões de identificador
+(`TSCNPJ`, `TSIdDPS`, `TSIdNFSe`, `TSChaveNFe` e os Ids de evento) e três ajustes
+de `tiposSimples_v1.01.xsd` que mudam o que a validação local aceita:
+
+- `TSSerieDPS`: a série da DPS de 90000 a 99999 passa a ser recusada.
+- `TSDesc2000`: `xDescServ` e `xOutInf` só com espaços em branco passam a ser
+  recusados.
+- `TSDateTimeUTC`: a vírgula deixa de valer como dígito de mês e como sinal de fuso.
+
+O leiaute da NT 009, que o mesmo pacote traz, não foi adotado. Dois pontos
+divergem do pacote de propósito, e estão marcados no próprio XSD:
+
+- `TSChaveNFSe` admite letras nas posições 10 a 23, onde a regra de formação
+  descrita em `TSIdNFSe` põe a inscrição federal. O pacote admite nas posições 7 a
+  20, o que recusaria a chave de um CNPJ com letra na 12ª posição.
+- `TSIdPedRegEvt`, `TSIdEvento` e `TSIdNumEvento` não exigem tipo de inscrição 1 ou
+  2 na 9ª posição da chave, para não recusar localmente um cancelamento que hoje é
+  enviado. `TSIdNumEvento` mantém ainda as 59 posições do pacote de produção, que o
+  pacote novo reduz para 56.
+
+O suporte segue o XSD e a NT 009 (item 2.1); ainda não foi exercitado contra a
+SEFIN com um CNPJ alfanumérico real.
+
 ### Emitir NFSe por decisão judicial — não suportado
 
 `emitirDecisaoJudicial()` existe na interface, mas lança `NfseException` na entrada, antes
@@ -372,9 +413,10 @@ $idDps = DpsId::generate(
 
 `DpsId` é a fonte única da regra fiscal de formação do ID — o mesmo código usado
 internamente na construção do XML da DPS. O retorno é validado contra o padrão
-`DPS[0-9]{42}` do schema nacional; entrada inválida lança `InvalidDpsArgument`.
-`cLocEmi`, `cnpj` e `cpf` são conferidos na largura exata do schema (7, 14 e 11
-dígitos, sem máscara): como entram no ID com largura fixa, um valor de tamanho
+`DPS[0-9]{7}(1[0-9]{14}|2[0-9A-Z]{14})[0-9]{20}` do schema nacional; entrada
+inválida lança `InvalidDpsArgument`. `cLocEmi`, `cnpj` e `cpf` são conferidos na
+largura exata do schema (7, 14 e 11 posições, sem máscara; só o CNPJ admite
+letras, maiúsculas e nas doze primeiras): como entram no ID com largura fixa, um valor de tamanho
 errado seria acomodado — cortado ou preenchido com zeros — e produziria um
 identificador bem formado apontando para outro município ou outra inscrição.
 Informe o **mesmo** CNPJ ou CPF usado na emissão — ambos `null` lança
@@ -535,7 +577,7 @@ Retornado por `emitir()`, `cancelar()`, `substituir()`, `consultar()->nfse()` e 
 | Propriedade | Tipo | Descricao |
 |-------------|------|-----------|
 | `sucesso` | `bool` | Se a operação foi aceita |
-| `chave` | `?string` | Chave de acesso da NFSe (50 dígitos) |
+| `chave` | `?string` | Chave de acesso da NFSe (50 posições; a inscrição federal pode ter letras) |
 | `xml` | `?string` | XML da NFSe processada |
 | `idDps` | `?string` | Identificador da DPS |
 | `alertas` | `list<ProcessingMessage>` | Alertas não-bloqueantes |

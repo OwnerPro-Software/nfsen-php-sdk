@@ -11,7 +11,8 @@ use OwnerPro\Nfsen\Exceptions\InvalidDpsArgument;
  * `storage/schemes/tiposSimples_v1.01.xsd`):
  *
  * "DPS" + Cód.Mun (7) + Tipo de Inscrição Federal (1: CPF=1, CNPJ=2)
- *       + Inscrição Federal (14, zero-pad à esquerda) + Série DPS (5, zero-pad)
+ *       + Inscrição Federal (14; CPF com zero-pad à esquerda, só o CNPJ admite letras)
+ *       + Série DPS (5, zero-pad)
  *       + Núm. DPS (15, zero-pad)
  *
  * Útil para reconciliação pós-timeout: permite recalcular o ID de uma DPS já
@@ -24,7 +25,7 @@ final readonly class DpsId
     // /D: sem ele, `$` casa também antes de um \n final — um nDps de 15 dígitos com
     // quebra de linha passaria como identificador bem formado, e a chave iria para a
     // URL de consultar()->dps() com o \n. Mesma razão que ValidatesChaveAcesso.
-    private const string PATTERN = '/^DPS\d{42}$/D';
+    private const string PATTERN = '/^DPS\d{7}(1\d{14}|2[0-9A-Z]{14})\d{20}$/D';
 
     /**
      * @param  bool  $allowEmptyInscricao  permite CNPJ e CPF ambos null, gerando
@@ -60,7 +61,12 @@ final readonly class DpsId
         self::assertPattern($cLocEmi, '/^\d{7}$/D', 'cLocEmi', 'sete dígitos (TSCodMunIBGE)');
 
         if ($cnpj !== null) {
-            self::assertPattern($cnpj, '/^\d{14}$/D', 'CNPJ', 'catorze dígitos (TSCNPJ)');
+            self::assertPattern(
+                $cnpj,
+                '/^[0-9A-Z]{12}\d{2}$/D',
+                'CNPJ',
+                'catorze posições, as doze primeiras com dígitos ou letras maiúsculas e as duas últimas com dígitos (TSCNPJ)',
+            );
         }
 
         if ($cpf !== null) {
@@ -76,7 +82,7 @@ final readonly class DpsId
 
         if (preg_match(self::PATTERN, $id) !== 1) {
             throw new InvalidDpsArgument(sprintf(
-                'Identificador de DPS gerado é inválido: "%s". Esperado o padrão DPS[0-9]{42} (TSIdDPS).',
+                'Identificador de DPS gerado é inválido: "%s". Esperado o padrão DPS[0-9]{7}(1[0-9]{14}|2[0-9A-Z]{14})[0-9]{20} (TSIdDPS).',
                 $id,
             ));
         }
