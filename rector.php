@@ -8,10 +8,10 @@ use Rector\DeadCode\Rector\Assign\RemoveUnusedVariableAssignRector;
 use Rector\DeadCode\Rector\ClassMethod\RemoveUnusedPrivateMethodParameterRector;
 use Rector\TypeDeclarationDocblocks\Rector\Class_\ClassMethodArrayDocblockParamFromLocalCallsRector;
 use Rector\TypeDeclarationDocblocks\Rector\ClassMethod\AddParamArrayDocblockFromDimFetchAccessRector;
-use RectorLaravel\Set\LaravelSetProvider;
+use Rector\TypeDeclarationDocblocks\Rector\Property\MergePhpstanDocTagIntoNativeRector;
+use RectorLaravel\Rector\MethodCall\ContainerBindConcreteWithClosureOnlyRector;
 
 return RectorConfig::configure()
-    ->withSetProviders(LaravelSetProvider::class)
     ->withComposerBased(laravel: true)
     ->withPaths([
         __DIR__.'/src',
@@ -33,6 +33,10 @@ return RectorConfig::configure()
     ->withSkip([
         // fromArray() methods use @phpstan-param with typed array shapes — this rule would add redundant @param array<string, mixed>
         AddParamArrayDocblockFromDimFetchAccessRector::class,
+        // Mesma convenção: os array shapes ficam em @phpstan-param, não em @param nativo.
+        MergePhpstanDocTagIntoNativeRector::class,
+        // bind() só com closure é do Laravel 12; o composer.json ainda aceita illuminate ^11.0.
+        ContainerBindConcreteWithClosureOnlyRector::class,
         // Bug no Rector 2.3.8: esta regra entra em loop infinito no NfsenClient.php.
         // Ela tenta inferir @param docblocks a partir de chamadas locais entre métodos,
         // mas os métodos interconectados (emitir→doEmitir→sendEvento→dispatchEvent)
