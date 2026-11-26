@@ -162,6 +162,44 @@ if ($response->sucesso) {
 }
 ```
 
+### Tomador sem endereço ou sem identificação
+
+O grupo `toma` e o endereço dentro dele são opcionais no XSD (`minOccurs="0"` em
+`infDPS/toma` e em `TCInfoPessoa/end`), nos dois leiautes:
+
+```php
+// Tomador identificado, sem endereço
+'toma' => [
+    'xNome' => 'Fulano de Tal',
+    'CPF'   => '00000000000',
+],
+
+// Tomador não identificado: deixe a chave 'toma' de fora
+```
+
+Não existe tomador só com nome: `TCInfoPessoa` exige um entre `CNPJ`, `CPF`, `NIF` e
+`cNaoNIF`. Um `toma` sem nenhum deles é recusado antes do envio com `InvalidDpsArgument`
+(`[infDPS/toma] Somente 1 dos seguintes campos deve ser informado: CNPJ, CPF, NIF, código
+de não NIF (cNaoNIF). Nenhum foi informado.`). Para emitir sem CPF/CNPJ, omita o grupo
+inteiro; no DANFSe o bloco do tomador sai como "não identificado".
+
+As regras de negócio da SEFIN voltam a exigir a identificação e o endereço em alguns
+cenários (Anexo VI v1.04.01, aba de regras de negócio da DPS, regras 329, 348 a 351 e 356):
+
+| Quando | A SEFIN exige | Rejeição |
+|---|---|---|
+| ISSQN retido pelo tomador (`tpRetISSQN = 2`) | `CNPJ` ou `CPF` e `end/endNac` | E0204, E0237, E0241 |
+| `cTribNac` com incidência do ISSQN no município do tomador | `CNPJ` ou `CPF` e `end/endNac` | E0241 |
+| IBS/CBS tributado com local de fornecimento no endereço do tomador (`cIndOp`) | `CNPJ` ou `CPF` e `end/endNac` | E0239, E0243 |
+| Tomador identificado por `NIF` ou `cNaoNIF` | `end/endExt` | E0242 |
+
+O SDK não aplica essas regras: a DPS é enviada e a rejeição chega em `$response->erros`.
+A regra E0235 (endereço obrigatório para tomador com CNPJ) só é executada no
+compartilhamento de NFS-e dos municípios com o ADN, não na DPS enviada à SEFIN.
+
+Quando o endereço é informado, o `cMun` precisa ser o do cadastro CNPJ/CPF do tomador,
+ou a DPS é rejeitada (NT 009, item 2.10; regras 353 e 354).
+
 ### CNPJ alfanumérico
 
 O SDK aceita o CNPJ alfanumérico — 14 posições, as doze primeiras com dígitos ou
