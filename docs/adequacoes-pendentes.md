@@ -4,14 +4,15 @@
 [`notas-tecnicas.md`](notas-tecnicas.md), que diz o que cada nota técnica traz. Aqui
 está o que isso exige do código.
 
-Este documento é só o levantamento. Nada do que está listado foi alterado, e nenhuma
-decisão de desenho foi tomada.
+Este documento é só o levantamento. Na data dele, nada do que está listado tinha sido
+alterado. O item A1 foi feito em seguida; os demais seguem abertos, sem decisão de
+desenho tomada.
 
 ## Resumo
 
 | # | Item | Origem | Atinge a produção hoje? | Depende de | Tamanho |
 |---|---|---|---|---|---|
-| A1 | DANFSe: PIS/COFINS retidos | NT 008 v1.02 | **Sim**, nas NFS-e com `tpRetPisCofins` = 1 | Nada | Pequeno |
+| A1 | ~~DANFSe: PIS/COFINS retidos~~ — **feito** | NT 008 v1.02 | Atingia as NFS-e com `tpRetPisCofins` = 1 | Nada | Pequeno |
 | A2 | Trocar a referência da NT 008 para a v1.02 | NT 008 v1.02 | Não (é a base dos testes) | A1 | Médio |
 | A3 | README: data em que a API de DANFSe saiu do ar | NT 008 v1.01 | Só documentação | Nada | Mínimo |
 | A4 | Distribuição: `cpfConsulta` e `TipoConsulta` | Manual do ADN v1.1 | A confirmar | Swagger atual do ADN | Pequeno |
@@ -32,7 +33,11 @@ feitos.
 
 ## A. Corrigir no que já vale em produção
 
-### A1. DANFSe: PIS/COFINS retidos
+### A1. DANFSe: PIS/COFINS retidos — feito
+
+Implementado depois deste levantamento. O texto abaixo é o registro do que foi
+levantado; as duas decisões ficaram como descritas: "Total das Retenções" e "Exclusões
+e Reduções da Base de Cálculo" não mudaram.
 
 **O que a nota diz.** Item 2.4.5 da NT 008 v1.02, bloco "Tributação Federal (exceto
 CBS)":

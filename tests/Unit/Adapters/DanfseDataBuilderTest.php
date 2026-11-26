@@ -338,6 +338,48 @@ it('extracts tribFed fields', function () {
     expect($data->tribFed->cofins)->toBe('R$ 45,00');
 });
 
+// NT 008 v1.02, item 2.4.5: com tpRetPisCofins = 1, "Contribuições Sociais - Retidas"
+// é vRetCSLL + vPis + vCofins, e os dois débitos de apuração própria saem 0,00.
+it('moves PIS and COFINS into the withheld contributions when both were withheld', function () {
+    $xml = str_replace('</piscofins>', '<tpRetPisCofins>1</tpRetPisCofins></piscofins>', $this->xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tribFed->csll)->toBe('R$ 69,75');
+    expect($data->tribFed->pis)->toBe('R$ 0,00');
+    expect($data->tribFed->cofins)->toBe('R$ 0,00');
+});
+
+it('prints PIS, COFINS and CSLL as declared for every other withholding type', function (string $tpRetPisCofins) {
+    $xml = str_replace('</piscofins>', "<tpRetPisCofins>{$tpRetPisCofins}</tpRetPisCofins></piscofins>", $this->xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tribFed->csll)->toBe('R$ 15,00');
+    expect($data->tribFed->pis)->toBe('R$ 9,75');
+    expect($data->tribFed->cofins)->toBe('R$ 45,00');
+})->with(['0', '2', '3', '4', '5', '6', '7', '8', '9']);
+
+it('sums only the values the NFS-e carries when PIS and COFINS were withheld', function () {
+    $xml = str_replace('</piscofins>', '<tpRetPisCofins>1</tpRetPisCofins></piscofins>', $this->xml);
+    $xml = (string) preg_replace('|<vRetCSLL>[^<]+</vRetCSLL>|', '', $xml);
+    $xml = (string) preg_replace('|<vCofins>[^<]+</vCofins>|', '', $xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tribFed->csll)->toBe('R$ 9,75');
+    expect($data->tribFed->cofins)->toBe('R$ 0,00');
+});
+
+it('prints a dash for the withheld contributions when PIS and COFINS were withheld without any value', function () {
+    $xml = str_replace('</piscofins>', '<tpRetPisCofins>1</tpRetPisCofins></piscofins>', $this->xml);
+    $xml = (string) preg_replace('@<(vRetCSLL|vPis|vCofins)>[^<]+</\1>@', '', $xml);
+
+    $data = $this->builder->build($xml);
+
+    expect($data->tribFed->csll)->toBe('-');
+});
+
 // NT 008, item 2.4.5, nota 6: a linha de PIS/COFINS "será impressa para as NFS-e
 // emitidas com data de competência até o final do ano-calendário de 2026".
 it('keeps the PIS/COFINS line through the last competência of 2026', function (string $dCompet) {

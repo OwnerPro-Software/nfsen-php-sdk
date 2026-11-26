@@ -1042,6 +1042,11 @@ Comportamentos que valem conhecer:
   SDK refaz a conta que o XSD documenta — Σ(vRetCP + vRetIRRF + vRetCSLL + ISSQN
   retido). O ISSQN retido aparece no bloco municipal e o PIS/COFINS de apuração
   própria, no federal; nenhum dos dois é campo do bloco de totais.
+- **PIS/COFINS retidos saem em "Contribuições Sociais - Retidas".** A v1.02 da NT 008,
+  de 14/07/2026, mudou o item 2.4.5: com `tpRetPisCofins` = 1, o campo soma `vRetCSLL` +
+  `vPis` + `vCofins`, e "PIS" e "COFINS - Débito Apuração Própria" saem `R$ 0,00`. Nos
+  demais tipos, cada campo imprime o seu valor. É a única regra da v1.02 que muda o que
+  é impresso; a tabela de campos versionada continua sendo a da v1.0.
 - **Totais aproximados de tributos não têm bloco próprio.** A nota 10 os põe dentro de
   "Informações Complementares", numa linha fixa e obrigatória. Ela vive em
   `DanfseTotaisTributos::linhaNt008()` e é impressa fora da área que trunca, porque a

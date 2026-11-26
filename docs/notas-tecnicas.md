@@ -28,17 +28,18 @@ a data, o ambiente em que está valendo e o que o SDK implementa dela.
 | 005 | 1.1 | 19/11/2025 | Novos fatos geradores, locação de bens móveis, doação, estorno de crédito | Fora de produção; parte chegou à Produção Restrita pela NT 009 | **Não implementada** |
 | 006 | — | 22/01/2026 | Leiaute da NFS-e Via (pedágio) | — | Fora do escopo |
 | 007 | 1.0 | 07/02/2026 | `indZFMALC`, domínios de PIS/COFINS, esclarecimentos | PIS/COFINS em produção desde 09/02/2026 | **Parcial** — PIS/COFINS sim; `indZFMALC` não está em nenhum XSD |
-| 008 | 1.02 | 14/07/2026 (v1.0: 05/05/2026; v1.01: 30/06/2026) | Especificação do DANFSe | Produção; a API de DANFSe do ADN saiu do ar em 03/08/2026 | **Implementada sobre a v1.0**; falta um ajuste da v1.02 |
+| 008 | 1.02 | 14/07/2026 (v1.0: 05/05/2026; v1.01: 30/06/2026) | Especificação do DANFSe | Produção; a API de DANFSe do ADN saiu do ar em 03/08/2026 | **Implementada**: construída sobre a v1.0, com a regra da v1.02 aplicada depois deste levantamento |
 | 009 | 1.01 | 11/09/2026 (o portal mostra 01/10/2026) | Reestruturação da DPS, Simples Nacional, notas de ajuste, condomínios | Produção Restrita, por partes; produção sem data | **Parcial** — leiaute opcional `nt009` |
 | 010 | 1.00 | 11/09/2026 | NFS-e Via v1.01 e evento de Manifestação do Adquirente | — | Fora do escopo |
 
 ## O que falta, por ordem de urgência
 
-Este documento é só o levantamento. Nenhuma das lacunas abaixo foi corrigida. O que cada uma
+Este documento é só o levantamento. Na data dele, nenhuma das lacunas abaixo estava
+corrigida; a primeira foi corrigida em seguida. O que cada uma
 exige do código está em [`adequacoes-pendentes.md`](adequacoes-pendentes.md).
 
-1. **NT 008 v1.02: PIS/COFINS retidos no DANFSe.** É a única lacuna que atinge a
-   produção de hoje. Detalhe na seção da NT 008.
+1. ~~**NT 008 v1.02: PIS/COFINS retidos no DANFSe.**~~ Era a única lacuna que atingia a
+   produção. Corrigida depois deste levantamento.
 2. **Grupos da NT 009 que o leiaute `nt009` ainda não monta**: `imovel`, `comExt`,
    `vAjusteBC/documentos`, `vAjusteBCIBSCBSComExt`, `bensMoveis`, `condominios` e
    `atvEvento/cMun`. Só passam a importar quando a produção adotar o leiaute da NT 009,
@@ -125,14 +126,14 @@ O portal publica hoje a v1.02. Comparando o texto das duas versões:
 |---|---|---|
 | Data de suspensão da API de DANFSe: de 01/07/2026 para 03/08/2026 | 1.01 e 1.02 | Sem efeito no código. O README cita 01/07/2026 |
 | A quantidade de caracteres do item 2.4.5 deixa de ser obrigatória | 1.02 | Sem efeito: o SDK segue os tamanhos sugeridos |
-| **Com `tpRetPisCofins` = 1, "Contribuições Sociais - Retidas" passa a ser `vRetCSLL` + `vPis` + `vCofins`, e "PIS" e "COFINS - Débito Apuração Própria" passam a `0,00`** | 1.02 | **Não implementado.** `DanfseDataBuilder::buildTribFed()` imprime os três campos como vieram, qualquer que seja o `tpRetPisCofins` |
+| **Com `tpRetPisCofins` = 1, "Contribuições Sociais - Retidas" passa a ser `vRetCSLL` + `vPis` + `vCofins`, e "PIS" e "COFINS - Débito Apuração Própria" passam a `0,00`** | 1.02 | **Implementado depois deste levantamento.** Na data dele, `DanfseDataBuilder::buildTribFed()` imprimia os três campos como vinham, qualquer que fosse o `tpRetPisCofins` |
 | Correções de grafia ("DESTINATÁRIO", "INTERMEDIÁRIO", "BASE DE CÁLCULO", "IDENTIFICAÇÃO") | 1.02 | Sem efeito: o template já trazia a grafia correta nos três primeiros, e o quarto fica no canhoto, que é opcional e o SDK não imprime |
 
 As coordenadas e os tamanhos de campo do item 2.4.5 são os mesmos nas duas versões.
 
-A v1.02 só altera os três campos de `tribFed`. Ao corrigir, vale olhar também a soma de
-"Total das Retenções" que o SDK refaz quando a NFS-e vem sem `vTotalRet`: ela usa
-`vRetCSLL` e não soma `vPis` nem `vCofins`.
+A v1.02 só altera os três campos de `tribFed`. A soma de "Total das Retenções" que o SDK
+refaz quando a NFS-e vem sem `vTotalRet` ficou como estava: usa `vRetCSLL` e não soma
+`vPis` nem `vCofins`, que é a fórmula da regra E1506 do Anexo VI.
 
 A nota anuncia outra, ainda não publicada, com o DANFSe dos novos fatos geradores.
 

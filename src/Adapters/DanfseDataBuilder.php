@@ -346,16 +346,24 @@ final readonly class DanfseDataBuilder implements BuildsDanfseData
         $csll = $this->str($tribFed->vRetCSLL);
         $pis = $this->str($pc?->vPis); // @pest-mutate-ignore RemoveNullSafeOperator — ?-> redundante com str(?SimpleXMLElement); defesa dupla é intencional.
         $cofins = $this->str($pc?->vCofins); // @pest-mutate-ignore RemoveNullSafeOperator — idem.
+        $tpRetPisCofins = $this->str($pc?->tpRetPisCofins); // @pest-mutate-ignore RemoveNullSafeOperator — piscofins é minOccurs=0.
+        // NT 008 v1.02, item 2.4.5: com o tipo 1, vPis e vCofins são retenção, não débito próprio.
+        $pisCofinsWithheld = TpRetPisCofins::tryFrom($tpRetPisCofins) === TpRetPisCofins::PisCofinsRetidos;
 
         return new DanfseTributacaoFederal(
             irrf: $irrf !== '' ? $this->fmt->currency($irrf) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — currency() já retorna '-' para ''; guard é defensivo.
             cp: $cp !== '' ? $this->fmt->currency($cp) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
-            csll: $csll !== '' ? $this->fmt->currency($csll) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
-            pis: $pis !== '' ? $this->fmt->currency($pis) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
-            cofins: $cofins !== '' ? $this->fmt->currency($cofins) : '-', // @pest-mutate-ignore EmptyStringToNotEmpty — idem.
-            descricaoContribuicoesRetidas: TpRetPisCofins::labelOf($this->str($pc?->tpRetPisCofins)), // @pest-mutate-ignore RemoveNullSafeOperator — piscofins é minOccurs=0.
+            csll: $pisCofinsWithheld ? $this->sumCurrency($csll, $pis, $cofins) : $this->currencyOrDash($csll),
+            pis: $this->ownDebt($pis, $pisCofinsWithheld),
+            cofins: $this->ownDebt($cofins, $pisCofinsWithheld),
+            descricaoContribuicoesRetidas: TpRetPisCofins::labelOf($tpRetPisCofins),
             exibePisCofins: $this->competenciaAlcancaPisCofins($dCompet),
         );
+    }
+
+    private function ownDebt(string $value, bool $withheld): string
+    {
+        return $withheld ? $this->fmt->currency('0.00') : $this->currencyOrDash($value);
     }
 
     /**
